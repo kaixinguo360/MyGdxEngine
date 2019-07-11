@@ -1,4 +1,4 @@
-package com.my.game.base;
+package com.my.utils.base;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
@@ -10,15 +10,12 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class BaseUI {
+public class BaseUI {
 
     public Stage stage;
-
-    protected Skin skin;
-
+    public Skin skin;
     private VerticalGroup group;
     private Map<String, Actor> widgets = new HashMap<>();
-
     void init() {
 
         // Create Skin
@@ -41,8 +38,6 @@ public abstract class BaseUI {
         group = new VerticalGroup();
         group.fill();
         window.add(group);
-
-        addWidgets();
     }
 
     void render() {
@@ -58,16 +53,16 @@ public abstract class BaseUI {
         stage.getViewport().update(width, height, true);
     }
 
-    // -------------------- Public -------------------- //
+    // -------------------- Public & Protected -------------------- //
 
-    protected abstract void addWidgets();
-
-    protected void addWidget(String key, Actor widget) {
+    // Add Widget
+    public void addWidget(String name, Actor widget) {
         group.addActor(widget);
-        widgets.put(key, widget);
+        widgets.put(name, widget);
     }
 
-    public <T extends Actor> T getWidget(String key, Class<T> type) {
-        return (T) widgets.get(key);
+    // Get Specific Widget By The Given Name
+    public <T extends Actor> T getWidget(String name, Class<T> type) {
+        return (T) widgets.get(name);
     }
 }
