@@ -34,25 +34,10 @@ public abstract class BaseGame extends ApplicationAdapter {
 
     @Override
     public void render() {
-        // Handle Asset Loading
-        if (loading) {
-            if (assetManager.update()) { // Check assetManager
-                loading = false;
-                doneLoading();
-            } else if (waitLoading) { // Check waitLoading
-                return;
-            }
-        }
-
-        // Clear Color Buffer
-        Gdx.gl.glClearColor(0, 0.5f, 0.2f, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-
-        // Render Custom Scene
+        if (!isDoneLoading()) return;
+        clearRender();
         myRender();
-
-        // Render UI
-        ui.render();
+        renderUI();
     }
 
     @Override
@@ -62,7 +47,8 @@ public abstract class BaseGame extends ApplicationAdapter {
 
     @Override
     public void dispose() {
-        for(Disposable disposable : disposables) {
+        for(int i = disposables.size - 1; i >= 0; i--) {
+            Disposable disposable = disposables.get(i);
             if(disposable != null)
                 disposable.dispose();
         }
@@ -70,16 +56,33 @@ public abstract class BaseGame extends ApplicationAdapter {
 
     // -------------------- Public & Protected -------------------- //
 
-    // Call this method manually before loading complete
+    // Handle Asset Loading
     private boolean loading = false;
     private boolean waitLoading = true;
     protected void waitLoad(boolean wait) {
+        // Call this method manually before loading complete
         loading = true;
         this.waitLoading = wait;
     }
+    protected boolean isDoneLoading() {
+        if (loading) {
+            if (assetManager.update()) { // Check assetManager
+                loading = false;
+                doneLoading();
+            } else if (waitLoading) { // Check waitLoading
+                return false;
+            }
+        }
+        return true;
+    }
 
-    // Custom UI Code
-    protected abstract void initUI();
+    // Register Disposable Assets
+    private Array<Disposable> disposables = new Array<>();
+    protected void addDisposable(Disposable disposable) {
+        disposables.add(disposable);
+    }
+
+    // -------------------- Customizable -------------------- //
 
     // Custom doneLoading Code
     protected abstract void doneLoading();
@@ -87,9 +90,17 @@ public abstract class BaseGame extends ApplicationAdapter {
     // Custom render Code
     protected abstract void myRender();
 
-    // Register Disposable Assets
-    private Array<Disposable> disposables = new Array<>();
-    protected void addDisposable(Disposable disposable) {
-        disposables.add(disposable);
+    // Custom UI Code
+    protected abstract void initUI();
+
+    // (Customizable) Render UI
+    protected void renderUI() {
+        ui.render();
+    }
+
+    // (Customizable) Clear Render Result
+    protected void clearRender() {
+        Gdx.gl.glClearColor(0, 0.5f, 0.2f, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
     }
 }

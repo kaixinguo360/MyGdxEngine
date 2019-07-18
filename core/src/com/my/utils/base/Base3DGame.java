@@ -20,8 +20,8 @@ public abstract class Base3DGame extends BaseGame {
         addDisposable(batch);
         // ----- Init Camera ----- //
         cam = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        cam.far = 500;
-        cam.near = 0.001f;
+        cam.far = 200;
+        cam.near = 0.1f;
         cam.position.set(0, 0, 0);
         cam.update();
         // ----- Init CameraControllerMultiplexer ----- //
