@@ -4,9 +4,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Disposable;
 import com.my.utils.world.BaseInstance;
 import com.my.utils.world.mod.ModelComponent;
-import com.my.utils.world.mod.ModelModule;
 import com.my.utils.world.mod.PhyComponent;
-import com.my.utils.world.mod.PhyModule;
 
 public class MyInstance extends BaseInstance implements Disposable {
 
@@ -31,12 +29,10 @@ public class MyInstance extends BaseInstance implements Disposable {
 
     private void init() {
         if (modelComponent != null) {
-            addModule("model", ModelModule.pool.obtain());
-            getModule("model", ModelModule.class).add("model", modelComponent);
+            addComponent("model", modelComponent);
         }
         if (phyComponent != null) {
-            addModule("phy", PhyModule.pool.obtain());
-            getModule("phy", PhyModule.class).add("phy", phyComponent);
+            addComponent("phy", phyComponent);
             phyComponent.setMotionState(modelComponent.getTransform());
         }
     }
@@ -54,7 +50,5 @@ public class MyInstance extends BaseInstance implements Disposable {
     public void dispose() {
         if (modelComponent != null) ModelComponent.pool.free(modelComponent);
         if (phyComponent != null) PhyComponent.pool.free(phyComponent);
-        ModelModule.pool.free(getModule("model", ModelModule.class));
-        PhyModule.pool.free(getModule("phy", PhyModule.class));
     }
 }

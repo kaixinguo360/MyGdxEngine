@@ -6,11 +6,12 @@ import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
 import com.badlogic.gdx.utils.Pool;
+import com.my.utils.world.Component;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class PhyComponent implements Pool.Poolable {
+public class PhyComponent implements Component, Pool.Poolable {
 
     // ----- Static ----- //
     public final static short STATIC_FLAG = 1 << 8;

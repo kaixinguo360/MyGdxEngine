@@ -24,16 +24,16 @@ import com.badlogic.gdx.utils.ArrayMap;
 import com.my.utils.base.Base3DGame;
 import com.my.utils.world.World;
 import com.my.utils.world.mod.ModelComponent;
-import com.my.utils.world.mod.ModelHandler;
+import com.my.utils.world.mod.ModelModule;
 import com.my.utils.world.mod.PhyComponent;
-import com.my.utils.world.mod.PhyHandler;
+import com.my.utils.world.mod.PhyModule;
 
 public class MyGame extends Base3DGame {
 
     private Environment environment;
     private World world;
-    private ModelHandler modelHandler;
-    private PhyHandler phyHandler;
+    private ModelModule modelHandler;
+    private PhyModule phyHandler;
     private ArrayMap<String, Model> models = new ArrayMap<>();
     @Override
     public void create() {
@@ -43,12 +43,12 @@ public class MyGame extends Base3DGame {
         Bullet.init();
         world = new World();
         // Create modelHandler
-        modelHandler = new ModelHandler();
-        world.addHandler("model", modelHandler);
+        modelHandler = new ModelModule();
+        world.addModule("model", modelHandler);
         addDisposable(modelHandler);
         // Create phyHandler
-        phyHandler = new PhyHandler();
-        world.addHandler("phy", phyHandler);
+        phyHandler = new PhyModule();
+        world.addModule("phy", phyHandler);
         addDisposable(phyHandler);
 
         // ----- Create Environment ----- //

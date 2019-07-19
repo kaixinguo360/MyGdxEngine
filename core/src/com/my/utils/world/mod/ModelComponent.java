@@ -7,11 +7,12 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Pool;
+import com.my.utils.world.Component;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class ModelComponent implements Pool.Poolable {
+public class ModelComponent implements Component, Pool.Poolable {
 
     // ----- Static ----- //
     public static final Pool<ModelComponent> pool = new Pool<ModelComponent>() {
@@ -76,7 +77,7 @@ public class ModelComponent implements Pool.Poolable {
         private final boolean includeEnv;
         private final Vector3 center = new Vector3();
         private final Vector3 dimensions = new Vector3();
-        private float radius = 0;
+        private float radius;
 
         public Config(Model model) {
             this(model, true);

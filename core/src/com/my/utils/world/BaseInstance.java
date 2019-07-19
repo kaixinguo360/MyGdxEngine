@@ -6,20 +6,33 @@ import java.util.Map;
 public abstract class BaseInstance implements Instance {
 
     // ----- Add & Remove ----- //
-    private final Map<String, Module> modules = new HashMap<>();
-    protected void addModule(String name, Module module) {
-        modules.put(name, module);
+    protected final Map<String, Component> components = new HashMap<>();
+    public void addComponent(String name, Component component) {
+        components.put(name, component);
+        if (modifyListener != null) modifyListener.add(component);
     }
-    protected void removeModule(String name) {
-        modules.remove(name);
+    public boolean containComponent(Component component) {
+        return components.containsValue(component);
+    }
+    public void removeComponent(String name) {
+        if (modifyListener != null) modifyListener.remove(getComponent(name));
+        components.remove(name);
     }
 
     // ----- Get ----- //
-    protected <T extends Module> T getModule(String name, Class<T> type) {
-        return (T) modules.get(name);
+    public Component getComponent(String name) {
+        return components.get(name);
     }
-    @Override
-    public Iterable<Module> getModules() {
-        return modules.values();
+    public Iterable<Component> getAllComponents() {
+        return components.values();
+    }
+
+    // ----- Modify Listener ----- //
+    private ModifyListener modifyListener = null;
+    public void setModifyListener(ModifyListener modifyListener) {
+        this.modifyListener = modifyListener;
+    }
+    public ModifyListener getModifyListener() {
+        return modifyListener;
     }
 }
