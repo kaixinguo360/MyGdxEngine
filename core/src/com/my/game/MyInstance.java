@@ -11,26 +11,14 @@ public class MyInstance extends BaseInstance implements Disposable {
     protected ModelComponent modelComponent;
     protected PhyComponent phyComponent;
 
+    public MyInstance() {}
+
     public MyInstance(String name) {
-        this(name, name);
-    }
-
-    public MyInstance(String model, String phy) {
-        modelComponent = ModelComponent.obtainComponent(model);
-        phyComponent = PhyComponent.obtainComponent(phy);
-        init();
-    }
-
-    public MyInstance(ModelComponent modelComponent, PhyComponent phyComponent) {
-        this.modelComponent = modelComponent;
-        this.phyComponent = phyComponent;
-        init();
-    }
-
-    private void init() {
+        modelComponent = ModelComponent.obtainComponent(name);
         if (modelComponent != null) {
             addComponent("model", modelComponent);
         }
+        phyComponent = PhyComponent.obtainComponent(name);
         if (phyComponent != null) {
             addComponent("phy", phyComponent);
             phyComponent.setMotionState(modelComponent.getTransform());

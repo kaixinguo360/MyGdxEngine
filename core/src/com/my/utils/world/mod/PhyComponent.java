@@ -56,6 +56,9 @@ public class PhyComponent implements Component, Pool.Poolable {
     public void proceedToTransform(Matrix4 transform) {
         body.proceedToTransform(transform);
     }
+    public btRigidBody getRigidBody() {
+        return body;
+    }
 
     // ----- MotionState ----- //
     class MotionState extends btMotionState {

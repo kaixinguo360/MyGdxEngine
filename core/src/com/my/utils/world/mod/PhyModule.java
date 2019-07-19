@@ -1,6 +1,5 @@
 package com.my.utils.world.mod;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
@@ -87,7 +86,7 @@ public class PhyModule extends BaseModule<PhyComponent> {
 
     // Update dynamicsWorld
     public void update() {
-        dynamicsWorld.stepSimulation(Gdx.graphics.getDeltaTime(), 5, 1f/60f);
+        dynamicsWorld.stepSimulation(1f/60f);
     }
     // Render DebugDrawer
     public void renderDebug(Camera cam) {
