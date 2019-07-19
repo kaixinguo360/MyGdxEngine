@@ -109,7 +109,7 @@ public class GunBuilder {
         // Gun Entity
         Entity entity = new Entity();
         entity.setName(name);
-        entity.addComponent(new Position());
+        entity.addComponent(new Position(new Matrix4()));
         entity.addComponent(new GunScript()).bulletPrefab = assetsManager.getAsset("Bullet", Prefab.class);
         entityManager.addEntity(entity);
 

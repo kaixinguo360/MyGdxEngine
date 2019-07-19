@@ -83,7 +83,7 @@ public class ObjectBuilder {
     public Entity createWall(String name, Matrix4 transform, int height) {
         Entity entity = new Entity();
         entity.setName(name);
-        entity.addComponent(new Position());
+        entity.addComponent(new Position(new Matrix4()));
         entityManager.addEntity(entity);
         for (int i = 0; i < height; i++) {
             float tmp = 0.5f + (i % 2);
@@ -101,7 +101,7 @@ public class ObjectBuilder {
     public Entity createTower(String name, Matrix4 transform, int height) {
         Entity entity = new Entity();
         entity.setName(name);
-        entity.addComponent(new Position());
+        entity.addComponent(new Position(new Matrix4()));
         entityManager.addEntity(entity);
         createWall(name + "-1", transform.cpy(), height).setParent(entity);
         createWall(name + "-2", transform.cpy().set(transform).translate(0, 0, 10).rotate(Vector3.Y, 90), height).setParent(entity);

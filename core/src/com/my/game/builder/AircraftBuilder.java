@@ -131,7 +131,7 @@ public class AircraftBuilder {
         // Aircraft Entity
         Entity entity = new Entity();
         entity.setName(name);
-        entity.addComponent(new Position());
+        entity.addComponent(new Position(new Matrix4()));
         entity.addComponent(new AircraftScript()).bombPrefab = assetsManager.getAsset("Bomb", Prefab.class);
         entityManager.addEntity(entity);
 
