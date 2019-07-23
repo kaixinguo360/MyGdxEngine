@@ -10,7 +10,6 @@ import com.badlogic.gdx.physics.bullet.dynamics.*;
 import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Disposable;
 import com.my.utils.world.BaseSystem;
 import com.my.utils.world.Entity;
 import com.my.utils.world.com.Position;
@@ -72,7 +71,7 @@ public class PhysicsSystem extends BaseSystem {
 
     protected final Array<Entity> activatedEntities = new Array<>();
     // Update dynamicsWorld
-    public void update() {
+    public void update(float deltaTime) {
         for (Entity entity : entities) {
             if (!activatedEntities.contains(entity, true)) {
                 addBody(entity);
@@ -84,7 +83,7 @@ public class PhysicsSystem extends BaseSystem {
                 removeBody(entity);
             }
         }
-        dynamicsWorld.stepSimulation(1f/60f);
+        dynamicsWorld.stepSimulation(deltaTime);
     }
     // Render DebugDrawer
     public void renderDebug(Camera cam) {
@@ -148,19 +147,5 @@ public class PhysicsSystem extends BaseSystem {
         public void setWorldTransform (Matrix4 worldTrans) {
             if (transform != null) transform.set(worldTrans);
         }
-    }
-
-    // ----- Dispose ----- //
-    @Override
-    public void dispose() {
-        for(int i = disposables.size - 1; i >= 0; i--) {
-            Disposable disposable = disposables.get(i);
-            if(disposable != null)
-                disposable.dispose();
-        }
-    }
-    private Array<Disposable> disposables = new Array<>();
-    protected void addDisposable(Disposable disposable) {
-        disposables.add(disposable);
     }
 }

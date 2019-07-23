@@ -30,6 +30,7 @@ import com.my.utils.world.World;
 import com.my.utils.world.com.Render;
 import com.my.utils.world.com.RigidBody;
 import com.my.utils.world.com.Serialization;
+import com.my.utils.world.sys.ConstraintSystem;
 import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.RenderSystem;
 import com.my.utils.world.sys.SerializationSystem;
@@ -44,10 +45,12 @@ public class MyGame extends Base3DGame {
     private RenderSystem renderSystem;
     private PhysicsSystem physicsSystem;
     private SerializationSystem serializationSystem;
+    private ConstraintSystem constraintSystem;
     private ArrayMap<String, Model> models = new ArrayMap<>();
     private Server server;
-    private String data = null;
-    private int delay;
+    private String receivedData = null;
+    private long receivedTime;
+    private int delay = 500;
     private float delayD;
     @Override
     public void create() {
@@ -56,9 +59,9 @@ public class MyGame extends Base3DGame {
             server = new Server("127.0.0.1", 1001, "127.0.0.1", 1002);
         } catch (SocketException | UnknownHostException e) {
             try {
-                Client client = new Client("127.0.0.1", 1002, (data) -> {
-                    System.out.println("Receive Data: " + data.hashCode());
-                    MyGame.this.data = data;
+                Client client = new Client("127.0.0.1", 1002, (data, time) -> {
+                    MyGame.this.receivedData = data;
+                    MyGame.this.receivedTime = time;
                 });
             } catch (SocketException e1) {
                 throw new RuntimeException(e1);
@@ -79,6 +82,9 @@ public class MyGame extends Base3DGame {
         // Create serializationSystem
         serializationSystem = world.addSystem(SerializationSystem.class, new SerializationSystem());
         addDisposable(serializationSystem);
+        // Create constraintSystem
+        constraintSystem = world.addSystem(ConstraintSystem.class, new ConstraintSystem());
+        addDisposable(constraintSystem);
 
         // ----- Create Environment ----- //
         environment = new Environment();
@@ -129,6 +135,7 @@ public class MyGame extends Base3DGame {
 
             // Add Slider
             Slider slider = new Slider(0, 1000, 10, false, ui.skin);
+            slider.setValue(delay);
             slider.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -179,11 +186,19 @@ public class MyGame extends Base3DGame {
         // ----- Init Objects ----- //
         world.addEntity("sky", new MyInstance("sky"));
         world.addEntity("ground", new MyInstance("ground"));
+        world.addEntity("test1", new MyInstance("box1", "box"));
+        world.addEntity("test2", new MyInstance("box1", "box"));
+
+        // ----- Init Constraint ----- //
+        constraintSystem.add("test1", "test2",
+                new ConstraintSystem.Point2PointConstraint(new Vector3(0, 0, 2), new Vector3(0, 0, -2)));
+        constraintSystem.init(world);
     }
 
     @Override
     protected void myRender() {
         // ----- Net----- //
+        float deltaTime = 1 / 60f;
         if (server != null) {
             delayD += Gdx.graphics.getDeltaTime();
             if (delayD >= delay*0.001) {
@@ -191,9 +206,12 @@ public class MyGame extends Base3DGame {
                 delayD = 0;
             }
         } else {
-            if (data != null) {
-                serializationSystem.deserialize(data);
-                data = null;
+            if (receivedData != null) {
+                serializationSystem.deserialize(receivedData);
+                deltaTime = (System.currentTimeMillis() - receivedTime) * 0.001f;
+                System.out.println("[" + deltaTime + "] Deserialize Received Data: " + receivedData.hashCode());
+                receivedData = null;
+                receivedTime = 0;
             }
         }
         // Update Camera
@@ -201,7 +219,7 @@ public class MyGame extends Base3DGame {
         // Update World
         world.update();
         // Render
-        physicsSystem.update();
+        physicsSystem.update(deltaTime);
         renderSystem.render(cam, environment);
         physicsSystem.renderDebug(cam);
     }

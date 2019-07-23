@@ -24,16 +24,12 @@ public class Serializer implements Serialization.Serializer {
         RigidBody rigidBody = entity.get(RigidBody.class);
         btRigidBody body = rigidBody.body;
 
-        if (body.isActive()) {
-            Status status = new Status();
-            status.transform = body.getWorldTransform();
-            status.activationState = body.getActivationState();
-            status.linearVelocity = body.getLinearVelocity();
-            status.angularVelocity = body.getLinearVelocity();
-            return JSON.toJson(status);
-        } else {
-            return null;
-        }
+        Status status = new Status();
+        status.transform = body.getWorldTransform();
+        status.activationState = body.getActivationState();
+        status.linearVelocity = body.getLinearVelocity();
+        status.angularVelocity = body.getLinearVelocity();
+        return JSON.toJson(status);
     }
 
     @Override
@@ -48,11 +44,6 @@ public class Serializer implements Serialization.Serializer {
         btRigidBody body = entity.get(RigidBody.class).body;
 
         Status status = JSON.fromJson(Status.class, data);
-
-        status.transform.avg(body.getWorldTransform(), 0.5f);
-        status.linearVelocity.add(body.getLinearVelocity()).scl(0.5f);
-        status.angularVelocity.add(body.getAngularVelocity()).scl(0.5f);
-
         body.activate();
         body.proceedToTransform(status.transform);
         body.forceActivationState(status.activationState);
