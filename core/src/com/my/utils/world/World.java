@@ -1,99 +1,70 @@
 package com.my.utils.world;
 
-import com.badlogic.gdx.utils.Pool;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Disposable;
+import com.my.utils.world.com.Id;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class World {
+public class World implements Disposable {
 
-    // ----- Modify Listener ----- //
-    private final Pool<ModifyListener> modifyListenerPool = new Pool<ModifyListener>() {
-        @Override
-        protected ModifyListener newObject() {
-            return new ModifyListener();
-        }
-    } ;
+    // ----- System ----- //
+    private final Map<Class, System> systems = new HashMap<>();
+    public <T extends System> T addSystem(Class<T> type, T system) {
+        if (systems.containsKey(type)) throw new RuntimeException("Duplicate System: " + type);
+        systems.put(type, system);
+        return system;
+    }
+    public <T extends System> T removeSystem(Class<T> type) {
+        if (!systems.containsKey(type)) throw new RuntimeException("No Such System: " + type);
+        return (T) systems.remove(type);
+    }
+    public <T extends System> T getSystem(Class<T> type) {
+        if (!systems.containsKey(type)) throw new RuntimeException("No Such System: " + type);
+        return (T) systems.get(type);
+    }
 
-    // ----- Instance ----- //
-    private final Map<String, Instance> instances = new HashMap<>();
-    public void addInstance(String name, Instance instance) {
-        if (instances.containsKey(name)) throw new RuntimeException("Duplicate instance name: " + name);
-        // Instances
-        instances.put(name, instance);
-        // Component
-        for (Component component : instance.getAllComponents()) {
-            getModule(component).add(component, name);
-        }
-        // ModifyListener
-        instance.setModifyListener(modifyListenerPool.obtain().set(name));
+    // ----- Entity ----- //
+    private final Map<String, Entity> entities = new HashMap<>();
+    public Entity addEntity(String id, Entity entity) {
+        if (entities.containsKey(id)) throw new RuntimeException("Duplicate Entity: " + id);
+        entity.add(Id.class, new Id(id));
+        entities.put(id, entity);
+        return entity;
     }
-    public Instance removeInstance(String name) {
-        if (!instances.containsKey(name)) throw new RuntimeException("No such instance name: " + name);
-        Instance instance = instances.get(name);
-        // ModifyListener
-        ModifyListener listener = (ModifyListener) instance.getModifyListener();
-        instance.setModifyListener(null);
-        modifyListenerPool.free(listener);
-        // Component
-        for (Component component : instance.getAllComponents()) {
-            getModule(component).remove(component);
-        }
-        instances.remove(name);
-        // Instances
-        return instance;
+    public Entity removeEntity(String id) {
+        if (!entities.containsKey(id)) throw new RuntimeException("No Such Entity: " + id);
+        Entity entity = entities.remove(id);
+        entity.remove(Id.class);
+        return entity;
     }
-    public Instance getInstance(String name) {
-        return instances.get(name);
+    public Entity getEntity(String id) {
+        if (!entities.containsKey(id)) throw new RuntimeException("No Such Entity: " + id);
+        return entities.get(id);
     }
-    public Instance getInstance(Component component) {
-        for (Module module : modules.values()) {
-            if (module.handle(component)) {
-                String instanceName = module.get(component);
-                return (instanceName == null) ? null : instances.get(instanceName);
+
+    // ----- Update ----- //
+    public void update() {
+        for (Map.Entry<Class, System> entry : systems.entrySet()) {
+            Class type = entry.getKey();
+            System system = entry.getValue();
+            Array<Entity> sortEntities = system.getEntities();
+            sortEntities.clear();
+            for (Entity entity : entities.values()) {
+                if (system.check(entity)) {
+                    sortEntities.add(entity);
+                }
             }
         }
-        return null;
     }
 
-    // ----- Module ----- //
-    private final Map<String, Module> modules = new HashMap<>();
-    public void addModule(String name, Module module) {
-        if (modules.containsKey(name)) throw new RuntimeException("Duplicate name: " + name);
-        modules.put(name, module);
-    }
-    public void removeModule(String name) {
-        if (!modules.containsKey(name)) throw new RuntimeException("No such name: " + name);
-        modules.remove(name);
-    }
-    public Module getModule(String name) {
-        return modules.get(name);
-    }
-    public Module getModule(Component component) {
-        for (Module module : modules.values()) {
-            if (module.handle(component)) return module;
+    @Override
+    public void dispose() {
+        for (System system : systems.values()) {
+            system.dispose();
         }
-        throw new RuntimeException("Can't Handle This Component: " + component.getClass().getName());
-    }
-
-
-    class ModifyListener implements Instance.ModifyListener, Pool.Poolable {
-        private String name;
-        private ModifyListener set(String name) {
-            this.name = name;
-            return this;
-        }
-        @Override
-        public void reset() {
-            name = null;
-        }
-        @Override
-        public void add(Component component) {
-            getModule(component).add(component, name);
-        }
-        @Override
-        public void remove(Component component) {
-            getModule(component).remove(component);
-        }
+        systems.clear();
+        entities.clear();
     }
 }

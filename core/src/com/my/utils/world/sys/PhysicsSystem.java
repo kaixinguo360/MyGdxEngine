@@ -1,21 +1,24 @@
-package com.my.utils.world.mod;
+package com.my.utils.world.sys;
 
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.physics.bullet.DebugDrawer;
 import com.badlogic.gdx.physics.bullet.collision.*;
-import com.badlogic.gdx.physics.bullet.dynamics.btConstraintSolver;
-import com.badlogic.gdx.physics.bullet.dynamics.btDiscreteDynamicsWorld;
-import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
-import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSolver;
+import com.badlogic.gdx.physics.bullet.dynamics.*;
 import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw;
-import com.my.utils.world.BaseModule;
-import com.my.utils.world.Component;
+import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Disposable;
+import com.my.utils.world.BaseSystem;
+import com.my.utils.world.Entity;
+import com.my.utils.world.com.Position;
+import com.my.utils.world.com.RigidBody;
 
-public class PhyModule extends BaseModule<PhyComponent> {
+public class PhysicsSystem extends BaseSystem {
 
-    // Tmp Vector
+    // ----- Tmp ----- //
     private static final Vector3 rayFrom = new Vector3();
     private static final Vector3 rayTo = new Vector3();
 
@@ -23,7 +26,7 @@ public class PhyModule extends BaseModule<PhyComponent> {
     protected btDynamicsWorld dynamicsWorld;
     protected DebugDrawer debugDrawer;
     protected ClosestRayResultCallback rayTestCB;
-    public PhyModule() {
+    public PhysicsSystem() {
 
         // ----- Create DynamicsWorld ----- //
 
@@ -49,10 +52,6 @@ public class PhyModule extends BaseModule<PhyComponent> {
         dynamicsWorld.setGravity(new Vector3(0, -10f, 0));
         addDisposable(dynamicsWorld);
 
-        // Create contactListener
-        MyContactListener contactListener = new MyContactListener();
-        addDisposable(contactListener);
-
         // Create debugDrawer
         debugDrawer = new DebugDrawer();
         debugDrawer.setDebugMode(btIDebugDraw.DebugDrawModes.DBG_MAX_DEBUG_DRAW_MODE);
@@ -64,28 +63,27 @@ public class PhyModule extends BaseModule<PhyComponent> {
         addDisposable(rayTestCB);
     }
 
-    // ----- TODO ----- //
-    protected class MyContactListener extends ContactListener {
-        public boolean onContactAdded(btCollisionObject colObj0, int partId0, int index0, btCollisionObject colObj1, int partId1, int index1) {
-            return true;
-        }
-    }
-
-    // ----- Component ----- //
-    public void addComponent(PhyComponent component) {
-        dynamicsWorld.addRigidBody(component.body, component.group, component.mask);
-    }
-    public void removeComponent(PhyComponent component) {
-        dynamicsWorld.removeRigidBody(component.body);
-    }
-    public boolean handle(Component component) {
-        return component instanceof PhyComponent;
+    // ----- Check ----- //
+    public boolean check(Entity entity) {
+        return entity.contain(Position.class, RigidBody.class);
     }
 
     // ----- Custom ----- //
 
+    protected final Array<Entity> activatedEntities = new Array<>();
     // Update dynamicsWorld
     public void update() {
+        for (Entity entity : entities) {
+            if (!activatedEntities.contains(entity, true)) {
+                addBody(entity);
+            }
+        }
+        for (int i = activatedEntities.size - 1; i >= 0; i--) {
+            Entity entity = activatedEntities.get(i);
+            if (!entities.contains(entity, true)) {
+                removeBody(entity);
+            }
+        }
         dynamicsWorld.stepSimulation(1f/60f);
     }
     // Render DebugDrawer
@@ -95,7 +93,7 @@ public class PhyModule extends BaseModule<PhyComponent> {
         debugDrawer.end();
     }
     // Get Instance Name From PickRay
-    public String pick(Camera cam, int X, int Y) {
+    public Entity pick(Camera cam, int X, int Y) {
         Ray ray = cam.getPickRay(X, Y);
 
         rayFrom.set(ray.origin);
@@ -111,13 +109,58 @@ public class PhyModule extends BaseModule<PhyComponent> {
 
         if (rayTestCB.hasHit()) {
             final btCollisionObject obj = rayTestCB.getCollisionObject();
-            if(obj.userData instanceof PhyComponent) {
-                return get((PhyComponent) obj.userData);
-            } else {
-                return null;
-            }
+            assert obj.userData instanceof Entity;
+            return (Entity) obj.userData;
         } else {
             return null;
         }
+    }
+
+    // ----- Private ----- //
+    private void addBody(Entity entity) {
+        Position position = entity.get(Position.class);
+        RigidBody rigidBody = entity.get(RigidBody.class);
+
+        btRigidBody body = rigidBody.body;
+        body.proceedToTransform(position.transform);
+        body.setMotionState(new MotionState(position.transform));
+        body.userData = entity;
+
+        dynamicsWorld.addRigidBody(body, rigidBody.group, rigidBody.mask);
+        activatedEntities.add(entity);
+    }
+    private void removeBody(Entity entity) {
+        btRigidBody body = entity.get(RigidBody.class).body;
+        body.setMotionState(null);
+        dynamicsWorld.removeRigidBody(body);
+        activatedEntities.removeValue(entity, true);
+    }
+    class MotionState extends btMotionState {
+        Matrix4 transform;
+        MotionState(Matrix4 transform) {
+            this.transform = transform;
+        }
+        @Override
+        public void getWorldTransform (Matrix4 worldTrans) {
+            if (transform != null) worldTrans.set(transform);
+        }
+        @Override
+        public void setWorldTransform (Matrix4 worldTrans) {
+            if (transform != null) transform.set(worldTrans);
+        }
+    }
+
+    // ----- Dispose ----- //
+    @Override
+    public void dispose() {
+        for(int i = disposables.size - 1; i >= 0; i--) {
+            Disposable disposable = disposables.get(i);
+            if(disposable != null)
+                disposable.dispose();
+        }
+    }
+    private Array<Disposable> disposables = new Array<>();
+    protected void addDisposable(Disposable disposable) {
+        disposables.add(disposable);
     }
 }

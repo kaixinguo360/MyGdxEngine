@@ -1,5 +1,6 @@
 package com.my.game;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Color;
@@ -13,18 +14,25 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.my.utils.base.Base3DGame;
 import com.my.utils.net.Client;
 import com.my.utils.net.Server;
 import com.my.utils.world.World;
-import com.my.utils.world.mod.*;
+import com.my.utils.world.com.Render;
+import com.my.utils.world.com.RigidBody;
+import com.my.utils.world.com.Serialization;
+import com.my.utils.world.sys.PhysicsSystem;
+import com.my.utils.world.sys.RenderSystem;
+import com.my.utils.world.sys.SerializationSystem;
 
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -33,31 +41,44 @@ public class MyGame extends Base3DGame {
 
     private Environment environment;
     private World world;
-    private ModelModule modelHandler;
-    private PhyModule phyHandler;
-    private SerializeModule serializeModule;
+    private RenderSystem renderSystem;
+    private PhysicsSystem physicsSystem;
+    private SerializationSystem serializationSystem;
     private ArrayMap<String, Model> models = new ArrayMap<>();
-    private Client client;
     private Server server;
+    private String data = null;
+    private int delay;
+    private float delayD;
     @Override
     public void create() {
+        // ----- Net ----- //
+        try {
+            server = new Server("127.0.0.1", 1001, "127.0.0.1", 1002);
+        } catch (SocketException | UnknownHostException e) {
+            try {
+                Client client = new Client("127.0.0.1", 1002, (data) -> {
+                    System.out.println("Receive Data: " + data.hashCode());
+                    MyGame.this.data = data;
+                });
+            } catch (SocketException e1) {
+                throw new RuntimeException(e1);
+            }
+        }
+
         super.create();
 
         // ----- Init World ----- //
         Bullet.init();
         world = new World();
-        // Create modelHandler
-        modelHandler = new ModelModule();
-        world.addModule("model", modelHandler);
-        addDisposable(modelHandler);
-        // Create phyHandler
-        phyHandler = new PhyModule();
-        world.addModule("phy", phyHandler);
-        addDisposable(phyHandler);
-        // Create phyHandler
-        serializeModule = new SerializeModule();
-        world.addModule("serialize", serializeModule);
-        addDisposable(serializeModule);
+        // Create renderSystem
+        renderSystem = world.addSystem(RenderSystem.class, new RenderSystem());
+        addDisposable(renderSystem);
+        // Create physicsSystem
+        physicsSystem = world.addSystem(PhysicsSystem.class, new PhysicsSystem());
+        addDisposable(physicsSystem);
+        // Create serializationSystem
+        serializationSystem = world.addSystem(SerializationSystem.class, new SerializationSystem());
+        addDisposable(serializationSystem);
 
         // ----- Create Environment ----- //
         environment = new Environment();
@@ -68,62 +89,10 @@ public class MyGame extends Base3DGame {
         // ----- Loading Assets ----- //
         assetManager.load("obj/sky.g3db", Model.class);
         waitLoad(true);
-
-        // ----- Loading Assets ----- //
-        try {
-            client = new Client("127.0.0.1", 1002, this::receive);
-        } catch (SocketException e) {
-            try {
-                server = new Server("127.0.0.1", 1002);
-                new Thread(() -> {
-                    while (true) {
-                        int delay = (int) ui.getWidget("slider", Slider.class).getValue();
-                        try { Thread.sleep(delay); } catch (InterruptedException ignored) {}
-                        send();
-                    }
-                }).start();
-            } catch (SocketException | UnknownHostException e1) {
-                throw new RuntimeException(e1);
-            }
-        }
     }
 
     @Override
     protected void initUI() {
-        // Add List
-        List<String> list = new List<>(ui.skin);
-        list.setItems("box1", "box2", "box3");
-        ui.addWidget("list", list);
-
-        // Add btnAddBox
-        TextButton btnAddBox = new TextButton("Add Box!", ui.skin);
-        btnAddBox.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                addBox();
-            }
-        });
-        ui.addWidget("btnAddBox", btnAddBox);
-
-        // Add btnSend
-        TextButton btnSend = new TextButton("Send!", ui.skin);
-        btnSend.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                send();
-            }
-        });
-        ui.addWidget("btnSend", btnSend);
-
-        // Add Slider
-        Slider slider = new Slider(0, 1000, 10, false, ui.skin);
-        ui.addWidget("slider", slider);
-
-        // Add Label
-        Label label = new Label("", ui.skin);
-        label.setWrap(true);
-//        label.getStyle().fontColor.set(1, 1, 1, 1);
-        ui.addWidget("label", label);
 
         inputMultiplexer.addProcessor(new InputAdapter(){
             @Override
@@ -132,6 +101,49 @@ public class MyGame extends Base3DGame {
                 return false;
             }
         });
+
+        // Add Title Label
+        Label title = new Label("", ui.skin);
+        ui.addWidget("title", title);
+
+        // ----- Net----- //
+        if (server == null) {
+            title.setText("Client");
+        } else {
+            title.setText("Server");
+
+            // Add List
+            List<String> list = new List<>(ui.skin);
+            list.setItems("box1", "box2", "box3");
+            ui.addWidget("list", list);
+
+            // Add btnAddBox
+            TextButton btnAddBox = new TextButton("Add Box!", ui.skin);
+            btnAddBox.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    addBox();
+                }
+            });
+            ui.addWidget("btnAddBox", btnAddBox);
+
+            // Add Slider
+            Slider slider = new Slider(0, 1000, 10, false, ui.skin);
+            slider.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    delay = (int) slider.getValue();
+                    ui.getWidget("label", Label.class).setText("Delay: " + delay);
+                }
+            });
+            ui.addWidget("slider", slider);
+
+            // Add Label
+            Label label = new Label("", ui.skin);
+            label.setWrap(true);
+//        label.getStyle().fontColor.set(1, 1, 1, 1);
+            ui.addWidget("label", label);
+        }
     }
 
     @Override
@@ -148,32 +160,50 @@ public class MyGame extends Base3DGame {
         models.put("box3", mdBuilder.createBox(2, 1, 1, new Material(ColorAttribute.createDiffuse(Color.BLUE)), attributes));
 
         // ----- Init Configs ----- //
-        ModelComponent.addConfig("sky", new ModelComponent.Config(models.get("sky"), false));
-        ModelComponent.addConfig("ground", new ModelComponent.Config(models.get("ground")));
-        ModelComponent.addConfig("box1", new ModelComponent.Config(models.get("box1")));
-        ModelComponent.addConfig("box2", new ModelComponent.Config(models.get("box2")));
-        ModelComponent.addConfig("box3", new ModelComponent.Config(models.get("box3")));
+        Render.addConfig("sky", new Render.Config(models.get("sky"), false));
+        Render.addConfig("ground", new Render.Config(models.get("ground")));
+        Render.addConfig("box1", new Render.Config(models.get("box1")));
+        Render.addConfig("box2", new Render.Config(models.get("box2")));
+        Render.addConfig("box3", new Render.Config(models.get("box3")));
 
-        PhyComponent.addConfig("ground", new PhyComponent.Config(new btBoxShape(new Vector3(100,0.005f,100)), 0f));
-        PhyComponent.addConfig("box1", new PhyComponent.Config(new btBoxShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
-        PhyComponent.addConfig("box2", new PhyComponent.Config(new btBoxShape(new Vector3(0.5f,1f,0.5f)), 50f));
-        PhyComponent.addConfig("box3", new PhyComponent.Config(new btBoxShape(new Vector3(1f,0.5f,0.5f)), 50f));
+        RigidBody.addConfig("ground", new RigidBody.Config(new btBoxShape(new Vector3(100,0.005f,100)), 0f));
+        RigidBody.addConfig("box1", new RigidBody.Config(new btBoxShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
+        RigidBody.addConfig("box2", new RigidBody.Config(new btBoxShape(new Vector3(0.5f,1f,0.5f)), 50f));
+        RigidBody.addConfig("box3", new RigidBody.Config(new btBoxShape(new Vector3(1f,0.5f,0.5f)), 50f));
+
+        Serialization.Serializer serializer = new Serializer(world);
+        Serialization.addSerializer("box1", serializer);
+        Serialization.addSerializer("box2", serializer);
+        Serialization.addSerializer("box3", serializer);
 
         // ----- Init Objects ----- //
-        world.addInstance("sky", new MyInstance("sky"));
-        world.addInstance("ground", new MyInstance("ground"));
+        world.addEntity("sky", new MyInstance("sky"));
+        world.addEntity("ground", new MyInstance("ground"));
     }
 
     @Override
     protected void myRender() {
+        // ----- Net----- //
+        if (server != null) {
+            delayD += Gdx.graphics.getDeltaTime();
+            if (delayD >= delay*0.001) {
+                server.send(serializationSystem.serialize("box"));
+                delayD = 0;
+            }
+        } else {
+            if (data != null) {
+                serializationSystem.deserialize(data);
+                data = null;
+            }
+        }
         // Update Camera
         cameraControllerMultiplexer.update();
-        ui.getWidget("label", Label.class).setText("Delay: " + (int) ui.getWidget("slider", Slider.class).getValue());
-        // Update Handlers
-        phyHandler.update();
+        // Update World
+        world.update();
         // Render
-        modelHandler.render(cam, environment);
-        phyHandler.renderDebug(cam);
+        physicsSystem.update();
+        renderSystem.render(cam, environment);
+        physicsSystem.renderDebug(cam);
     }
 
     // ----- Custom----- //
@@ -182,21 +212,6 @@ public class MyGame extends Base3DGame {
         String type = (String) ui.getWidget("list", List.class).getSelected();
         String name = type + "-" + num++;
         System.out.println("Add: " + name);
-        world.addInstance(name, new SerializeInstance(type, name));
-    }
-
-    // ----- Net----- //
-    private void send() {
-        if (server != null) {
-            String data = serializeModule.serialize();
-            System.out.println("Send Data: " + data.hashCode());
-            server.send(data);
-        }
-    }
-    private void receive(String data) {
-        if (data != null) {
-            System.out.println("Receive Data: " + data.hashCode());
-            serializeModule.deserialize(data);
-        }
+        world.addEntity(name, new MyInstance(type, "box"));
     }
 }

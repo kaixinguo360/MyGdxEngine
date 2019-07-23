@@ -1,42 +1,42 @@
 package com.my.game;
 
 import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.utils.Disposable;
-import com.my.utils.world.BaseInstance;
-import com.my.utils.world.mod.ModelComponent;
-import com.my.utils.world.mod.PhyComponent;
+import com.my.utils.world.Entity;
+import com.my.utils.world.com.Position;
+import com.my.utils.world.com.Render;
+import com.my.utils.world.com.RigidBody;
+import com.my.utils.world.com.Serialization;
 
-public class MyInstance extends BaseInstance implements Disposable {
+public class MyInstance extends Entity {
 
-    protected ModelComponent modelComponent;
-    protected PhyComponent phyComponent;
+    protected Position position;
+    protected Render render;
+    protected RigidBody rigidBody;
+    protected Serialization serialization;
 
     public MyInstance() {}
 
     public MyInstance(String name) {
-        modelComponent = ModelComponent.obtainComponent(name);
-        if (modelComponent != null) {
-            addComponent("model", modelComponent);
-        }
-        phyComponent = PhyComponent.obtainComponent(name);
-        if (phyComponent != null) {
-            addComponent("phy", phyComponent);
-            phyComponent.setMotionState(modelComponent.getTransform());
-        }
+        position = add(Position.class, new Position());
+        render = add(Render.class, Render.get(name, position));
+        rigidBody = add(RigidBody.class, RigidBody.get(name));
+    }
+
+    public MyInstance(String name, String group) {
+        this(name);
+        serialization = new Serialization();
+        serialization.group = group;
+        serialization.serializerId = name;
+        add(Serialization.class, serialization);
     }
 
     public void setTransform(Matrix4 transform) {
-        if (modelComponent != null) {
-            modelComponent.getTransform().set(transform);
-        }
-        if (phyComponent != null) {
-            phyComponent.proceedToTransform(transform);
-        }
+        get(Position.class).transform.set(transform);
+        if (contain(RigidBody.class)) get(RigidBody.class).body.proceedToTransform(transform);
     }
 
     @Override
     public void dispose() {
-        if (modelComponent != null) ModelComponent.pool.free(modelComponent);
-        if (phyComponent != null) PhyComponent.pool.free(phyComponent);
+        if (contain(RigidBody.class)) get(RigidBody.class).body.dispose();
     }
 }

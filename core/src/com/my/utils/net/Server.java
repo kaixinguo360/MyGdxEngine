@@ -9,10 +9,11 @@ public class Server {
     private int clientPort;
     private DatagramSocket socket = null;
     private DatagramPacket packet = null;
-    public Server(String ip, int port) throws SocketException, UnknownHostException {
-        clientAddress = Inet4Address.getByName(ip);
-        clientPort = port;
-        socket = new DatagramSocket();
+    public Server(String ip, int port, String clientIp, int clientPort) throws SocketException, UnknownHostException {
+        this.clientAddress = Inet4Address.getByName(clientIp);
+        this.clientPort = clientPort;
+        InetSocketAddress socketAddress = new InetSocketAddress(ip, port);
+        socket = new DatagramSocket(socketAddress);
         packet = new DatagramPacket(buffer, buffer.length);
     }
     public void send(String data) {
