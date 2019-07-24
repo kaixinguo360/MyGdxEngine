@@ -75,6 +75,19 @@ public class ConstraintSystem extends BaseSystem {
             return constraint;
         }
     }
+    public static class ConnectConstraint implements Config {
+        private static final Matrix4 tmp1 = new Matrix4();
+        private static final Matrix4 tmp2 = new Matrix4();
+        @Override
+        public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB) {
+            tmp1.set(bodyA.getWorldTransform());
+            tmp2.set(bodyB.getWorldTransform());
+            tmp1.inv().mul(tmp2);
+            tmp2.idt();
+            btFixedConstraint constraint = new btFixedConstraint(bodyA, bodyB, tmp1, tmp2);
+            return constraint;
+        }
+    }
     public static class SliderConstraint implements Config {
         private final Matrix4 frameInA;
         private final Matrix4 frameInB;

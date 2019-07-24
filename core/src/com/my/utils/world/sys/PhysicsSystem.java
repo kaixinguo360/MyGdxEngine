@@ -91,6 +91,10 @@ public class PhysicsSystem extends BaseSystem {
         dynamicsWorld.debugDrawWorld();
         debugDrawer.end();
     }
+    // Set DebugMode
+    public void setDebugMode(int debugMode) {
+        debugDrawer.setDebugMode(debugMode);
+    }
     // Get Instance Name From PickRay
     public Entity pick(Camera cam, int X, int Y) {
         Ray ray = cam.getPickRay(X, Y);

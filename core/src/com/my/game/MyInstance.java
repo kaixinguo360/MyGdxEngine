@@ -2,10 +2,7 @@ package com.my.game;
 
 import com.badlogic.gdx.math.Matrix4;
 import com.my.utils.world.Entity;
-import com.my.utils.world.com.Position;
-import com.my.utils.world.com.Render;
-import com.my.utils.world.com.RigidBody;
-import com.my.utils.world.com.Serialization;
+import com.my.utils.world.com.*;
 
 public class MyInstance extends Entity {
 
@@ -28,6 +25,11 @@ public class MyInstance extends Entity {
         serialization.group = group;
         serialization.serializerId = name;
         add(Serialization.class, serialization);
+    }
+
+    public MyInstance(String name, String group, Motion motion) {
+        this(name, group);
+        add(Motion.class, motion);
     }
 
     public void setTransform(Matrix4 transform) {

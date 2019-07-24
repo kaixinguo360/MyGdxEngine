@@ -9,12 +9,18 @@ import com.badlogic.gdx.utils.Array;
 /** An {@link InputProcessor} that delegates to an ordered list of CameraControllers. */
 public class CameraControllerMultiplexer extends InputMultiplexer {
 
-	// -------------------- Add Controller -------------------- //
+	// -------------------- Add & Get Controller -------------------- //
 
 	private Array<Camera> processors = new Array<>(4);
 	public void addProcessor (String name, CameraController processor, boolean cursorCatch) {
 		processors.add(new Camera(name, processor, cursorCatch));
 		change();
+	}
+	public CameraController getProcessor (String name) {
+		for (Camera camera : processors) {
+			if (camera.name.equals(name)) return camera.controller;
+		}
+		return null;
 	}
 
 	// -------------------- Change Controller -------------------- //
