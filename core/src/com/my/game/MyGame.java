@@ -1,6 +1,7 @@
 package com.my.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
@@ -16,10 +17,16 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.collision.btConeShape;
+import com.badlogic.gdx.physics.bullet.dynamics.btHingeConstraint;
+import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.my.utils.base.Base3DGame;
 import com.my.utils.net.Client;
@@ -34,6 +41,8 @@ import java.net.UnknownHostException;
 
 public class MyGame extends Base3DGame {
 
+    private static final Vector3 tmpV = new Vector3();
+    private static final Matrix4 tmpM = new Matrix4();
     private Environment environment;
     private World world;
     private RenderSystem renderSystem;
@@ -109,6 +118,9 @@ public class MyGame extends Base3DGame {
         inputMultiplexer.addProcessor(new InputAdapter(){
             @Override
             public boolean keyDown(int keycode) {
+                if (keycode == Input.Keys.ESCAPE) Gdx.app.exit();
+                if (keycode == Input.Keys.V) addBomb();
+                if (keycode == Input.Keys.SPACE) explode();
                 return false;
             }
         });
@@ -135,6 +147,15 @@ public class MyGame extends Base3DGame {
             });
             ui.addWidget("slider", slider);
 
+            // Add Button
+            ui.addWidget("btn", new TextButton("Explosion!", ui.skin));
+            ui.getWidget("btn", Button.class).addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    explode();
+                }
+            });
+
             // Add Label
             Label label = new Label("", ui.skin);
             label.setWrap(true);
@@ -151,7 +172,7 @@ public class MyGame extends Base3DGame {
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
         ModelBuilder mdBuilder = new ModelBuilder();
         models.put("sky", assetManager.get("obj/sky.g3db", Model.class));
-        models.put("ground", mdBuilder.createBox(200f, 0.01f, 200f, new Material(ColorAttribute.createDiffuse(Color.WHITE)), attributes));
+        models.put("ground", mdBuilder.createBox(100f, 0.01f, 2000f, new Material(ColorAttribute.createDiffuse(Color.WHITE)), attributes));
         models.put("box", mdBuilder.createBox(1, 1, 1, new Material(ColorAttribute.createDiffuse(Color.RED)), attributes));
         models.put("body", mdBuilder.createBox(1, 1, 5, new Material(ColorAttribute.createDiffuse(Color.GREEN)), attributes));
         models.put("wing", mdBuilder.createBox(2, 0.2f, 1, new Material(ColorAttribute.createDiffuse(Color.BLUE)), attributes));
@@ -165,7 +186,7 @@ public class MyGame extends Base3DGame {
         Render.addConfig("wing", new Render.Config(models.get("wing")));
         Render.addConfig("engine", new Render.Config(models.get("engine")));
 
-        RigidBody.addConfig("ground", new RigidBody.Config(new btBoxShape(new Vector3(100,0.005f,100)), 0f));
+        RigidBody.addConfig("ground", new RigidBody.Config(new btBoxShape(new Vector3(50,0.005f,1000)), 0f));
         RigidBody.addConfig("box", new RigidBody.Config(new btBoxShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
         RigidBody.addConfig("body", new RigidBody.Config(new btBoxShape(new Vector3(0.5f,0.5f,2.5f)), 250f));
         RigidBody.addConfig("wing", new RigidBody.Config(new btBoxShape(new Vector3(1f,0.1f,0.5f)), 20f));
@@ -173,32 +194,44 @@ public class MyGame extends Base3DGame {
 
         Serialization.Serializer serializer = new Serializer(world);
         Serialization.addSerializer("box", serializer);
-        Serialization.addSerializer("body", serializer);
-        Serialization.addSerializer("wing", serializer);
-        Serialization.addSerializer("engine", serializer);
 
-        // ----- Init Objects ----- //
+        // ----- Init Static Objects ----- //
         world.addEntity("sky", new MyInstance("sky"));
         world.addEntity("ground", new MyInstance("ground"));
-
-        world.addEntity("base", new MyInstance("body", group))
-                .get(Position.class).transform.translate(0, 0.5f, -3);
-        addWing(new Matrix4().translate(0, 0.5f, 0).rotate(Vector3.X, 15f), false);
-        addWing(new Matrix4().translate(1.5f, 0.5f, -5).rotate(Vector3.X, 15), false);
-        addWing(new Matrix4().translate(-1.5f, 0.5f, -5).rotate(Vector3.X, 15), false);
-        addWing(new Matrix4().translate(0.6f, 1.1f, -1).rotate(Vector3.Z, 90), false);
-        addWing(new Matrix4().translate(-0.6f, 1.1f, -1).rotate(Vector3.Z, 90), false);
-        addEngine(new Matrix4().translate(0, 0.6f, -6).rotate(Vector3.X, -90), false);
-        for (int i = 0; i < 10; i++) {
-            addBox(new Matrix4().translate(5, 0.5f, -10 * i));
-            addBox(new Matrix4().translate(-5, 0.5f, -10 * i));
+        for (int i = 0; i < 100; i++) {
+            addBox(new Matrix4().translate(10, 0.5f, -10 * i), null);
+            addBox(new Matrix4().translate(-10, 0.5f, -10 * i), null);
         }
 
-        // ----- Init World ----- //
+        // ----- Init Aircraft ----- //
+        world.addEntity("base", new MyInstance("body", group))
+                .get(Position.class).transform.translate(0, 0.5f, -3);
+        // Tail
+        addRotateWing(new Matrix4().translate(1, 0.5f, 0.1f).rotate(Vector3.X, 15.3f),
+                new Controller(-0.15f, 0.15f, 1f, Input.Keys.DOWN, Input.Keys.UP), "base");
+        addRotateWing(new Matrix4().translate(-1, 0.5f, 0.1f).rotate(Vector3.X, 15.3f),
+                new Controller(-0.15f, 0.15f, 1f, Input.Keys.DOWN, Input.Keys.UP), "base");
+
+        // Left
+        addRotateWing(new Matrix4().translate(-1.5f, 0.5f, -5).rotate(Vector3.X, 15),
+                new Controller(-0.1f, 0.1f, 0.005f, Input.Keys.RIGHT, Input.Keys.LEFT), "base");
+        addRotateWing(new Matrix4().translate(-3.5f, 0.5f, -5).rotate(Vector3.X, 15),
+                new Controller(-0.1f, 0.1f, 0.005f, Input.Keys.RIGHT, Input.Keys.LEFT), "base");
+
+        // Right
+        addRotateWing(new Matrix4().translate(1.5f, 0.5f, -5).rotate(Vector3.X, 15),
+                new Controller(-0.1f, 0.1f, 0.005f, Input.Keys.LEFT, Input.Keys.RIGHT), "base");
+        addRotateWing(new Matrix4().translate(3.5f, 0.5f, -5).rotate(Vector3.X, 15),
+                new Controller(-0.1f, 0.1f, 0.005f, Input.Keys.LEFT, Input.Keys.RIGHT), "base");
+
+        // Vertical
+        addWing(new Matrix4().translate(0.6f, 1f, -1).rotate(Vector3.Z, 90), "base");
+        addWing(new Matrix4().translate(-0.6f, 1f, -1).rotate(Vector3.Z, 90), "base");
+        addEngine(new Matrix4().translate(0, 0.6f, -6).rotate(Vector3.X, -90), "base");
+
+        // ----- Init World & Constraint ----- //
         world.update();
         physicsSystem.update(0);
-
-        // ----- Init Constraint ----- //
         constraintSystem.init(world);
     }
 
@@ -209,7 +242,7 @@ public class MyGame extends Base3DGame {
         if (server != null) {
             delayD += Gdx.graphics.getDeltaTime();
             if (delayD >= delay*0.001) {
-                server.send(serializationSystem.serialize("box"));
+                server.send(serializationSystem.serialize("serializable"));
                 delayD = 0;
             }
         } else {
@@ -229,54 +262,128 @@ public class MyGame extends Base3DGame {
         camera.direction.set(cam.direction);
         camera.update();
         world.getEntity("sky").get(Position.class).transform.setToTranslation(camera.position);
+        // Update Info
+        double velocity = world.getEntity("base").get(RigidBody.class).body.getLinearVelocity().len();
+        double height = world.getEntity("base").get(Position.class).transform.getTranslation(tmpV).y;
+        velocity = Math.floor(velocity);
+        height = Math.floor(height);
+        ui.getWidget("label", Label.class).setText(
+                "Velocity: " + velocity +
+                "\nHeight: " + height);
         // Update World
         world.update();
+        constraintSystem.update();
         motionSystem.update();
         physicsSystem.update(deltaTime);
         // Render
         renderSystem.render(camera, environment);
-        physicsSystem.renderDebug(camera);
+//        physicsSystem.renderDebug(camera);
     }
 
-    // ----- Add Object ----- //
+    // ----- Custom ----- //
     private String group = "group";
-    private String last = "base";
     private int box = 0;
-    private void addBox(Matrix4 transform) {
-        world.addEntity("Box-" + box++, new MyInstance("box", "box"))
-                .get(Position.class).transform.set(transform);
+    private Entity addBox(Matrix4 transform, String base) {
+        Entity entity = new MyInstance("box", "box");
+        addObject(
+                "Box-" + box++,
+                transform,
+                entity,
+                base,
+                base == null ? null : new ConstraintSystem.ConnectConstraint()
+        );
+        return entity;
     }
     private int body = 0;
-    private void addBody(Matrix4 transform, boolean updateLast) {
-        addObject(
+    private String addBody(Matrix4 transform, String base) {
+        return addObject(
                 "Body-" + body++,
                 transform,
                 new MyInstance("body", group),
-                updateLast
+                base,
+                base == null ? null : new ConstraintSystem.ConnectConstraint()
         );
     }
     private int wing = 0;
-    private void addWing(Matrix4 transform, boolean updateLast) {
-        addObject(
+    private String addWing(Matrix4 transform, String base) {
+        return addObject(
                 "Wing-" + wing++,
                 transform,
-                new MyInstance("wing", group, new Motion.Lift(new Vector3(0, 500, 0))),
-                updateLast
+                new MyInstance("wing", group, new Motion.Lift(new Vector3(0, 120, 0))),
+                base,
+                base == null ? null : new ConstraintSystem.ConnectConstraint()
         );
+    }
+    private int rotate = 0;
+    private String addRotateWing(Matrix4 transform, ConstraintSystem.Controller controller, String base) {
+        Matrix4 relTransform = new Matrix4(world.getEntity(base).get(Position.class).transform).inv().mul(transform);
+        String id = addObject(
+                "Rotate-" + rotate++,
+                transform,
+                new MyInstance("wing", group, new Motion.Lift(new Vector3(0, 120, 0))),
+                base,
+                base == null ? null : new ConstraintSystem.HingeConstraint(
+                        relTransform.rotate(Vector3.Y, 90),
+                        new Matrix4().rotate(Vector3.Y, 90),
+                        false)
+        );
+        constraintSystem.addController(id, base, controller);
+        return id;
     }
     private int engine = 0;
-    private void addEngine(Matrix4 transform, boolean updateLast) {
-        addObject(
+    private String addEngine(Matrix4 transform, String base) {
+        return addObject(
                 "Engine-" + engine++,
                 transform,
-                new MyInstance("engine", group, new Motion.Force(new Vector3(0, 2000, 0))),
-                updateLast
+                new MyInstance("engine", group, new Motion.LimitedForce(40, new Vector3(0, 3000, 0))),
+                base,
+                base == null ? null : new ConstraintSystem.ConnectConstraint()
         );
     }
-    private void addObject(String id, Matrix4 transform, Entity entity, boolean updateLast) {
+
+    private class Controller implements ConstraintSystem.Controller {
+        private float low;
+        private float high;
+        private float delta;
+        private int down;
+        private int up;
+        private float target = 0;
+        private Controller(float low, float high, float delta, int down, int up) {
+            this.low = low;
+            this.high = high;
+            this.delta = delta;
+            this.down = down;
+            this.up = up;
+        }
+        @Override
+        public void update(btTypedConstraint constraint) {
+            if (Gdx.input.isKeyPressed(up)) {
+                target += delta;
+            } else if (Gdx.input.isKeyPressed(down)) {
+                target -= delta;
+            } else {
+                target += target > 0 ? -delta : (target < 0 ? delta : 0);
+            }
+            target = target > high ? high : (target < low ? low : target);
+            btHingeConstraint hingeConstraint = (btHingeConstraint) constraint;
+            hingeConstraint.setLimit(target, target, 0, 0.5f);
+        }
+    }
+    private String addObject(String id, Matrix4 transform, Entity entity, String base, ConstraintSystem.Config constraint) {
         world.addEntity(id, entity)
-                .get(Position.class).transform.set(transform);;
-        constraintSystem.add(last, id, new ConstraintSystem.ConnectConstraint());
-        if (updateLast) last = id;
+                .get(Position.class).transform.set(transform);
+        if (base != null) constraintSystem.addConstraint(base, id, constraint);
+        return id;
+    }
+
+    private void addBomb() {
+        System.out.println("Bomb!");
+        tmpM.set(world.getEntity("base").get(Position.class).transform).translate(0, -1, 0);
+        addBox(tmpM, null).get(RigidBody.class).body.setLinearVelocity(
+                world.getEntity("base").get(RigidBody.class).body.getLinearVelocity());
+    }
+    private void explode() {
+        System.out.println("Explosion!");
+        constraintSystem.clear(world);
     }
 }

@@ -38,6 +38,27 @@ public abstract class Motion implements Component {
             body.applyForce(force, rel_pos);
         }
     }
+    public static class LimitedForce extends Motion {
+        private static final Vector3 tmp = new Vector3();
+        private final float maxVelocity;
+        private final Vector3 force;
+        private final Vector3 rel_pos;
+        public LimitedForce(float maxVelocity, Vector3 force) {
+            this(maxVelocity, force, new Vector3());
+        }
+        public LimitedForce(float maxVelocity, Vector3 force, Vector3 rel_pos) {
+            this.maxVelocity = maxVelocity;
+            this.force = force;
+            this.rel_pos = rel_pos;
+        }
+        @Override
+        public void update(btRigidBody body, Position position) {
+            tmp.set(force).rot(position.transform).nor();
+            if (Math.abs(body.getLinearVelocity().dot(tmp)) <= maxVelocity) {
+                body.applyForce(tmp.set(force).rot(position.transform), rel_pos);
+            }
+        }
+    }
     public static class Lift extends Motion {
         private static final Vector3 tmp1 = new Vector3();
         private static final Vector3 tmp2 = new Vector3();

@@ -23,20 +23,53 @@ public class ConstraintSystem extends BaseSystem {
     // ----- Custom ----- //
 
     private Array<Constraint> constraints = new Array<>();
-    public void add(String bodyA, String bodyB, Config config) {
+    public void addConstraint(String bodyA, String bodyB, Config config) {
         Constraint constraint = new Constraint();
         constraint.bodyA = bodyA;
         constraint.bodyB = bodyB;
         constraint.config = config;
         constraints.add(constraint);
     }
+    public void addController(String bodyA, String bodyB, Controller controller) {
+        Constraint constraint = get(bodyA, bodyB);
+        if (constraint == null) throw new RuntimeException("No Such Constraint: [" + bodyA + "]-[" + bodyB + "]");
+        constraint.controller = controller;
+    }
+    private Constraint get(String bodyA, String bodyB) {
+        for (Constraint constraint : constraints) {
+            if ((constraint.bodyA.equals(bodyA) && constraint.bodyB.equals(bodyB))
+                    || (constraint.bodyA.equals(bodyB) && constraint.bodyB.equals(bodyA))) {
+                return constraint;
+            }
+        }
+        return null;
+    }
     public void init(World world) {
         btDynamicsWorld dynamicsWorld = world.getSystem(PhysicsSystem.class).dynamicsWorld;
         for (Constraint constraint : constraints) {
-            btRigidBody bodyA = world.getEntity(constraint.bodyA).get(RigidBody.class).body;
-            btRigidBody bodyB = world.getEntity(constraint.bodyB).get(RigidBody.class).body;
-            constraint.btConstraint = constraint.config.get(bodyA, bodyB);
-            dynamicsWorld.addConstraint(constraint.btConstraint);
+            if (constraint.btConstraint == null) {
+                btRigidBody bodyA = world.getEntity(constraint.bodyA).get(RigidBody.class).body;
+                btRigidBody bodyB = world.getEntity(constraint.bodyB).get(RigidBody.class).body;
+                constraint.btConstraint = constraint.config.get(bodyA, bodyB);
+                dynamicsWorld.addConstraint(constraint.btConstraint);
+            }
+        }
+    }
+    public void update() {
+        for (Constraint constraint : constraints) {
+            if (constraint.btConstraint != null && constraint.controller != null) {
+                constraint.controller.update(constraint.btConstraint);
+            }
+        }
+    }
+    public void clear(World world) {
+        btDynamicsWorld dynamicsWorld = world.getSystem(PhysicsSystem.class).dynamicsWorld;
+        for (Constraint constraint : constraints) {
+            if (constraint.btConstraint != null) {
+                dynamicsWorld.removeConstraint(constraint.btConstraint);
+                constraint.btConstraint.dispose();
+                constraint.btConstraint = null;
+            }
         }
     }
 
@@ -44,7 +77,11 @@ public class ConstraintSystem extends BaseSystem {
         private String bodyA;
         private String bodyB;
         private Config config;
+        private Controller controller;
         private btTypedConstraint btConstraint;
+    }
+    public interface Controller {
+        void update(btTypedConstraint constraint);
     }
     public interface Config {
         btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB);
@@ -105,6 +142,26 @@ public class ConstraintSystem extends BaseSystem {
             btSliderConstraint constraint = (bodyA != bodyB) ?
                     new btSliderConstraint(bodyA, bodyB, frameInA, frameInB, useLinearReferenceFrameA) :
                     new btSliderConstraint(bodyA, frameInA, useLinearReferenceFrameA);
+            return constraint;
+        }
+    }
+    public static class HingeConstraint implements Config {
+        private final Matrix4 frameInA;
+        private final Matrix4 frameInB;
+        private final boolean useLinearReferenceFrameA;
+        public HingeConstraint(Matrix4 frameInA, boolean useLinearReferenceFrameA) {
+            this(frameInA, frameInA, useLinearReferenceFrameA);
+        }
+        public HingeConstraint(Matrix4 frameInA, Matrix4 frameInB, boolean useLinearReferenceFrameA) {
+            this.frameInA = frameInA;
+            this.frameInB = frameInB;
+            this.useLinearReferenceFrameA = useLinearReferenceFrameA;
+        }
+        @Override
+        public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB) {
+            btHingeConstraint constraint = (bodyA != bodyB) ?
+                    new btHingeConstraint(bodyA, bodyB, frameInA, frameInB, useLinearReferenceFrameA) :
+                    new btHingeConstraint(bodyA, frameInA, useLinearReferenceFrameA);
             return constraint;
         }
     }
