@@ -13,6 +13,7 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
@@ -43,6 +44,8 @@ public class MyGame extends Base3DGame {
 
     private static final Vector3 tmpV = new Vector3();
     private static final Matrix4 tmpM = new Matrix4();
+    private static final Quaternion tmpQ = new Quaternion();
+
     private Environment environment;
     private World world;
     private RenderSystem renderSystem;
@@ -255,11 +258,13 @@ public class MyGame extends Base3DGame {
             }
         }
         // Update Camera
-        cameraControllerMultiplexer.update();
         Matrix4 transform = world.getEntity("base").get(Position.class).transform;
-        transform.getTranslation(camera.position);
-        camera.position.add(cam.position);
-        camera.direction.set(cam.direction);
+        transform.getTranslation(tmpV);
+        float angle = transform.getRotation(tmpQ).getAngleAround(Vector3.Y);
+        tmpM.setToTranslation(tmpV).rotate(Vector3.Y, angle).translate(0, 10, 20);
+        camera.position.setZero().mul(tmpM);
+        camera.lookAt(transform.getTranslation(tmpV));
+        camera.up.set(0, 1, 0);
         camera.update();
         world.getEntity("sky").get(Position.class).transform.setToTranslation(camera.position);
         // Update Info
