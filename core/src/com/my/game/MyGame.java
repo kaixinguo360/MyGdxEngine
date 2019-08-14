@@ -17,7 +17,9 @@ import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
+import com.badlogic.gdx.physics.bullet.collision.btCapsuleShape;
 import com.badlogic.gdx.physics.bullet.collision.btConeShape;
+import com.badlogic.gdx.physics.bullet.collision.btCylinderShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btHingeConstraint;
 import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -177,22 +179,28 @@ public class MyGame extends Base3DGame {
         models.put("sky", assetManager.get("obj/sky.g3db", Model.class));
         models.put("ground", mdBuilder.createBox(100f, 0.01f, 2000f, new Material(ColorAttribute.createDiffuse(Color.WHITE)), attributes));
         models.put("box", mdBuilder.createBox(1, 1, 1, new Material(ColorAttribute.createDiffuse(Color.RED)), attributes));
+        models.put("bomb", mdBuilder.createCapsule(0.5f, 2, 8, new Material(ColorAttribute.createDiffuse(Color.GRAY)), attributes));
         models.put("body", mdBuilder.createBox(1, 1, 5, new Material(ColorAttribute.createDiffuse(Color.GREEN)), attributes));
         models.put("wing", mdBuilder.createBox(2, 0.2f, 1, new Material(ColorAttribute.createDiffuse(Color.BLUE)), attributes));
+        models.put("rotate", mdBuilder.createCylinder(1, 1, 1, 8, new Material(ColorAttribute.createDiffuse(Color.CYAN)), attributes));
         models.put("engine", mdBuilder.createCone(0.9f, 1, 0.9f, 18, new Material(ColorAttribute.createDiffuse(Color.YELLOW)), attributes));
 
         // ----- Init Configs ----- //
         Render.addConfig("sky", new Render.Config(models.get("sky"), false));
         Render.addConfig("ground", new Render.Config(models.get("ground")));
         Render.addConfig("box", new Render.Config(models.get("box")));
+        Render.addConfig("bomb", new Render.Config(models.get("bomb")));
         Render.addConfig("body", new Render.Config(models.get("body")));
         Render.addConfig("wing", new Render.Config(models.get("wing")));
+        Render.addConfig("rotate", new Render.Config(models.get("rotate")));
         Render.addConfig("engine", new Render.Config(models.get("engine")));
 
         RigidBody.addConfig("ground", new RigidBody.Config(new btBoxShape(new Vector3(50,0.005f,1000)), 0f));
         RigidBody.addConfig("box", new RigidBody.Config(new btBoxShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
-        RigidBody.addConfig("body", new RigidBody.Config(new btBoxShape(new Vector3(0.5f,0.5f,2.5f)), 250f));
-        RigidBody.addConfig("wing", new RigidBody.Config(new btBoxShape(new Vector3(1f,0.1f,0.5f)), 20f));
+        RigidBody.addConfig("bomb", new RigidBody.Config(new btCapsuleShape(0.5f, 1), 50f));
+        RigidBody.addConfig("body", new RigidBody.Config(new btBoxShape(new Vector3(0.5f,0.5f,2.5f)), 50f));
+        RigidBody.addConfig("wing", new RigidBody.Config(new btBoxShape(new Vector3(1f,0.1f,0.5f)), 25f));
+        RigidBody.addConfig("rotate", new RigidBody.Config(new btCylinderShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
         RigidBody.addConfig("engine", new RigidBody.Config(new btConeShape(0.45f,1), 50));
 
         Serialization.Serializer serializer = new Serializer(world);
@@ -207,25 +215,26 @@ public class MyGame extends Base3DGame {
         }
 
         // ----- Init Aircraft ----- //
+        String last;
         world.addEntity("base", new MyInstance("body", group))
                 .get(Position.class).transform.translate(0, 0.5f, -3);
         // Tail
-        addRotateWing(new Matrix4().translate(1, 0.5f, 0.1f).rotate(Vector3.X, 15.3f),
-                new Controller(-0.15f, 0.15f, 1f, Input.Keys.DOWN, Input.Keys.UP), "base");
-        addRotateWing(new Matrix4().translate(-1, 0.5f, 0.1f).rotate(Vector3.X, 15.3f),
-                new Controller(-0.15f, 0.15f, 1f, Input.Keys.DOWN, Input.Keys.UP), "base");
+        last = addRotate(new Matrix4().translate(0, 0.5f, 0.1f).rotate(Vector3.Z, 90),
+                new Controller(-0.2f, 0.2f, 1f, Input.Keys.DOWN, Input.Keys.UP), "base");
+        addWing(new Matrix4().translate(1.5f, 0.5f, 0.1f).rotate(Vector3.X, 13f), last);
+        addWing(new Matrix4().translate(-1.5f, 0.5f, 0.1f).rotate(Vector3.X, 13f), last);
 
         // Left
-        addRotateWing(new Matrix4().translate(-1.5f, 0.5f, -5).rotate(Vector3.X, 15),
-                new Controller(-0.1f, 0.1f, 0.005f, Input.Keys.RIGHT, Input.Keys.LEFT), "base");
-        addRotateWing(new Matrix4().translate(-3.5f, 0.5f, -5).rotate(Vector3.X, 15),
-                new Controller(-0.1f, 0.1f, 0.005f, Input.Keys.RIGHT, Input.Keys.LEFT), "base");
+        last = addRotate(new Matrix4().translate(-1, 0.5f, -5).rotate(Vector3.Z, 90),
+                new Controller(-0.15f, 0.2f, 0.5f, Input.Keys.RIGHT, Input.Keys.LEFT), "base");
+        last = addWing(new Matrix4().translate(-2.5f, 0.5f, -5).rotate(Vector3.X, 14), last);
+        last = addWing(new Matrix4().translate(-4.5f, 0.5f, -5).rotate(Vector3.X, 14), last);
 
         // Right
-        addRotateWing(new Matrix4().translate(1.5f, 0.5f, -5).rotate(Vector3.X, 15),
-                new Controller(-0.1f, 0.1f, 0.005f, Input.Keys.LEFT, Input.Keys.RIGHT), "base");
-        addRotateWing(new Matrix4().translate(3.5f, 0.5f, -5).rotate(Vector3.X, 15),
-                new Controller(-0.1f, 0.1f, 0.005f, Input.Keys.LEFT, Input.Keys.RIGHT), "base");
+        last = addRotate(new Matrix4().translate(1, 0.5f, -5).rotate(Vector3.Z, 90),
+                new Controller(-0.15f, 0.2f, 0.5f, Input.Keys.LEFT, Input.Keys.RIGHT), "base");
+        last = addWing(new Matrix4().translate(2.5f, 0.5f, -5).rotate(Vector3.X, 14), last);
+        last = addWing(new Matrix4().translate(4.5f, 0.5f, -5).rotate(Vector3.X, 14), last);
 
         // Vertical
         addWing(new Matrix4().translate(0.6f, 1f, -1).rotate(Vector3.Z, 90), "base");
@@ -282,7 +291,7 @@ public class MyGame extends Base3DGame {
         physicsSystem.update(deltaTime);
         // Render
         renderSystem.render(camera, environment);
-//        physicsSystem.renderDebug(camera);
+//        physicsSystem.renderDebug(camera);Boom
     }
 
     // ----- Custom ----- //
@@ -292,6 +301,18 @@ public class MyGame extends Base3DGame {
         Entity entity = new MyInstance("box", "box");
         addObject(
                 "Box-" + box++,
+                transform,
+                entity,
+                base,
+                base == null ? null : new ConstraintSystem.ConnectConstraint()
+        );
+        return entity;
+    }
+    private int bomb = 0;
+    private Entity addBomb(Matrix4 transform, String base) {
+        Entity entity = new MyInstance("bomb", "bomb");
+        addObject(
+                "Bomb-" + bomb++,
                 transform,
                 entity,
                 base,
@@ -314,22 +335,22 @@ public class MyGame extends Base3DGame {
         return addObject(
                 "Wing-" + wing++,
                 transform,
-                new MyInstance("wing", group, new Motion.Lift(new Vector3(0, 120, 0))),
+                new MyInstance("wing", group, new Motion.Lift(new Vector3(0, 200, 0))),
                 base,
                 base == null ? null : new ConstraintSystem.ConnectConstraint()
         );
     }
     private int rotate = 0;
-    private String addRotateWing(Matrix4 transform, ConstraintSystem.Controller controller, String base) {
+    private String addRotate(Matrix4 transform, ConstraintSystem.Controller controller, String base) {
         Matrix4 relTransform = new Matrix4(world.getEntity(base).get(Position.class).transform).inv().mul(transform);
         String id = addObject(
                 "Rotate-" + rotate++,
                 transform,
-                new MyInstance("wing", group, new Motion.Lift(new Vector3(0, 120, 0))),
+                new MyInstance("rotate", group),
                 base,
                 base == null ? null : new ConstraintSystem.HingeConstraint(
-                        relTransform.rotate(Vector3.Y, 90),
-                        new Matrix4().rotate(Vector3.Y, 90),
+                        relTransform.rotate(Vector3.X, 90),
+                        new Matrix4().rotate(Vector3.X, 90),
                         false)
         );
         constraintSystem.addController(id, base, controller);
@@ -340,7 +361,7 @@ public class MyGame extends Base3DGame {
         return addObject(
                 "Engine-" + engine++,
                 transform,
-                new MyInstance("engine", group, new Motion.LimitedForce(40, new Vector3(0, 3000, 0))),
+                new MyInstance("engine", group, new Motion.LimitedForce(40, new Vector3(0, 4000, 0))),
                 base,
                 base == null ? null : new ConstraintSystem.ConnectConstraint()
         );
@@ -382,9 +403,11 @@ public class MyGame extends Base3DGame {
     }
 
     private void addBomb() {
-        System.out.println("Bomb!");
-        tmpM.set(world.getEntity("base").get(Position.class).transform).translate(0, -1, 0);
-        addBox(tmpM, null).get(RigidBody.class).body.setLinearVelocity(
+        System.out.println("Boom!");
+        tmpM.set(world.getEntity("base").get(Position.class).transform)
+                .translate(0, -1, 0)
+                .rotate(Vector3.X, 90);
+        addBomb(tmpM, null).get(RigidBody.class).body.setLinearVelocity(
                 world.getEntity("base").get(RigidBody.class).body.getLinearVelocity());
     }
     private void explode() {

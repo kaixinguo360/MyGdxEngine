@@ -9,6 +9,9 @@ import com.my.utils.world.Entity;
 import com.my.utils.world.World;
 import com.my.utils.world.com.RigidBody;
 
+import static com.badlogic.gdx.physics.bullet.dynamics.btConstraintParams.BT_CONSTRAINT_CFM;
+import static com.badlogic.gdx.physics.bullet.dynamics.btConstraintParams.BT_CONSTRAINT_ERP;
+
 public class ConstraintSystem extends BaseSystem {
 
     // ----- Create ----- //
@@ -51,6 +54,8 @@ public class ConstraintSystem extends BaseSystem {
                 btRigidBody bodyA = world.getEntity(constraint.bodyA).get(RigidBody.class).body;
                 btRigidBody bodyB = world.getEntity(constraint.bodyB).get(RigidBody.class).body;
                 constraint.btConstraint = constraint.config.get(bodyA, bodyB);
+                constraint.btConstraint.setParam(BT_CONSTRAINT_CFM, 0);
+                constraint.btConstraint.setParam(BT_CONSTRAINT_ERP, 0.5f);
                 dynamicsWorld.addConstraint(constraint.btConstraint);
             }
         }
@@ -95,8 +100,7 @@ public class ConstraintSystem extends BaseSystem {
         }
         @Override
         public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB) {
-            btPoint2PointConstraint constraint = new btPoint2PointConstraint(bodyA, bodyB, pivotInA, pivotInB);
-            return constraint;
+            return new btPoint2PointConstraint(bodyA, bodyB, pivotInA, pivotInB);
         }
     }
     public static class FixedConstraint implements Config {
@@ -108,8 +112,7 @@ public class ConstraintSystem extends BaseSystem {
         }
         @Override
         public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB) {
-            btFixedConstraint constraint = new btFixedConstraint(bodyA, bodyB, frameInA, frameInB);
-            return constraint;
+            return new btFixedConstraint(bodyA, bodyB, frameInA, frameInB);
         }
     }
     public static class ConnectConstraint implements Config {
@@ -121,8 +124,7 @@ public class ConstraintSystem extends BaseSystem {
             tmp2.set(bodyB.getWorldTransform());
             tmp1.inv().mul(tmp2);
             tmp2.idt();
-            btFixedConstraint constraint = new btFixedConstraint(bodyA, bodyB, tmp1, tmp2);
-            return constraint;
+            return new btFixedConstraint(bodyA, bodyB, tmp1, tmp2);
         }
     }
     public static class SliderConstraint implements Config {
@@ -139,10 +141,9 @@ public class ConstraintSystem extends BaseSystem {
         }
         @Override
         public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB) {
-            btSliderConstraint constraint = (bodyA != bodyB) ?
+            return (bodyA != bodyB) ?
                     new btSliderConstraint(bodyA, bodyB, frameInA, frameInB, useLinearReferenceFrameA) :
                     new btSliderConstraint(bodyA, frameInA, useLinearReferenceFrameA);
-            return constraint;
         }
     }
     public static class HingeConstraint implements Config {
@@ -159,10 +160,9 @@ public class ConstraintSystem extends BaseSystem {
         }
         @Override
         public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB) {
-            btHingeConstraint constraint = (bodyA != bodyB) ?
+            return (bodyA != bodyB) ?
                     new btHingeConstraint(bodyA, bodyB, frameInA, frameInB, useLinearReferenceFrameA) :
                     new btHingeConstraint(bodyA, frameInA, useLinearReferenceFrameA);
-            return constraint;
         }
     }
 }
