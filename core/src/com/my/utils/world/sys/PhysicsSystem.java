@@ -20,8 +20,8 @@ import com.my.utils.world.com.RigidBody;
 public class PhysicsSystem extends BaseSystem {
 
     // ----- Tmp ----- //
-    private static final Vector3 rayFrom = new Vector3();
-    private static final Vector3 rayTo = new Vector3();
+    private static final Vector3 tmpV1 = new Vector3();
+    private static final Vector3 tmpV2 = new Vector3();
 
     // ----- Create DynamicsWorld World ----- //
     protected btDynamicsWorld dynamicsWorld;
@@ -106,6 +106,9 @@ public class PhysicsSystem extends BaseSystem {
     public Entity pick(Camera cam, int X, int Y) {
         Ray ray = cam.getPickRay(X, Y);
 
+        Vector3 rayFrom = tmpV1;
+        Vector3 rayTo = tmpV2;
+
         rayFrom.set(ray.origin);
         rayTo.set(ray.origin).add(ray.direction.cpy().scl(100)); // 50 meters max from the origin
 
@@ -124,6 +127,24 @@ public class PhysicsSystem extends BaseSystem {
         } else {
             return null;
         }
+    }
+    // Add Explosion
+    private static final float MIN_FORCE = 10;
+    public void addExplosion(Vector3 position, float force) {
+        int num = 0;
+        for (Entity entity : activatedEntities) {
+            entity.get(Position.class).transform.getTranslation(tmpV1);
+            tmpV1.sub(position);
+            float len2 = tmpV1.len2();
+            tmpV1.nor().scl(force * 1/len2);
+            if (tmpV1.len() > MIN_FORCE) {
+                num++;
+                System.out.println(entity.get(Id.class) + " -> " + tmpV1.len());
+                entity.get(RigidBody.class).body.activate();
+                entity.get(RigidBody.class).body.applyCentralImpulse(tmpV1);
+            }
+        }
+        System.out.println(num);
     }
 
     // ----- Private ----- //

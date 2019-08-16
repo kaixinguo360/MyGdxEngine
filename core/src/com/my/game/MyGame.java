@@ -181,6 +181,7 @@ public class MyGame extends Base3DGame {
         models.get("sky").nodes.get(0).scale.scl(2);
         models.put("ground", mdBuilder.createBox(100f, 0.01f, 2000f, new Material(ColorAttribute.createDiffuse(Color.WHITE)), attributes));
         models.put("box", mdBuilder.createBox(1, 1, 1, new Material(ColorAttribute.createDiffuse(Color.RED)), attributes));
+        models.put("box1", mdBuilder.createBox(2, 1, 1, new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)), attributes));
         models.put("bomb", mdBuilder.createCapsule(0.5f, 2, 8, new Material(ColorAttribute.createDiffuse(Color.GRAY)), attributes));
         models.put("body", mdBuilder.createBox(1, 1, 5, new Material(ColorAttribute.createDiffuse(Color.GREEN)), attributes));
         models.put("wing", mdBuilder.createBox(2, 0.2f, 1, new Material(ColorAttribute.createDiffuse(Color.BLUE)), attributes));
@@ -191,6 +192,7 @@ public class MyGame extends Base3DGame {
         Render.addConfig("sky", new Render.Config(models.get("sky"), false));
         Render.addConfig("ground", new Render.Config(models.get("ground")));
         Render.addConfig("box", new Render.Config(models.get("box")));
+        Render.addConfig("box1", new Render.Config(models.get("box1")));
         Render.addConfig("bomb", new Render.Config(models.get("bomb")));
         Render.addConfig("body", new Render.Config(models.get("body")));
         Render.addConfig("wing", new Render.Config(models.get("wing")));
@@ -199,6 +201,7 @@ public class MyGame extends Base3DGame {
 
         RigidBody.addConfig("ground", new RigidBody.Config(new btBoxShape(new Vector3(50,0.005f,1000)), 0f));
         RigidBody.addConfig("box", new RigidBody.Config(new btBoxShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
+        RigidBody.addConfig("box1", new RigidBody.Config(new btBoxShape(new Vector3(1,0.5f,0.5f)), 50f));
         RigidBody.addConfig("bomb", new RigidBody.Config(new btCapsuleShape(0.5f, 1), 50f));
         RigidBody.addConfig("body", new RigidBody.Config(new btBoxShape(new Vector3(0.5f,0.5f,2.5f)), 50f));
         RigidBody.addConfig("wing", new RigidBody.Config(new btBoxShape(new Vector3(1f,0.1f,0.5f)), 25f));
@@ -214,6 +217,9 @@ public class MyGame extends Base3DGame {
         for (int i = 0; i < 100; i++) {
             addBox(new Matrix4().translate(10, 0.5f, -10 * i), null);
             addBox(new Matrix4().translate(-10, 0.5f, -10 * i), null);
+        }
+        for (int i = 1; i < 5; i++) {
+            addTower(new Matrix4().setToTranslation(-5, 0, -200 * i), 5 * i);
         }
 
         // ----- Init Aircraft ----- //
@@ -272,9 +278,9 @@ public class MyGame extends Base3DGame {
         Matrix4 transform = world.getEntity("base").get(Position.class).transform;
         transform.getTranslation(tmpV1);
         float angle = transform.getRotation(tmpQ).getAngleAround(Vector3.Y);
-        tmpM.setToTranslation(tmpV1).rotate(Vector3.Y, angle).translate(0, 10, 20);
+        tmpM.setToTranslation(tmpV1).rotate(Vector3.Y, angle).translate(0, 0, 60);
         camera.position.setZero().mul(tmpM);
-        camera.lookAt(transform.getTranslation(tmpV1));
+        camera.lookAt(transform.getTranslation(tmpV1).add(0, -20, 0));
         camera.up.set(0, 1, 0);
         camera.update();
         world.getEntity("sky").get(Position.class).transform.setToTranslation(camera.position);
@@ -297,9 +303,9 @@ public class MyGame extends Base3DGame {
     }
 
     // ----- FLAGs ----- //
-    public final static short BOMB_FLAG = 1 << 8;
-    public final static short AIRCRAFT_FLAG = 1 << 9;
-    public final static short ALL_FLAG = -1;
+    private final static short BOMB_FLAG = 1 << 8;
+    private final static short AIRCRAFT_FLAG = 1 << 9;
+    private final static short ALL_FLAG = -1;
 
     // ----- Custom ----- //
     private String group = "group";
@@ -319,8 +325,9 @@ public class MyGame extends Base3DGame {
     private Entity addBomb(Matrix4 transform, String base) {
         Entity entity = new MyInstance("bomb", "bomb", null,
                 new Collision(BOMB_FLAG, ALL_FLAG, (self, target) -> {
-                    if (checkVelocity(self, target, 10)) {
+                    if (checkVelocity(self, target, 20)) {
                         System.out.println("Boom! " + self.get(Id.class) + " ==> " + target.get(Id.class));
+                        physicsSystem.addExplosion(self.get(Position.class).transform.getTranslation(tmpV1), 5000);
                         world.removeEntity(self);
                     }
                 }));
@@ -383,6 +390,26 @@ public class MyGame extends Base3DGame {
         );
     }
 
+    private void addWall(Matrix4 transform, int height) {
+        for (int i = 0; i < height; i++) {
+            float tmp = 0.5f + (i % 2);
+            for (int j = 0; j < 10; j+=2) {
+                addObject(
+                        "Box-" + box++,
+                        tmpM.setToTranslation(tmp + j, 0.5f + i, 0).mulLeft(transform),
+                        new MyInstance("box1", "box1"), null, null
+                );
+            }
+        }
+    }
+    private void addTower(Matrix4 transform, int height) {
+        Matrix4 tmp = new Matrix4();
+        addWall(tmp.set(transform), height);
+        addWall(tmp.set(transform).translate(0, 0, 10).rotate(Vector3.Y, 90), height);
+        addWall(tmp.set(transform).translate(10, 0, 10).rotate(Vector3.Y, 180), height);
+        addWall(tmp.set(transform).translate(10, 0, 0).rotate(Vector3.Y, 270), height);
+    }
+
     private String addObject(String id, Matrix4 transform, Entity entity, String base, ConstraintSystem.Config constraint) {
         world.addEntity(id, entity)
                 .get(Position.class).transform.set(transform);
@@ -405,6 +432,7 @@ public class MyGame extends Base3DGame {
     private void explode() {
         System.out.println("Explosion!");
         constraintSystem.clear(world);
+        physicsSystem.addExplosion(world.getEntity("base").get(Position.class).transform.getTranslation(tmpV1), 2000);
     }
     private boolean checkVelocity(Entity self, Entity target, double maxVelocity) {
         tmpV1.set(self.get(RigidBody.class).body.getLinearVelocity());
