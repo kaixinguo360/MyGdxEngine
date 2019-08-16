@@ -12,6 +12,8 @@ import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
 import com.badlogic.gdx.utils.Array;
 import com.my.utils.world.BaseSystem;
 import com.my.utils.world.Entity;
+import com.my.utils.world.com.Collision;
+import com.my.utils.world.com.Id;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.RigidBody;
 
@@ -23,6 +25,7 @@ public class PhysicsSystem extends BaseSystem {
 
     // ----- Create DynamicsWorld World ----- //
     protected btDynamicsWorld dynamicsWorld;
+    protected ContactListener contactListener;
     protected DebugDrawer debugDrawer;
     protected ClosestRayResultCallback rayTestCB;
     public PhysicsSystem() {
@@ -50,6 +53,10 @@ public class PhysicsSystem extends BaseSystem {
         dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, constraintSolver, collisionConfig);
         dynamicsWorld.setGravity(new Vector3(0, -10f, 0));
         addDisposable(dynamicsWorld);
+
+        // Create ContactListener
+        contactListener = new ContactListener();
+        addDisposable(contactListener);
 
         // Create debugDrawer
         debugDrawer = new DebugDrawer();
@@ -129,6 +136,13 @@ public class PhysicsSystem extends BaseSystem {
         body.setMotionState(new MotionState(position.transform));
         body.userData = entity;
 
+        if (entity.contain(Collision.class)) {
+            Collision c = entity.get(Collision.class);
+            body.setContactCallbackFlag(c.callbackFlag);
+            body.setContactCallbackFilter(c.callbackFilter);
+            body.setCollisionFlags(body.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
+        }
+
         dynamicsWorld.addRigidBody(body, rigidBody.group, rigidBody.mask);
         activatedEntities.add(entity);
     }
@@ -138,7 +152,7 @@ public class PhysicsSystem extends BaseSystem {
         dynamicsWorld.removeRigidBody(body);
         activatedEntities.removeValue(entity, true);
     }
-    class MotionState extends btMotionState {
+    private static class MotionState extends btMotionState {
         Matrix4 transform;
         MotionState(Matrix4 transform) {
             this.transform = transform;
@@ -150,6 +164,24 @@ public class PhysicsSystem extends BaseSystem {
         @Override
         public void setWorldTransform (Matrix4 worldTrans) {
             if (transform != null) transform.set(worldTrans);
+        }
+    }
+    private static class ContactListener extends com.badlogic.gdx.physics.bullet.collision.ContactListener {
+        @Override
+        public boolean onContactAdded(btCollisionObject colObj0, int partId0, int index0, boolean match0, btCollisionObject colObj1, int partId1, int index1, boolean match1) {
+            if(colObj0.userData instanceof Entity && colObj1.userData instanceof Entity) {
+                Entity entity0 = (Entity) colObj0.userData;
+                Entity entity1 = (Entity) colObj1.userData;
+                if (entity0.contain(Id.class) && entity1.contain(Id.class) && match0 && entity0.contain(Collision.class)) {
+//                    System.out.println(entity0.get(Id.class) + " =>" + entity1.get(Id.class));
+                    entity0.get(Collision.class).handle(entity0, entity1);
+                }
+                if (entity0.contain(Id.class) && entity1.contain(Id.class) && match1 && entity1.contain(Collision.class)) {
+//                    System.out.println(entity1.get(Id.class) + " <= " + entity0.get(Id.class));
+                    entity1.get(Collision.class).handle(entity1, entity0);
+                }
+            }
+            return true;
         }
     }
 }

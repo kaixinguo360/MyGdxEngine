@@ -14,22 +14,33 @@ public class MyInstance extends Entity {
     public MyInstance() {}
 
     public MyInstance(String name) {
-        position = add(Position.class, new Position());
-        render = add(Render.class, Render.get(name, position));
-        rigidBody = add(RigidBody.class, RigidBody.get(name));
+        this(name, null);
     }
 
     public MyInstance(String name, String group) {
-        this(name);
-        serialization = new Serialization();
-        serialization.group = group;
-        serialization.serializerId = name;
-        add(Serialization.class, serialization);
+        this(name, group, null);
     }
 
     public MyInstance(String name, String group, Motion motion) {
-        this(name, group);
-        add(Motion.class, motion);
+        this(name, group, motion, null);
+    }
+
+    public MyInstance(String name, String group, Motion motion, Collision collision) {
+        position = add(Position.class, new Position());
+        render = add(Render.class, Render.get(name, position));
+        rigidBody = add(RigidBody.class, RigidBody.get(name));
+        if (group != null) {
+            serialization = new Serialization();
+            serialization.group = group;
+            serialization.serializerId = name;
+            add(Serialization.class, serialization);
+        }
+        if (motion != null) {
+            add(Motion.class, motion);
+        }
+        if (collision != null) {
+            add(Collision.class, collision);
+        }
     }
 
     public void setTransform(Matrix4 transform) {

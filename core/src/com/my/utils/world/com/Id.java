@@ -9,4 +9,9 @@ public class Id implements Component {
     public Id(String id) {
         this.id = id;
     }
+
+    @Override
+    public String toString() {
+        return id;
+    }
 }

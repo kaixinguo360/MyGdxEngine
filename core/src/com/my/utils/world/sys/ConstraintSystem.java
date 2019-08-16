@@ -9,6 +9,8 @@ import com.my.utils.world.Entity;
 import com.my.utils.world.World;
 import com.my.utils.world.com.RigidBody;
 
+import java.util.Iterator;
+
 import static com.badlogic.gdx.physics.bullet.dynamics.btConstraintParams.BT_CONSTRAINT_CFM;
 import static com.badlogic.gdx.physics.bullet.dynamics.btConstraintParams.BT_CONSTRAINT_ERP;
 
@@ -47,6 +49,22 @@ public class ConstraintSystem extends BaseSystem {
         }
         return null;
     }
+    public void remove(World world, String body) {
+        btDynamicsWorld dynamicsWorld = world.getSystem(PhysicsSystem.class).dynamicsWorld;
+        Iterator<Constraint> it = constraints.iterator();
+        while (it.hasNext()) {
+            Constraint constraint = it.next();
+            if ((constraint.bodyA.equals(body) || constraint.bodyB.equals(body))) {
+                if (constraint.btConstraint != null) {
+                    dynamicsWorld.removeConstraint(constraint.btConstraint);
+                    constraint.btConstraint.dispose();
+                    constraint.btConstraint = null;
+                }
+                it.remove();
+            }
+        }
+    }
+
     public void init(World world) {
         btDynamicsWorld dynamicsWorld = world.getSystem(PhysicsSystem.class).dynamicsWorld;
         for (Constraint constraint : constraints) {

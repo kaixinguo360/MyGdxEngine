@@ -39,6 +39,10 @@ public class World implements Disposable {
         entity.remove(Id.class);
         return entity;
     }
+    public Entity removeEntity(Entity entity) {
+        if (!entity.contain(Id.class)) throw new RuntimeException("This Entity Has No Id: " + entity);
+        return removeEntity(entity.get(Id.class).id);
+    }
     public Entity getEntity(String id) {
         if (!entities.containsKey(id)) throw new RuntimeException("No Such Entity: " + id);
         return entities.get(id);
