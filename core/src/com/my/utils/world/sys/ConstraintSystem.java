@@ -136,13 +136,22 @@ public class ConstraintSystem extends BaseSystem {
     public static class ConnectConstraint implements Config {
         private static final Matrix4 tmp1 = new Matrix4();
         private static final Matrix4 tmp2 = new Matrix4();
+        private final float breakingImpulseThreshold;
+        public ConnectConstraint() {
+            this(2000);
+        }
+        public ConnectConstraint(float breakingImpulseThreshold) {
+            this.breakingImpulseThreshold = breakingImpulseThreshold;
+        }
         @Override
         public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB) {
             tmp1.set(bodyA.getWorldTransform());
             tmp2.set(bodyB.getWorldTransform());
             tmp1.inv().mul(tmp2);
             tmp2.idt();
-            return new btFixedConstraint(bodyA, bodyB, tmp1, tmp2);
+            btTypedConstraint constraint = new btFixedConstraint(bodyA, bodyB, tmp1, tmp2);
+            constraint.setBreakingImpulseThreshold(breakingImpulseThreshold);
+            return constraint;
         }
     }
     public static class SliderConstraint implements Config {

@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Environment;
@@ -20,8 +21,7 @@ import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.collision.btCapsuleShape;
 import com.badlogic.gdx.physics.bullet.collision.btConeShape;
 import com.badlogic.gdx.physics.bullet.collision.btCylinderShape;
-import com.badlogic.gdx.physics.bullet.dynamics.btHingeConstraint;
-import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
+import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
@@ -34,9 +34,11 @@ import com.badlogic.gdx.utils.ArrayMap;
 import com.my.utils.base.Base3DGame;
 import com.my.utils.net.Client;
 import com.my.utils.net.Server;
-import com.my.utils.world.Entity;
 import com.my.utils.world.World;
-import com.my.utils.world.com.*;
+import com.my.utils.world.com.Position;
+import com.my.utils.world.com.Render;
+import com.my.utils.world.com.RigidBody;
+import com.my.utils.world.com.Serialization;
 import com.my.utils.world.sys.*;
 
 import java.net.SocketException;
@@ -44,8 +46,7 @@ import java.net.UnknownHostException;
 
 public class MyGame extends Base3DGame {
 
-    private static final Vector3 tmpV1 = new Vector3();
-    private static final Vector3 tmpV2 = new Vector3();
+    private static final Vector3 tmpV = new Vector3();
     private static final Matrix4 tmpM = new Matrix4();
     private static final Quaternion tmpQ = new Quaternion();
 
@@ -56,6 +57,8 @@ public class MyGame extends Base3DGame {
     private SerializationSystem serializationSystem;
     private ConstraintSystem constraintSystem;
     private MotionSystem motionSystem;
+    private ObjectBuilder objectBuilder;
+    private String aircraft;
     private ArrayMap<String, Model> models = new ArrayMap<>();
     private Server server;
     private String receivedData = null;
@@ -83,7 +86,7 @@ public class MyGame extends Base3DGame {
 
         // ----- Init Camera ----- //
         camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        camera.far = 200;
+        camera.far = 2000;
         camera.near = 0.1f;
         camera.position.set(0, 0, 0);
         camera.update();
@@ -106,6 +109,8 @@ public class MyGame extends Base3DGame {
         // Create MotionSystem
         motionSystem = world.addSystem(MotionSystem.class, new MotionSystem());
         addDisposable(motionSystem);
+        // Create ObjectBuilder
+        objectBuilder = new ObjectBuilder(world);
 
         // ----- Create Environment ----- //
         environment = new Environment();
@@ -127,6 +132,7 @@ public class MyGame extends Base3DGame {
                 if (keycode == Input.Keys.ESCAPE) Gdx.app.exit();
                 if (keycode == Input.Keys.V) addBomb();
                 if (keycode == Input.Keys.SPACE) explode();
+                if (keycode == Input.Keys.TAB) changeCamera();
                 return false;
             }
         });
@@ -178,7 +184,7 @@ public class MyGame extends Base3DGame {
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
         ModelBuilder mdBuilder = new ModelBuilder();
         models.put("sky", assetManager.get("obj/sky.g3db", Model.class));
-        models.get("sky").nodes.get(0).scale.scl(2);
+        models.get("sky").nodes.get(0).scale.scl(20);
         models.put("ground", mdBuilder.createBox(100f, 0.01f, 2000f, new Material(ColorAttribute.createDiffuse(Color.WHITE)), attributes));
         models.put("box", mdBuilder.createBox(1, 1, 1, new Material(ColorAttribute.createDiffuse(Color.RED)), attributes));
         models.put("box1", mdBuilder.createBox(2, 1, 1, new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)), attributes));
@@ -214,40 +220,24 @@ public class MyGame extends Base3DGame {
         // ----- Init Static Objects ----- //
         world.addEntity("sky", new MyInstance("sky"));
         world.addEntity("ground", new MyInstance("ground"));
+
+        // ----- Init Dynamic Objects ----- //
         for (int i = 0; i < 100; i++) {
-            addBox(new Matrix4().translate(10, 0.5f, -10 * i), null);
-            addBox(new Matrix4().translate(-10, 0.5f, -10 * i), null);
+            objectBuilder.createBox(new Matrix4().translate(10, 0.5f, -10 * i), null);
+            objectBuilder.createBox(new Matrix4().translate(-10, 0.5f, -10 * i), null);
         }
         for (int i = 1; i < 5; i++) {
-            addTower(new Matrix4().setToTranslation(-5, 0, -200 * i), 5 * i);
+            objectBuilder.createTower(new Matrix4().setToTranslation(-5, 0, -200 * i), 5 * i);
         }
-
-        // ----- Init Aircraft ----- //
-        String last;
-        world.addEntity("base", new MyInstance("body", group, null))
-                .get(Position.class).transform.translate(0, 0.5f, -3);
-        // Tail
-        last = addRotate(new Matrix4().translate(0, 0.5f, 0.1f).rotate(Vector3.Z, 90),
-                new Controller(-0.2f, 0.2f, 1f, Input.Keys.DOWN, Input.Keys.UP), "base");
-        addWing(new Matrix4().translate(1.5f, 0.5f, 0.1f).rotate(Vector3.X, 13f), last);
-        addWing(new Matrix4().translate(-1.5f, 0.5f, 0.1f).rotate(Vector3.X, 13f), last);
-
-        // Left
-        last = addRotate(new Matrix4().translate(-1, 0.5f, -5).rotate(Vector3.Z, 90),
-                new Controller(-0.15f, 0.2f, 0.5f, Input.Keys.RIGHT, Input.Keys.LEFT), "base");
-        last = addWing(new Matrix4().translate(-2.5f, 0.5f, -5).rotate(Vector3.X, 14), last);
-        last = addWing(new Matrix4().translate(-4.5f, 0.5f, -5).rotate(Vector3.X, 14), last);
-
-        // Right
-        last = addRotate(new Matrix4().translate(1, 0.5f, -5).rotate(Vector3.Z, 90),
-                new Controller(-0.15f, 0.2f, 0.5f, Input.Keys.LEFT, Input.Keys.RIGHT), "base");
-        last = addWing(new Matrix4().translate(2.5f, 0.5f, -5).rotate(Vector3.X, 14), last);
-        last = addWing(new Matrix4().translate(4.5f, 0.5f, -5).rotate(Vector3.X, 14), last);
-
-        // Vertical
-        addWing(new Matrix4().translate(0.6f, 1f, -1).rotate(Vector3.Z, 90), "base");
-        addWing(new Matrix4().translate(-0.6f, 1f, -1).rotate(Vector3.Z, 90), "base");
-        addEngine(new Matrix4().translate(0, 0.6f, -6).rotate(Vector3.X, -90), "base");
+        aircraft = objectBuilder.createAircraft(new Matrix4().translate(0, 0, 200), 8000, 40, Input.Keys.UP, Input.Keys.DOWN, Input.Keys.LEFT, Input.Keys.RIGHT);
+        objectBuilder.createAircraft(new Matrix4().translate(20, 0, 0), 4000, 40, 0,0,0,0);
+        objectBuilder.createAircraft(new Matrix4().translate(-20, 0, 0), 4000, 40, 0,0,0,0);
+        objectBuilder.createAircraft(new Matrix4().translate(20, 20, 0), 4000, 40, 0,0,0,0);
+        objectBuilder.createAircraft(new Matrix4().translate(-20, 20, 0), 4000, 40, 0,0,0,0);
+        objectBuilder.createAircraft(new Matrix4().translate(20, 0, 20), 4000, 40, 0,0,0,0);
+        objectBuilder.createAircraft(new Matrix4().translate(-20, 0, 20), 4000, 40, 0,0,0,0);
+        objectBuilder.createAircraft(new Matrix4().translate(20, 0, -20), 4000, 40, 0,0,0,0);
+        objectBuilder.createAircraft(new Matrix4().translate(-20, 0, -20), 4000, 40, 0,0,0,0);
 
         // ----- Init World & Constraint ----- //
         world.update();
@@ -274,198 +264,81 @@ public class MyGame extends Base3DGame {
                 receivedTime = 0;
             }
         }
-        // Update Camera
-        Matrix4 transform = world.getEntity("base").get(Position.class).transform;
-        transform.getTranslation(tmpV1);
-        float angle = transform.getRotation(tmpQ).getAngleAround(Vector3.Y);
-        tmpM.setToTranslation(tmpV1).rotate(Vector3.Y, angle).translate(0, 0, 60);
-        camera.position.setZero().mul(tmpM);
-        camera.lookAt(transform.getTranslation(tmpV1).add(0, -20, 0));
-        camera.up.set(0, 1, 0);
-        camera.update();
-        world.getEntity("sky").get(Position.class).transform.setToTranslation(camera.position);
+
+        // Render
+        Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        if (firstPerson) render_FirstPerson(); else render_ThirdPerson();
+        Gdx.gl.glViewport(0, Gdx.graphics.getHeight() - 250, 400, 250);
+        Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
+        if (firstPerson) render_ThirdPerson(); else render_FirstPerson();
+
         // Update Info
-        double velocity = world.getEntity("base").get(RigidBody.class).body.getLinearVelocity().len();
-        double height = world.getEntity("base").get(Position.class).transform.getTranslation(tmpV1).y;
+        double velocity = world.getEntity(aircraft).get(RigidBody.class).body.getLinearVelocity().len();
+        double height = world.getEntity(aircraft).get(Position.class).transform.getTranslation(tmpV).y;
         velocity = Math.floor(velocity);
         height = Math.floor(height);
         ui.getWidget("label", Label.class).setText(
                 "Velocity: " + velocity +
-                "\nHeight: " + height);
+                        "\nHeight: " + height);
+
         // Update World
         world.update();
         constraintSystem.update();
         motionSystem.update();
         physicsSystem.update(deltaTime);
+
+        Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+    }
+
+    private boolean firstPerson = true;
+    private void render_FirstPerson() {
+        // Update Camera
+        Matrix4 transform = world.getEntity(aircraft).get(Position.class).transform;
+        camera.position.set(0, 0, -2.5f).mul(transform);
+        camera.direction.set(0, 0, -1).rot(transform);
+        camera.up.set(0, 1 , 0).rot(transform);
+        camera.update();
         // Render
         renderSystem.render(camera, environment);
-//        physicsSystem.renderDebug(camera);Boom
+//        physicsSystem.renderDebug(camera);
     }
 
-    // ----- FLAGs ----- //
-    private final static short BOMB_FLAG = 1 << 8;
-    private final static short AIRCRAFT_FLAG = 1 << 9;
-    private final static short ALL_FLAG = -1;
+    private void render_ThirdPerson() {
+        // Update Camera
+        Matrix4 transform = world.getEntity(aircraft).get(Position.class).transform;
+        transform.getTranslation(tmpV);
+        float angle = transform.getRotation(tmpQ).getAngleAround(Vector3.Y);
+        tmpM.setToTranslation(tmpV).rotate(Vector3.Y, angle).translate(0, 0, 20);
+        camera.position.setZero().mul(tmpM);
+        camera.lookAt(transform.getTranslation(tmpV).add(0, 0, 0));
+        camera.up.set(0, 1, 0);
+        camera.update();
+        world.getEntity("sky").get(Position.class).transform.setToTranslation(camera.position);
+        // Render
+        renderSystem.render(camera, environment);
+//        physicsSystem.renderDebug(camera);
+    }
 
     // ----- Custom ----- //
-    private String group = "group";
-    private int box = 0;
-    private Entity addBox(Matrix4 transform, String base) {
-        Entity entity = new MyInstance("box", "box");
-        addObject(
-                "Box-" + box++,
-                transform,
-                entity,
-                base,
-                base == null ? null : new ConstraintSystem.ConnectConstraint()
-        );
-        return entity;
-    }
-    private int bomb = 0;
-    private Entity addBomb(Matrix4 transform, String base) {
-        Entity entity = new MyInstance("bomb", "bomb", null,
-                new Collision(BOMB_FLAG, ALL_FLAG, (self, target) -> {
-                    if (checkVelocity(self, target, 20)) {
-                        System.out.println("Boom! " + self.get(Id.class) + " ==> " + target.get(Id.class));
-                        physicsSystem.addExplosion(self.get(Position.class).transform.getTranslation(tmpV1), 5000);
-                        world.removeEntity(self);
-                    }
-                }));
-        addObject(
-                "Bomb-" + bomb++,
-                transform,
-                entity,
-                base,
-                base == null ? null : new ConstraintSystem.ConnectConstraint()
-        );
-        return entity;
-    }
-    private int body = 0;
-    private String addBody(Matrix4 transform, String base) {
-        return addObject(
-                "Body-" + body++,
-                transform,
-                new MyInstance("body", group),
-                base,
-                base == null ? null : new ConstraintSystem.ConnectConstraint()
-        );
-    }
-    private int wing = 0;
-    private String addWing(Matrix4 transform, String base) {
-        return addObject(
-                "Wing-" + wing++,
-                transform,
-                new MyInstance("wing", group, new Motion.Lift(new Vector3(0, 200, 0)),
-                        new Collision(AIRCRAFT_FLAG, ALL_FLAG, this::collide)),
-                base,
-                base == null ? null : new ConstraintSystem.ConnectConstraint()
-        );
-    }
-    private int rotate = 0;
-    private String addRotate(Matrix4 transform, ConstraintSystem.Controller controller, String base) {
-        Matrix4 relTransform = new Matrix4(world.getEntity(base).get(Position.class).transform).inv().mul(transform);
-        String id = addObject(
-                "Rotate-" + rotate++,
-                transform,
-                new MyInstance("rotate", group, null,
-                        new Collision(AIRCRAFT_FLAG, ALL_FLAG, this::collide)),
-                base,
-                base == null ? null : new ConstraintSystem.HingeConstraint(
-                        relTransform.rotate(Vector3.X, 90),
-                        new Matrix4().rotate(Vector3.X, 90),
-                        false)
-        );
-        constraintSystem.addController(id, base, controller);
-        return id;
-    }
-    private int engine = 0;
-    private String addEngine(Matrix4 transform, String base) {
-        return addObject(
-                "Engine-" + engine++,
-                transform,
-                new MyInstance("engine", group, new Motion.LimitedForce(40, new Vector3(0, 4000, 0)),
-                        new Collision(AIRCRAFT_FLAG, ALL_FLAG, this::collide)),
-                base,
-                base == null ? null : new ConstraintSystem.ConnectConstraint()
-        );
-    }
-
-    private void addWall(Matrix4 transform, int height) {
-        for (int i = 0; i < height; i++) {
-            float tmp = 0.5f + (i % 2);
-            for (int j = 0; j < 10; j+=2) {
-                addObject(
-                        "Box-" + box++,
-                        tmpM.setToTranslation(tmp + j, 0.5f + i, 0).mulLeft(transform),
-                        new MyInstance("box1", "box1"), null, null
-                );
-            }
-        }
-    }
-    private void addTower(Matrix4 transform, int height) {
-        Matrix4 tmp = new Matrix4();
-        addWall(tmp.set(transform), height);
-        addWall(tmp.set(transform).translate(0, 0, 10).rotate(Vector3.Y, 90), height);
-        addWall(tmp.set(transform).translate(10, 0, 10).rotate(Vector3.Y, 180), height);
-        addWall(tmp.set(transform).translate(10, 0, 0).rotate(Vector3.Y, 270), height);
-    }
-
-    private String addObject(String id, Matrix4 transform, Entity entity, String base, ConstraintSystem.Config constraint) {
-        world.addEntity(id, entity)
-                .get(Position.class).transform.set(transform);
-        if (base != null) constraintSystem.addConstraint(base, id, constraint);
-        return id;
-    }
     private void addBomb() {
-        tmpM.set(world.getEntity("base").get(Position.class).transform)
-                .translate(0, -1, 0)
+        tmpM.set(world.getEntity(aircraft).get(Position.class).transform)
+                .translate(0, 0, -6.5f)
                 .rotate(Vector3.X, 90);
-        addBomb(tmpM, null).get(RigidBody.class).body.setLinearVelocity(
-                world.getEntity("base").get(RigidBody.class).body.getLinearVelocity());
-    }
-    private void collide(Entity self, Entity target) {
-        if (checkVelocity(self, target, 30)) {
-            System.out.println("Collision!");
-            constraintSystem.remove(world, self.get(Id.class).id);
-        }
+        world.getEntity(aircraft).get(Position.class).transform.getRotation(tmpQ);
+        tmpV.set(world.getEntity(aircraft).get(RigidBody.class).body.getLinearVelocity());
+        tmpV.add(new Vector3(0, 0, -1).mul(tmpQ).scl(2000));
+        btRigidBody body = objectBuilder.createBomb(tmpM, null)
+                .get(RigidBody.class).body;
+        body.setLinearVelocity(tmpV);
+        body.setCcdMotionThreshold(1e-7f);
+        body.setCcdSweptSphereRadius(2);
     }
     private void explode() {
         System.out.println("Explosion!");
         constraintSystem.clear(world);
-        physicsSystem.addExplosion(world.getEntity("base").get(Position.class).transform.getTranslation(tmpV1), 2000);
+        physicsSystem.addExplosion(world.getEntity(aircraft).get(Position.class).transform.getTranslation(tmpV), 2000);
     }
-    private boolean checkVelocity(Entity self, Entity target, double maxVelocity) {
-        tmpV1.set(self.get(RigidBody.class).body.getLinearVelocity());
-        tmpV2.set(target.get(RigidBody.class).body.getLinearVelocity());
-        return tmpV1.sub(tmpV2).len() > maxVelocity;
-    }
-
-    private static class Controller implements ConstraintSystem.Controller {
-        private float low;
-        private float high;
-        private float delta;
-        private int down;
-        private int up;
-        private float target = 0;
-        private Controller(float low, float high, float delta, int down, int up) {
-            this.low = low;
-            this.high = high;
-            this.delta = delta;
-            this.down = down;
-            this.up = up;
-        }
-        @Override
-        public void update(btTypedConstraint constraint) {
-            if (Gdx.input.isKeyPressed(up)) {
-                target += delta;
-            } else if (Gdx.input.isKeyPressed(down)) {
-                target -= delta;
-            } else {
-                target += target > 0 ? -delta : (target < 0 ? delta : 0);
-            }
-            target = target > high ? high : (target < low ? low : target);
-            btHingeConstraint hingeConstraint = (btHingeConstraint) constraint;
-            hingeConstraint.setLimit(target, target, 0, 0.5f);
-        }
+    private void changeCamera() {
+        firstPerson = !firstPerson;
     }
 }
