@@ -26,6 +26,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.my.utils.base.Base3DGame;
 import com.my.utils.net.Client;
@@ -52,9 +53,8 @@ public class MyGame extends Base3DGame {
     private SerializationSystem serializationSystem;
     private ConstraintSystem constraintSystem;
     private MotionSystem motionSystem;
-    private AircraftBuilder.Aircraft aircraft;
-    private GunBuilder.Gun gun;
     private ArrayMap<String, Model> models = new ArrayMap<>();
+    private Array<Controllable> vehicles = new Array<>();
     private Server server;
     private String receivedData = null;
     private long receivedTime;
@@ -127,9 +127,10 @@ public class MyGame extends Base3DGame {
             @Override
             public boolean keyDown(int keycode) {
                 if (keycode == Input.Keys.ESCAPE) Gdx.app.exit();
-                if (keycode == Input.Keys.V) aircraft.fire();
-                if (keycode == Input.Keys.SPACE) aircraft.explode();
-                if (keycode == Input.Keys.TAB) changeCamera();
+                if (keycode == Input.Keys.V) mainView.getVehicle().fire();
+                if (keycode == Input.Keys.SPACE) mainView.getVehicle().explode();
+                if (keycode == Input.Keys.TAB) changeView();
+                if (keycode == Input.Keys.SHIFT_LEFT) mainView.changeCamera();
                 return false;
             }
         });
@@ -161,7 +162,7 @@ public class MyGame extends Base3DGame {
             ui.getWidget("btn", Button.class).addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
-                    aircraft.explode();
+                    mainView.getVehicle().explode();
                 }
             });
 
@@ -205,12 +206,12 @@ public class MyGame extends Base3DGame {
         for (int x = -20; x <= 20; x+=40) {
             for (int y = 0; y <= 0; y+=20) {
                 for (int z = -20; z <= 20; z+=20) {
-                    AircraftBuilder.createAircraft(new Matrix4().translate(x, y, z), 4000, 40, 0,0,0,0);
+                    AircraftBuilder.createAircraft(new Matrix4().translate(x, y, z), 4000, 40);
                 }
             }
         }
-        aircraft = AircraftBuilder.createAircraft(new Matrix4().translate(0, 0, 200), 8000, 40, Input.Keys.UP, Input.Keys.DOWN, Input.Keys.LEFT, Input.Keys.RIGHT);
-        gun = GunBuilder.createGun(new Matrix4().translate(0, 0, -20));
+        vehicles.add(AircraftBuilder.createAircraft(new Matrix4().translate(0, 0, 200), 8000, 40));
+        vehicles.add(GunBuilder.createGun(new Matrix4().translate(0, 0, -20)));
 
         // ----- Init World & Constraint ----- //
         world.update();
@@ -240,11 +241,18 @@ public class MyGame extends Base3DGame {
 
         // Render
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        if (firstPerson) render_FirstPerson(); else render_ThirdPerson();
+        mainView.setCamera(camera);
+        world.getEntity("sky").get(Position.class).transform.setToTranslation(camera.position);
+        Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
+        renderSystem.render(camera, environment);
         Gdx.gl.glViewport(0, Gdx.graphics.getHeight() - 250, 400, 250);
-        if (firstPerson) render_ThirdPerson(); else render_FirstPerson();
+        secondaryView.setCamera(camera);
+        world.getEntity("sky").get(Position.class).transform.setToTranslation(camera.position);
+        Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
+        renderSystem.render(camera, environment);
 
         // Update Info
+        AircraftBuilder.Aircraft aircraft = (AircraftBuilder.Aircraft) vehicles.get(0);
         ui.getWidget("label", Label.class).setText(
                 "Velocity: " + Math.floor(aircraft.getVelocity()) +
                         "\nHeight: " + Math.floor(aircraft.getHeight()));
@@ -254,34 +262,38 @@ public class MyGame extends Base3DGame {
         constraintSystem.update();
         motionSystem.update();
         physicsSystem.update(deltaTime);
-        gun.update();
+        mainView.getVehicle().update();
 
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
-    private boolean firstPerson = true;
-    private void render_FirstPerson() {
-        // Update Camera
-        aircraft.setCamera(camera, 0);
-        world.getEntity("sky").get(Position.class).transform.setToTranslation(camera.position);
-        // Render
-        Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
-        renderSystem.render(camera, environment);
-//        physicsSystem.renderDebug(camera);
-    }
-
-    private void render_ThirdPerson() {
-        // Update Camera
-        gun.setCamera(camera, 0);
-        world.getEntity("sky").get(Position.class).transform.setToTranslation(camera.position);
-        // Render
-        Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
-        renderSystem.render(camera, environment);
-//        physicsSystem.renderDebug(camera);
-    }
-
     // ----- Custom ----- //
-    private void changeCamera() {
-        firstPerson = !firstPerson;
+    private View mainView = new View(0, 0);
+    private View secondaryView = new View(1, 0);
+    private void changeView() {
+        View tmp = mainView;
+        mainView = secondaryView;
+        secondaryView = tmp;
+    }
+
+    private class View {
+        int cameraIndex = 0;
+        int vehicleIndex = 0;
+        private View(int vehicleIndex, int cameraIndex) {
+            this.vehicleIndex = vehicleIndex;
+            this.cameraIndex = cameraIndex;
+        }
+        private void setCamera(PerspectiveCamera camera) {
+            vehicles.get(vehicleIndex).setCamera(camera, cameraIndex);
+        }
+        private Controllable getVehicle() {
+            return vehicles.get(vehicleIndex);
+        }
+        private void changeCamera() {
+            cameraIndex = (cameraIndex + 1) % 2;
+        }
+        private void changeVehicle() {
+            vehicleIndex = (vehicleIndex + 1) % vehicles.size;
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.my.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.VertexAttributes;
@@ -110,8 +111,7 @@ public class AircraftBuilder {
         return addObject(
                 "Wing-" + wingNum++,
                 transform,
-                new MyInstance("wing", group, new Motion.Lift(new Vector3(0, 200, 0)),
-                        new Collision(AIRCRAFT_FLAG, ALL_FLAG, AircraftBuilder::collide)),
+                new MyInstance("wing", group, new Motion.Lift(new Vector3(0, 200, 0))),
                 base,
                 base == null ? null : new ConstraintSystem.ConnectConstraint(500)
         );
@@ -123,8 +123,7 @@ public class AircraftBuilder {
         Entity entity = addObject(
                 "Rotate-" + rotate++,
                 transform,
-                new MyInstance("rotate", group, null,
-                        new Collision(AIRCRAFT_FLAG, ALL_FLAG, AircraftBuilder::collide)),
+                new MyInstance("rotate", group),
                 base,
                 base == null ? null : new ConstraintSystem.HingeConstraint(
                         relTransform.rotate(Vector3.X, 90),
@@ -140,18 +139,17 @@ public class AircraftBuilder {
         return addObject(
                 "Engine-" + engineNum++,
                 transform,
-                new MyInstance("engine", group, new Motion.LimitedForce(maxVelocity, new Vector3(0, force, 0)),
-                        new Collision(AIRCRAFT_FLAG, ALL_FLAG, AircraftBuilder::collide)),
+                new MyInstance("engine", group, new Motion.LimitedForce(maxVelocity, new Vector3(0, force, 0))),
                 base,
                 base == null ? null : new ConstraintSystem.ConnectConstraint()
         );
     }
 
-    public static Aircraft createAircraft(Matrix4 transform, float force, float maxVelocity, int upKey, int downKey, int leftKey, int rightKey) {
-        return new Aircraft(transform, force, maxVelocity, upKey, downKey, leftKey, rightKey);
+    public static Aircraft createAircraft(Matrix4 transform, float force, float maxVelocity) {
+        return new Aircraft(transform, force, maxVelocity);
     }
 
-    public static class Aircraft {
+    public static class Aircraft implements Controllable {
 
         private Entity body;
         private Entity engine;
@@ -160,8 +158,11 @@ public class AircraftBuilder {
         private Entity wing_R1, wing_R2;
         private Entity wing_TL, wing_TR;
         private Entity wing_VL, wing_VR;
+        private Controller controller_L = new Controller(-0.15f, 0.2f, 0.5f);
+        private Controller controller_R = new Controller(-0.15f, 0.2f, 0.5f);
+        private Controller controller_T = new Controller(-0.2f, 0.2f, 1f);
 
-        public Aircraft(Matrix4 transform, float force, float maxVelocity, int upKey, int downKey, int leftKey, int rightKey) {
+        public Aircraft(Matrix4 transform, float force, float maxVelocity) {
 
             // Body
             body = createBody(transform.cpy().translate(0, 0.5f, -3), null);
@@ -169,19 +170,19 @@ public class AircraftBuilder {
 
             // Left
             rotate_L = createRotate(transform.cpy().translate(-1, 0.5f, -5).rotate(Vector3.Z, 90),
-                    new Controller(-0.15f, 0.2f, 0.5f, rightKey, leftKey), body);
+                    controller_L, body);
             wing_L1 = createWing(transform.cpy().translate(-2.5f, 0.5f, -5).rotate(Vector3.X, 14), rotate_L);
             wing_L2 = createWing(transform.cpy().translate(-4.5f, 0.5f, -5).rotate(Vector3.X, 14), wing_L1);
 
             // Right
             rotate_R = createRotate(transform.cpy().translate(1, 0.5f, -5).rotate(Vector3.Z, 90),
-                    new Controller(-0.15f, 0.2f, 0.5f, leftKey, rightKey), body);
+                    controller_R, body);
             wing_R1 = createWing(transform.cpy().translate(2.5f, 0.5f, -5).rotate(Vector3.X, 14), rotate_R);
             wing_R2 = createWing(transform.cpy().translate(4.5f, 0.5f, -5).rotate(Vector3.X, 14), wing_R1);
 
             // Horizontal Tail
             rotate_T = createRotate(transform.cpy().translate(0, 0.5f, 0.1f).rotate(Vector3.Z, 90),
-                    new Controller(-0.2f, 0.2f, 1f, downKey, upKey), body);
+                    controller_T, body);
             wing_TL = createWing(transform.cpy().translate(-1.5f, 0.5f, 0.1f).rotate(Vector3.X, 13f), rotate_T);
             wing_TR = createWing(transform.cpy().translate(1.5f, 0.5f, 0.1f).rotate(Vector3.X, 13f), rotate_T);
 
@@ -190,8 +191,23 @@ public class AircraftBuilder {
             wing_VR = createWing(transform.cpy().translate(0.6f, 1f, -1).rotate(Vector3.Z, 90), body);
         }
 
+        public void update() {
+            float v1 = 1f;
+            float v2 = 0.5f;
+            if (Gdx.input.isKeyPressed(Input.Keys.W)) controller_T.rotate(v1);
+            if (Gdx.input.isKeyPressed(Input.Keys.S)) controller_T.rotate(-v1);
+            if (Gdx.input.isKeyPressed(Input.Keys.A)) {
+                controller_L.rotate(v2);
+                controller_R.rotate(-v2);
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.D)) {
+                controller_L.rotate(-v2);
+                controller_R.rotate(v2);
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.J)) fire();
+        }
         public void fire() {
-            tmpM.set(getTransform()).translate(0, 0, -6.5f).rotate(Vector3.X, 90);
+            tmpM.set(getTransform()).translate(0, 0, -20 + (float) (Math.random() * 15)).rotate(Vector3.X, 90);
             getTransform().getRotation(tmpQ);
             tmpV1.set(getBody().getLinearVelocity());
             tmpV1.add(new Vector3(0, 0, -1).mul(tmpQ).scl(2000));
@@ -256,12 +272,6 @@ public class AircraftBuilder {
         if (base != null) constraintSystem.addConstraint(base.get(Id.class).id, id, constraint);
         return entity;
     }
-    private static void collide(Entity self, Entity target) {
-        if (checkVelocity(self, target, 40)) {
-            System.out.println("Collision!");
-//            constraintSystem.remove(world, self.get(Id.class).id);
-        }
-    }
     private static boolean checkVelocity(Entity self, Entity target, double maxVelocity) {
         tmpV1.set(self.get(RigidBody.class).body.getLinearVelocity());
         tmpV2.set(target.get(RigidBody.class).body.getLinearVelocity());
@@ -270,27 +280,26 @@ public class AircraftBuilder {
     private static class Controller implements ConstraintSystem.Controller {
         private float low;
         private float high;
-        private float delta;
-        private int down;
-        private int up;
+        private float resilience;
         private float target = 0;
-        private Controller(float low, float high, float delta, int down, int up) {
+        private boolean isRotated = false;
+        private Controller(float low, float high, float resilience) {
             this.low = low;
             this.high = high;
-            this.delta = delta;
-            this.down = down;
-            this.up = up;
+            this.resilience = resilience;
+        }
+        private void rotate(float step) {
+            isRotated = true;
+            target += step;
         }
         @Override
         public void update(btTypedConstraint constraint) {
-            if (Gdx.input.isKeyPressed(up)) {
-                target += delta;
-            } else if (Gdx.input.isKeyPressed(down)) {
-                target -= delta;
-            } else {
-                target += target > 0 ? -delta : (target < 0 ? delta : 0);
+            if (!isRotated) {
+                target += target > 0 ? -resilience : (target < 0 ? resilience : 0);
             }
-            target = target > high ? high : (target < low ? low : target);
+            isRotated = false;
+            target = Math.min(high, target);
+            target = Math.max(low, target);
             btHingeConstraint hingeConstraint = (btHingeConstraint) constraint;
             hingeConstraint.setLimit(target, target, 0, 0.5f);
         }

@@ -54,7 +54,7 @@ public class GunBuilder {
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
         ModelBuilder mdBuilder = new ModelBuilder();
         models.put("bullet", mdBuilder.createCapsule(0.5f, 2, 8, new Material(ColorAttribute.createDiffuse(Color.YELLOW)), VertexAttributes.Usage.Position));
-        models.put("barrel", mdBuilder.createBox(1, 1, 5, new Material(ColorAttribute.createDiffuse(Color.GRAY)), attributes));
+        models.put("barrel", mdBuilder.createBox(1, 1, 5, new Material(ColorAttribute.createDiffuse(Color.GREEN)), attributes));
         models.put("gunRotate", mdBuilder.createCylinder(1, 1, 1, 8, new Material(ColorAttribute.createDiffuse(Color.CYAN)), attributes));
 
         Render.addConfig("bullet", new Render.Config(models.get("bullet")));
@@ -120,7 +120,7 @@ public class GunBuilder {
         return new Gun(transform);
     }
 
-    public static class Gun {
+    public static class Gun implements Controllable {
 
         private Entity rotate_Y, rotate_X, barrel;
         private Controller controller_X = new Controller(-90, 0);
@@ -134,6 +134,14 @@ public class GunBuilder {
             barrel = createBarrel(transform.cpy().translate(0, 1.5f, -3), rotate_X);
         }
 
+        public void update() {
+            float v = 0.025f;
+            if (Gdx.input.isKeyPressed(Input.Keys.W)) rotate(0, -v);
+            if (Gdx.input.isKeyPressed(Input.Keys.S)) rotate(0, v);
+            if (Gdx.input.isKeyPressed(Input.Keys.A)) rotate(v, 0);
+            if (Gdx.input.isKeyPressed(Input.Keys.D)) rotate(-v, 0);
+            if (Gdx.input.isKeyPressed(Input.Keys.J)) fire();
+        }
         public void fire() {
             tmpM.set(getTransform()).translate(0, 0, -20 + (float) (Math.random() * 15)).rotate(Vector3.X, 90);
             getTransform().getRotation(tmpQ);
@@ -150,14 +158,6 @@ public class GunBuilder {
             constraintSystem.remove(world, rotate_X.get(Id.class).id);
             constraintSystem.remove(world, barrel.get(Id.class).id);
             physicsSystem.addExplosion(getTransform().getTranslation(tmpV1), 2000);
-        }
-        public void update() {
-            float v = 0.025f;
-            if (Gdx.input.isKeyPressed(Input.Keys.W)) rotate(0, -v);
-            if (Gdx.input.isKeyPressed(Input.Keys.S)) rotate(0, v);
-            if (Gdx.input.isKeyPressed(Input.Keys.A)) rotate(v, 0);
-            if (Gdx.input.isKeyPressed(Input.Keys.D)) rotate(-v, 0);
-            if (Gdx.input.isKeyPressed(Input.Keys.J)) fire();
         }
         public void rotate(float stepY, float stepX) {
             setDirection(controller_Y.target + stepY, controller_X.target + stepX);
