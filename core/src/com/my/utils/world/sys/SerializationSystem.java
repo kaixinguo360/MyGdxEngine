@@ -6,7 +6,6 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.SerializationException;
 import com.my.utils.world.BaseSystem;
 import com.my.utils.world.Entity;
-import com.my.utils.world.com.Id;
 import com.my.utils.world.com.Serialization;
 
 import java.util.HashMap;
@@ -18,27 +17,27 @@ public class SerializationSystem extends BaseSystem {
     private static final Map<String, Values> jsonMap = new HashMap<>();
 
     // ----- Check ----- //
-    public boolean check(Entity entity) {
-        return entity.contain(Id.class, Serialization.class);
+    public boolean isHandleable(Entity entity) {
+        return entity.contain(Serialization.class);
     }
 
     // ----- Custom ----- //
     public String serialize(String group) {
         jsonMap.clear();
         for (Entity entity : entities) {
-            Serialization s = entity.get(Serialization.class);
+            Serialization s = entity.getComponent(Serialization.class);
 
             if (group == null || group.equals(s.group)) {
                 Serialization.Serializer serializer = Serialization.getSerializer(s.serializerId);
                 String data = serializer.serialize(entity);
                 if (data != null) {
                     Values values = new Values();
-                    values.put("id", entity.get(Id.class).id);
+                    values.put("id", entity.getId());
                     values.put("group", s.group);
                     values.put("serializerId", s.serializerId);
                     values.put("action", "update");
                     values.put("data", data);
-                    jsonMap.put(entity.get(Id.class).id, values);
+                    jsonMap.put(entity.getId(), values);
                 }
             }
         }
@@ -61,8 +60,8 @@ public class SerializationSystem extends BaseSystem {
         }
         // ----- Update & Remove ----- //
         for (Entity entity : entities) {
-            Serialization s = entity.get(Serialization.class);
-            Values values = jsonMap.remove(entity.get(Id.class).id);
+            Serialization s = entity.getComponent(Serialization.class);
+            Values values = jsonMap.remove(entity.getId());
             if (values != null) {
                 Serialization.Serializer serializer = Serialization.getSerializer(s.serializerId);
                 String action = values.get("action");

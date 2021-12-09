@@ -35,7 +35,7 @@ public class SceneBuilder {
     private static ArrayMap<String, Model> models = new ArrayMap<>();
     public static void init(World world) {
         SceneBuilder.world = world;
-        SceneBuilder.constraintSystem = world.getSystem(ConstraintSystem.class);
+        SceneBuilder.constraintSystem = world.getSystemManager().getSystem(ConstraintSystem.class);
 
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
         ModelBuilder mdBuilder = new ModelBuilder();
@@ -88,8 +88,9 @@ public class SceneBuilder {
 
     // ----- Private ----- //
     private static String addObject(String id, Matrix4 transform, Entity entity, String base, ConstraintSystem.Config constraint) {
-        world.addEntity(id, entity)
-                .get(Position.class).transform.set(transform);
+        entity.setId(id);
+        world.getEntityManager().addEntity(entity)
+                .getComponent(Position.class).getTransform().set(transform);
         if (base != null) constraintSystem.addConstraint(base, id, constraint);
         return id;
     }

@@ -21,7 +21,10 @@ import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.my.utils.world.Entity;
 import com.my.utils.world.World;
-import com.my.utils.world.com.*;
+import com.my.utils.world.com.Collision;
+import com.my.utils.world.com.Position;
+import com.my.utils.world.com.Render;
+import com.my.utils.world.com.RigidBody;
 import com.my.utils.world.sys.ConstraintSystem;
 import com.my.utils.world.sys.PhysicsSystem;
 
@@ -48,8 +51,8 @@ public class GunBuilder {
     private static ArrayMap<String, Model> models = new ArrayMap<>();
     public static void init(World world) {
         GunBuilder.world = world;
-        GunBuilder.physicsSystem = world.getSystem(PhysicsSystem.class);
-        GunBuilder.constraintSystem = world.getSystem(ConstraintSystem.class);
+        GunBuilder.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
+        GunBuilder.constraintSystem = world.getSystemManager().getSystem(ConstraintSystem.class);
 
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
         ModelBuilder mdBuilder = new ModelBuilder();
@@ -71,13 +74,7 @@ public class GunBuilder {
     private static int bulletNum = 0;
     public static Entity createBullet(Matrix4 transform, Entity base) {
         Entity entity = new MyInstance("bullet", "bullet", null,
-                new Collision(BOMB_FLAG, ALL_FLAG, (self, target) -> {
-                    if (checkVelocity(self, target, 20)) {
-                        System.out.println("Boom! " + self.get(Id.class) + " ==> " + target.get(Id.class));
-                        physicsSystem.addExplosion(self.get(Position.class).transform.getTranslation(tmpV1), 5000);
-                        world.removeEntity(self);
-                    }
-                }));
+                new Collision(BOMB_FLAG, ALL_FLAG, "BulletCollisionHandler"));
         addObject(
                 "Bullet-" + bulletNum++,
                 transform,
@@ -101,7 +98,7 @@ public class GunBuilder {
 
     private static int gunRotateNum = 0;
     public static Entity createRotate(Matrix4 transform, ConstraintSystem.Controller controller, Entity base) {
-        Matrix4 relTransform = new Matrix4(base.get(Position.class).transform).inv().mul(transform);
+        Matrix4 relTransform = new Matrix4(base.getComponent(Position.class).getTransform()).inv().mul(transform);
         Entity entity = addObject(
                 "GunRotate-" + gunRotateNum++,
                 transform,
@@ -112,7 +109,7 @@ public class GunBuilder {
                         new Matrix4().rotate(Vector3.X, 90),
                         false)
         );
-        constraintSystem.addController(entity.get(Id.class).id, base.get(Id.class).id, controller);
+        constraintSystem.addController(entity.getId(), base.getId(), controller);
         return entity;
     }
 
@@ -128,7 +125,7 @@ public class GunBuilder {
 
         public Gun(Matrix4 transform) {
             rotate_Y = createRotate(transform.cpy().translate(0, 0.5f, 0),
-                    controller_Y, world.getEntity("ground"));
+                    controller_Y, world.getEntityManager().getEntity("ground"));
             rotate_X = createRotate(transform.cpy().translate(0, 1.5f, 0).rotate(Vector3.Z, 90),
                     controller_X, rotate_Y);
             barrel = createBarrel(transform.cpy().translate(0, 1.5f, -3), rotate_X);
@@ -147,16 +144,16 @@ public class GunBuilder {
             getTransform().getRotation(tmpQ);
             tmpV1.set(getBody().getLinearVelocity());
             tmpV1.add(new Vector3(0, 0, -1).mul(tmpQ).scl(2000));
-            btRigidBody body = createBullet(tmpM, null).get(RigidBody.class).body;
+            btRigidBody body = createBullet(tmpM, null).getComponent(RigidBody.class).body;
             body.setLinearVelocity(tmpV1);
             body.setCcdMotionThreshold(1e-7f);
             body.setCcdSweptSphereRadius(2);
         }
         public void explode() {
             System.out.println("Explosion!");
-            constraintSystem.remove(world, rotate_Y.get(Id.class).id);
-            constraintSystem.remove(world, rotate_X.get(Id.class).id);
-            constraintSystem.remove(world, barrel.get(Id.class).id);
+            constraintSystem.remove(world, rotate_Y.getId());
+            constraintSystem.remove(world, rotate_X.getId());
+            constraintSystem.remove(world, barrel.getId());
             physicsSystem.addExplosion(getTransform().getTranslation(tmpV1), 2000);
         }
         public void rotate(float stepY, float stepX) {
@@ -186,23 +183,24 @@ public class GunBuilder {
             }
         }
         public Matrix4 getTransform() {
-            return barrel.get(Position.class).transform;
+            return barrel.getComponent(Position.class).getTransform();
         }
         public btRigidBody getBody() {
-            return barrel.get(RigidBody.class).body;
+            return barrel.getComponent(RigidBody.class).body;
         }
     }
 
     // ----- Private ----- //
     private static Entity addObject(String id, Matrix4 transform, Entity entity, Entity base, ConstraintSystem.Config constraint) {
-        world.addEntity(id, entity)
-                .get(Position.class).transform.set(transform);
-        if (base != null) constraintSystem.addConstraint(base.get(Id.class).id, id, constraint);
+        entity.setId(id);
+        world.getEntityManager().addEntity(entity)
+                .getComponent(Position.class).getTransform().set(transform);
+        if (base != null) constraintSystem.addConstraint(base.getId(), id, constraint);
         return entity;
     }
     private static boolean checkVelocity(Entity self, Entity target, double maxVelocity) {
-        tmpV1.set(self.get(RigidBody.class).body.getLinearVelocity());
-        tmpV2.set(target.get(RigidBody.class).body.getLinearVelocity());
+        tmpV1.set(self.getComponent(RigidBody.class).body.getLinearVelocity());
+        tmpV2.set(target.getComponent(RigidBody.class).body.getLinearVelocity());
         return tmpV1.sub(tmpV2).len() > maxVelocity;
     }
     private static class Controller implements ConstraintSystem.Controller {

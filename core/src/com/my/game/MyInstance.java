@@ -13,43 +13,43 @@ public class MyInstance extends Entity {
 
     public MyInstance() {}
 
-    public MyInstance(String name) {
-        this(name, null);
+    public MyInstance(String className) {
+        this(className, null);
     }
 
-    public MyInstance(String name, String group) {
-        this(name, group, null);
+    public MyInstance(String className, String group) {
+        this(className, group, null);
     }
 
-    public MyInstance(String name, String group, Motion motion) {
-        this(name, group, motion, null);
+    public MyInstance(String className, String group, Motion motion) {
+        this(className, group, motion, null);
     }
 
-    public MyInstance(String name, String group, Motion motion, Collision collision) {
-        position = add(Position.class, new Position());
-        render = add(Render.class, Render.get(name, position));
-        rigidBody = add(RigidBody.class, RigidBody.get(name));
+    public MyInstance(String className, String group, Motion motion, Collision collision) {
+        position = addComponent(Position.class, new Position(new Matrix4()));
+        render = addComponent(Render.class, Render.get(className, position));
+        rigidBody = addComponent(RigidBody.class, RigidBody.get(className));
         if (group != null) {
             serialization = new Serialization();
             serialization.group = group;
-            serialization.serializerId = name;
-            add(Serialization.class, serialization);
+            serialization.serializerId = className;
+            addComponent(Serialization.class, serialization);
         }
         if (motion != null) {
-            add(Motion.class, motion);
+            addComponent(Motion.class, motion);
         }
         if (collision != null) {
-            add(Collision.class, collision);
+            addComponent(Collision.class, collision);
         }
     }
 
     public void setTransform(Matrix4 transform) {
-        get(Position.class).transform.set(transform);
-        if (contain(RigidBody.class)) get(RigidBody.class).body.proceedToTransform(transform);
+        getComponent(Position.class).getTransform().set(transform);
+        if (contain(RigidBody.class)) getComponent(RigidBody.class).body.proceedToTransform(transform);
     }
 
     @Override
     public void dispose() {
-        if (contain(RigidBody.class)) get(RigidBody.class).body.dispose();
+        if (contain(RigidBody.class)) getComponent(RigidBody.class).body.dispose();
     }
 }

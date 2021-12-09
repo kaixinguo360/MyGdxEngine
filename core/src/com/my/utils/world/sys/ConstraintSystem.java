@@ -21,7 +21,7 @@ public class ConstraintSystem extends BaseSystem {
     }
 
     // ----- Check ----- //
-    public boolean check(Entity entity) {
+    public boolean isHandleable(Entity entity) {
         return false;
     }
 
@@ -50,7 +50,7 @@ public class ConstraintSystem extends BaseSystem {
         return null;
     }
     public void remove(World world, String body) {
-        btDynamicsWorld dynamicsWorld = world.getSystem(PhysicsSystem.class).dynamicsWorld;
+        btDynamicsWorld dynamicsWorld = world.getSystemManager().getSystem(PhysicsSystem.class).dynamicsWorld;
         Iterator<Constraint> it = constraints.iterator();
         while (it.hasNext()) {
             Constraint constraint = it.next();
@@ -66,11 +66,11 @@ public class ConstraintSystem extends BaseSystem {
     }
 
     public void init(World world) {
-        btDynamicsWorld dynamicsWorld = world.getSystem(PhysicsSystem.class).dynamicsWorld;
+        btDynamicsWorld dynamicsWorld = world.getSystemManager().getSystem(PhysicsSystem.class).dynamicsWorld;
         for (Constraint constraint : constraints) {
             if (constraint.btConstraint == null) {
-                btRigidBody bodyA = world.getEntity(constraint.bodyA).get(RigidBody.class).body;
-                btRigidBody bodyB = world.getEntity(constraint.bodyB).get(RigidBody.class).body;
+                btRigidBody bodyA = world.getEntityManager().getEntity(constraint.bodyA).getComponent(RigidBody.class).body;
+                btRigidBody bodyB = world.getEntityManager().getEntity(constraint.bodyB).getComponent(RigidBody.class).body;
                 constraint.btConstraint = constraint.config.get(bodyA, bodyB);
                 constraint.btConstraint.setParam(BT_CONSTRAINT_CFM, 0);
                 constraint.btConstraint.setParam(BT_CONSTRAINT_ERP, 0.5f);
@@ -86,7 +86,7 @@ public class ConstraintSystem extends BaseSystem {
         }
     }
     public void clear(World world) {
-        btDynamicsWorld dynamicsWorld = world.getSystem(PhysicsSystem.class).dynamicsWorld;
+        btDynamicsWorld dynamicsWorld = world.getSystemManager().getSystem(PhysicsSystem.class).dynamicsWorld;
         for (Constraint constraint : constraints) {
             if (constraint.btConstraint != null) {
                 dynamicsWorld.removeConstraint(constraint.btConstraint);

@@ -90,19 +90,22 @@ public class MyGame extends Base3DGame {
         Bullet.init();
         world = new World();
         // Create renderSystem
-        renderSystem = world.addSystem(RenderSystem.class, new RenderSystem());
+        renderSystem = world.getSystemManager().addSystem(new RenderSystem());
         addDisposable(renderSystem);
         // Create physicsSystem
-        physicsSystem = world.addSystem(PhysicsSystem.class, new PhysicsSystem());
+        physicsSystem = world.getSystemManager().addSystem(new PhysicsSystem());
+        physicsSystem.setAssetsManager(world.getAssetsManager());
+        Collisions.init(world);
         addDisposable(physicsSystem);
         // Create serializationSystem
-        serializationSystem = world.addSystem(SerializationSystem.class, new SerializationSystem());
+        serializationSystem = world.getSystemManager().addSystem(new SerializationSystem());
         addDisposable(serializationSystem);
         // Create constraintSystem
-        constraintSystem = world.addSystem(ConstraintSystem.class, new ConstraintSystem());
+        constraintSystem = world.getSystemManager().addSystem(new ConstraintSystem());
         addDisposable(constraintSystem);
         // Create MotionSystem
-        motionSystem = world.addSystem(MotionSystem.class, new MotionSystem());
+        motionSystem = world.getSystemManager().addSystem(new MotionSystem());
+        Motions.init(world);
         addDisposable(motionSystem);
         // Create ObjectBuilder
         SceneBuilder.init(world);
@@ -112,6 +115,7 @@ public class MyGame extends Base3DGame {
         // ----- Create Environment ----- //
         environment = new Environment();
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
+        environment.set(new ColorAttribute(ColorAttribute.Fog, 0.8f, 0.8f, 0.8f, 1f));
         environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -0.2f, -0.8f, 1f));
         environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, 0.2f, 0.8f, -1f));
 
@@ -192,8 +196,12 @@ public class MyGame extends Base3DGame {
         RigidBody.addConfig("ground", new RigidBody.Config(new btBoxShape(new Vector3(5000,0.005f,10000)), 0f));
 
         // ----- Init Static Objects ----- //
-        world.addEntity("sky", new MyInstance("sky"));
-        world.addEntity("ground", new MyInstance("ground"));
+        MyInstance sky = new MyInstance("sky");
+        sky.setId("sky");
+        world.getEntityManager().addEntity(sky);
+        MyInstance ground = new MyInstance("ground");
+        ground.setId("ground");
+        world.getEntityManager().addEntity(ground);
 
         // ----- Init Dynamic Objects ----- //
         for (int i = 0; i < 100; i++) {
@@ -242,12 +250,12 @@ public class MyGame extends Base3DGame {
         // Render
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         mainView.setCamera(camera);
-        world.getEntity("sky").get(Position.class).transform.setToTranslation(camera.position);
+        world.getEntityManager().getEntity("sky").getComponent(Position.class).getTransform().setToTranslation(camera.position);
         Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
         renderSystem.render(camera, environment);
         Gdx.gl.glViewport(0, Gdx.graphics.getHeight() - 250, 400, 250);
         secondaryView.setCamera(camera);
-        world.getEntity("sky").get(Position.class).transform.setToTranslation(camera.position);
+        world.getEntityManager().getEntity("sky").getComponent(Position.class).getTransform().setToTranslation(camera.position);
         Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
         renderSystem.render(camera, environment);
 
@@ -260,8 +268,9 @@ public class MyGame extends Base3DGame {
         // Update World
         world.update();
         constraintSystem.update();
-        motionSystem.update();
+        motionSystem.update(world);
         physicsSystem.update(deltaTime);
+        world.getEntityManager().getBatch().commit();
         mainView.getVehicle().update();
 
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());

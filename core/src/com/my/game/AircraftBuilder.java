@@ -22,7 +22,10 @@ import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.my.utils.world.Entity;
 import com.my.utils.world.World;
-import com.my.utils.world.com.*;
+import com.my.utils.world.com.Collision;
+import com.my.utils.world.com.Position;
+import com.my.utils.world.com.Render;
+import com.my.utils.world.com.RigidBody;
 import com.my.utils.world.sys.ConstraintSystem;
 import com.my.utils.world.sys.PhysicsSystem;
 
@@ -30,7 +33,6 @@ public class AircraftBuilder {
 
     // ----- Temporary ----- //
     private static final Vector3 tmpV1 = new Vector3();
-    private static final Vector3 tmpV2 = new Vector3();
     private static final Matrix4 tmpM = new Matrix4();
     private static final Quaternion tmpQ = new Quaternion();
     private static final String group = "group";
@@ -49,8 +51,8 @@ public class AircraftBuilder {
     private static ArrayMap<String, Model> models = new ArrayMap<>();
     public static void init(World world) {
         AircraftBuilder.world = world;
-        AircraftBuilder.physicsSystem = world.getSystem(PhysicsSystem.class);
-        AircraftBuilder.constraintSystem = world.getSystem(ConstraintSystem.class);
+        AircraftBuilder.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
+        AircraftBuilder.constraintSystem = world.getSystemManager().getSystem(ConstraintSystem.class);
 
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
         ModelBuilder mdBuilder = new ModelBuilder();
@@ -78,13 +80,7 @@ public class AircraftBuilder {
     private static int bombNum = 0;
     public static Entity createBomb(Matrix4 transform, Entity base) {
         Entity entity = new MyInstance("bomb", "bomb", null,
-                new Collision(BOMB_FLAG, ALL_FLAG, (self, target) -> {
-                    if (checkVelocity(self, target, 20)) {
-                        System.out.println("Boom! " + self.get(Id.class) + " ==> " + target.get(Id.class));
-                        physicsSystem.addExplosion(self.get(Position.class).transform.getTranslation(tmpV1), 5000);
-                        world.removeEntity(self);
-                    }
-                }));
+                new Collision(BOMB_FLAG, ALL_FLAG, "BombCollisionHandler"));
         addObject(
                 "Bomb-" + bombNum++,
                 transform,
@@ -111,7 +107,7 @@ public class AircraftBuilder {
         return addObject(
                 "Wing-" + wingNum++,
                 transform,
-                new MyInstance("wing", group, new Motion.Lift(new Vector3(0, 200, 0))),
+                new MyInstance("wing", group, Motions.Lift.getConfig(new Vector3(0, 200, 0))),
                 base,
                 base == null ? null : new ConstraintSystem.ConnectConstraint(500)
         );
@@ -119,7 +115,7 @@ public class AircraftBuilder {
 
     private static int rotate = 0;
     public static Entity createRotate(Matrix4 transform, ConstraintSystem.Controller controller, Entity base) {
-        Matrix4 relTransform = new Matrix4(base.get(Position.class).transform).inv().mul(transform);
+        Matrix4 relTransform = new Matrix4(base.getComponent(Position.class).getTransform()).inv().mul(transform);
         Entity entity = addObject(
                 "Rotate-" + rotate++,
                 transform,
@@ -130,7 +126,7 @@ public class AircraftBuilder {
                         new Matrix4().rotate(Vector3.X, 90),
                         false)
         );
-        constraintSystem.addController(entity.get(Id.class).id, base.get(Id.class).id, controller);
+        constraintSystem.addController(entity.getId(), base.getId(), controller);
         return entity;
     }
 
@@ -139,7 +135,7 @@ public class AircraftBuilder {
         return addObject(
                 "Engine-" + engineNum++,
                 transform,
-                new MyInstance("engine", group, new Motion.LimitedForce(maxVelocity, new Vector3(0, force, 0))),
+                new MyInstance("engine", group, Motions.LimitedForce.getConfig(maxVelocity, new Vector3(0, force, 0), new Vector3())),
                 base,
                 base == null ? null : new ConstraintSystem.ConnectConstraint()
         );
@@ -211,26 +207,26 @@ public class AircraftBuilder {
             getTransform().getRotation(tmpQ);
             tmpV1.set(getBody().getLinearVelocity());
             tmpV1.add(new Vector3(0, 0, -1).mul(tmpQ).scl(2000));
-            btRigidBody body = createBomb(tmpM, null).get(RigidBody.class).body;
+            btRigidBody body = createBomb(tmpM, null).getComponent(RigidBody.class).body;
             body.setLinearVelocity(tmpV1);
             body.setCcdMotionThreshold(1e-7f);
             body.setCcdSweptSphereRadius(2);
         }
         public void explode() {
             System.out.println("Explosion!");
-            constraintSystem.remove(world, body.get(Id.class).id);
-            constraintSystem.remove(world, engine.get(Id.class).id);
-            constraintSystem.remove(world, rotate_L.get(Id.class).id);
-            constraintSystem.remove(world, rotate_R.get(Id.class).id);
-            constraintSystem.remove(world, rotate_T.get(Id.class).id);
-            constraintSystem.remove(world, wing_L1.get(Id.class).id);
-            constraintSystem.remove(world, wing_L2.get(Id.class).id);
-            constraintSystem.remove(world, wing_R1.get(Id.class).id);
-            constraintSystem.remove(world, wing_R2.get(Id.class).id);
-            constraintSystem.remove(world, wing_TL.get(Id.class).id);
-            constraintSystem.remove(world, wing_TR.get(Id.class).id);
-            constraintSystem.remove(world, wing_VL.get(Id.class).id);
-            constraintSystem.remove(world, wing_VR.get(Id.class).id);
+            constraintSystem.remove(world, body.getId());
+            constraintSystem.remove(world, engine.getId());
+            constraintSystem.remove(world, rotate_L.getId());
+            constraintSystem.remove(world, rotate_R.getId());
+            constraintSystem.remove(world, rotate_T.getId());
+            constraintSystem.remove(world, wing_L1.getId());
+            constraintSystem.remove(world, wing_L2.getId());
+            constraintSystem.remove(world, wing_R1.getId());
+            constraintSystem.remove(world, wing_R2.getId());
+            constraintSystem.remove(world, wing_TL.getId());
+            constraintSystem.remove(world, wing_TR.getId());
+            constraintSystem.remove(world, wing_VL.getId());
+            constraintSystem.remove(world, wing_VR.getId());
             physicsSystem.addExplosion(getTransform().getTranslation(tmpV1), 2000);
         }
         public void setCamera(PerspectiveCamera camera, int index) {
@@ -258,24 +254,20 @@ public class AircraftBuilder {
             return getTransform().getTranslation(tmpV1).y;
         }
         public Matrix4 getTransform() {
-            return body.get(Position.class).transform;
+            return body.getComponent(Position.class).getTransform();
         }
         public btRigidBody getBody() {
-            return body.get(RigidBody.class).body;
+            return body.getComponent(RigidBody.class).body;
         }
     }
 
     // ----- Private ----- //
     private static Entity addObject(String id, Matrix4 transform, Entity entity, Entity base, ConstraintSystem.Config constraint) {
-        world.addEntity(id, entity)
-                .get(Position.class).transform.set(transform);
-        if (base != null) constraintSystem.addConstraint(base.get(Id.class).id, id, constraint);
+        entity.setId(id);
+        world.getEntityManager().addEntity(entity)
+                .getComponent(Position.class).getTransform().set(transform);
+        if (base != null) constraintSystem.addConstraint(base.getId(), id, constraint);
         return entity;
-    }
-    private static boolean checkVelocity(Entity self, Entity target, double maxVelocity) {
-        tmpV1.set(self.get(RigidBody.class).body.getLinearVelocity());
-        tmpV2.set(target.get(RigidBody.class).body.getLinearVelocity());
-        return tmpV1.sub(tmpV2).len() > maxVelocity;
     }
     private static class Controller implements ConstraintSystem.Controller {
         private float low;

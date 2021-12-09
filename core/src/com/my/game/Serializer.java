@@ -7,7 +7,6 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import com.my.utils.world.Entity;
 import com.my.utils.world.World;
-import com.my.utils.world.com.Id;
 import com.my.utils.world.com.RigidBody;
 import com.my.utils.world.com.Serialization;
 
@@ -21,7 +20,7 @@ public class Serializer implements Serialization.Serializer {
     }
 
     public String serialize(Entity entity) {
-        RigidBody rigidBody = entity.get(RigidBody.class);
+        RigidBody rigidBody = entity.getComponent(RigidBody.class);
         btRigidBody body = rigidBody.body;
 
         Status status = new Status();
@@ -35,13 +34,15 @@ public class Serializer implements Serialization.Serializer {
     @Override
     public void add(String id, String group, String serializerId, String data) {
         try {
-            Entity entity = world.addEntity(id, new MyInstance(serializerId, group));
+            MyInstance myInstance = new MyInstance(serializerId, group);
+            myInstance.setId(id);
+            Entity entity = world.getEntityManager().addEntity(myInstance);
             update(entity, data);
         } catch (RuntimeException ignored) {}
     }
 
     public void update(Entity entity, String data) {
-        btRigidBody body = entity.get(RigidBody.class).body;
+        btRigidBody body = entity.getComponent(RigidBody.class).body;
 
         Status status = JSON.fromJson(Status.class, data);
         body.activate();
@@ -53,7 +54,7 @@ public class Serializer implements Serialization.Serializer {
 
     @Override
     public void remove(Entity entity) {
-        world.removeEntity(entity.get(Id.class).id);
+        world.getEntityManager().removeEntity(entity.getId());
     }
 
     static class Status implements Json.Serializable {

@@ -22,7 +22,7 @@ public class RenderSystem extends BaseSystem {
     }
 
     // ----- Check ----- //
-    public boolean check(Entity entity) {
+    public boolean isHandleable(Entity entity) {
         return entity.contain(Position.class, Render.class);
     }
 
@@ -30,8 +30,8 @@ public class RenderSystem extends BaseSystem {
     public void render(PerspectiveCamera cam, Environment environment) {
         batch.begin(cam);
         for (Entity entity : entities) {
-            Position position = entity.get(Position.class);
-            Render render = entity.get(Render.class);
+            Position position = entity.getComponent(Position.class);
+            Render render = entity.getComponent(Render.class);
 
             if (isVisible(cam, position, render)) {
                 if (environment != null && render.includeEnv)
@@ -43,7 +43,7 @@ public class RenderSystem extends BaseSystem {
         batch.end();
     }
     private boolean isVisible(PerspectiveCamera cam, Position position, Render render) {
-        position.transform.getTranslation(tmp);
+        position.getTransform().getTranslation(tmp);
         tmp.add(render.center);
         return cam.frustum.sphereInFrustum(tmp, render.radius);
     }

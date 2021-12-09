@@ -55,7 +55,7 @@ project(":core") {
     dependencies {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-bullet:$gdxVersion"
-        
+        compile "org.projectlombok:lombok:1.18.8"
     }
 }
 
