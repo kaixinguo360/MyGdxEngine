@@ -19,7 +19,7 @@ public class MotionSystem extends BaseSystem {
 
     // ----- Custom ----- //
     public void update(World world) {
-        for (Entity entity : entities) {
+        for (Entity entity : getEntities()) {
             Motion motion = entity.getComponent(Motion.class);
 
             // Get Motion Handler

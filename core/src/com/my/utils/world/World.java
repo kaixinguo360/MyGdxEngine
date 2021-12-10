@@ -1,34 +1,22 @@
 package com.my.utils.world;
 
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import lombok.Getter;
-
-import java.util.Map;
 
 public class World implements Disposable {
 
     @Getter
-    private final SystemManager systemManager = new SystemManager();
+    private final SystemManager systemManager = new SystemManager(this);
 
     @Getter
-    private final EntityManager entityManager = new EntityManager();
+    private final EntityManager entityManager = new EntityManager(this);
 
     @Getter
-    private final AssetsManager assetsManager = new AssetsManager();
+    private final AssetsManager assetsManager = new AssetsManager(this);
 
     // ----- Update ----- //
     public void update() {
-        for (Map.Entry<Class<?>, System> entry : systemManager.getSystems().entrySet()) {
-            System system = entry.getValue();
-            Array<Entity> sortEntities = system.getEntities();
-            sortEntities.clear();
-            for (Entity entity : entityManager.getEntities().values()) {
-                if (system.isHandleable(entity)) {
-                    sortEntities.add(entity);
-                }
-            }
-        }
+        entityManager.updateFilters();
     }
 
     @Override

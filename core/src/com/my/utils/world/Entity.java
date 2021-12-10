@@ -1,6 +1,7 @@
 package com.my.utils.world;
 
 import com.badlogic.gdx.utils.Disposable;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,6 +14,10 @@ public abstract class Entity implements Disposable {
     @Setter
     private String id;
 
+    @Getter(AccessLevel.PACKAGE)
+    @Setter(AccessLevel.PACKAGE)
+    private boolean handled;
+
     // ----- Components ----- //
     protected final Map<Class<?>, Component> components = new HashMap<>();
 
@@ -21,9 +26,11 @@ public abstract class Entity implements Disposable {
         if (component == null) return null;
         if (components.containsKey(type)) throw new RuntimeException("Duplicate Component: " + type);
         components.put(type, component);
+        handled = false;
         return component;
     }
     public <T extends Component> T removeComponent(Class<T> type) {
+        handled = false;
         return (T) components.remove(type);
     }
     public <T extends Component> T getComponent(Class<T> type) {

@@ -24,7 +24,7 @@ public class SerializationSystem extends BaseSystem {
     // ----- Custom ----- //
     public String serialize(String group) {
         jsonMap.clear();
-        for (Entity entity : entities) {
+        for (Entity entity : getEntities()) {
             Serialization s = entity.getComponent(Serialization.class);
 
             if (group == null || group.equals(s.group)) {
@@ -59,7 +59,7 @@ public class SerializationSystem extends BaseSystem {
             return;
         }
         // ----- Update & Remove ----- //
-        for (Entity entity : entities) {
+        for (Entity entity : getEntities()) {
             Serialization s = entity.getComponent(Serialization.class);
             Values values = jsonMap.remove(entity.getId());
             if (values != null) {

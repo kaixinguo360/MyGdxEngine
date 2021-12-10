@@ -29,7 +29,7 @@ public class RenderSystem extends BaseSystem {
     // ----- Custom ----- //
     public void render(PerspectiveCamera cam, Environment environment) {
         batch.begin(cam);
-        for (Entity entity : entities) {
+        for (Entity entity : getEntities()) {
             Position position = entity.getComponent(Position.class);
             Render render = entity.getComponent(Render.class);
 

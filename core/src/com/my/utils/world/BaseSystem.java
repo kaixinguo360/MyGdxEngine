@@ -3,14 +3,25 @@ package com.my.utils.world;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 
-public abstract class BaseSystem implements System {
+import java.util.Collection;
 
-    protected final Array<Entity> entities = new Array<>();
+public abstract class BaseSystem implements System, AfterAdded {
+
+    private World world;
+    private EntityFilter entityFilter;
 
     @Override
-    public Array<Entity> getEntities() {
-        return entities;
+    public void afterAdded(World world) {
+        this.world = world;
+        this.entityFilter = BaseSystem.this::isHandleable;
+        world.getEntityManager().addFilter(entityFilter);
     }
+
+    // ----- Entities ----- //
+    protected Collection<? extends Entity> getEntities() {
+        return world.getEntityManager().getEntitiesByFilter(entityFilter);
+    }
+    protected abstract boolean isHandleable(Entity entity);
 
     // ----- Dispose ----- //
     @Override

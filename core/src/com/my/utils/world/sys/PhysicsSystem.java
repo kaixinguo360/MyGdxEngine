@@ -85,14 +85,14 @@ public class PhysicsSystem extends BaseSystem {
     protected final Array<Entity> activatedEntities = new Array<>();
     // Update dynamicsWorld
     public void update(float deltaTime) {
-        for (Entity entity : entities) {
+        for (Entity entity : getEntities()) {
             if (!activatedEntities.contains(entity, true)) {
                 addBody(entity);
             }
         }
         for (int i = activatedEntities.size - 1; i >= 0; i--) {
             Entity entity = activatedEntities.get(i);
-            if (!entities.contains(entity, true)) {
+            if (!getEntities().contains(entity)) {
                 removeBody(entity);
             }
         }

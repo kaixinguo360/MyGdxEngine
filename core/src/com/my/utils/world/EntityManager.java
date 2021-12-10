@@ -3,10 +3,7 @@ package com.my.utils.world;
 import com.badlogic.gdx.utils.Disposable;
 import lombok.Getter;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class EntityManager implements Disposable {
 
@@ -14,21 +11,68 @@ public class EntityManager implements Disposable {
     private final Map<String, Entity> entities = new HashMap<>();
 
     @Getter
+    private final Map<EntityFilter, Set<Entity>> filters = new HashMap<>();
+
+    @Getter
     private final Batch batch = new Batch();
 
+    private final World world;
+
+    public EntityManager(World world) {
+        this.world = world;
+    }
+
+    // ---- Entity ---- //
     public Entity addEntity(Entity entity) {
         String id = entity.getId();
         if (entities.containsKey(id)) throw new RuntimeException("Duplicate Entity: " + id);
         entities.put(id, entity);
+        if (entity instanceof AfterAdded) ((AfterAdded) entity).afterAdded(world);
         return entity;
     }
     public Entity removeEntity(String id) {
         if (!entities.containsKey(id)) throw new RuntimeException("No Such Entity: " + id);
-        return entities.remove(id);
+        Entity removed = entities.remove(id);
+        for (Map.Entry<EntityFilter, Set<Entity>> entry : filters.entrySet()) {
+            entry.getValue().remove(removed);
+        }
+        if (removed instanceof AfterRemoved) ((AfterRemoved) removed).afterRemoved(world);
+        return removed;
     }
     public Entity getEntity(String id) {
         if (!entities.containsKey(id)) throw new RuntimeException("No Such Entity: " + id);
         return entities.get(id);
+    }
+
+    // ---- Filter ---- //
+    public void addFilter(EntityFilter entityFilter) {
+        if (filters.containsKey(entityFilter)) throw new RuntimeException("Duplicate Entity Filter: " + entityFilter);
+        filters.put(entityFilter, new HashSet<>());
+    }
+    public void removeFilter(EntityFilter entityFilter) {
+        if (!filters.containsKey(entityFilter)) throw new RuntimeException("No Such Entity Filter: " + entityFilter);
+        filters.get(entityFilter).clear();
+        filters.remove(entityFilter);
+    }
+    public Collection<? extends Entity> getEntitiesByFilter(EntityFilter entityFilter) {
+        if (!filters.containsKey(entityFilter)) throw new RuntimeException("No Such Entity Filter: " + entityFilter);
+        return filters.get(entityFilter);
+    }
+    public void updateFilters() {
+        for (Entity entity : entities.values()) {
+            if (!entity.isHandled()) {
+                entity.setHandled(true);
+                for (Map.Entry<EntityFilter, Set<Entity>> entry : filters.entrySet()) {
+                    EntityFilter filter = entry.getKey();
+                    Set<Entity> entities = entry.getValue();
+                    if (filter.filter(entity)) {
+                        entities.add(entity);
+                    } else {
+                        entities.remove(entity);
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -61,16 +105,17 @@ public class EntityManager implements Disposable {
         public void commit() {
             if (!toAdd.isEmpty()) {
                 for (Entity entity : toAdd) {
-                    entities.put(entity.getId(), entity);
+                    addEntity(entity);
                 }
                 toAdd.clear();
             }
             if (!toRemove.isEmpty()) {
                 for (String id : toRemove) {
-                    entities.remove(id);
+                    removeEntity(id);
                 }
                 toRemove.clear();
             }
         }
     }
+
 }

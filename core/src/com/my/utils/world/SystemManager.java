@@ -11,15 +11,24 @@ public class SystemManager implements Disposable {
     @Getter
     private final Map<Class<?>, System> systems = new HashMap<>();
 
+    private final World world;
+
+    public SystemManager(World world) {
+        this.world = world;
+    }
+
     public <T extends System> T addSystem(T system) {
         Class<? extends System> type = system.getClass();
         if (systems.containsKey(type)) throw new RuntimeException("Duplicate System: " + type);
         systems.put(type, system);
+        if (system instanceof AfterAdded) ((AfterAdded) system).afterAdded(world);
         return system;
     }
     public <T extends System> T removeSystem(Class<T> type) {
         if (!systems.containsKey(type)) throw new RuntimeException("No Such System: " + type);
-        return (T) systems.remove(type);
+        T removed = (T) systems.remove(type);
+        if (removed instanceof AfterRemoved) ((AfterRemoved) removed).afterRemoved(world);
+        return removed;
     }
     public <T extends System> T getSystem(Class<T> type) {
         if (!systems.containsKey(type)) throw new RuntimeException("No Such System: " + type);
