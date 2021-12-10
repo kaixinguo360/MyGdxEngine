@@ -10,9 +10,7 @@ import com.badlogic.gdx.physics.bullet.dynamics.*;
 import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
 import com.badlogic.gdx.utils.Array;
-import com.my.utils.world.AssetsManager;
-import com.my.utils.world.BaseSystem;
-import com.my.utils.world.Entity;
+import com.my.utils.world.*;
 import com.my.utils.world.com.Collision;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.RigidBody;
@@ -73,6 +71,30 @@ public class PhysicsSystem extends BaseSystem {
         // Create rayTestCB
         rayTestCB = new ClosestRayResultCallback(Vector3.Zero, Vector3.Z);
         addDisposable(rayTestCB);
+    }
+
+    @Override
+    public void afterAdded(World world) {
+        super.afterAdded(world);
+
+        EntityFilter collisionEntityFilter = (Entity entity) -> entity.contain(Collision.class);
+        EntityListener collisionEntityListener = new EntityListener() {
+            @Override
+            public void afterAdded(Entity entity) {
+                Collision collision = entity.getComponent(Collision.class);
+
+                String handlerName = collision.getHandlerName();
+                CollisionHandler handler = assetsManager.getAsset(handlerName, CollisionHandler.class);
+                if (handler == null) throw new RuntimeException("No such Collision Handler for this Name: " + handlerName);
+
+                collision.setHandler(handler);
+            }
+
+            @Override
+            public void afterRemoved(Entity entity) {}
+        };
+
+        world.getEntityManager().addListener(collisionEntityFilter, collisionEntityListener);
     }
 
     // ----- Check ----- //
@@ -190,7 +212,7 @@ public class PhysicsSystem extends BaseSystem {
             if (transform != null) transform.set(worldTrans);
         }
     }
-    private class ContactListener extends com.badlogic.gdx.physics.bullet.collision.ContactListener {
+    private static class ContactListener extends com.badlogic.gdx.physics.bullet.collision.ContactListener {
         @Override
         public boolean onContactAdded(btCollisionObject colObj0, int partId0, int index0, boolean match0, btCollisionObject colObj1, int partId1, int index1, boolean match1) {
             if(colObj0.userData instanceof Entity && colObj1.userData instanceof Entity) {
@@ -198,14 +220,14 @@ public class PhysicsSystem extends BaseSystem {
                 Entity entity1 = (Entity) colObj1.userData;
                 if (match0 && entity0.contain(Collision.class)) {
 //                    System.out.println(entity0.getId() + " =>" + entity1.getId());
-                    String handlerName = entity0.getComponent(Collision.class).getHandler();
-                    CollisionHandler handler = assetsManager.getAsset(handlerName, CollisionHandler.class);
+                    Collision collision = entity0.getComponent(Collision.class);
+                    CollisionHandler handler = collision.getHandler();
                     handler.handle(entity0, entity1);
                 }
                 if (match1 && entity1.contain(Collision.class)) {
 //                    System.out.println(entity1.getId() + " <= " + entity0.getId());
-                    String handlerName = entity1.getComponent(Collision.class).getHandler();
-                    CollisionHandler handler = assetsManager.getAsset(handlerName, CollisionHandler.class);
+                    Collision collision = entity1.getComponent(Collision.class);
+                    CollisionHandler handler = collision.getHandler();
                     handler.handle(entity1, entity0);
                 }
             }

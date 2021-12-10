@@ -268,7 +268,7 @@ public class MyGame extends Base3DGame {
         // Update World
         world.update();
         constraintSystem.update();
-        motionSystem.update(world);
+        motionSystem.update();
         physicsSystem.update(deltaTime);
         world.getEntityManager().getBatch().commit();
         mainView.getVehicle().update();

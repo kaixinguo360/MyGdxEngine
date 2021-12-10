@@ -7,7 +7,7 @@ import java.util.Collection;
 
 public abstract class BaseSystem implements System, AfterAdded {
 
-    private World world;
+    protected World world;
     private EntityFilter entityFilter;
 
     @Override
@@ -15,6 +15,9 @@ public abstract class BaseSystem implements System, AfterAdded {
         this.world = world;
         this.entityFilter = BaseSystem.this::isHandleable;
         world.getEntityManager().addFilter(entityFilter);
+        if (this instanceof EntityListener) {
+            world.getEntityManager().addListener(entityFilter, (EntityListener) this);
+        }
     }
 
     // ----- Entities ----- //

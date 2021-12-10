@@ -14,6 +14,9 @@ public class EntityManager implements Disposable {
     private final Map<EntityFilter, Set<Entity>> filters = new HashMap<>();
 
     @Getter
+    private final Map<EntityFilter, EntityListener> listeners = new HashMap<>();
+
+    @Getter
     private final Batch batch = new Batch();
 
     private final World world;
@@ -34,7 +37,9 @@ public class EntityManager implements Disposable {
         if (!entities.containsKey(id)) throw new RuntimeException("No Such Entity: " + id);
         Entity removed = entities.remove(id);
         for (Map.Entry<EntityFilter, Set<Entity>> entry : filters.entrySet()) {
+            EntityFilter filter = entry.getKey();
             entry.getValue().remove(removed);
+            if (listeners.containsKey(filter)) listeners.get(filter).afterRemoved(removed);
         }
         if (removed instanceof AfterRemoved) ((AfterRemoved) removed).afterRemoved(world);
         return removed;
@@ -67,12 +72,25 @@ public class EntityManager implements Disposable {
                     Set<Entity> entities = entry.getValue();
                     if (filter.filter(entity)) {
                         entities.add(entity);
+                        if (listeners.containsKey(filter)) listeners.get(filter).afterAdded(entity);
                     } else {
                         entities.remove(entity);
+                        if (listeners.containsKey(filter)) listeners.get(filter).afterRemoved(entity);
                     }
                 }
             }
         }
+    }
+
+    // ---- Listener ---- //
+    public void addListener(EntityFilter entityFilter, EntityListener entityListener) {
+        if (listeners.containsKey(entityFilter)) throw new RuntimeException("Duplicate Entity Listener Of This Filter: " + entityFilter);
+        if (!filters.containsKey(entityFilter)) addFilter(entityFilter);
+        listeners.put(entityFilter, entityListener);
+    }
+    public void removeListener(EntityFilter entityFilter, EntityListener entityListener) {
+        if (!listeners.containsKey(entityFilter)) throw new RuntimeException("No Such Entity Listener Of This Filter: " + entityFilter);
+        listeners.remove(entityFilter);
     }
 
     @Override
