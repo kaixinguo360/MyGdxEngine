@@ -6,6 +6,7 @@ import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
 import com.my.utils.world.com.*;
 import com.my.utils.world.sys.PhysicsSystem;
+import com.my.utils.world.sys.RenderSystem;
 
 public class MyInstance extends Entity implements Disposable {
 
@@ -32,7 +33,10 @@ public class MyInstance extends Entity implements Disposable {
 
     public MyInstance(String className, String group, Motion motion, Collision collision) {
         position = addComponent(new Position(new Matrix4()));
-        render = addComponent(Render.get(className, position));
+        if (assetsManager.hasAsset(className, RenderSystem.RenderConfig.class)) {
+            RenderSystem.RenderConfig renderConfig = assetsManager.getAsset(className, RenderSystem.RenderConfig.class);
+            render = addComponent(renderConfig.newInstance());
+        }
         if (assetsManager.hasAsset(className, PhysicsSystem.RigidBodyConfig.class)) {
             PhysicsSystem.RigidBodyConfig rigidBodyConfig = assetsManager.getAsset(className, PhysicsSystem.RigidBodyConfig.class);
             rigidBody = addComponent(rigidBodyConfig.newInstance());

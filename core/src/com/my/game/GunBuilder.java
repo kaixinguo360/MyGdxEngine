@@ -24,10 +24,10 @@ import com.my.utils.world.Entity;
 import com.my.utils.world.World;
 import com.my.utils.world.com.Collision;
 import com.my.utils.world.com.Position;
-import com.my.utils.world.com.Render;
 import com.my.utils.world.com.RigidBody;
 import com.my.utils.world.sys.ConstraintSystem;
 import com.my.utils.world.sys.PhysicsSystem;
+import com.my.utils.world.sys.RenderSystem;
 
 public class GunBuilder {
 
@@ -50,27 +50,28 @@ public class GunBuilder {
     private static ConstraintSystem constraintSystem;
 
     // ----- Init ----- //
-    private static ArrayMap<String, Model> models = new ArrayMap<>();
     public static void init(World world) {
         GunBuilder.world = world;
         GunBuilder.assetsManager = world.getAssetsManager();
         GunBuilder.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
         GunBuilder.constraintSystem = world.getSystemManager().getSystem(ConstraintSystem.class);
 
-        long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
-        ModelBuilder mdBuilder = new ModelBuilder();
-        models.put("bullet", mdBuilder.createCapsule(0.5f, 2, 8, new Material(ColorAttribute.createDiffuse(Color.YELLOW)), VertexAttributes.Usage.Position));
-        models.put("barrel", mdBuilder.createBox(1, 1, 5, new Material(ColorAttribute.createDiffuse(Color.GREEN)), attributes));
-        models.put("gunRotate", mdBuilder.createCylinder(1, 1, 1, 8, new Material(ColorAttribute.createDiffuse(Color.CYAN)), attributes));
-
-        Render.addConfig("bullet", new Render.Config(models.get("bullet")));
-        Render.addConfig("barrel", new Render.Config(models.get("barrel")));
-        Render.addConfig("gunRotate", new Render.Config(models.get("gunRotate")));
-
         initAssets(assetsManager);
     }
 
     public static void initAssets(AssetsManager assetsManager) {
+        long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
+        ModelBuilder mdBuilder = new ModelBuilder();
+        ArrayMap<String, Model> models = new ArrayMap<>();
+
+        models.put("bullet", mdBuilder.createCapsule(0.5f, 2, 8, new Material(ColorAttribute.createDiffuse(Color.YELLOW)), VertexAttributes.Usage.Position));
+        models.put("barrel", mdBuilder.createBox(1, 1, 5, new Material(ColorAttribute.createDiffuse(Color.GREEN)), attributes));
+        models.put("gunRotate", mdBuilder.createCylinder(1, 1, 1, 8, new Material(ColorAttribute.createDiffuse(Color.CYAN)), attributes));
+
+        assetsManager.addAsset("bullet", RenderSystem.RenderConfig.class, new RenderSystem.RenderConfig(models.get("bullet")));
+        assetsManager.addAsset("barrel", RenderSystem.RenderConfig.class, new RenderSystem.RenderConfig(models.get("barrel")));
+        assetsManager.addAsset("gunRotate", RenderSystem.RenderConfig.class, new RenderSystem.RenderConfig(models.get("gunRotate")));
+
         assetsManager.addAsset("bullet", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btCapsuleShape(0.5f, 1), 50f));
         assetsManager.addAsset("barrel", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btBoxShape(new Vector3(0.5f,0.5f,2.5f)), 5f));
         assetsManager.addAsset("gunRotate", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btCylinderShape(new Vector3(0.5f,0.5f,0.5f)), 50f));

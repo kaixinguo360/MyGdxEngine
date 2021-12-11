@@ -35,7 +35,6 @@ import com.my.utils.world.AssetsManager;
 import com.my.utils.world.LoaderManager;
 import com.my.utils.world.World;
 import com.my.utils.world.com.Position;
-import com.my.utils.world.com.Render;
 import com.my.utils.world.loader.WorldLoader;
 import com.my.utils.world.sys.*;
 import org.yaml.snakeyaml.Yaml;
@@ -58,7 +57,6 @@ public class MyGame extends Base3DGame {
     private ConstraintSystem constraintSystem;
     private MotionSystem motionSystem;
     private LoaderManager loaderManager;
-    private ArrayMap<String, Model> models = new ArrayMap<>();
     private Array<Controllable> vehicles = new Array<>();
     private Server server;
     private String receivedData = null;
@@ -66,6 +64,7 @@ public class MyGame extends Base3DGame {
     private int delay = 500;
     private float delayD;
     private PerspectiveCamera camera;
+    private Model skyModel;
     @Override
     public void create() {
         // ----- Net ----- //
@@ -159,7 +158,7 @@ public class MyGame extends Base3DGame {
                     loaderManager1.getLoaders().add(new Collisions.Loader());
                     loaderManager1.getLoader(WorldLoader.class).setBeforeLoad(world1 -> {
                         AssetsManager assetsManager = world1.getAssetsManager();
-                        MyGame.initAssets(assetsManager);
+                        MyGame.initAssets(assetsManager, skyModel);
                         SceneBuilder.initAssets(assetsManager);
                         AircraftBuilder.initAssets(assetsManager);
                         GunBuilder.initAssets(assetsManager);
@@ -213,18 +212,8 @@ public class MyGame extends Base3DGame {
     protected void doneLoading() {
         System.out.println("doneLoading");
 
-        // ----- Init Models ----- //
-        long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
-        ModelBuilder mdBuilder = new ModelBuilder();
-        models.put("sky", assetManager.get("obj/sky.g3db", Model.class));
-        models.get("sky").nodes.get(0).scale.scl(20);
-        models.put("ground", mdBuilder.createBox(10000f, 0.01f, 20000f, new Material(ColorAttribute.createDiffuse(Color.WHITE)), attributes));
-
-        // ----- Init Configs ----- //
-        Render.addConfig("sky", new Render.Config(models.get("sky"), false));
-        Render.addConfig("ground", new Render.Config(models.get("ground")));
-
-        initAssets(world.getAssetsManager());
+        skyModel = assetManager.get("obj/sky.g3db", Model.class);
+        initAssets(world.getAssetsManager(), skyModel);
 
         // ----- Init Static Objects ----- //
         MyInstance sky = new MyInstance("sky");
@@ -258,8 +247,21 @@ public class MyGame extends Base3DGame {
         constraintSystem.init(world);
     }
 
-    private static void initAssets(AssetsManager assetManager) {
-        assetManager.addAsset("ground", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btBoxShape(new Vector3(5000,0.005f,10000)), 0f));
+    private static void initAssets(AssetsManager assetsManager, Model skyModel) {
+
+        // ----- Init Models ----- //
+        long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
+        ModelBuilder mdBuilder = new ModelBuilder();
+        ArrayMap<String, Model> models = new ArrayMap<>();
+        models.put("sky", skyModel);
+        models.get("sky").nodes.get(0).scale.scl(20);
+        models.put("ground", mdBuilder.createBox(10000f, 0.01f, 20000f, new Material(ColorAttribute.createDiffuse(Color.WHITE)), attributes));
+
+        // ----- Init Configs ----- //
+        assetsManager.addAsset("sky", RenderSystem.RenderConfig.class, new RenderSystem.RenderConfig(models.get("sky"), false));
+        assetsManager.addAsset("ground", RenderSystem.RenderConfig.class, new RenderSystem.RenderConfig(models.get("ground")));
+
+        assetsManager.addAsset("ground", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btBoxShape(new Vector3(5000,0.005f,10000)), 0f));
     }
 
     @Override

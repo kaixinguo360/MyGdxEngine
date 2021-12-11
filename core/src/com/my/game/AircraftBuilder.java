@@ -25,10 +25,10 @@ import com.my.utils.world.Entity;
 import com.my.utils.world.World;
 import com.my.utils.world.com.Collision;
 import com.my.utils.world.com.Position;
-import com.my.utils.world.com.Render;
 import com.my.utils.world.com.RigidBody;
 import com.my.utils.world.sys.ConstraintSystem;
 import com.my.utils.world.sys.PhysicsSystem;
+import com.my.utils.world.sys.RenderSystem;
 
 public class AircraftBuilder {
 
@@ -50,30 +50,31 @@ public class AircraftBuilder {
     private static ConstraintSystem constraintSystem;
 
     // ----- Init ----- //
-    private static ArrayMap<String, Model> models = new ArrayMap<>();
     public static void init(World world) {
         AircraftBuilder.world = world;
         AircraftBuilder.assetsManager = world.getAssetsManager();
         AircraftBuilder.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
         AircraftBuilder.constraintSystem = world.getSystemManager().getSystem(ConstraintSystem.class);
 
+        initAssets(assetsManager);
+    }
+
+    public static void initAssets(AssetsManager assetsManager) {
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
+        ArrayMap<String, Model> models = new ArrayMap<>();
         ModelBuilder mdBuilder = new ModelBuilder();
+
         models.put("bomb", mdBuilder.createCapsule(0.5f, 2, 8, new Material(ColorAttribute.createDiffuse(Color.GRAY)), attributes));
         models.put("body", mdBuilder.createBox(1, 1, 5, new Material(ColorAttribute.createDiffuse(Color.GREEN)), attributes));
         models.put("wing", mdBuilder.createBox(2, 0.2f, 1, new Material(ColorAttribute.createDiffuse(Color.BLUE)), attributes));
         models.put("rotate", mdBuilder.createCylinder(1, 1, 1, 8, new Material(ColorAttribute.createDiffuse(Color.CYAN)), attributes));
         models.put("engine", mdBuilder.createCone(0.9f, 1, 0.9f, 18, new Material(ColorAttribute.createDiffuse(Color.YELLOW)), attributes));
 
-        initAssets(assetsManager);
-    }
-
-    public static void initAssets(AssetsManager assetsManager) {
-        Render.addConfig("bomb", new Render.Config(models.get("bomb")));
-        Render.addConfig("body", new Render.Config(models.get("body")));
-        Render.addConfig("wing", new Render.Config(models.get("wing")));
-        Render.addConfig("rotate", new Render.Config(models.get("rotate")));
-        Render.addConfig("engine", new Render.Config(models.get("engine")));
+        assetsManager.addAsset("bomb", RenderSystem.RenderConfig.class, new RenderSystem.RenderConfig(models.get("bomb")));
+        assetsManager.addAsset("body", RenderSystem.RenderConfig.class, new RenderSystem.RenderConfig(models.get("body")));
+        assetsManager.addAsset("wing", RenderSystem.RenderConfig.class, new RenderSystem.RenderConfig(models.get("wing")));
+        assetsManager.addAsset("rotate", RenderSystem.RenderConfig.class, new RenderSystem.RenderConfig(models.get("rotate")));
+        assetsManager.addAsset("engine", RenderSystem.RenderConfig.class, new RenderSystem.RenderConfig(models.get("engine")));
 
         assetsManager.addAsset("bomb", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btCapsuleShape(0.5f, 1), 50f));
         assetsManager.addAsset("body", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btBoxShape(new Vector3(0.5f,0.5f,2.5f)), 50f));

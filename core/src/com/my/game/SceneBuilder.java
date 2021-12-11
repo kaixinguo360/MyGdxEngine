@@ -14,10 +14,10 @@ import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
 import com.my.utils.world.World;
 import com.my.utils.world.com.Position;
-import com.my.utils.world.com.Render;
 import com.my.utils.world.com.Serialization;
 import com.my.utils.world.sys.ConstraintSystem;
 import com.my.utils.world.sys.PhysicsSystem;
+import com.my.utils.world.sys.RenderSystem;
 
 public class SceneBuilder {
 
@@ -40,14 +40,6 @@ public class SceneBuilder {
         SceneBuilder.assetsManager = world.getAssetsManager();
         SceneBuilder.constraintSystem = world.getSystemManager().getSystem(ConstraintSystem.class);
 
-        long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
-        ModelBuilder mdBuilder = new ModelBuilder();
-        models.put("box", mdBuilder.createBox(1, 1, 1, new Material(ColorAttribute.createDiffuse(Color.RED)), attributes));
-        models.put("box1", mdBuilder.createBox(2, 1, 1, new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)), attributes));
-
-        Render.addConfig("box", new Render.Config(models.get("box")));
-        Render.addConfig("box1", new Render.Config(models.get("box1")));
-
         initAssets(assetsManager);
 
         Serialization.Serializer serializer = new Serializer(world);
@@ -55,6 +47,15 @@ public class SceneBuilder {
     }
 
     public static void initAssets(AssetsManager assetsManager) {
+
+        long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
+        ModelBuilder mdBuilder = new ModelBuilder();
+        models.put("box", mdBuilder.createBox(1, 1, 1, new Material(ColorAttribute.createDiffuse(Color.RED)), attributes));
+        models.put("box1", mdBuilder.createBox(2, 1, 1, new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)), attributes));
+
+        assetsManager.addAsset("box", RenderSystem.RenderConfig.class, new RenderSystem.RenderConfig(models.get("box")));
+        assetsManager.addAsset("box1", RenderSystem.RenderConfig.class, new RenderSystem.RenderConfig(models.get("box1")));
+
         assetsManager.addAsset("box", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btBoxShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
         assetsManager.addAsset("box1", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btBoxShape(new Vector3(1,0.5f,0.5f)), 50f));
     }

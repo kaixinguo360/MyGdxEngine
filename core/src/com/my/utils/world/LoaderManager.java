@@ -29,7 +29,7 @@ public class LoaderManager {
         loaders.add(new CollisionLoader(this));
         loaders.add(new MotionLoader(this));
         loaders.add(new PositionLoader());
-        loaders.add(new RenderLoader());
+        loaders.add(new RenderLoader(this));
         loaders.add(new RigidBodyLoader(this));
         loaders.add(new SerializationLoader());
         loaders.add(new DefaultLoader());
