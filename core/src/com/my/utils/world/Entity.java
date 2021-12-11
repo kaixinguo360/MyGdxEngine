@@ -18,6 +18,7 @@ public class Entity {
     private boolean handled;
 
     // ----- Components ----- //
+    @Getter
     protected final Map<Class<?>, Component> components = new HashMap<>();
 
     // ----- Add & Remove & Get & Contain ----- //

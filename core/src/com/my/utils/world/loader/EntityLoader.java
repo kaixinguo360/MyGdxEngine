@@ -5,6 +5,8 @@ import com.my.utils.world.Entity;
 import com.my.utils.world.Loader;
 import com.my.utils.world.LoaderManager;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -55,7 +57,33 @@ public class EntityLoader implements Loader {
     }
 
     @Override
+    public <E, T> E getConfig(T obj, Class<E> configType) {
+        Map<String, Object> map = new HashMap<>();
+        Entity entity = (Entity) obj;
+
+        // Process ID
+        String entityId = entity.getId();
+        map.put("id", entityId);
+
+        // Process Components
+        List<Map<String, Object>> components = new ArrayList<>();
+        for (Component component : entity.getComponents().values()) {
+            String componentTypeName = component.getClass().getName();
+            Object componentConfig = loaderManager.getConfig(component, Map.class);
+            Map<String, Object> componentMap = new HashMap<>();
+            componentMap.put("type", componentTypeName);
+            componentMap.put("config", componentConfig);
+            components.add(componentMap);
+        }
+        if (components.size() > 0) {
+            map.put("components", components);
+        }
+
+        return (E) map;
+    }
+
+    @Override
     public <E, T> boolean handleable(Class<E> configType, Class<T> targetType) {
-        return (Map.class.isAssignableFrom(configType)) && (targetType == Entity.class);
+        return (Map.class.isAssignableFrom(configType)) && (Entity.class.isAssignableFrom(targetType));
     }
 }

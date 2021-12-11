@@ -4,6 +4,7 @@ import com.my.utils.world.Loader;
 import com.my.utils.world.LoaderManager;
 import com.my.utils.world.System;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class SystemLoader implements Loader {
@@ -21,6 +22,11 @@ public class SystemLoader implements Loader {
         } catch (InstantiationException | IllegalAccessException e) {
             throw new RuntimeException("System create error: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public <E, T> E getConfig(T obj, Class<E> configType) {
+        return (E) new HashMap<String, String>();
     }
 
     @Override

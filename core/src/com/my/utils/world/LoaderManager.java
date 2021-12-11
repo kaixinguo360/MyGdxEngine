@@ -1,6 +1,10 @@
 package com.my.utils.world;
 
-import com.my.utils.world.loader.*;
+import com.my.utils.world.com.*;
+import com.my.utils.world.loader.DefaultLoader;
+import com.my.utils.world.loader.EntityLoader;
+import com.my.utils.world.loader.SystemLoader;
+import com.my.utils.world.loader.WorldLoader;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -19,11 +23,19 @@ public class LoaderManager {
         loaders.add(new WorldLoader(this));
         loaders.add(new SystemLoader(this));
         loaders.add(new EntityLoader(this));
-        loaders.add(new ComponentLoader(this));
+        loaders.add(new CollisionLoader());
+        loaders.add(new MotionLoader());
+        loaders.add(new PositionLoader());
+        loaders.add(new RenderLoader());
+        loaders.add(new RigidBodyLoader());
+        loaders.add(new SerializationLoader());
         loaders.add(new DefaultLoader());
     }
 
     public <T, E> T load(E config, Class<T> type) {
+        if (config == null) {
+            throw new RuntimeException("No such loader: null -> " + type);
+        }
         String hash = config.getClass() + " -> " + type;
         if (cache.containsKey(hash)) {
             return cache.get(hash).load(config, type);
@@ -36,5 +48,20 @@ public class LoaderManager {
             }
         }
         throw new RuntimeException("No such loader: " + config.getClass() + " -> " + type);
+    }
+
+    public <T, E> E getConfig(T obj, Class<E> configType) {
+        String hash = configType + " -> " + obj.getClass();
+        if (cache.containsKey(hash)) {
+            return cache.get(hash).getConfig(obj, configType);
+        } else {
+            for (Loader loader : loaders) {
+                if (loader.handleable(configType, obj.getClass())) {
+                    cache.put(hash, loader);
+                    return loader.getConfig(obj, configType);
+                }
+            }
+        }
+        throw new RuntimeException("No such loader to get config: " + configType + " -> " + obj.getClass());
     }
 }

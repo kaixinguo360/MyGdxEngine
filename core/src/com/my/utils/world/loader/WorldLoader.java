@@ -3,6 +3,8 @@ package com.my.utils.world.loader;
 import com.my.utils.world.System;
 import com.my.utils.world.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -79,6 +81,55 @@ public class WorldLoader implements Loader {
         }
 
         return (T) world;
+    }
+
+    @Override
+    public <E, T> E getConfig(T obj, Class<E> configType) {
+        World world = (World) obj;
+        Map<String, Object> map = new HashMap<>();
+
+        Map<Class<?>, System> systems = world.getSystemManager().getSystems();
+        if (systems.size() > 0) {
+            List<Map<String, Object>> systemList = new ArrayList<>();
+            for (System system : systems.values()) {
+                Map<String, Object> systemMap = new HashMap<>();
+                systemMap.put("type", system.getClass().getName());
+                systemMap.put("config", loaderManager.getConfig(system, Map.class));
+                systemList.add(systemMap);
+            }
+            map.put("systems", systemList);
+        }
+
+        Map<Class<?>, Map<String, Object>> assets = world.getAssetsManager().getAllAssets();
+        if (assets.size() > 0) {
+            List<Map<String, Object>> assetList = new ArrayList<>();
+            for (Map.Entry<Class<?>, Map<String, Object>> entry : assets.entrySet()) {
+                Class<?> assetType = entry.getKey();
+                for (Map.Entry<String, Object> assetEntry : entry.getValue().entrySet()) {
+                    Map<String, Object> assetMap = new HashMap<>();
+                    assetMap.put("id", assetEntry.getKey());
+                    assetMap.put("type", assetType.getName());
+                    assetMap.put("config", loaderManager.getConfig(assetEntry.getValue(), Map.class));
+                    assetList.add(assetMap);
+                }
+            }
+            map.put("assets", assetList);
+        }
+
+        Map<String, Entity> entities = world.getEntityManager().getEntities();
+        if (entities.size() > 0) {
+            List<Map<String, Object>> entityList = new ArrayList<>();
+            for (Map.Entry<String, Entity> entry : entities.entrySet()) {
+                Entity entity = entry.getValue();
+                Map<String, Object> entityMap = new HashMap<>();
+                entityMap.put("type", entity.getClass().getName());
+                entityMap.put("config", loaderManager.getConfig(entity, Map.class));
+                entityList.add(entityMap);
+            }
+            map.put("entities", entityList);
+        }
+
+        return (E) map;
     }
 
     @Override

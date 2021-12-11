@@ -4,6 +4,7 @@ import com.my.utils.world.Component;
 import com.my.utils.world.Loader;
 import com.my.utils.world.LoaderManager;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class ComponentLoader implements Loader {
@@ -16,12 +17,16 @@ public class ComponentLoader implements Loader {
 
     @Override
     public <E, T> T load(E config, Class<T> type) {
-        // TODO
         try {
             return type.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
             throw new RuntimeException("Component create error: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public <E, T> E getConfig(T obj, Class<E> configType) {
+        return (E) new HashMap<String, Object>();
     }
 
     @Override

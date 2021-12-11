@@ -31,14 +31,17 @@ import com.badlogic.gdx.utils.ArrayMap;
 import com.my.utils.base.Base3DGame;
 import com.my.utils.net.Client;
 import com.my.utils.net.Server;
+import com.my.utils.world.LoaderManager;
 import com.my.utils.world.World;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.Render;
 import com.my.utils.world.com.RigidBody;
 import com.my.utils.world.sys.*;
+import org.yaml.snakeyaml.Yaml;
 
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Map;
 
 public class MyGame extends Base3DGame {
 
@@ -53,6 +56,7 @@ public class MyGame extends Base3DGame {
     private SerializationSystem serializationSystem;
     private ConstraintSystem constraintSystem;
     private MotionSystem motionSystem;
+    private LoaderManager loaderManager;
     private ArrayMap<String, Model> models = new ArrayMap<>();
     private Array<Controllable> vehicles = new Array<>();
     private Server server;
@@ -111,6 +115,10 @@ public class MyGame extends Base3DGame {
         SceneBuilder.init(world);
         AircraftBuilder.init(world);
         GunBuilder.init(world);
+        // Create LoaderManager
+        loaderManager = new LoaderManager();
+        loaderManager.getLoaders().add(new Motions.Loader());
+        loaderManager.getLoaders().add(new Collisions.Loader());
 
         // ----- Create Environment ----- //
         environment = new Environment();
@@ -135,6 +143,14 @@ public class MyGame extends Base3DGame {
                 if (keycode == Input.Keys.SPACE) mainView.getVehicle().explode();
                 if (keycode == Input.Keys.TAB) changeView();
                 if (keycode == Input.Keys.SHIFT_LEFT) mainView.changeCamera();
+                if (keycode == Input.Keys.ENTER) {
+                    Map config = loaderManager.getConfig(world, Map.class);
+                    Yaml yaml = new Yaml();
+                    String yamlConfig = yaml.dumpAsMap(config);
+                    System.out.println(yamlConfig);
+                    Map loadedConfig = yaml.loadAs(yamlConfig, Map.class);
+                    loaderManager.load(loadedConfig, World.class);
+                }
                 return false;
             }
         });
@@ -278,7 +294,7 @@ public class MyGame extends Base3DGame {
 
     // ----- Custom ----- //
     private View mainView = new View(0, 0);
-    private View secondaryView = new View(1, 0);
+    private View secondaryView = new View(0, 1);
     private void changeView() {
         View tmp = mainView;
         mainView = secondaryView;
