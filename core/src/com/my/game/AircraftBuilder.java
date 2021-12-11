@@ -20,6 +20,7 @@ import com.badlogic.gdx.physics.bullet.dynamics.btHingeConstraint;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
 import com.badlogic.gdx.utils.ArrayMap;
+import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
 import com.my.utils.world.World;
 import com.my.utils.world.com.Collision;
@@ -44,6 +45,7 @@ public class AircraftBuilder {
 
     // ----- Variables ----- //
     private static World world;
+    private static AssetsManager assetsManager;
     private static PhysicsSystem physicsSystem;
     private static ConstraintSystem constraintSystem;
 
@@ -51,6 +53,7 @@ public class AircraftBuilder {
     private static ArrayMap<String, Model> models = new ArrayMap<>();
     public static void init(World world) {
         AircraftBuilder.world = world;
+        AircraftBuilder.assetsManager = world.getAssetsManager();
         AircraftBuilder.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
         AircraftBuilder.constraintSystem = world.getSystemManager().getSystem(ConstraintSystem.class);
 
@@ -62,25 +65,28 @@ public class AircraftBuilder {
         models.put("rotate", mdBuilder.createCylinder(1, 1, 1, 8, new Material(ColorAttribute.createDiffuse(Color.CYAN)), attributes));
         models.put("engine", mdBuilder.createCone(0.9f, 1, 0.9f, 18, new Material(ColorAttribute.createDiffuse(Color.YELLOW)), attributes));
 
+        initAssets(assetsManager);
+    }
+
+    public static void initAssets(AssetsManager assetsManager) {
         Render.addConfig("bomb", new Render.Config(models.get("bomb")));
         Render.addConfig("body", new Render.Config(models.get("body")));
         Render.addConfig("wing", new Render.Config(models.get("wing")));
         Render.addConfig("rotate", new Render.Config(models.get("rotate")));
         Render.addConfig("engine", new Render.Config(models.get("engine")));
 
-        RigidBody.addConfig("bomb", new RigidBody.Config(new btCapsuleShape(0.5f, 1), 50f));
-        RigidBody.addConfig("body", new RigidBody.Config(new btBoxShape(new Vector3(0.5f,0.5f,2.5f)), 50f));
-        RigidBody.addConfig("wing", new RigidBody.Config(new btBoxShape(new Vector3(1f,0.1f,0.5f)), 25f));
-        RigidBody.addConfig("rotate", new RigidBody.Config(new btCylinderShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
-        RigidBody.addConfig("engine", new RigidBody.Config(new btConeShape(0.45f,1), 50));
-
+        assetsManager.addAsset("bomb", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btCapsuleShape(0.5f, 1), 50f));
+        assetsManager.addAsset("body", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btBoxShape(new Vector3(0.5f,0.5f,2.5f)), 50f));
+        assetsManager.addAsset("wing", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btBoxShape(new Vector3(1f,0.1f,0.5f)), 25f));
+        assetsManager.addAsset("rotate", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btCylinderShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
+        assetsManager.addAsset("engine", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btConeShape(0.45f,1), 50));
     }
 
     // ----- Builder Methods ----- //
     private static int bombNum = 0;
     public static Entity createBomb(Matrix4 transform, Entity base) {
         Entity entity = new MyInstance("bomb", "bomb", null,
-                new Collision(BOMB_FLAG, ALL_FLAG, "BombCollisionHandler"));
+                new Collision(BOMB_FLAG, ALL_FLAG, assetsManager.getAsset("BombCollisionHandler", PhysicsSystem.CollisionHandler.class)));
         addObject(
                 "Bomb-" + bombNum++,
                 transform,
@@ -107,7 +113,7 @@ public class AircraftBuilder {
         return addObject(
                 "Wing-" + wingNum++,
                 transform,
-                new MyInstance("wing", group, Motions.Lift.getConfig(new Vector3(0, 200, 0))),
+                new MyInstance("wing", group, Motions.Lift.getConfig(assetsManager, new Vector3(0, 200, 0))),
                 base,
                 base == null ? null : new ConstraintSystem.ConnectConstraint(500)
         );
@@ -115,7 +121,7 @@ public class AircraftBuilder {
 
     private static int rotate = 0;
     public static Entity createRotate(Matrix4 transform, ConstraintSystem.Controller controller, Entity base) {
-        Matrix4 relTransform = new Matrix4(base.getComponent(Position.class).getTransform()).inv().mul(transform);
+        Matrix4 relTransform = new Matrix4(base.getComponent(Position.class).transform).inv().mul(transform);
         Entity entity = addObject(
                 "Rotate-" + rotate++,
                 transform,
@@ -135,7 +141,7 @@ public class AircraftBuilder {
         return addObject(
                 "Engine-" + engineNum++,
                 transform,
-                new MyInstance("engine", group, Motions.LimitedForce.getConfig(maxVelocity, new Vector3(0, force, 0), new Vector3())),
+                new MyInstance("engine", group, Motions.LimitedForce.getConfig(assetsManager, maxVelocity, new Vector3(0, force, 0), new Vector3())),
                 base,
                 base == null ? null : new ConstraintSystem.ConnectConstraint()
         );
@@ -254,7 +260,7 @@ public class AircraftBuilder {
             return getTransform().getTranslation(tmpV1).y;
         }
         public Matrix4 getTransform() {
-            return body.getComponent(Position.class).getTransform();
+            return body.getComponent(Position.class).transform;
         }
         public btRigidBody getBody() {
             return body.getComponent(RigidBody.class).body;
@@ -265,7 +271,7 @@ public class AircraftBuilder {
     private static Entity addObject(String id, Matrix4 transform, Entity entity, Entity base, ConstraintSystem.Config constraint) {
         entity.setId(id);
         world.getEntityManager().addEntity(entity)
-                .getComponent(Position.class).getTransform().set(transform);
+                .getComponent(Position.class).transform.set(transform);
         if (base != null) constraintSystem.addConstraint(base.getId(), id, constraint);
         return entity;
     }

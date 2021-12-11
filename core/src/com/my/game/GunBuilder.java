@@ -19,6 +19,7 @@ import com.badlogic.gdx.physics.bullet.dynamics.btHingeConstraint;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
 import com.badlogic.gdx.utils.ArrayMap;
+import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
 import com.my.utils.world.World;
 import com.my.utils.world.com.Collision;
@@ -44,6 +45,7 @@ public class GunBuilder {
 
     // ----- Variables ----- //
     private static World world;
+    private static AssetsManager assetsManager;
     private static PhysicsSystem physicsSystem;
     private static ConstraintSystem constraintSystem;
 
@@ -51,6 +53,7 @@ public class GunBuilder {
     private static ArrayMap<String, Model> models = new ArrayMap<>();
     public static void init(World world) {
         GunBuilder.world = world;
+        GunBuilder.assetsManager = world.getAssetsManager();
         GunBuilder.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
         GunBuilder.constraintSystem = world.getSystemManager().getSystem(ConstraintSystem.class);
 
@@ -64,9 +67,13 @@ public class GunBuilder {
         Render.addConfig("barrel", new Render.Config(models.get("barrel")));
         Render.addConfig("gunRotate", new Render.Config(models.get("gunRotate")));
 
-        RigidBody.addConfig("bullet", new RigidBody.Config(new btCapsuleShape(0.5f, 1), 50f));
-        RigidBody.addConfig("barrel", new RigidBody.Config(new btBoxShape(new Vector3(0.5f,0.5f,2.5f)), 5f));
-        RigidBody.addConfig("gunRotate", new RigidBody.Config(new btCylinderShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
+        initAssets(assetsManager);
+    }
+
+    public static void initAssets(AssetsManager assetsManager) {
+        assetsManager.addAsset("bullet", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btCapsuleShape(0.5f, 1), 50f));
+        assetsManager.addAsset("barrel", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btBoxShape(new Vector3(0.5f,0.5f,2.5f)), 5f));
+        assetsManager.addAsset("gunRotate", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btCylinderShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
 
     }
 
@@ -74,7 +81,7 @@ public class GunBuilder {
     private static int bulletNum = 0;
     public static Entity createBullet(Matrix4 transform, Entity base) {
         Entity entity = new MyInstance("bullet", "bullet", null,
-                new Collision(BOMB_FLAG, ALL_FLAG, "BulletCollisionHandler"));
+                new Collision(BOMB_FLAG, ALL_FLAG, assetsManager.getAsset("BulletCollisionHandler", PhysicsSystem.CollisionHandler.class)));
         addObject(
                 "Bullet-" + bulletNum++,
                 transform,
@@ -98,7 +105,7 @@ public class GunBuilder {
 
     private static int gunRotateNum = 0;
     public static Entity createRotate(Matrix4 transform, ConstraintSystem.Controller controller, Entity base) {
-        Matrix4 relTransform = new Matrix4(base.getComponent(Position.class).getTransform()).inv().mul(transform);
+        Matrix4 relTransform = new Matrix4(base.getComponent(Position.class).transform).inv().mul(transform);
         Entity entity = addObject(
                 "GunRotate-" + gunRotateNum++,
                 transform,
@@ -183,7 +190,7 @@ public class GunBuilder {
             }
         }
         public Matrix4 getTransform() {
-            return barrel.getComponent(Position.class).getTransform();
+            return barrel.getComponent(Position.class).transform;
         }
         public btRigidBody getBody() {
             return barrel.getComponent(RigidBody.class).body;
@@ -194,7 +201,7 @@ public class GunBuilder {
     private static Entity addObject(String id, Matrix4 transform, Entity entity, Entity base, ConstraintSystem.Config constraint) {
         entity.setId(id);
         world.getEntityManager().addEntity(entity)
-                .getComponent(Position.class).getTransform().set(transform);
+                .getComponent(Position.class).transform.set(transform);
         if (base != null) constraintSystem.addConstraint(base.getId(), id, constraint);
         return entity;
     }

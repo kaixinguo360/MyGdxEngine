@@ -38,7 +38,7 @@ public class Collisions {
         public void handle(Entity self, Entity target) {
             if (checkVelocity(self, target, 20)) {
 //                System.out.println("Boom! " + self.getId() + " ==> " + target.getId());
-                physicsSystem.addExplosion(self.getComponent(Position.class).getTransform().getTranslation(tmpV1), 5000);
+                physicsSystem.addExplosion(self.getComponent(Position.class).transform.getTranslation(tmpV1), 5000);
                 world.getEntityManager().getBatch().removeEntity(self.getId());
             }
         }
@@ -58,7 +58,7 @@ public class Collisions {
         public void handle(Entity self, Entity target) {
             if (checkVelocity(self, target, 20)) {
 //                System.out.println("Boom! " + self.getId() + " ==> " + target.getId());
-                physicsSystem.addExplosion(self.getComponent(Position.class).getTransform().getTranslation(tmpV1), 5000);
+                physicsSystem.addExplosion(self.getComponent(Position.class).transform.getTranslation(tmpV1), 5000);
                 world.getEntityManager().getBatch().removeEntity(self.getId());
             }
         }

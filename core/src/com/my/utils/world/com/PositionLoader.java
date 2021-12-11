@@ -22,7 +22,7 @@ public class PositionLoader implements Loader {
     @Override
     public <E, T> E getConfig(T obj, Class<E> configType) {
         Position position = (Position) obj;
-        float[] values = position.getTransform().getValues();
+        float[] values = position.transform.getValues();
         return (E) new HashMap<String, Double>() {{
             for (int i = 0; i < values.length; i++) {
                 put("v" + i, (double) values[i]);

@@ -10,13 +10,14 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.utils.ArrayMap;
+import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
 import com.my.utils.world.World;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.Render;
-import com.my.utils.world.com.RigidBody;
 import com.my.utils.world.com.Serialization;
 import com.my.utils.world.sys.ConstraintSystem;
+import com.my.utils.world.sys.PhysicsSystem;
 
 public class SceneBuilder {
 
@@ -29,12 +30,14 @@ public class SceneBuilder {
 
     // ----- Variables ----- //
     private static World world;
+    private static AssetsManager assetsManager;
     private static ConstraintSystem constraintSystem;
 
     // ----- Init ----- //
     private static ArrayMap<String, Model> models = new ArrayMap<>();
     public static void init(World world) {
         SceneBuilder.world = world;
+        SceneBuilder.assetsManager = world.getAssetsManager();
         SceneBuilder.constraintSystem = world.getSystemManager().getSystem(ConstraintSystem.class);
 
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
@@ -45,11 +48,15 @@ public class SceneBuilder {
         Render.addConfig("box", new Render.Config(models.get("box")));
         Render.addConfig("box1", new Render.Config(models.get("box1")));
 
-        RigidBody.addConfig("box", new RigidBody.Config(new btBoxShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
-        RigidBody.addConfig("box1", new RigidBody.Config(new btBoxShape(new Vector3(1,0.5f,0.5f)), 50f));
+        initAssets(assetsManager);
 
         Serialization.Serializer serializer = new Serializer(world);
         Serialization.addSerializer("box", serializer);
+    }
+
+    public static void initAssets(AssetsManager assetsManager) {
+        assetsManager.addAsset("box", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btBoxShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
+        assetsManager.addAsset("box1", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btBoxShape(new Vector3(1,0.5f,0.5f)), 50f));
     }
 
     // ----- Builder Methods ----- //
@@ -90,7 +97,7 @@ public class SceneBuilder {
     private static String addObject(String id, Matrix4 transform, Entity entity, String base, ConstraintSystem.Config constraint) {
         entity.setId(id);
         world.getEntityManager().addEntity(entity)
-                .getComponent(Position.class).getTransform().set(transform);
+                .getComponent(Position.class).transform.set(transform);
         if (base != null) constraintSystem.addConstraint(base, id, constraint);
         return id;
     }

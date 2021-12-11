@@ -31,11 +31,12 @@ import com.badlogic.gdx.utils.ArrayMap;
 import com.my.utils.base.Base3DGame;
 import com.my.utils.net.Client;
 import com.my.utils.net.Server;
+import com.my.utils.world.AssetsManager;
 import com.my.utils.world.LoaderManager;
 import com.my.utils.world.World;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.Render;
-import com.my.utils.world.com.RigidBody;
+import com.my.utils.world.loader.WorldLoader;
 import com.my.utils.world.sys.*;
 import org.yaml.snakeyaml.Yaml;
 
@@ -119,6 +120,9 @@ public class MyGame extends Base3DGame {
         loaderManager = new LoaderManager();
         loaderManager.getLoaders().add(new Motions.Loader());
         loaderManager.getLoaders().add(new Collisions.Loader());
+        loaderManager.getEnvironment().put("world", world);
+        // Init MyInstance.assetsManager
+        MyInstance.assetsManager = world.getAssetsManager();
 
         // ----- Create Environment ----- //
         environment = new Environment();
@@ -149,7 +153,18 @@ public class MyGame extends Base3DGame {
                     String yamlConfig = yaml.dumpAsMap(config);
                     System.out.println(yamlConfig);
                     Map loadedConfig = yaml.loadAs(yamlConfig, Map.class);
-                    loaderManager.load(loadedConfig, World.class);
+
+                    LoaderManager loaderManager1 = new LoaderManager();
+                    loaderManager1.getLoaders().add(new Motions.Loader());
+                    loaderManager1.getLoaders().add(new Collisions.Loader());
+                    loaderManager1.getLoader(WorldLoader.class).setBeforeLoad(world1 -> {
+                        AssetsManager assetsManager = world1.getAssetsManager();
+                        MyGame.initAssets(assetsManager);
+                        SceneBuilder.initAssets(assetsManager);
+                        AircraftBuilder.initAssets(assetsManager);
+                        GunBuilder.initAssets(assetsManager);
+                    });
+                    loaderManager1.load(loadedConfig, World.class);
                 }
                 return false;
             }
@@ -209,7 +224,7 @@ public class MyGame extends Base3DGame {
         Render.addConfig("sky", new Render.Config(models.get("sky"), false));
         Render.addConfig("ground", new Render.Config(models.get("ground")));
 
-        RigidBody.addConfig("ground", new RigidBody.Config(new btBoxShape(new Vector3(5000,0.005f,10000)), 0f));
+        initAssets(world.getAssetsManager());
 
         // ----- Init Static Objects ----- //
         MyInstance sky = new MyInstance("sky");
@@ -243,6 +258,10 @@ public class MyGame extends Base3DGame {
         constraintSystem.init(world);
     }
 
+    private static void initAssets(AssetsManager assetManager) {
+        assetManager.addAsset("ground", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btBoxShape(new Vector3(5000,0.005f,10000)), 0f));
+    }
+
     @Override
     protected void myRender() {
         // ----- Net----- //
@@ -266,12 +285,12 @@ public class MyGame extends Base3DGame {
         // Render
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         mainView.setCamera(camera);
-        world.getEntityManager().getEntity("sky").getComponent(Position.class).getTransform().setToTranslation(camera.position);
+        world.getEntityManager().getEntity("sky").getComponent(Position.class).transform.setToTranslation(camera.position);
         Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
         renderSystem.render(camera, environment);
         Gdx.gl.glViewport(0, Gdx.graphics.getHeight() - 250, 400, 250);
         secondaryView.setCamera(camera);
-        world.getEntityManager().getEntity("sky").getComponent(Position.class).getTransform().setToTranslation(camera.position);
+        world.getEntityManager().getEntity("sky").getComponent(Position.class).transform.setToTranslation(camera.position);
         Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
         renderSystem.render(camera, environment);
 

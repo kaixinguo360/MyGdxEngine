@@ -54,7 +54,7 @@ public class Render implements Component {
 
         Config config = configs.get(configName);
         ModelInstance instance = new ModelInstance(config.model);
-        position.setTransform(instance.transform);
+        position.transform = instance.transform;
 
         Render render = new Render();
         render.renderableProvider = instance;

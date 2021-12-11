@@ -3,13 +3,11 @@ package com.my.utils.world.com;
 import com.my.utils.world.Component;
 import com.my.utils.world.Entity;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Serialization implements Component {

@@ -20,8 +20,8 @@ public class SerializationLoader implements Loader {
     public <E, T> E getConfig(T obj, Class<E> configType) {
         Serialization serialization = (Serialization) obj;
         return (E) new HashMap<String, Object>() {{
-            put("group", serialization.getGroup());
-            put("serializerId", serialization.getSerializerId());
+            put("group", serialization.group);
+            put("serializerId", serialization.serializerId);
         }};
     }
 

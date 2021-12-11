@@ -2,10 +2,14 @@ package com.my.game;
 
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Disposable;
+import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
 import com.my.utils.world.com.*;
+import com.my.utils.world.sys.PhysicsSystem;
 
 public class MyInstance extends Entity implements Disposable {
+
+    public static AssetsManager assetsManager;
 
     protected Position position;
     protected Render render;
@@ -29,7 +33,10 @@ public class MyInstance extends Entity implements Disposable {
     public MyInstance(String className, String group, Motion motion, Collision collision) {
         position = addComponent(new Position(new Matrix4()));
         render = addComponent(Render.get(className, position));
-        rigidBody = addComponent(RigidBody.get(className));
+        if (assetsManager.hasAsset(className, PhysicsSystem.RigidBodyConfig.class)) {
+            PhysicsSystem.RigidBodyConfig rigidBodyConfig = assetsManager.getAsset(className, PhysicsSystem.RigidBodyConfig.class);
+            rigidBody = addComponent(rigidBodyConfig.newInstance());
+        }
         if (group != null) {
             serialization = new Serialization();
             serialization.group = group;
@@ -45,7 +52,7 @@ public class MyInstance extends Entity implements Disposable {
     }
 
     public void setTransform(Matrix4 transform) {
-        getComponent(Position.class).getTransform().set(transform);
+        getComponent(Position.class).transform.set(transform);
         if (contain(RigidBody.class)) getComponent(RigidBody.class).body.proceedToTransform(transform);
     }
 

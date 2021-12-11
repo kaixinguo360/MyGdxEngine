@@ -29,10 +29,10 @@ public class Motions {
         public void update(Map<String, Object> config, btRigidBody body, Position position) {
             Vector3 force = (Vector3) config.get("force");
             Vector3 rel_pos = (Vector3) config.get("rel_pos");
-            body.applyForce(TMP_1.set(force).rot(position.getTransform()), rel_pos);
+            body.applyForce(TMP_1.set(force).rot(position.transform), rel_pos);
         }
-        public static Motion getConfig(Vector3 force, Vector3 rel_pos) {
-            return new Motion("Force", new HashMap<String, Object>() {{
+        public static Motion getConfig(AssetsManager assetsManager, Vector3 force, Vector3 rel_pos) {
+            return new Motion(assetsManager.getAsset("Force", MotionSystem.MotionHandler.class), new HashMap<String, Object>() {{
                 put("force", force);
                 put("rel_pos", rel_pos);
             }});
@@ -45,8 +45,8 @@ public class Motions {
             Vector3 rel_pos = (Vector3) config.get("rel_pos");
             body.applyForce(force, rel_pos);
         }
-        public static Motion getConfig(Vector3 force, Vector3 rel_pos) {
-            return new Motion("FixedForce", new HashMap<String, Object>() {{
+        public static Motion getConfig(AssetsManager assetsManager, Vector3 force, Vector3 rel_pos) {
+            return new Motion(assetsManager.getAsset("FixedForce", MotionSystem.MotionHandler.class), new HashMap<String, Object>() {{
                 put("force", force);
                 put("rel_pos", rel_pos);
             }});
@@ -58,13 +58,13 @@ public class Motions {
             float maxVelocity = (float) config.get("maxVelocity");
             Vector3 force = (Vector3) config.get("force");
             Vector3 rel_pos = (Vector3) config.get("rel_pos");
-            TMP_1.set(force).rot(position.getTransform()).nor();
+            TMP_1.set(force).rot(position.transform).nor();
             if (Math.abs(body.getLinearVelocity().dot(TMP_1)) <= maxVelocity) {
-                body.applyForce(TMP_1.set(force).rot(position.getTransform()), rel_pos);
+                body.applyForce(TMP_1.set(force).rot(position.transform), rel_pos);
             }
         }
-        public static Motion getConfig(float maxVelocity, Vector3 force, Vector3 rel_pos) {
-            return new Motion("LimitedForce", new HashMap<String, Object>() {{
+        public static Motion getConfig(AssetsManager assetsManager, float maxVelocity, Vector3 force, Vector3 rel_pos) {
+            return new Motion(assetsManager.getAsset("LimitedForce", MotionSystem.MotionHandler.class), new HashMap<String, Object>() {{
                 put("maxVelocity", maxVelocity);
                 put("force", force);
                 put("rel_pos", rel_pos);
@@ -76,14 +76,14 @@ public class Motions {
         public void update(Map<String, Object> config, btRigidBody body, Position position) {
             Vector3 up = (Vector3) config.get("up");
             TMP_1.set(body.getLinearVelocity());
-            TMP_2.set(up).rot(position.getTransform());
+            TMP_2.set(up).rot(position.transform);
             float lift = - TMP_2.dot(TMP_1);
-            TMP_1.set(up).nor().scl(lift).rot(position.getTransform());
+            TMP_1.set(up).nor().scl(lift).rot(position.transform);
             TMP_2.set(0, 0, 0);
             body.applyForce(TMP_1, TMP_2);
         }
-        public static Motion getConfig(Vector3 up) {
-            return new Motion("Lift", new HashMap<String, Object>() {{
+        public static Motion getConfig(AssetsManager assetsManager, Vector3 up) {
+            return new Motion(assetsManager.getAsset("Lift", MotionSystem.MotionHandler.class), new HashMap<String, Object>() {{
                 put("type", "Lift");
                 put("up", up);
             }});

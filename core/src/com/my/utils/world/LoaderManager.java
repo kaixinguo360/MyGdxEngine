@@ -17,17 +17,20 @@ public class LoaderManager {
     @Getter
     private final List<Loader> loaders = new ArrayList<>();
 
+    @Getter
+    private final Map<String, Object> environment = new HashMap<>();
+
     private final Map<String, Loader> cache = new HashMap<>();
 
     public LoaderManager() {
         loaders.add(new WorldLoader(this));
         loaders.add(new SystemLoader(this));
         loaders.add(new EntityLoader(this));
-        loaders.add(new CollisionLoader());
-        loaders.add(new MotionLoader());
+        loaders.add(new CollisionLoader(this));
+        loaders.add(new MotionLoader(this));
         loaders.add(new PositionLoader());
         loaders.add(new RenderLoader());
-        loaders.add(new RigidBodyLoader());
+        loaders.add(new RigidBodyLoader(this));
         loaders.add(new SerializationLoader());
         loaders.add(new DefaultLoader());
     }
@@ -63,5 +66,14 @@ public class LoaderManager {
             }
         }
         throw new RuntimeException("No such loader to get config: " + configType + " -> " + obj.getClass());
+    }
+
+    public <T extends Loader> T getLoader(Class<T> type) {
+        for (Loader loader : loaders) {
+            if (type.isInstance(loader)) {
+                return (T) loader;
+            }
+        }
+        return null;
     }
 }

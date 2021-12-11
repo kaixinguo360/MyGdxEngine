@@ -43,7 +43,7 @@ public class RenderSystem extends BaseSystem {
         batch.end();
     }
     private boolean isVisible(PerspectiveCamera cam, Position position, Render render) {
-        position.getTransform().getTranslation(tmp);
+        position.transform.getTranslation(tmp);
         tmp.add(render.center);
         return cam.frustum.sphereInFrustum(tmp, render.radius);
     }

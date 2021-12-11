@@ -2,11 +2,14 @@ package com.my.utils.world.loader;
 
 import com.my.utils.world.System;
 import com.my.utils.world.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Config Example:
@@ -34,6 +37,10 @@ public class WorldLoader implements Loader {
 
     private LoaderManager loaderManager;
 
+    @Getter
+    @Setter
+    Consumer<World> beforeLoad;
+
     public WorldLoader(LoaderManager loaderManager) {
         this.loaderManager = loaderManager;
     }
@@ -41,6 +48,8 @@ public class WorldLoader implements Loader {
     @Override
     public <E, T> T load(E config, Class<T> type) {
         World world = new World();
+        beforeLoad.accept(world);
+        loaderManager.getEnvironment().put("world", world);
 
         try {
             Map<String, Object> map = (Map<String, Object>) config;
@@ -62,7 +71,14 @@ public class WorldLoader implements Loader {
                     String assetId = (String) asset.get("id");
                     Class<?> assetType = Class.forName((String) asset.get("type"));
                     Object assetConfig = asset.get("config");
-                    assetsManager.addAsset(assetId, assetType, loaderManager.load(assetConfig, assetType));
+                    boolean assetProvided = asset.containsKey("provided") && (Boolean) asset.get("provided");
+                    if (!assetProvided) {
+                        if (!assetsManager.hasAsset(assetId, assetType)) {
+                            assetsManager.addAsset(assetId, assetType, loaderManager.load(assetConfig, assetType));
+                        } else {
+                            java.lang.System.out.println("Asset already loaded: " + assetId + " (" + assetType.getName() + ")");
+                        }
+                    }
                 }
             }
 
@@ -109,7 +125,11 @@ public class WorldLoader implements Loader {
                     Map<String, Object> assetMap = new HashMap<>();
                     assetMap.put("id", assetEntry.getKey());
                     assetMap.put("type", assetType.getName());
-                    assetMap.put("config", loaderManager.getConfig(assetEntry.getValue(), Map.class));
+                    try {
+                        assetMap.put("config", loaderManager.getConfig(assetEntry.getValue(), Map.class));
+                    } catch (RuntimeException e) {
+                        assetMap.put("provided", true);
+                    }
                     assetList.add(assetMap);
                 }
             }

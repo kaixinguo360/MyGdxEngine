@@ -10,7 +10,9 @@ import com.badlogic.gdx.physics.bullet.dynamics.*;
 import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
 import com.badlogic.gdx.utils.Array;
-import com.my.utils.world.*;
+import com.my.utils.world.AssetsManager;
+import com.my.utils.world.BaseSystem;
+import com.my.utils.world.Entity;
 import com.my.utils.world.com.Collision;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.RigidBody;
@@ -71,30 +73,6 @@ public class PhysicsSystem extends BaseSystem {
         // Create rayTestCB
         rayTestCB = new ClosestRayResultCallback(Vector3.Zero, Vector3.Z);
         addDisposable(rayTestCB);
-    }
-
-    @Override
-    public void afterAdded(World world) {
-        super.afterAdded(world);
-
-        EntityFilter collisionEntityFilter = (Entity entity) -> entity.contain(Collision.class);
-        EntityListener collisionEntityListener = new EntityListener() {
-            @Override
-            public void afterAdded(Entity entity) {
-                Collision collision = entity.getComponent(Collision.class);
-
-                String handlerName = collision.getHandlerName();
-                CollisionHandler handler = assetsManager.getAsset(handlerName, CollisionHandler.class);
-                if (handler == null) throw new RuntimeException("No such Collision Handler for this Name: " + handlerName);
-
-                collision.setHandler(handler);
-            }
-
-            @Override
-            public void afterRemoved(Entity entity) {}
-        };
-
-        world.getEntityManager().addListener(collisionEntityFilter, collisionEntityListener);
     }
 
     // ----- Check ----- //
@@ -160,7 +138,7 @@ public class PhysicsSystem extends BaseSystem {
     private static final float MIN_FORCE = 10;
     public void addExplosion(Vector3 position, float force) {
         for (Entity entity : activatedEntities) {
-            entity.getComponent(Position.class).getTransform().getTranslation(tmpV1);
+            entity.getComponent(Position.class).transform.getTranslation(tmpV1);
             tmpV1.sub(position);
             float len2 = tmpV1.len2();
             tmpV1.nor().scl(force * 1/len2);
@@ -177,14 +155,14 @@ public class PhysicsSystem extends BaseSystem {
         RigidBody rigidBody = entity.getComponent(RigidBody.class);
 
         btRigidBody body = rigidBody.body;
-        body.proceedToTransform(position.getTransform());
-        body.setMotionState(new MotionState(position.getTransform()));
+        body.proceedToTransform(position.transform);
+        body.setMotionState(new MotionState(position.transform));
         body.userData = entity;
 
         if (entity.contain(Collision.class)) {
             Collision c = entity.getComponent(Collision.class);
-            body.setContactCallbackFlag(c.getCallbackFlag());
-            body.setContactCallbackFilter(c.getCallbackFilter());
+            body.setContactCallbackFlag(c.callbackFlag);
+            body.setContactCallbackFilter(c.callbackFilter);
             body.setCollisionFlags(body.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
         }
 
@@ -221,13 +199,13 @@ public class PhysicsSystem extends BaseSystem {
                 if (match0 && entity0.contain(Collision.class)) {
 //                    System.out.println(entity0.getId() + " =>" + entity1.getId());
                     Collision collision = entity0.getComponent(Collision.class);
-                    CollisionHandler handler = collision.getHandler();
+                    CollisionHandler handler = collision.handler;
                     handler.handle(entity0, entity1);
                 }
                 if (match1 && entity1.contain(Collision.class)) {
 //                    System.out.println(entity1.getId() + " <= " + entity0.getId());
                     Collision collision = entity1.getComponent(Collision.class);
-                    CollisionHandler handler = collision.getHandler();
+                    CollisionHandler handler = collision.handler;
                     handler.handle(entity1, entity0);
                 }
             }
@@ -235,7 +213,46 @@ public class PhysicsSystem extends BaseSystem {
         }
     }
 
+    // ----- Assets ----- //
+
+    public static class RigidBodyConfig {
+
+        // ----- Static ----- //
+        public final static short STATIC_FLAG = 1 << 8;
+        public final static short NORMAL_FLAG = 1 << 9;
+        public final static short ALL_FLAG = -1;
+        private static final Vector3 localInertia = new Vector3();
+
+        public final btRigidBody.btRigidBodyConstructionInfo constructionInfo;
+        public final int group;
+        public final int mask;
+
+        public RigidBodyConfig(btCollisionShape shape, float mass) {
+            this(shape, mass, NORMAL_FLAG, ALL_FLAG);
+        }
+
+        public RigidBodyConfig(btCollisionShape shape, float mass, int group, int mask) {
+            this.group = group;
+            this.mask = mask;
+            if (mass > 0f)
+                shape.calculateLocalInertia(mass, localInertia);
+            else
+                localInertia.set(0, 0, 0);
+            this.constructionInfo = new btRigidBody.btRigidBodyConstructionInfo(mass, null, shape, localInertia);
+        }
+
+        public RigidBody newInstance() {
+            RigidBody rigidBody = new RigidBody();
+            rigidBody.body = new btRigidBody(constructionInfo);
+            rigidBody.group = group;
+            rigidBody.mask = mask;
+            rigidBody.bodyConfig = this;
+            return rigidBody;
+        }
+    }
+
     public interface CollisionHandler {
         void handle(Entity self, Entity target);
     }
+
 }
