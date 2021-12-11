@@ -12,6 +12,7 @@ import com.my.utils.world.Entity;
 import com.my.utils.world.EntityListener;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.Render;
+import com.my.utils.world.com.RigidBody;
 
 public class RenderSystem extends BaseSystem implements EntityListener {
 
@@ -65,6 +66,9 @@ public class RenderSystem extends BaseSystem implements EntityListener {
         Render render = entity.getComponent(Render.class);
         render.modelInstance.transform.set(position.transform);
         position.transform = render.modelInstance.transform;
+        if (entity.contain(RigidBody.class)) {
+            entity.getComponent(RigidBody.class).body.proceedToTransform(position.transform);
+        }
     }
 
     @Override

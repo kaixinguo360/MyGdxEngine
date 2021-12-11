@@ -73,7 +73,7 @@ public class EntityManager implements Disposable {
                     if (filter.filter(entity)) {
                         entities.add(entity);
                         if (listeners.containsKey(filter)) listeners.get(filter).afterAdded(entity);
-                    } else {
+                    } else if (entities.contains(entity)){
                         entities.remove(entity);
                         if (listeners.containsKey(filter)) listeners.get(filter).afterRemoved(entity);
                     }

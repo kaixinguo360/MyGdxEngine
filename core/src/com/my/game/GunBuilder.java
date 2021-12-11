@@ -25,9 +25,11 @@ import com.my.utils.world.World;
 import com.my.utils.world.com.Collision;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.RigidBody;
+import com.my.utils.world.com.ScriptComponent;
 import com.my.utils.world.sys.ConstraintSystem;
 import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.RenderSystem;
+import com.my.utils.world.sys.ScriptSystem;
 
 public class GunBuilder {
 
@@ -80,7 +82,7 @@ public class GunBuilder {
 
     // ----- Builder Methods ----- //
     private static int bulletNum = 0;
-    public static Entity createBullet(Matrix4 transform, Entity base) {
+    private static Entity createBullet(Matrix4 transform, Entity base) {
         Entity entity = new MyInstance("bullet", "bullet", null,
                 new Collision(BOMB_FLAG, ALL_FLAG, assetsManager.getAsset("BulletCollisionHandler", PhysicsSystem.CollisionHandler.class)));
         addObject(
@@ -90,11 +92,14 @@ public class GunBuilder {
                 base,
                 base == null ? null : new ConstraintSystem.ConnectConstraint()
         );
+        ScriptComponent scriptComponent = new ScriptComponent();
+        scriptComponent.script = assetsManager.getAsset("RemoveScript", ScriptSystem.Script.class);
+        entity.addComponent(scriptComponent);
         return entity;
     }
 
     private static int barrelNum = 0;
-    public static Entity createBarrel(Matrix4 transform, Entity base) {
+    private static Entity createBarrel(Matrix4 transform, Entity base) {
         return addObject(
                 "Barrel-" + barrelNum++,
                 transform,
@@ -105,7 +110,7 @@ public class GunBuilder {
     }
 
     private static int gunRotateNum = 0;
-    public static Entity createRotate(Matrix4 transform, ConstraintSystem.Controller controller, Entity base) {
+    private static Entity createRotate(Matrix4 transform, ConstraintSystem.Controller controller, Entity base) {
         Matrix4 relTransform = new Matrix4(base.getComponent(Position.class).transform).inv().mul(transform);
         Entity entity = addObject(
                 "GunRotate-" + gunRotateNum++,
@@ -131,7 +136,7 @@ public class GunBuilder {
         private Controller controller_X = new Controller(-90, 0);
         private Controller controller_Y = new Controller();
 
-        public Gun(Matrix4 transform) {
+        private Gun(Matrix4 transform) {
             rotate_Y = createRotate(transform.cpy().translate(0, 0.5f, 0),
                     controller_Y, world.getEntityManager().getEntity("ground"));
             rotate_X = createRotate(transform.cpy().translate(0, 1.5f, 0).rotate(Vector3.Z, 90),

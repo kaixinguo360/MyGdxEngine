@@ -31,6 +31,7 @@ public class LoaderManager {
         loaders.add(new PositionLoader());
         loaders.add(new RenderLoader(this));
         loaders.add(new RigidBodyLoader(this));
+        loaders.add(new ScriptComponentLoader(this));
         loaders.add(new SerializationLoader());
         loaders.add(new DefaultLoader());
     }

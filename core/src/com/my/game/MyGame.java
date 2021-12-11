@@ -56,6 +56,7 @@ public class MyGame extends Base3DGame {
     private SerializationSystem serializationSystem;
     private ConstraintSystem constraintSystem;
     private MotionSystem motionSystem;
+    private ScriptSystem scriptSystem;
     private LoaderManager loaderManager;
     private Array<Controllable> vehicles = new Array<>();
     private Server server;
@@ -111,10 +112,13 @@ public class MyGame extends Base3DGame {
         motionSystem = world.getSystemManager().addSystem(new MotionSystem());
         Motions.init(world);
         addDisposable(motionSystem);
+        // Create ScriptSystem
+        scriptSystem = world.getSystemManager().addSystem(new ScriptSystem());
         // Create ObjectBuilder
         SceneBuilder.init(world);
         AircraftBuilder.init(world);
         GunBuilder.init(world);
+        Scripts.init(world);
         // Create LoaderManager
         loaderManager = new LoaderManager();
         loaderManager.getLoaders().add(new Motions.Loader());
@@ -307,6 +311,7 @@ public class MyGame extends Base3DGame {
         constraintSystem.update();
         motionSystem.update();
         physicsSystem.update(deltaTime);
+        scriptSystem.update();
         world.getEntityManager().getBatch().commit();
         mainView.getVehicle().update();
 
@@ -315,7 +320,7 @@ public class MyGame extends Base3DGame {
 
     // ----- Custom ----- //
     private View mainView = new View(0, 0);
-    private View secondaryView = new View(0, 1);
+    private View secondaryView = new View(1, 0);
     private void changeView() {
         View tmp = mainView;
         mainView = secondaryView;

@@ -26,9 +26,11 @@ import com.my.utils.world.World;
 import com.my.utils.world.com.Collision;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.RigidBody;
+import com.my.utils.world.com.ScriptComponent;
 import com.my.utils.world.sys.ConstraintSystem;
 import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.RenderSystem;
+import com.my.utils.world.sys.ScriptSystem;
 
 public class AircraftBuilder {
 
@@ -85,7 +87,7 @@ public class AircraftBuilder {
 
     // ----- Builder Methods ----- //
     private static int bombNum = 0;
-    public static Entity createBomb(Matrix4 transform, Entity base) {
+    private static Entity createBomb(Matrix4 transform, Entity base) {
         Entity entity = new MyInstance("bomb", "bomb", null,
                 new Collision(BOMB_FLAG, ALL_FLAG, assetsManager.getAsset("BombCollisionHandler", PhysicsSystem.CollisionHandler.class)));
         addObject(
@@ -95,11 +97,14 @@ public class AircraftBuilder {
                 base,
                 base == null ? null : new ConstraintSystem.ConnectConstraint()
         );
+        ScriptComponent scriptComponent = new ScriptComponent();
+        scriptComponent.script = assetsManager.getAsset("RemoveScript", ScriptSystem.Script.class);
+        entity.addComponent(scriptComponent);
         return entity;
     }
 
     private static int bodyNum = 0;
-    public static Entity createBody(Matrix4 transform, Entity base) {
+    private static Entity createBody(Matrix4 transform, Entity base) {
         return addObject(
                 "Body-" + bodyNum++,
                 transform,
@@ -110,7 +115,7 @@ public class AircraftBuilder {
     }
 
     private static int wingNum = 0;
-    public static Entity createWing(Matrix4 transform, Entity base) {
+    private static Entity createWing(Matrix4 transform, Entity base) {
         return addObject(
                 "Wing-" + wingNum++,
                 transform,
@@ -121,7 +126,7 @@ public class AircraftBuilder {
     }
 
     private static int rotate = 0;
-    public static Entity createRotate(Matrix4 transform, ConstraintSystem.Controller controller, Entity base) {
+    private static Entity createRotate(Matrix4 transform, ConstraintSystem.Controller controller, Entity base) {
         Matrix4 relTransform = new Matrix4(base.getComponent(Position.class).transform).inv().mul(transform);
         Entity entity = addObject(
                 "Rotate-" + rotate++,
@@ -138,7 +143,7 @@ public class AircraftBuilder {
     }
 
     private static int engineNum = 0;
-    public static Entity createEngine(Matrix4 transform, float force, float maxVelocity, Entity base) {
+    private static Entity createEngine(Matrix4 transform, float force, float maxVelocity, Entity base) {
         return addObject(
                 "Engine-" + engineNum++,
                 transform,
@@ -165,7 +170,7 @@ public class AircraftBuilder {
         private Controller controller_R = new Controller(-0.15f, 0.2f, 0.5f);
         private Controller controller_T = new Controller(-0.2f, 0.2f, 1f);
 
-        public Aircraft(Matrix4 transform, float force, float maxVelocity) {
+        private Aircraft(Matrix4 transform, float force, float maxVelocity) {
 
             // Body
             body = createBody(transform.cpy().translate(0, 0.5f, -3), null);
