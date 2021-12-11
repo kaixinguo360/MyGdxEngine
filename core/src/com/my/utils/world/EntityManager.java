@@ -125,13 +125,13 @@ public class EntityManager implements Disposable {
         public void commit() {
             if (!toAdd.isEmpty()) {
                 for (Entity entity : toAdd) {
-                    addEntity(entity);
+                    EntityManager.this.addEntity(entity);
                 }
                 toAdd.clear();
             }
             if (!toRemove.isEmpty()) {
                 for (String id : toRemove) {
-                    removeEntity(id);
+                    EntityManager.this.removeEntity(id);
                 }
                 toRemove.clear();
             }
