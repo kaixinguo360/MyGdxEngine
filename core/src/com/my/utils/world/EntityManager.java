@@ -26,7 +26,7 @@ public class EntityManager implements Disposable {
     }
 
     // ---- Entity ---- //
-    public Entity addEntity(Entity entity) {
+    public <T extends Entity> T addEntity(T entity) {
         String id = entity.getId();
         if (entities.containsKey(id)) throw new RuntimeException("Duplicate Entity: " + id);
         entities.put(id, entity);
@@ -96,7 +96,9 @@ public class EntityManager implements Disposable {
     @Override
     public void dispose() {
         for (Entity entity : entities.values()) {
-            entity.dispose();
+            if (entity instanceof Disposable) {
+                ((Disposable) entity).dispose();
+            }
         }
         entities.clear();
     }
@@ -108,7 +110,7 @@ public class EntityManager implements Disposable {
 
         private Batch() {}
 
-        public Entity addEntity(Entity entity) {
+        public <T extends Entity> T addEntity(T entity) {
             String id = entity.getId();
             if (entities.containsKey(id)) throw new RuntimeException("Duplicate Entity: " + id);
             toAdd.add(entity);

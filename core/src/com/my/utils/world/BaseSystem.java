@@ -5,7 +5,7 @@ import com.badlogic.gdx.utils.Disposable;
 
 import java.util.Collection;
 
-public abstract class BaseSystem implements System, AfterAdded {
+public abstract class BaseSystem implements System, Disposable, AfterAdded {
 
     protected World world;
     private EntityFilter entityFilter;

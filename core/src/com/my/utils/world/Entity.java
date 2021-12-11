@@ -1,6 +1,5 @@
 package com.my.utils.world;
 
-import com.badlogic.gdx.utils.Disposable;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,7 +7,7 @@ import lombok.Setter;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class Entity implements Disposable {
+public class Entity {
 
     @Getter
     @Setter
@@ -22,8 +21,9 @@ public abstract class Entity implements Disposable {
     protected final Map<Class<?>, Component> components = new HashMap<>();
 
     // ----- Add & Remove & Get & Contain ----- //
-    public <T extends Component> T addComponent(Class<T> type, T component) {
+    public <T extends Component> T addComponent(T component) {
         if (component == null) return null;
+        Class<?> type = component.getClass();
         if (components.containsKey(type)) throw new RuntimeException("Duplicate Component: " + type);
         components.put(type, component);
         handled = false;

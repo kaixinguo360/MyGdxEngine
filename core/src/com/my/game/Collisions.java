@@ -16,14 +16,14 @@ public class Collisions {
     public static void init(World world) {
         AssetsManager assetsManager = world.getAssetsManager();
         PhysicsSystem physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
-        assetsManager.addAsset("BombCollisionHandler", PhysicsSystem.CollisionHandler.class, (self, target) -> {
+        assetsManager.addAsset("BombCollisionHandler", PhysicsSystem.CollisionHandler.class, (PhysicsSystem.CollisionHandler) (self, target) -> {
             if (checkVelocity(self, target, 20)) {
 //                System.out.println("Boom! " + self.getId() + " ==> " + target.getId());
                 physicsSystem.addExplosion(self.getComponent(Position.class).getTransform().getTranslation(tmpV1), 5000);
                 world.getEntityManager().getBatch().removeEntity(self.getId());
             }
         });
-        assetsManager.addAsset("BulletCollisionHandler", PhysicsSystem.CollisionHandler.class, (self, target) -> {
+        assetsManager.addAsset("BulletCollisionHandler", PhysicsSystem.CollisionHandler.class, (PhysicsSystem.CollisionHandler) (self, target) -> {
             if (checkVelocity(self, target, 20)) {
 //                System.out.println("Boom! " + self.getId() + " ==> " + target.getId());
                 physicsSystem.addExplosion(self.getComponent(Position.class).getTransform().getTranslation(tmpV1), 5000);

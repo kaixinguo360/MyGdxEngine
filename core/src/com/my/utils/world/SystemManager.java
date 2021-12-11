@@ -38,7 +38,9 @@ public class SystemManager implements Disposable {
     @Override
     public void dispose() {
         for (System system : systems.values()) {
-            system.dispose();
+            if (system instanceof Disposable) {
+                ((Disposable) system).dispose();
+            }
         }
         systems.clear();
     }

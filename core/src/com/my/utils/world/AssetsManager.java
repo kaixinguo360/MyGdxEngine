@@ -16,13 +16,14 @@ public class AssetsManager {
         this.world = world;
     }
 
-    public <T> T addAsset(String id, Class<T> type, T asset) {
+    public <T> T addAsset(String id, Class<?> type, Object asset) {
+        if (!type.isInstance(asset)) throw new RuntimeException("Asset type not equal: " + type + " != " + asset.getClass());
         if (!allAssets.containsKey(type)) allAssets.put(type, new HashMap<>());
         Map<String, Object> assets = allAssets.get(type);
         if (assets.containsKey(id)) throw new RuntimeException("Duplicate Assets: " + id + " (" + type + ")");
         assets.put(id, asset);
         if (asset instanceof AfterAdded) ((AfterAdded) asset).afterAdded(world);
-        return asset;
+        return (T) asset;
     }
     public <T> T removeAsset(String id, Class<T> type) {
         if (!allAssets.containsKey(type)) throw new RuntimeException("No Such Assets: " + id + " (" + type + ")");

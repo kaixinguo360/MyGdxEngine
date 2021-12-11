@@ -1,10 +1,11 @@
 package com.my.game;
 
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.utils.Disposable;
 import com.my.utils.world.Entity;
 import com.my.utils.world.com.*;
 
-public class MyInstance extends Entity {
+public class MyInstance extends Entity implements Disposable {
 
     protected Position position;
     protected Render render;
@@ -26,20 +27,20 @@ public class MyInstance extends Entity {
     }
 
     public MyInstance(String className, String group, Motion motion, Collision collision) {
-        position = addComponent(Position.class, new Position(new Matrix4()));
-        render = addComponent(Render.class, Render.get(className, position));
-        rigidBody = addComponent(RigidBody.class, RigidBody.get(className));
+        position = addComponent(new Position(new Matrix4()));
+        render = addComponent(Render.get(className, position));
+        rigidBody = addComponent(RigidBody.get(className));
         if (group != null) {
             serialization = new Serialization();
             serialization.group = group;
             serialization.serializerId = className;
-            addComponent(Serialization.class, serialization);
+            addComponent(serialization);
         }
         if (motion != null) {
-            addComponent(Motion.class, motion);
+            addComponent(motion);
         }
         if (collision != null) {
-            addComponent(Collision.class, collision);
+            addComponent(collision);
         }
     }
 
