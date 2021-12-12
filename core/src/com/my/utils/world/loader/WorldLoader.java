@@ -105,6 +105,7 @@ public class WorldLoader implements Loader {
                     try {
                         entityManager.addEntity(loaderManager.load(entityConfig, entityType));
                     } catch (RuntimeException e) {
+                        if (!e.getMessage().startsWith("No Such Entity")) throw e;
                         nextEntities.add(entity);
                     }
                 }

@@ -109,6 +109,7 @@ public class MyGame extends Base3DGame {
         addDisposable(serializationSystem);
         // Create constraintSystem
         constraintSystem = world.getSystemManager().addSystem(new ConstraintSystem());
+        Constraints.init(world);
         addDisposable(constraintSystem);
         // Create MotionSystem
         motionSystem = world.getSystemManager().addSystem(new MotionSystem());
@@ -125,6 +126,7 @@ public class MyGame extends Base3DGame {
         loaderManager = new LoaderManager();
         loaderManager.getLoaders().add(new Motions.Loader());
         loaderManager.getLoaders().add(new Collisions.Loader());
+        loaderManager.getLoaders().add(new Constraints.Loader());
         loaderManager.getLoaders().add(new Aircrafts.AircraftLoader(loaderManager));
         loaderManager.getLoaders().add(new Guns.GunLoader(loaderManager));
         loaderManager.getEnvironment().put("world", world);
@@ -162,6 +164,7 @@ public class MyGame extends Base3DGame {
                     LoaderManager loaderManager1 = new LoaderManager();
                     loaderManager1.getLoaders().add(new Motions.Loader());
                     loaderManager1.getLoaders().add(new Collisions.Loader());
+                    loaderManager1.getLoaders().add(new Constraints.Loader());
                     loaderManager1.getLoaders().add(new Aircrafts.AircraftLoader(loaderManager1));
                     loaderManager1.getLoaders().add(new Guns.GunLoader(loaderManager1));
                     loaderManager1.getLoader(WorldLoader.class).setBeforeLoadAssets(world1 -> {
@@ -235,15 +238,15 @@ public class MyGame extends Base3DGame {
         world.getEntityManager().addEntity(ground);
 
         // ----- Init Dynamic Objects ----- //
+        Aircrafts.AircraftBuilder aircraftBuilder = new Aircrafts.AircraftBuilder(world);
+        Guns.GunBuilder gunBuilder = new Guns.GunBuilder(world);
         for (int i = 0; i < 100; i++) {
-            SceneBuilder.createBox(new Matrix4().translate(10, 0.5f, -10 * i), null);
-            SceneBuilder.createBox(new Matrix4().translate(-10, 0.5f, -10 * i), null);
+            SceneBuilder.createBox(new Matrix4().translate(10, 0.5f, -10 * i), ground.getId());
+            SceneBuilder.createBox(new Matrix4().translate(-10, 0.5f, -10 * i), ground.getId());
         }
         for (int i = 1; i < 5; i++) {
             SceneBuilder.createTower(new Matrix4().setToTranslation(-5, 0, -200 * i), 5 * i);
         }
-        Aircrafts.AircraftBuilder aircraftBuilder = new Aircrafts.AircraftBuilder(world);
-        Guns.GunBuilder gunBuilder = new Guns.GunBuilder(world);
         for (int x = -20; x <= 20; x+=40) {
             for (int y = 0; y <= 0; y+=20) {
                 for (int z = -20; z <= 20; z+=20) {
@@ -270,7 +273,6 @@ public class MyGame extends Base3DGame {
         // ----- Init World & Constraint ----- //
         world.update();
         physicsSystem.update(0);
-        constraintSystem.init(world);
     }
 
     private static void initAssets(AssetsManager assetsManager, Model skyModel) {

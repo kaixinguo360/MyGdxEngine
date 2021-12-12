@@ -3,6 +3,9 @@ package com.my.utils.world;
 import com.badlogic.gdx.utils.Disposable;
 import lombok.Getter;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class World implements Disposable {
 
     @Getter
@@ -13,6 +16,9 @@ public class World implements Disposable {
 
     @Getter
     private final EntityManager entityManager = new EntityManager(this);
+
+    @Getter
+    private final Map<String, Object> environments = new HashMap<>();
 
     // ----- Update ----- //
     public void update() {

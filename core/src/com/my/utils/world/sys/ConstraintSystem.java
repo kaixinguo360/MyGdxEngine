@@ -1,195 +1,103 @@
 package com.my.utils.world.sys;
 
-import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.physics.bullet.dynamics.*;
+import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
+import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
+import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
 import com.badlogic.gdx.utils.Array;
 import com.my.utils.world.BaseSystem;
 import com.my.utils.world.Entity;
-import com.my.utils.world.World;
+import com.my.utils.world.EntityListener;
+import com.my.utils.world.com.Constraint;
 import com.my.utils.world.com.RigidBody;
 
 import java.util.Iterator;
+import java.util.Map;
 
 import static com.badlogic.gdx.physics.bullet.dynamics.btConstraintParams.BT_CONSTRAINT_CFM;
 import static com.badlogic.gdx.physics.bullet.dynamics.btConstraintParams.BT_CONSTRAINT_ERP;
 
-public class ConstraintSystem extends BaseSystem {
+public class ConstraintSystem extends BaseSystem implements EntityListener {
 
-    // ----- Create ----- //
-    public ConstraintSystem() {
-    }
-
-    // ----- Check ----- //
+    @Override
     public boolean isHandleable(Entity entity) {
-        return false;
+        return entity.contain(Constraint.class);
     }
 
-    // ----- Custom ----- //
+    @Override
+    public void afterAdded(Entity entity) {
+        Constraint constraint = entity.getComponent(Constraint.class);
+        ConstraintInner constraintInner = new ConstraintInner();
+        constraintInner.bodyA = constraint.bodyA;
+        constraintInner.bodyB = constraint.bodyB;
+        constraintInner.type = constraint.type;
+        constraintInner.config = constraint.config;
+        constraintInner.controller = constraint.controller;
+        constraintInners.add(constraintInner);
+    }
 
-    private Array<Constraint> constraints = new Array<>();
-    public void addConstraint(String bodyA, String bodyB, Config config) {
-        Constraint constraint = new Constraint();
-        constraint.bodyA = bodyA;
-        constraint.bodyB = bodyB;
-        constraint.config = config;
-        constraints.add(constraint);
-    }
-    public void addController(String bodyA, String bodyB, Controller controller) {
-        Constraint constraint = get(bodyA, bodyB);
-        if (constraint == null) throw new RuntimeException("No Such Constraint: [" + bodyA + "]-[" + bodyB + "]");
-        constraint.controller = controller;
-    }
-    private Constraint get(String bodyA, String bodyB) {
-        for (Constraint constraint : constraints) {
-            if ((constraint.bodyA.equals(bodyA) && constraint.bodyB.equals(bodyB))
-                    || (constraint.bodyA.equals(bodyB) && constraint.bodyB.equals(bodyA))) {
-                return constraint;
-            }
-        }
-        return null;
-    }
-    public void remove(World world, String body) {
+    @Override
+    public void afterRemoved(Entity entity) {
+        String body = entity.getId();
         btDynamicsWorld dynamicsWorld = world.getSystemManager().getSystem(PhysicsSystem.class).dynamicsWorld;
-        Iterator<Constraint> it = constraints.iterator();
+        Iterator<ConstraintInner> it = constraintInners.iterator();
         while (it.hasNext()) {
-            Constraint constraint = it.next();
-            if ((constraint.bodyA.equals(body) || constraint.bodyB.equals(body))) {
-                if (constraint.btConstraint != null) {
-                    dynamicsWorld.removeConstraint(constraint.btConstraint);
-                    constraint.btConstraint.dispose();
-                    constraint.btConstraint = null;
+            ConstraintInner constraintInner = it.next();
+            if ((constraintInner.bodyA.equals(body) || constraintInner.bodyB.equals(body))) {
+                if (constraintInner.btConstraint != null) {
+                    dynamicsWorld.removeConstraint(constraintInner.btConstraint);
+                    constraintInner.btConstraint.dispose();
+                    constraintInner.btConstraint = null;
                 }
                 it.remove();
             }
         }
     }
 
-    public void init(World world) {
+    @Override
+    public void dispose() {
         btDynamicsWorld dynamicsWorld = world.getSystemManager().getSystem(PhysicsSystem.class).dynamicsWorld;
-        for (Constraint constraint : constraints) {
-            if (constraint.btConstraint == null) {
-                btRigidBody bodyA = world.getEntityManager().getEntity(constraint.bodyA).getComponent(RigidBody.class).body;
-                btRigidBody bodyB = world.getEntityManager().getEntity(constraint.bodyB).getComponent(RigidBody.class).body;
-                constraint.btConstraint = constraint.config.get(bodyA, bodyB);
-                constraint.btConstraint.setParam(BT_CONSTRAINT_CFM, 0);
-                constraint.btConstraint.setParam(BT_CONSTRAINT_ERP, 0.5f);
-                dynamicsWorld.addConstraint(constraint.btConstraint);
+        for (ConstraintInner constraintInner : constraintInners) {
+            if (constraintInner.btConstraint != null) {
+                dynamicsWorld.removeConstraint(constraintInner.btConstraint);
+                constraintInner.btConstraint.dispose();
+                constraintInner.btConstraint = null;
             }
         }
+        super.dispose();
     }
+
+    // ----- Custom ----- //
+    private final Array<ConstraintInner> constraintInners = new Array<>();
+
     public void update() {
-        for (Constraint constraint : constraints) {
-            if (constraint.btConstraint != null && constraint.controller != null) {
-                constraint.controller.update(constraint.btConstraint);
-            }
-        }
-    }
-    public void clear(World world) {
         btDynamicsWorld dynamicsWorld = world.getSystemManager().getSystem(PhysicsSystem.class).dynamicsWorld;
-        for (Constraint constraint : constraints) {
-            if (constraint.btConstraint != null) {
-                dynamicsWorld.removeConstraint(constraint.btConstraint);
-                constraint.btConstraint.dispose();
-                constraint.btConstraint = null;
+        for (ConstraintInner constraintInner : constraintInners) {
+            if (constraintInner.btConstraint == null) {
+                btRigidBody bodyA = world.getEntityManager().getEntity(constraintInner.bodyA).getComponent(RigidBody.class).body;
+                btRigidBody bodyB = world.getEntityManager().getEntity(constraintInner.bodyB).getComponent(RigidBody.class).body;
+                constraintInner.btConstraint = constraintInner.type.get(bodyA, bodyB, constraintInner.config);
+                constraintInner.btConstraint.setParam(BT_CONSTRAINT_CFM, 0);
+                constraintInner.btConstraint.setParam(BT_CONSTRAINT_ERP, 0.5f);
+                dynamicsWorld.addConstraint(constraintInner.btConstraint);
+            }
+            if (constraintInner.btConstraint != null && constraintInner.controller != null) {
+                constraintInner.controller.update(constraintInner.btConstraint);
             }
         }
     }
 
-    private class Constraint {
+    private static class ConstraintInner {
         private String bodyA;
         private String bodyB;
-        private Config config;
-        private Controller controller;
+        private ConstraintType type;
+        private Map<String, Object> config;
+        private ConstraintController controller;
         private btTypedConstraint btConstraint;
     }
-    public interface Controller {
+    public interface ConstraintController {
         void update(btTypedConstraint constraint);
     }
-    public interface Config {
-        btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB);
-    }
-    public static class Point2PointConstraint implements Config {
-        private final Vector3 pivotInA;
-        private final Vector3 pivotInB;
-        public Point2PointConstraint(Vector3 pivotInA, Vector3 pivotInB) {
-            this.pivotInA = pivotInA;
-            this.pivotInB = pivotInB;
-        }
-        @Override
-        public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB) {
-            return new btPoint2PointConstraint(bodyA, bodyB, pivotInA, pivotInB);
-        }
-    }
-    public static class FixedConstraint implements Config {
-        private final Matrix4 frameInA;
-        private final Matrix4 frameInB;
-        public FixedConstraint(Matrix4 frameInA, Matrix4 frameInB) {
-            this.frameInA = frameInA;
-            this.frameInB = frameInB;
-        }
-        @Override
-        public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB) {
-            return new btFixedConstraint(bodyA, bodyB, frameInA, frameInB);
-        }
-    }
-    public static class ConnectConstraint implements Config {
-        private static final Matrix4 tmp1 = new Matrix4();
-        private static final Matrix4 tmp2 = new Matrix4();
-        private final float breakingImpulseThreshold;
-        public ConnectConstraint() {
-            this(2000);
-        }
-        public ConnectConstraint(float breakingImpulseThreshold) {
-            this.breakingImpulseThreshold = breakingImpulseThreshold;
-        }
-        @Override
-        public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB) {
-            tmp1.set(bodyA.getWorldTransform());
-            tmp2.set(bodyB.getWorldTransform());
-            tmp1.inv().mul(tmp2);
-            tmp2.idt();
-            btTypedConstraint constraint = new btFixedConstraint(bodyA, bodyB, tmp1, tmp2);
-            constraint.setBreakingImpulseThreshold(breakingImpulseThreshold);
-            return constraint;
-        }
-    }
-    public static class SliderConstraint implements Config {
-        private final Matrix4 frameInA;
-        private final Matrix4 frameInB;
-        private final boolean useLinearReferenceFrameA;
-        public SliderConstraint(Matrix4 frameInA, boolean useLinearReferenceFrameA) {
-            this(frameInA, frameInA, useLinearReferenceFrameA);
-        }
-        public SliderConstraint(Matrix4 frameInA, Matrix4 frameInB, boolean useLinearReferenceFrameA) {
-            this.frameInA = frameInA;
-            this.frameInB = frameInB;
-            this.useLinearReferenceFrameA = useLinearReferenceFrameA;
-        }
-        @Override
-        public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB) {
-            return (bodyA != bodyB) ?
-                    new btSliderConstraint(bodyA, bodyB, frameInA, frameInB, useLinearReferenceFrameA) :
-                    new btSliderConstraint(bodyA, frameInA, useLinearReferenceFrameA);
-        }
-    }
-    public static class HingeConstraint implements Config {
-        private final Matrix4 frameInA;
-        private final Matrix4 frameInB;
-        private final boolean useLinearReferenceFrameA;
-        public HingeConstraint(Matrix4 frameInA, boolean useLinearReferenceFrameA) {
-            this(frameInA, frameInA, useLinearReferenceFrameA);
-        }
-        public HingeConstraint(Matrix4 frameInA, Matrix4 frameInB, boolean useLinearReferenceFrameA) {
-            this.frameInA = frameInA;
-            this.frameInB = frameInB;
-            this.useLinearReferenceFrameA = useLinearReferenceFrameA;
-        }
-        @Override
-        public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB) {
-            return (bodyA != bodyB) ?
-                    new btHingeConstraint(bodyA, bodyB, frameInA, frameInB, useLinearReferenceFrameA) :
-                    new btHingeConstraint(bodyA, frameInA, useLinearReferenceFrameA);
-        }
+    public interface ConstraintType {
+        btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB, Map<String, Object> config);
     }
 }

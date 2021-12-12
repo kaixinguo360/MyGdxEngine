@@ -20,10 +20,7 @@ import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.my.utils.world.*;
-import com.my.utils.world.com.Collision;
-import com.my.utils.world.com.Position;
-import com.my.utils.world.com.RigidBody;
-import com.my.utils.world.com.ScriptComponent;
+import com.my.utils.world.com.*;
 import com.my.utils.world.sys.ConstraintSystem;
 import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.RenderSystem;
@@ -65,15 +62,11 @@ public class Guns {
         // ----- Variables ----- //
         private World world;
         private AssetsManager assetsManager;
-        private PhysicsSystem physicsSystem;
-        private ConstraintSystem constraintSystem;
 
         // ----- Init ----- //
         public GunBuilder(World world) {
             this.world = world;
             this.assetsManager = world.getAssetsManager();
-            this.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
-            this.constraintSystem = world.getSystemManager().getSystem(ConstraintSystem.class);
         }
 
         // ----- Builder Methods ----- //
@@ -82,12 +75,10 @@ public class Guns {
         private Entity createBullet(Matrix4 transform, Entity base) {
             Entity entity = new MyInstance("bullet", "bullet", null,
                     new Collision(BOMB_FLAG, ALL_FLAG, assetsManager.getAsset("BulletCollisionHandler", PhysicsSystem.CollisionHandler.class)));
+            String id = "Bullet-" + bulletNum++;
             addObject(
-                    "Bullet-" + bulletNum++,
-                    transform,
-                    entity,
-                    base,
-                    base == null ? null : new ConstraintSystem.ConnectConstraint()
+                    id, transform, entity,
+                    base == null ? null : Constraints.ConnectConstraint.getConfig(assetsManager, base.getId(), id, null, 2000)
             );
             ScriptComponent scriptComponent = new ScriptComponent();
             scriptComponent.script = assetsManager.getAsset("RemoveScript", ScriptSystem.Script.class);
@@ -97,29 +88,25 @@ public class Guns {
 
         private int barrelNum = 0;
         private Entity createBarrel(Matrix4 transform, Entity base) {
+            String id = "Barrel-" + barrelNum++;
             return addObject(
-                    "Barrel-" + barrelNum++,
-                    transform,
-                    new MyInstance("barrel", group),
-                    base,
-                    base == null ? null : new ConstraintSystem.ConnectConstraint()
+                    id, transform, new MyInstance("barrel", group),
+                    base == null ? null : Constraints.ConnectConstraint.getConfig(assetsManager, base.getId(), id, null, 2000)
             );
         }
 
         private int rotateNum = 0;
-        private Entity createRotate(Matrix4 transform, ConstraintSystem.Controller controller, Entity base) {
+        private Entity createRotate(Matrix4 transform, ConstraintSystem.ConstraintController controller, Entity base) {
             Matrix4 relTransform = new Matrix4(base.getComponent(Position.class).transform).inv().mul(transform);
+            String id = "GunRotate-" + rotateNum++;
             Entity entity = addObject(
-                    "GunRotate-" + rotateNum++,
-                    transform,
-                    new MyInstance("gunRotate", group),
-                    base,
-                    base == null ? null : new ConstraintSystem.HingeConstraint(
+                    id, transform, new MyInstance("gunRotate", group),
+                    base == null ? null : Constraints.HingeConstraint.getConfig(
+                            assetsManager, base.getId(), id, controller,
                             relTransform.rotate(Vector3.X, 90),
                             new Matrix4().rotate(Vector3.X, 90),
                             false)
             );
-            constraintSystem.addController(entity.getId(), base.getId(), controller);
             return entity;
         }
 
@@ -129,8 +116,8 @@ public class Guns {
             // Gun
             Guns.Gun gun = new Guns.Gun();
 
-            gun.rotate_Y = createRotate(transform.cpy().translate(0, 0.5f, 0), gun.controller_Y, world.getEntityManager().getEntity(baseObjectId));
-            gun.rotate_X = createRotate(transform.cpy().translate(0, 1.5f, 0).rotate(Vector3.Z, 90), gun.controller_X, gun.rotate_Y);
+            gun.rotate_Y = createRotate(transform.cpy().translate(0, 0.5f, 0), gun.gunController_Y, world.getEntityManager().getEntity(baseObjectId));
+            gun.rotate_X = createRotate(transform.cpy().translate(0, 1.5f, 0).rotate(Vector3.Z, 90), gun.gunController_X, gun.rotate_Y);
             gun.barrel = createBarrel(transform.cpy().translate(0, 1.5f, -3), gun.rotate_X);
 
             // Gun Entity
@@ -143,11 +130,13 @@ public class Guns {
         }
 
         // ----- Private ----- //
-        private Entity addObject(String id, Matrix4 transform, Entity entity, Entity base, ConstraintSystem.Config constraint) {
+        private Entity addObject(String id, Matrix4 transform, Entity entity, Constraint constraint) {
             entity.setId(id);
             world.getEntityManager().addEntity(entity)
                     .getComponent(Position.class).transform.set(transform);
-            if (base != null) constraintSystem.addConstraint(base.getId(), id, constraint);
+            if (constraint != null) {
+                entity.addComponent(constraint);
+            }
             return entity;
         }
     }
@@ -160,8 +149,8 @@ public class Guns {
         private static final Quaternion tmpQ = new Quaternion();
 
         private Entity rotate_Y, rotate_X, barrel;
-        private Controller controller_X = new Controller(-90, 0);
-        private Controller controller_Y = new Controller();
+        private GunController gunController_X = new GunController(-90, 0);
+        private GunController gunController_Y = new GunController();
 
         @Override
         public void setCamera(PerspectiveCamera camera, int index) {
@@ -192,16 +181,12 @@ public class Guns {
 
     public static class GunScript implements ScriptSystem.Script, AfterAdded {
 
-        private World world;
         private PhysicsSystem physicsSystem;
-        private ConstraintSystem constraintSystem;
         private GunBuilder gunBuilder;
 
         @Override
         public void afterAdded(World world) {
-            this.world = world;
             this.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
-            this.constraintSystem = world.getSystemManager().getSystem(ConstraintSystem.class);
             this.gunBuilder = new Guns.GunBuilder(world);
         }
 
@@ -229,6 +214,7 @@ public class Guns {
             if (Gdx.input.isKeyPressed(Input.Keys.A)) rotate(gun, v, 0);
             if (Gdx.input.isKeyPressed(Input.Keys.D)) rotate(gun, -v, 0);
             if (Gdx.input.isKeyPressed(Input.Keys.J)) fire(gun);
+            if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) explode(gun);
         }
         public void fire(Guns.Gun gun) {
             tmpM.set(getTransform(gun)).translate(0, 0, -20 + (float) (Math.random() * 15)).rotate(Vector3.X, 90);
@@ -242,19 +228,19 @@ public class Guns {
         }
         public void explode(Guns.Gun gun) {
             System.out.println("Explosion!");
-            constraintSystem.remove(world, gun.rotate_Y.getId());
-            constraintSystem.remove(world, gun.rotate_X.getId());
-            constraintSystem.remove(world, gun.barrel.getId());
+            gun.rotate_Y.removeComponent(Constraint.class);
+            gun.rotate_X.removeComponent(Constraint.class);
+            gun.barrel.removeComponent(Constraint.class);
             physicsSystem.addExplosion(getTransform(gun).getTranslation(tmpV), 2000);
         }
 
         public void rotate(Guns.Gun gun, float stepY, float stepX) {
-            setDirection(gun, gun.controller_Y.target + stepY, gun.controller_X.target + stepX);
+            setDirection(gun, gun.gunController_Y.target + stepY, gun.gunController_X.target + stepX);
         }
         public void setDirection(Guns.Gun gun, float angleY, float angleX) {
             getBody(gun).activate();
-            gun.controller_Y.target = angleY;
-            gun.controller_X.target = angleX;
+            gun.gunController_Y.target = angleY;
+            gun.gunController_X.target = angleX;
         }
         public Matrix4 getTransform(Guns.Gun gun) {
             return gun.barrel.getComponent(Position.class).transform;
@@ -307,13 +293,13 @@ public class Guns {
         }
     }
 
-    private static class Controller implements ConstraintSystem.Controller {
+    private static class GunController implements ConstraintSystem.ConstraintController {
         private float target = 0;
         private float max = 0;
         private float min = 0;
         private boolean limit = false;
-        private Controller() {}
-        private Controller(float min, float max) {
+        private GunController() {}
+        private GunController(float min, float max) {
             limit = true;
             this.min = (float) Math.toRadians(min);
             this.max = (float) Math.toRadians(max);

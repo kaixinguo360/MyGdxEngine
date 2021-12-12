@@ -13,6 +13,7 @@ import com.badlogic.gdx.utils.ArrayMap;
 import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
 import com.my.utils.world.World;
+import com.my.utils.world.com.Constraint;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.Serialization;
 import com.my.utils.world.sys.ConstraintSystem;
@@ -64,12 +65,10 @@ public class SceneBuilder {
     private static int boxNum = 0;
     public static Entity createBox(Matrix4 transform, String base) {
         Entity entity = new MyInstance("box", "box");
+        String id = "Box-" + boxNum++;
         addObject(
-                "Box-" + boxNum++,
-                transform,
-                entity,
-                base,
-                base == null ? null : new ConstraintSystem.ConnectConstraint()
+                id, transform, entity,
+                base == null ? null : Constraints.ConnectConstraint.getConfig(assetsManager, base, id, null, 2000)
         );
         return entity;
     }
@@ -81,7 +80,7 @@ public class SceneBuilder {
                 addObject(
                         "Box-" + boxNum++,
                         tmpM.setToTranslation(tmp + j, 0.5f + i, 0).mulLeft(transform),
-                        new MyInstance("box1", "box1"), null, null
+                        new MyInstance("box1", "box1"), null
                 );
             }
         }
@@ -95,11 +94,13 @@ public class SceneBuilder {
     }
 
     // ----- Private ----- //
-    private static String addObject(String id, Matrix4 transform, Entity entity, String base, ConstraintSystem.Config constraint) {
+    private static String addObject(String id, Matrix4 transform, Entity entity, Constraint constraint) {
         entity.setId(id);
         world.getEntityManager().addEntity(entity)
                 .getComponent(Position.class).transform.set(transform);
-        if (base != null) constraintSystem.addConstraint(base, id, constraint);
+        if (constraint != null) {
+            entity.addComponent(constraint);
+        }
         return id;
     }
 }

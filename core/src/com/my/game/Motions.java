@@ -55,7 +55,7 @@ public class Motions {
     public static class LimitedForce implements MotionSystem.MotionHandler {
         @Override
         public void update(Map<String, Object> config, btRigidBody body, Position position) {
-            float maxVelocity = (float) config.get("maxVelocity");
+            float maxVelocity = (float) (double) config.get("maxVelocity");
             Vector3 force = (Vector3) config.get("force");
             Vector3 rel_pos = (Vector3) config.get("rel_pos");
             TMP_1.set(force).rot(position.transform).nor();
@@ -65,7 +65,7 @@ public class Motions {
         }
         public static Motion getConfig(AssetsManager assetsManager, float maxVelocity, Vector3 force, Vector3 rel_pos) {
             return new Motion(assetsManager.getAsset("LimitedForce", MotionSystem.MotionHandler.class), new HashMap<String, Object>() {{
-                put("maxVelocity", maxVelocity);
+                put("maxVelocity", (double) maxVelocity);
                 put("force", force);
                 put("rel_pos", rel_pos);
             }});

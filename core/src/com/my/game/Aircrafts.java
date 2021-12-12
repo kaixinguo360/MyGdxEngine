@@ -21,10 +21,7 @@ import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.my.utils.world.*;
-import com.my.utils.world.com.Collision;
-import com.my.utils.world.com.Position;
-import com.my.utils.world.com.RigidBody;
-import com.my.utils.world.com.ScriptComponent;
+import com.my.utils.world.com.*;
 import com.my.utils.world.sys.ConstraintSystem;
 import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.RenderSystem;
@@ -71,14 +68,10 @@ public class Aircrafts {
         // ----- Variables ----- //
         private World world;
         private AssetsManager assetsManager;
-        private PhysicsSystem physicsSystem;
-        private ConstraintSystem constraintSystem;
 
         public AircraftBuilder(World world) {
             this.world = world;
             this.assetsManager = world.getAssetsManager();
-            this.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
-            this.constraintSystem = world.getSystemManager().getSystem(ConstraintSystem.class);
         }
 
         // ----- Builder Methods ----- //
@@ -87,12 +80,10 @@ public class Aircrafts {
         public Entity createBomb(Matrix4 transform, Entity base) {
             Entity entity = new MyInstance("bomb", "bomb", null,
                     new Collision(BOMB_FLAG, ALL_FLAG, assetsManager.getAsset("BombCollisionHandler", PhysicsSystem.CollisionHandler.class)));
+            String id = "Bomb-" + bombNum++;
             addObject(
-                    "Bomb-" + bombNum++,
-                    transform,
-                    entity,
-                    base,
-                    base == null ? null : new ConstraintSystem.ConnectConstraint()
+                    id, transform, entity,
+                    base == null ? null : Constraints.ConnectConstraint.getConfig(assetsManager, base.getId(), id, null, 2000)
             );
             ScriptComponent scriptComponent = new ScriptComponent();
             scriptComponent.script = assetsManager.getAsset("RemoveScript", ScriptSystem.Script.class);
@@ -102,51 +93,44 @@ public class Aircrafts {
 
         private int bodyNum = 0;
         private Entity createBody(Matrix4 transform, Entity base) {
+            String id = "Body-" + bodyNum++;
             return addObject(
-                    "Body-" + bodyNum++,
-                    transform,
-                    new MyInstance("body", group),
-                    base,
-                    base == null ? null : new ConstraintSystem.ConnectConstraint()
+                    id, transform, new MyInstance("body", group),
+                    base == null ? null : Constraints.ConnectConstraint.getConfig(assetsManager, base.getId(), id, null, 2000)
             );
         }
 
         private int wingNum = 0;
         private Entity createWing(Matrix4 transform, Entity base) {
+            String id = "Wing-" + wingNum++;
             return addObject(
-                    "Wing-" + wingNum++,
-                    transform,
-                    new MyInstance("wing", group, Motions.Lift.getConfig(assetsManager, new Vector3(0, 200, 0))),
-                    base,
-                    base == null ? null : new ConstraintSystem.ConnectConstraint(500)
+                    id, transform, new MyInstance("wing", group, Motions.Lift.getConfig(assetsManager, new Vector3(0, 200, 0))),
+                    base == null ? null : Constraints.ConnectConstraint.getConfig(assetsManager, base.getId(), id, null, 500)
             );
         }
 
         private int rotateNum = 0;
-        private Entity createRotate(Matrix4 transform, ConstraintSystem.Controller controller, Entity base) {
+        private Entity createRotate(Matrix4 transform, ConstraintSystem.ConstraintController controller, Entity base) {
             Matrix4 relTransform = new Matrix4(base.getComponent(Position.class).transform).inv().mul(transform);
+            String id = "Rotate-" + rotateNum++;
             Entity entity = addObject(
-                    "Rotate-" + rotateNum++,
-                    transform,
-                    new MyInstance("rotate", group),
-                    base,
-                    base == null ? null : new ConstraintSystem.HingeConstraint(
+                    id, transform, new MyInstance("rotate", group),
+                    base == null ? null : Constraints.HingeConstraint.getConfig(
+                            assetsManager, base.getId(), id, controller,
                             relTransform.rotate(Vector3.X, 90),
                             new Matrix4().rotate(Vector3.X, 90),
                             false)
             );
-            constraintSystem.addController(entity.getId(), base.getId(), controller);
             return entity;
         }
 
         private int engineNum = 0;
         private Entity createEngine(Matrix4 transform, float force, float maxVelocity, Entity base) {
+            String id = "Engine-" + engineNum++;
             return addObject(
-                    "Engine-" + engineNum++,
-                    transform,
+                    id, transform,
                     new MyInstance("engine", group, Motions.LimitedForce.getConfig(assetsManager, maxVelocity, new Vector3(0, force, 0), new Vector3())),
-                    base,
-                    base == null ? null : new ConstraintSystem.ConnectConstraint()
+                    base == null ? null : Constraints.ConnectConstraint.getConfig(assetsManager, base.getId(), id, null, 2000)
             );
         }
 
@@ -161,17 +145,17 @@ public class Aircrafts {
             aircraft.engine = createEngine(transform.cpy().translate(0, 0.6f, -6).rotate(Vector3.X, -90), force, maxVelocity, aircraft.body);
 
             // Left
-            aircraft.rotate_L = createRotate(transform.cpy().translate(-1, 0.5f, -5).rotate(Vector3.Z, 90), aircraft.controller_L, aircraft.body);
+            aircraft.rotate_L = createRotate(transform.cpy().translate(-1, 0.5f, -5).rotate(Vector3.Z, 90), aircraft.aircraftController_L, aircraft.body);
             aircraft.wing_L1 = createWing(transform.cpy().translate(-2.5f, 0.5f, -5).rotate(Vector3.X, 14), aircraft.rotate_L);
             aircraft.wing_L2 = createWing(transform.cpy().translate(-4.5f, 0.5f, -5).rotate(Vector3.X, 14), aircraft.wing_L1);
 
             // Right
-            aircraft.rotate_R = createRotate(transform.cpy().translate(1, 0.5f, -5).rotate(Vector3.Z, 90), aircraft.controller_R, aircraft.body);
+            aircraft.rotate_R = createRotate(transform.cpy().translate(1, 0.5f, -5).rotate(Vector3.Z, 90), aircraft.aircraftController_R, aircraft.body);
             aircraft.wing_R1 = createWing(transform.cpy().translate(2.5f, 0.5f, -5).rotate(Vector3.X, 14), aircraft.rotate_R);
             aircraft.wing_R2 = createWing(transform.cpy().translate(4.5f, 0.5f, -5).rotate(Vector3.X, 14), aircraft.wing_R1);
 
             // Horizontal Tail
-            aircraft.rotate_T = createRotate(transform.cpy().translate(0, 0.5f, 0.1f).rotate(Vector3.Z, 90), aircraft.controller_T, aircraft.body);
+            aircraft.rotate_T = createRotate(transform.cpy().translate(0, 0.5f, 0.1f).rotate(Vector3.Z, 90), aircraft.aircraftController_T, aircraft.body);
             aircraft.wing_TL = createWing(transform.cpy().translate(-1.5f, 0.5f, 0.1f).rotate(Vector3.X, 13f), aircraft.rotate_T);
             aircraft.wing_TR = createWing(transform.cpy().translate(1.5f, 0.5f, 0.1f).rotate(Vector3.X, 13f), aircraft.rotate_T);
 
@@ -189,11 +173,13 @@ public class Aircrafts {
         }
 
         // ----- Private ----- //
-        private Entity addObject(String id, Matrix4 transform, Entity entity, Entity base, ConstraintSystem.Config constraint) {
+        private Entity addObject(String id, Matrix4 transform, Entity entity, Constraint constraint) {
             entity.setId(id);
             world.getEntityManager().addEntity(entity)
                     .getComponent(Position.class).transform.set(transform);
-            if (base != null) constraintSystem.addConstraint(base.getId(), id, constraint);
+            if (constraint != null) {
+                entity.addComponent(constraint);
+            }
             return entity;
         }
     }
@@ -213,9 +199,9 @@ public class Aircrafts {
         private Entity wing_TL, wing_TR;
         private Entity wing_VL, wing_VR;
 
-        private Controller controller_L = new Controller(-0.15f, 0.2f, 0.5f);
-        private Controller controller_R = new Controller(-0.15f, 0.2f, 0.5f);
-        private Controller controller_T = new Controller(-0.2f, 0.2f, 1f);
+        private AircraftController aircraftController_L = new AircraftController(-0.15f, 0.2f, 0.5f);
+        private AircraftController aircraftController_R = new AircraftController(-0.15f, 0.2f, 0.5f);
+        private AircraftController aircraftController_T = new AircraftController(-0.2f, 0.2f, 1f);
 
         @Override
         public void setCamera(PerspectiveCamera camera, int index) {
@@ -252,16 +238,12 @@ public class Aircrafts {
 
     public static class AircraftScript implements ScriptSystem.Script, AfterAdded {
 
-        private World world;
         private PhysicsSystem physicsSystem;
-        private ConstraintSystem constraintSystem;
         private Aircrafts.AircraftBuilder aircraftBuilder;
 
         @Override
         public void afterAdded(World world) {
-            this.world = world;
             this.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
-            this.constraintSystem = world.getSystemManager().getSystem(ConstraintSystem.class);
             this.aircraftBuilder = new Aircrafts.AircraftBuilder(world);
         }
 
@@ -285,15 +267,15 @@ public class Aircrafts {
         public void update(Aircrafts.Aircraft aircraft) {
             float v1 = 1f;
             float v2 = 0.5f;
-            if (Gdx.input.isKeyPressed(Input.Keys.W)) aircraft.controller_T.rotate(v1);
-            if (Gdx.input.isKeyPressed(Input.Keys.S)) aircraft.controller_T.rotate(-v1);
+            if (Gdx.input.isKeyPressed(Input.Keys.W)) aircraft.aircraftController_T.rotate(v1);
+            if (Gdx.input.isKeyPressed(Input.Keys.S)) aircraft.aircraftController_T.rotate(-v1);
             if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-                aircraft.controller_L.rotate(v2);
-                aircraft.controller_R.rotate(-v2);
+                aircraft.aircraftController_L.rotate(v2);
+                aircraft.aircraftController_R.rotate(-v2);
             }
             if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-                aircraft.controller_L.rotate(-v2);
-                aircraft.controller_R.rotate(v2);
+                aircraft.aircraftController_L.rotate(-v2);
+                aircraft.aircraftController_R.rotate(v2);
             }
             if (Gdx.input.isKeyPressed(Input.Keys.J)) fire(aircraft);
             if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) explode(aircraft);
@@ -310,19 +292,19 @@ public class Aircrafts {
         }
         public void explode(Aircrafts.Aircraft aircraft) {
             System.out.println("Explosion!");
-            constraintSystem.remove(world, aircraft.body.getId());
-            constraintSystem.remove(world, aircraft.engine.getId());
-            constraintSystem.remove(world, aircraft.rotate_L.getId());
-            constraintSystem.remove(world, aircraft.rotate_R.getId());
-            constraintSystem.remove(world, aircraft.rotate_T.getId());
-            constraintSystem.remove(world, aircraft.wing_L1.getId());
-            constraintSystem.remove(world, aircraft.wing_L2.getId());
-            constraintSystem.remove(world, aircraft.wing_R1.getId());
-            constraintSystem.remove(world, aircraft.wing_R2.getId());
-            constraintSystem.remove(world, aircraft.wing_TL.getId());
-            constraintSystem.remove(world, aircraft.wing_TR.getId());
-            constraintSystem.remove(world, aircraft.wing_VL.getId());
-            constraintSystem.remove(world, aircraft.wing_VR.getId());
+            aircraft.body.removeComponent(Constraint.class);
+            aircraft.engine.removeComponent(Constraint.class);
+            aircraft.rotate_L.removeComponent(Constraint.class);
+            aircraft.rotate_R.removeComponent(Constraint.class);
+            aircraft.rotate_T.removeComponent(Constraint.class);
+            aircraft.wing_L1.removeComponent(Constraint.class);
+            aircraft.wing_L2.removeComponent(Constraint.class);
+            aircraft.wing_R1.removeComponent(Constraint.class);
+            aircraft.wing_R2.removeComponent(Constraint.class);
+            aircraft.wing_TL.removeComponent(Constraint.class);
+            aircraft.wing_TR.removeComponent(Constraint.class);
+            aircraft.wing_VL.removeComponent(Constraint.class);
+            aircraft.wing_VR.removeComponent(Constraint.class);
             physicsSystem.addExplosion(getTransform(aircraft).getTranslation(tmpV1), 2000);
         }
         public Matrix4 getTransform(Aircrafts.Aircraft aircraft) {
@@ -396,13 +378,13 @@ public class Aircrafts {
         }
     }
 
-    public static class Controller implements ConstraintSystem.Controller {
+    public static class AircraftController implements ConstraintSystem.ConstraintController {
         private float low;
         private float high;
         private float resilience;
         private float target = 0;
         private boolean isRotated = false;
-        private Controller(float low, float high, float resilience) {
+        private AircraftController(float low, float high, float resilience) {
             this.low = low;
             this.high = high;
             this.resilience = resilience;
