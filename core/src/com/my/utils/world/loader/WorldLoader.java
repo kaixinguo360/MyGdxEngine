@@ -83,15 +83,25 @@ public class WorldLoader implements Loader {
             }
 
             EntityManager entityManager = world.getEntityManager();
-            List<Map<String, Object>> entities = (List<Map<String, Object>>) map.get("entities");
-            if (entities != null) {
-                for (Map<String, Object> entity : entities) {
+            List<Map<String, Object>> nextEntities = (List<Map<String, Object>>) map.get("entities");
+            List<Map<String, Object>> thisEntities;
+            // Use while loop to solve circular dependency
+            while (nextEntities != null && nextEntities.size() > 0) {
+                thisEntities = nextEntities;
+                nextEntities = new ArrayList<>();
+                for (Map<String, Object> entity : thisEntities) {
                     Class<? extends Entity> entityType = (Class<? extends Entity>) Class.forName((String) entity.get("type"));
                     Object entityConfig = entity.get("config");
-                    entityManager.addEntity(loaderManager.load(entityConfig, entityType));
+                    try {
+                        entityManager.addEntity(loaderManager.load(entityConfig, entityType));
+                    } catch (RuntimeException e) {
+                        nextEntities.add(entity);
+                    }
+                }
+                if (nextEntities.size() == thisEntities.size()) {
+                    throw new RuntimeException("Entity Load Error: Unresolvable circular dependency (" + nextEntities + ")");
                 }
             }
-
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("No such class error: " + e.getMessage(), e);
         }
