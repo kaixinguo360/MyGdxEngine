@@ -58,6 +58,7 @@ public class MyGame extends Base3DGame {
     private MotionSystem motionSystem;
     private ScriptSystem scriptSystem;
     private Aircrafts.AircraftSystem aircraftSystem;
+    private Guns.GunSystem gunSystem;
     private LoaderManager loaderManager;
     private Array<Controllable> vehicles = new Array<>();
     private Server server;
@@ -117,16 +118,19 @@ public class MyGame extends Base3DGame {
         scriptSystem = world.getSystemManager().addSystem(new ScriptSystem());
         // Create AircraftSystem
         aircraftSystem = world.getSystemManager().addSystem(new Aircrafts.AircraftSystem());
+        // Create GunSystem
+        gunSystem = world.getSystemManager().addSystem(new Guns.GunSystem());
         // Create ObjectBuilder
         SceneBuilder.init(world);
         Aircrafts.initAssets(world.getAssetsManager());
-        GunBuilder.init(world);
+        Guns.initAssets(world.getAssetsManager());
         Scripts.initAssets(world.getAssetsManager());
         // Create LoaderManager
         loaderManager = new LoaderManager();
         loaderManager.getLoaders().add(new Motions.Loader());
         loaderManager.getLoaders().add(new Collisions.Loader());
         loaderManager.getLoaders().add(new Aircrafts.AircraftLoader(loaderManager));
+        loaderManager.getLoaders().add(new Guns.GunLoader(loaderManager));
         loaderManager.getEnvironment().put("world", world);
         // Init MyInstance.assetsManager
         MyInstance.assetsManager = world.getAssetsManager();
@@ -165,12 +169,13 @@ public class MyGame extends Base3DGame {
                     loaderManager1.getLoaders().add(new Motions.Loader());
                     loaderManager1.getLoaders().add(new Collisions.Loader());
                     loaderManager1.getLoaders().add(new Aircrafts.AircraftLoader(loaderManager1));
+                    loaderManager1.getLoaders().add(new Guns.GunLoader(loaderManager1));
                     loaderManager1.getLoader(WorldLoader.class).setBeforeLoad(world1 -> {
                         AssetsManager assetsManager = world1.getAssetsManager();
                         MyGame.initAssets(assetsManager, skyModel);
                         SceneBuilder.initAssets(assetsManager);
                         Aircrafts.initAssets(assetsManager);
-                        GunBuilder.initAssets(assetsManager);
+                        Guns.initAssets(assetsManager);
                         Scripts.initAssets(assetsManager);
                     });
                     World world = loaderManager1.load(loadedConfig, World.class);
@@ -243,6 +248,7 @@ public class MyGame extends Base3DGame {
             SceneBuilder.createTower(new Matrix4().setToTranslation(-5, 0, -200 * i), 5 * i);
         }
         Aircrafts.AircraftBuilder aircraftBuilder = new Aircrafts.AircraftBuilder(world);
+        Guns.GunBuilder gunBuilder = new Guns.GunBuilder(world);
         for (int x = -20; x <= 20; x+=40) {
             for (int y = 0; y <= 0; y+=20) {
                 for (int z = -20; z <= 20; z+=20) {
@@ -251,7 +257,7 @@ public class MyGame extends Base3DGame {
             }
         }
         vehicles.add(aircraftBuilder.createAircraft(new Matrix4().translate(0, 0, 200), 8000, 40));
-        vehicles.add(GunBuilder.createGun(new Matrix4().translate(0, 0, -20)));
+        vehicles.add(gunBuilder.createGun("ground", new Matrix4().translate(0, 0, -20)));
 
         // ----- Init World & Constraint ----- //
         world.update();
