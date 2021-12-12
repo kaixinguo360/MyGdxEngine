@@ -84,7 +84,7 @@ public class Aircrafts {
         // ----- Builder Methods ----- //
 
         private int bombNum = 0;
-        private Entity createBomb(Matrix4 transform, Entity base) {
+        public Entity createBomb(Matrix4 transform, Entity base) {
             Entity entity = new MyInstance("bomb", "bomb", null,
                     new Collision(BOMB_FLAG, ALL_FLAG, assetsManager.getAsset("BombCollisionHandler", PhysicsSystem.CollisionHandler.class)));
             addObject(
@@ -151,7 +151,7 @@ public class Aircrafts {
         }
 
         private int aircraftNum = 0;
-        public Aircraft createAircraft(Matrix4 transform, float force, float maxVelocity) {
+        public Entity createAircraft(Matrix4 transform, float force, float maxVelocity) {
 
             // Aircraft
             Aircraft aircraft = new Aircraft();
@@ -185,7 +185,7 @@ public class Aircrafts {
             entity.addComponent(aircraft);
             world.getEntityManager().addEntity(entity);
 
-            return aircraft;
+            return entity;
         }
 
         // ----- Private ----- //
@@ -198,7 +198,7 @@ public class Aircrafts {
         }
     }
 
-    public static class Aircraft implements Controllable, Component {
+    public static class Aircraft implements CameraController, Component {
 
         // ----- Temporary ----- //
         private static final Vector3 tmpV1 = new Vector3();
@@ -212,58 +212,12 @@ public class Aircrafts {
         private Entity wing_R1, wing_R2;
         private Entity wing_TL, wing_TR;
         private Entity wing_VL, wing_VR;
+
         private Controller controller_L = new Controller(-0.15f, 0.2f, 0.5f);
         private Controller controller_R = new Controller(-0.15f, 0.2f, 0.5f);
         private Controller controller_T = new Controller(-0.2f, 0.2f, 1f);
-        private World world;
-        private PhysicsSystem physicsSystem;
-        private ConstraintSystem constraintSystem;
-        private AircraftBuilder aircraftBuilder;
 
-        private Aircraft() {}
-
-        public void update() {
-            float v1 = 1f;
-            float v2 = 0.5f;
-            if (Gdx.input.isKeyPressed(Input.Keys.W)) controller_T.rotate(v1);
-            if (Gdx.input.isKeyPressed(Input.Keys.S)) controller_T.rotate(-v1);
-            if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-                controller_L.rotate(v2);
-                controller_R.rotate(-v2);
-            }
-            if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-                controller_L.rotate(-v2);
-                controller_R.rotate(v2);
-            }
-            if (Gdx.input.isKeyPressed(Input.Keys.J)) fire();
-        }
-        public void fire() {
-            tmpM.set(getTransform()).translate(0, 0, -20 + (float) (Math.random() * 15)).rotate(Vector3.X, 90);
-            getTransform().getRotation(tmpQ);
-            tmpV1.set(getBody().getLinearVelocity());
-            tmpV1.add(new Vector3(0, 0, -1).mul(tmpQ).scl(2000));
-            btRigidBody body = aircraftBuilder.createBomb(tmpM, null).getComponent(RigidBody.class).body;
-            body.setLinearVelocity(tmpV1);
-            body.setCcdMotionThreshold(1e-7f);
-            body.setCcdSweptSphereRadius(2);
-        }
-        public void explode() {
-            System.out.println("Explosion!");
-            constraintSystem.remove(world, body.getId());
-            constraintSystem.remove(world, engine.getId());
-            constraintSystem.remove(world, rotate_L.getId());
-            constraintSystem.remove(world, rotate_R.getId());
-            constraintSystem.remove(world, rotate_T.getId());
-            constraintSystem.remove(world, wing_L1.getId());
-            constraintSystem.remove(world, wing_L2.getId());
-            constraintSystem.remove(world, wing_R1.getId());
-            constraintSystem.remove(world, wing_R2.getId());
-            constraintSystem.remove(world, wing_TL.getId());
-            constraintSystem.remove(world, wing_TR.getId());
-            constraintSystem.remove(world, wing_VL.getId());
-            constraintSystem.remove(world, wing_VR.getId());
-            physicsSystem.addExplosion(getTransform().getTranslation(tmpV1), 2000);
-        }
+        @Override
         public void setCamera(PerspectiveCamera camera, int index) {
             if (index == 0) {
                 Matrix4 transform = getTransform();
@@ -296,25 +250,86 @@ public class Aircrafts {
         }
     }
 
-    public static class AircraftSystem extends BaseSystem implements EntityListener {
+    public static class AircraftScript implements ScriptSystem.Script, AfterAdded {
+
+        private World world;
+        private PhysicsSystem physicsSystem;
+        private ConstraintSystem constraintSystem;
+        private Aircrafts.AircraftBuilder aircraftBuilder;
 
         @Override
-        public void afterAdded(Entity entity) {
-            Aircraft aircraft = entity.getComponent(Aircraft.class);
-            aircraft.world = world;
-            aircraft.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
-            aircraft.constraintSystem = world.getSystemManager().getSystem(ConstraintSystem.class);
-            aircraft.aircraftBuilder = new AircraftBuilder(world);
+        public void afterAdded(World world) {
+            this.world = world;
+            this.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
+            this.constraintSystem = world.getSystemManager().getSystem(ConstraintSystem.class);
+            this.aircraftBuilder = new Aircrafts.AircraftBuilder(world);
         }
 
         @Override
-        public void afterRemoved(Entity entity) {
-
+        public void init(World world, Entity entity, ScriptComponent scriptComponent) {
+            scriptComponent.customObj = entity.getComponent(Aircrafts.Aircraft.class);
+            Aircrafts.Aircraft aircraft = entity.getComponent(Aircrafts.Aircraft.class);
         }
 
         @Override
-        protected boolean isHandleable(Entity entity) {
-            return entity.contain(Aircraft.class);
+        public void execute(World world, Entity entity, ScriptComponent scriptComponent) {
+            Aircrafts.Aircraft aircraft = (Aircrafts.Aircraft) scriptComponent.customObj;
+            update(aircraft);
+        }
+
+        // ----- Temporary ----- //
+        private static final Vector3 tmpV1 = new Vector3();
+        private static final Matrix4 tmpM = new Matrix4();
+        private static final Quaternion tmpQ = new Quaternion();
+
+        public void update(Aircrafts.Aircraft aircraft) {
+            float v1 = 1f;
+            float v2 = 0.5f;
+            if (Gdx.input.isKeyPressed(Input.Keys.W)) aircraft.controller_T.rotate(v1);
+            if (Gdx.input.isKeyPressed(Input.Keys.S)) aircraft.controller_T.rotate(-v1);
+            if (Gdx.input.isKeyPressed(Input.Keys.A)) {
+                aircraft.controller_L.rotate(v2);
+                aircraft.controller_R.rotate(-v2);
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.D)) {
+                aircraft.controller_L.rotate(-v2);
+                aircraft.controller_R.rotate(v2);
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.J)) fire(aircraft);
+            if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) explode(aircraft);
+        }
+        public void fire(Aircrafts.Aircraft aircraft) {
+            tmpM.set(getTransform(aircraft)).translate(0, 0, -20 + (float) (Math.random() * 15)).rotate(Vector3.X, 90);
+            getTransform(aircraft).getRotation(tmpQ);
+            tmpV1.set(getBody(aircraft).getLinearVelocity());
+            tmpV1.add(new Vector3(0, 0, -1).mul(tmpQ).scl(2000));
+            btRigidBody body = aircraftBuilder.createBomb(tmpM, null).getComponent(RigidBody.class).body;
+            body.setLinearVelocity(tmpV1);
+            body.setCcdMotionThreshold(1e-7f);
+            body.setCcdSweptSphereRadius(2);
+        }
+        public void explode(Aircrafts.Aircraft aircraft) {
+            System.out.println("Explosion!");
+            constraintSystem.remove(world, aircraft.body.getId());
+            constraintSystem.remove(world, aircraft.engine.getId());
+            constraintSystem.remove(world, aircraft.rotate_L.getId());
+            constraintSystem.remove(world, aircraft.rotate_R.getId());
+            constraintSystem.remove(world, aircraft.rotate_T.getId());
+            constraintSystem.remove(world, aircraft.wing_L1.getId());
+            constraintSystem.remove(world, aircraft.wing_L2.getId());
+            constraintSystem.remove(world, aircraft.wing_R1.getId());
+            constraintSystem.remove(world, aircraft.wing_R2.getId());
+            constraintSystem.remove(world, aircraft.wing_TL.getId());
+            constraintSystem.remove(world, aircraft.wing_TR.getId());
+            constraintSystem.remove(world, aircraft.wing_VL.getId());
+            constraintSystem.remove(world, aircraft.wing_VR.getId());
+            physicsSystem.addExplosion(getTransform(aircraft).getTranslation(tmpV1), 2000);
+        }
+        public Matrix4 getTransform(Aircrafts.Aircraft aircraft) {
+            return aircraft.body.getComponent(Position.class).transform;
+        }
+        public btRigidBody getBody(Aircrafts.Aircraft aircraft) {
+            return aircraft.body.getComponent(RigidBody.class).body;
         }
     }
 
@@ -336,21 +351,21 @@ public class Aircrafts {
         @Override
         public <E, T> T load(E config, Class<T> type) {
             if (entityManager == null) entityManager = getEntityManager();
-            Map<String, String> map = (Map<String, String>) config;
+            Map<String, Object> map = (Map<String, Object>) config;
             Aircraft aircraft = new Aircraft();
-            aircraft.body = entityManager.getEntity(map.get("body"));
-            aircraft.engine = entityManager.getEntity(map.get("engine"));
-            aircraft.rotate_L = entityManager.getEntity(map.get("rotate_L"));
-            aircraft.wing_L1 = entityManager.getEntity(map.get("wing_L1"));
-            aircraft.wing_L2 = entityManager.getEntity(map.get("wing_L2"));
-            aircraft.rotate_R = entityManager.getEntity(map.get("rotate_R"));
-            aircraft.wing_R1 = entityManager.getEntity(map.get("wing_R1"));
-            aircraft.wing_R2 = entityManager.getEntity(map.get("wing_R2"));
-            aircraft.rotate_T = entityManager.getEntity(map.get("rotate_T"));
-            aircraft.wing_TL = entityManager.getEntity(map.get("wing_TL"));
-            aircraft.wing_TR = entityManager.getEntity(map.get("wing_TR"));
-            aircraft.wing_VL = entityManager.getEntity(map.get("wing_VL"));
-            aircraft.wing_VR = entityManager.getEntity(map.get("wing_VR"));
+            aircraft.body = entityManager.getEntity((String) map.get("body"));
+            aircraft.engine = entityManager.getEntity((String) map.get("engine"));
+            aircraft.rotate_L = entityManager.getEntity((String) map.get("rotate_L"));
+            aircraft.wing_L1 = entityManager.getEntity((String) map.get("wing_L1"));
+            aircraft.wing_L2 = entityManager.getEntity((String) map.get("wing_L2"));
+            aircraft.rotate_R = entityManager.getEntity((String) map.get("rotate_R"));
+            aircraft.wing_R1 = entityManager.getEntity((String) map.get("wing_R1"));
+            aircraft.wing_R2 = entityManager.getEntity((String) map.get("wing_R2"));
+            aircraft.rotate_T = entityManager.getEntity((String) map.get("rotate_T"));
+            aircraft.wing_TL = entityManager.getEntity((String) map.get("wing_TL"));
+            aircraft.wing_TR = entityManager.getEntity((String) map.get("wing_TR"));
+            aircraft.wing_VL = entityManager.getEntity((String) map.get("wing_VL"));
+            aircraft.wing_VR = entityManager.getEntity((String) map.get("wing_VR"));
             return (T) aircraft;
         }
 
@@ -358,7 +373,7 @@ public class Aircrafts {
         public <E, T> E getConfig(T obj, Class<E> configType) {
             if (entityManager == null) entityManager = getEntityManager();
             Aircraft aircraft = (Aircraft) obj;
-            return (E) new HashMap<String, String>() {{
+            return (E) new HashMap<String, Object>() {{
                 put("body", aircraft.body.getId());
                 put("engine", aircraft.engine.getId());
                 put("rotate_L", aircraft.rotate_L.getId());
@@ -381,7 +396,7 @@ public class Aircrafts {
         }
     }
 
-    private static class Controller implements ConstraintSystem.Controller {
+    public static class Controller implements ConstraintSystem.Controller {
         private float low;
         private float high;
         private float resilience;

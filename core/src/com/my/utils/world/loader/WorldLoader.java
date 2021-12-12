@@ -39,7 +39,15 @@ public class WorldLoader implements Loader {
 
     @Getter
     @Setter
-    Consumer<World> beforeLoad;
+    Consumer<World> beforeLoadSystems;
+
+    @Getter
+    @Setter
+    Consumer<World> beforeLoadAssets;
+
+    @Getter
+    @Setter
+    Consumer<World> beforeLoadEntities;
 
     public WorldLoader(LoaderManager loaderManager) {
         this.loaderManager = loaderManager;
@@ -48,12 +56,12 @@ public class WorldLoader implements Loader {
     @Override
     public <E, T> T load(E config, Class<T> type) {
         World world = new World();
-        beforeLoad.accept(world);
         loaderManager.getEnvironment().put("world", world);
 
         try {
             Map<String, Object> map = (Map<String, Object>) config;
 
+            if (beforeLoadSystems != null) beforeLoadSystems.accept(world);
             SystemManager systemManager = world.getSystemManager();
             List<Map<String, Object>> systems = (List<Map<String, Object>>) map.get("systems");
             if (systems != null) {
@@ -64,6 +72,7 @@ public class WorldLoader implements Loader {
                 }
             }
 
+            if (beforeLoadAssets != null) beforeLoadAssets.accept(world);
             AssetsManager assetsManager = world.getAssetsManager();
             List<Map<String, Object>> assets = (List<Map<String, Object>>) map.get("assets");
             if (assets != null) {
@@ -82,6 +91,7 @@ public class WorldLoader implements Loader {
                 }
             }
 
+            if (beforeLoadEntities != null) beforeLoadEntities.accept(world);
             EntityManager entityManager = world.getEntityManager();
             List<Map<String, Object>> nextEntities = (List<Map<String, Object>>) map.get("entities");
             List<Map<String, Object>> thisEntities;

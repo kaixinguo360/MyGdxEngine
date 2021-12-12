@@ -29,6 +29,7 @@ public class ScriptComponentLoader implements Loader {
         if (assetsManager == null) assetsManager = getAssetsManager();
         Map<String, Object> map = (Map<String, Object>) config;
         return (T) new ScriptComponent(
+                (Boolean) map.get("disabled"),
                 assetsManager.getAsset((String) map.get("script"), ScriptSystem.Script.class),
                 (Map<String, Object>) map.get("config"),
                 null
@@ -40,6 +41,7 @@ public class ScriptComponentLoader implements Loader {
         if (assetsManager == null) assetsManager = getAssetsManager();
         ScriptComponent scriptComponent = (ScriptComponent) obj;
         return (E) new HashMap<String, Object>() {{
+            put("disabled", scriptComponent.disabled);
             put("script", assetsManager.getId(ScriptSystem.Script.class, scriptComponent.script));
             put("config", scriptComponent.config);
         }};

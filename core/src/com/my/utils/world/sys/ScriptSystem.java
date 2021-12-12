@@ -15,7 +15,7 @@ public class ScriptSystem extends BaseSystem implements EntityListener {
     public void update() {
         for (Entity entity : getEntities()) {
             ScriptComponent scriptComponent = entity.getComponent(ScriptComponent.class);
-            scriptComponent.script.execute(world, entity, scriptComponent);
+            if (!scriptComponent.disabled) scriptComponent.script.execute(world, entity, scriptComponent);
         }
     }
 

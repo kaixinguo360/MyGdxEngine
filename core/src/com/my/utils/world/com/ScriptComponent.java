@@ -10,6 +10,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ScriptComponent implements Component {
+    public boolean disabled;
     public ScriptSystem.Script script;
     public Map<String, Object> config;
     public Object customObj;

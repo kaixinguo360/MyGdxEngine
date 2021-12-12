@@ -124,7 +124,7 @@ public class Guns {
         }
 
         private int gunNum = 0;
-        public Gun createGun(String baseObjectId, Matrix4 transform) {
+        public Entity createGun(String baseObjectId, Matrix4 transform) {
 
             // Gun
             Guns.Gun gun = new Guns.Gun();
@@ -139,7 +139,7 @@ public class Guns {
             entity.addComponent(gun);
             world.getEntityManager().addEntity(entity);
 
-            return gun;
+            return entity;
         }
 
         // ----- Private ----- //
@@ -152,7 +152,7 @@ public class Guns {
         }
     }
 
-    public static class Gun implements Controllable, Component {
+    public static class Gun implements CameraController, Component {
 
         // ----- Temporary ----- //
         private static final Vector3 tmpV = new Vector3();
@@ -162,46 +162,8 @@ public class Guns {
         private Entity rotate_Y, rotate_X, barrel;
         private Controller controller_X = new Controller(-90, 0);
         private Controller controller_Y = new Controller();
-        private World world;
-        private PhysicsSystem physicsSystem;
-        private ConstraintSystem constraintSystem;
-        private GunBuilder gunBuilder;
 
-        private Gun() {}
-
-        public void update() {
-            float v = 0.025f;
-            if (Gdx.input.isKeyPressed(Input.Keys.W)) rotate(0, -v);
-            if (Gdx.input.isKeyPressed(Input.Keys.S)) rotate(0, v);
-            if (Gdx.input.isKeyPressed(Input.Keys.A)) rotate(v, 0);
-            if (Gdx.input.isKeyPressed(Input.Keys.D)) rotate(-v, 0);
-            if (Gdx.input.isKeyPressed(Input.Keys.J)) fire();
-        }
-        public void fire() {
-            tmpM.set(getTransform()).translate(0, 0, -20 + (float) (Math.random() * 15)).rotate(Vector3.X, 90);
-            getTransform().getRotation(tmpQ);
-            tmpV.set(getBody().getLinearVelocity());
-            tmpV.add(new Vector3(0, 0, -1).mul(tmpQ).scl(2000));
-            btRigidBody body = gunBuilder.createBullet(tmpM, null).getComponent(RigidBody.class).body;
-            body.setLinearVelocity(tmpV);
-            body.setCcdMotionThreshold(1e-7f);
-            body.setCcdSweptSphereRadius(2);
-        }
-        public void explode() {
-            System.out.println("Explosion!");
-            constraintSystem.remove(world, rotate_Y.getId());
-            constraintSystem.remove(world, rotate_X.getId());
-            constraintSystem.remove(world, barrel.getId());
-            physicsSystem.addExplosion(getTransform().getTranslation(tmpV), 2000);
-        }
-        public void rotate(float stepY, float stepX) {
-            setDirection(controller_Y.target + stepY, controller_X.target + stepX);
-        }
-        public void setDirection(float angleY, float angleX) {
-            getBody().activate();
-            controller_Y.target = angleY;
-            controller_X.target = angleX;
-        }
+        @Override
         public void setCamera(PerspectiveCamera camera, int index) {
             if (index == 0) {
                 Matrix4 transform = getTransform();
@@ -228,25 +190,77 @@ public class Guns {
         }
     }
 
-    public static class GunSystem extends BaseSystem implements EntityListener {
+    public static class GunScript implements ScriptSystem.Script, AfterAdded {
+
+        private World world;
+        private PhysicsSystem physicsSystem;
+        private ConstraintSystem constraintSystem;
+        private GunBuilder gunBuilder;
 
         @Override
-        public void afterAdded(Entity entity) {
+        public void afterAdded(World world) {
+            this.world = world;
+            this.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
+            this.constraintSystem = world.getSystemManager().getSystem(ConstraintSystem.class);
+            this.gunBuilder = new Guns.GunBuilder(world);
+        }
+
+        @Override
+        public void init(World world, Entity entity, ScriptComponent scriptComponent) {
+            scriptComponent.customObj = entity.getComponent(Guns.Gun.class);
             Guns.Gun gun = entity.getComponent(Guns.Gun.class);
-            gun.world = world;
-            gun.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
-            gun.constraintSystem = world.getSystemManager().getSystem(ConstraintSystem.class);
-            gun.gunBuilder = new Guns.GunBuilder(world);
         }
 
         @Override
-        public void afterRemoved(Entity entity) {
-
+        public void execute(World world, Entity entity, ScriptComponent scriptComponent) {
+            Guns.Gun gun = (Guns.Gun) scriptComponent.customObj;
+            update(gun);
         }
 
-        @Override
-        protected boolean isHandleable(Entity entity) {
-            return entity.contain(Guns.Gun.class);
+        // ----- Temporary ----- //
+        private static final Vector3 tmpV = new Vector3();
+        private static final Matrix4 tmpM = new Matrix4();
+        private static final Quaternion tmpQ = new Quaternion();
+
+        public void update(Guns.Gun gun) {
+            float v = 0.025f;
+            if (Gdx.input.isKeyPressed(Input.Keys.W)) rotate(gun, 0, -v);
+            if (Gdx.input.isKeyPressed(Input.Keys.S)) rotate(gun, 0, v);
+            if (Gdx.input.isKeyPressed(Input.Keys.A)) rotate(gun, v, 0);
+            if (Gdx.input.isKeyPressed(Input.Keys.D)) rotate(gun, -v, 0);
+            if (Gdx.input.isKeyPressed(Input.Keys.J)) fire(gun);
+        }
+        public void fire(Guns.Gun gun) {
+            tmpM.set(getTransform(gun)).translate(0, 0, -20 + (float) (Math.random() * 15)).rotate(Vector3.X, 90);
+            getTransform(gun).getRotation(tmpQ);
+            tmpV.set(getBody(gun).getLinearVelocity());
+            tmpV.add(new Vector3(0, 0, -1).mul(tmpQ).scl(2000));
+            btRigidBody body = gunBuilder.createBullet(tmpM, null).getComponent(RigidBody.class).body;
+            body.setLinearVelocity(tmpV);
+            body.setCcdMotionThreshold(1e-7f);
+            body.setCcdSweptSphereRadius(2);
+        }
+        public void explode(Guns.Gun gun) {
+            System.out.println("Explosion!");
+            constraintSystem.remove(world, gun.rotate_Y.getId());
+            constraintSystem.remove(world, gun.rotate_X.getId());
+            constraintSystem.remove(world, gun.barrel.getId());
+            physicsSystem.addExplosion(getTransform(gun).getTranslation(tmpV), 2000);
+        }
+
+        public void rotate(Guns.Gun gun, float stepY, float stepX) {
+            setDirection(gun, gun.controller_Y.target + stepY, gun.controller_X.target + stepX);
+        }
+        public void setDirection(Guns.Gun gun, float angleY, float angleX) {
+            getBody(gun).activate();
+            gun.controller_Y.target = angleY;
+            gun.controller_X.target = angleX;
+        }
+        public Matrix4 getTransform(Guns.Gun gun) {
+            return gun.barrel.getComponent(Position.class).transform;
+        }
+        public btRigidBody getBody(Guns.Gun gun) {
+            return gun.barrel.getComponent(RigidBody.class).body;
         }
     }
 

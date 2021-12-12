@@ -32,9 +32,11 @@ import com.my.utils.base.Base3DGame;
 import com.my.utils.net.Client;
 import com.my.utils.net.Server;
 import com.my.utils.world.AssetsManager;
+import com.my.utils.world.Entity;
 import com.my.utils.world.LoaderManager;
 import com.my.utils.world.World;
 import com.my.utils.world.com.Position;
+import com.my.utils.world.com.ScriptComponent;
 import com.my.utils.world.loader.WorldLoader;
 import com.my.utils.world.sys.*;
 import org.yaml.snakeyaml.Yaml;
@@ -57,10 +59,8 @@ public class MyGame extends Base3DGame {
     private ConstraintSystem constraintSystem;
     private MotionSystem motionSystem;
     private ScriptSystem scriptSystem;
-    private Aircrafts.AircraftSystem aircraftSystem;
-    private Guns.GunSystem gunSystem;
     private LoaderManager loaderManager;
-    private Array<Controllable> vehicles = new Array<>();
+    private Array<CameraController> vehicles = new Array<>();
     private Server server;
     private String receivedData = null;
     private long receivedTime;
@@ -116,10 +116,6 @@ public class MyGame extends Base3DGame {
         addDisposable(motionSystem);
         // Create ScriptSystem
         scriptSystem = world.getSystemManager().addSystem(new ScriptSystem());
-        // Create AircraftSystem
-        aircraftSystem = world.getSystemManager().addSystem(new Aircrafts.AircraftSystem());
-        // Create GunSystem
-        gunSystem = world.getSystemManager().addSystem(new Guns.GunSystem());
         // Create ObjectBuilder
         SceneBuilder.init(world);
         Aircrafts.initAssets(world.getAssetsManager());
@@ -154,8 +150,6 @@ public class MyGame extends Base3DGame {
             @Override
             public boolean keyDown(int keycode) {
                 if (keycode == Input.Keys.ESCAPE) Gdx.app.exit();
-                if (keycode == Input.Keys.V) mainView.getVehicle().fire();
-                if (keycode == Input.Keys.SPACE) mainView.getVehicle().explode();
                 if (keycode == Input.Keys.TAB) changeView();
                 if (keycode == Input.Keys.SHIFT_LEFT) mainView.changeCamera();
                 if (keycode == Input.Keys.ENTER) {
@@ -170,7 +164,7 @@ public class MyGame extends Base3DGame {
                     loaderManager1.getLoaders().add(new Collisions.Loader());
                     loaderManager1.getLoaders().add(new Aircrafts.AircraftLoader(loaderManager1));
                     loaderManager1.getLoaders().add(new Guns.GunLoader(loaderManager1));
-                    loaderManager1.getLoader(WorldLoader.class).setBeforeLoad(world1 -> {
+                    loaderManager1.getLoader(WorldLoader.class).setBeforeLoadAssets(world1 -> {
                         AssetsManager assetsManager = world1.getAssetsManager();
                         MyGame.initAssets(assetsManager, skyModel);
                         SceneBuilder.initAssets(assetsManager);
@@ -212,7 +206,8 @@ public class MyGame extends Base3DGame {
             ui.getWidget("btn", Button.class).addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
-                    mainView.getVehicle().explode();
+//                    mainView.getVehicle().explode();
+                    System.out.println("Explosion!");
                 }
             });
 
@@ -256,8 +251,21 @@ public class MyGame extends Base3DGame {
                 }
             }
         }
-        vehicles.add(aircraftBuilder.createAircraft(new Matrix4().translate(0, 0, 200), 8000, 40));
-        vehicles.add(gunBuilder.createGun("ground", new Matrix4().translate(0, 0, -20)));
+
+        Entity aircraftEntity = aircraftBuilder.createAircraft(new Matrix4().translate(0, 0, 200), 8000, 40);
+        ScriptComponent aircraftScriptComponent = new ScriptComponent();
+        aircraftScriptComponent.script = world.getAssetsManager().getAsset("AircraftScript", ScriptSystem.Script.class);
+        aircraftEntity.addComponent(aircraftScriptComponent);
+        Aircrafts.Aircraft aircraft = aircraftEntity.getComponent(Aircrafts.Aircraft.class);
+        vehicles.add(aircraft);
+
+        Entity gunEntity = gunBuilder.createGun("ground", new Matrix4().translate(0, 0, -20));
+        ScriptComponent gunScriptComponent = new ScriptComponent();
+        gunScriptComponent.script = world.getAssetsManager().getAsset("GunScript", ScriptSystem.Script.class);
+        gunScriptComponent.disabled = true;
+        gunEntity.addComponent(gunScriptComponent);
+        Guns.Gun gun = gunEntity.getComponent(Guns.Gun.class);
+        vehicles.add(gun);
 
         // ----- Init World & Constraint ----- //
         world.update();
@@ -317,8 +325,8 @@ public class MyGame extends Base3DGame {
         // Update Info
         Aircrafts.Aircraft aircraft = (Aircrafts.Aircraft) vehicles.get(0);
         ui.getWidget("label", Label.class).setText(
-                "Velocity: " + Math.floor(aircraft.getVelocity()) +
-                        "\nHeight: " + Math.floor(aircraft.getHeight()));
+                "  Velocity: " + Math.floor(aircraft.getVelocity()) +
+                        "\n  Height: " + Math.floor(aircraft.getHeight()));
 
         // Update World
         world.update();
@@ -327,32 +335,38 @@ public class MyGame extends Base3DGame {
         physicsSystem.update(deltaTime);
         scriptSystem.update();
         world.getEntityManager().getBatch().commit();
-        mainView.getVehicle().update();
 
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
     // ----- Custom ----- //
-    private View mainView = new View(0, 0);
-    private View secondaryView = new View(1, 0);
+    private View mainView = new View(0, 0, "Aircraft-6");
+    private View secondaryView = new View(1, 0, "Gun-0");
     private void changeView() {
         View tmp = mainView;
         mainView = secondaryView;
         secondaryView = tmp;
+        secondaryView.getEntity().getComponent(ScriptComponent.class).disabled = true;
+        mainView.getEntity().getComponent(ScriptComponent.class).disabled = false;
     }
 
     private class View {
-        int cameraIndex = 0;
-        int vehicleIndex = 0;
-        private View(int vehicleIndex, int cameraIndex) {
+        int cameraIndex;
+        int vehicleIndex;
+        String entityId;
+        private View(int vehicleIndex, int cameraIndex, String entityId) {
             this.vehicleIndex = vehicleIndex;
             this.cameraIndex = cameraIndex;
+            this.entityId = entityId;
         }
         private void setCamera(PerspectiveCamera camera) {
             vehicles.get(vehicleIndex).setCamera(camera, cameraIndex);
         }
-        private Controllable getVehicle() {
+        private CameraController getVehicle() {
             return vehicles.get(vehicleIndex);
+        }
+        private Entity getEntity() {
+            return world.getEntityManager().getEntity(entityId);
         }
         private void changeCamera() {
             cameraIndex = (cameraIndex + 1) % 2;

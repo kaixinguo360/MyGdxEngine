@@ -14,6 +14,8 @@ public class Scripts {
 
     public static void initAssets(AssetsManager assetsManager) {
         assetsManager.addAsset("RemoveScript", ScriptSystem.Script.class, new RemoveScript());
+        assetsManager.addAsset("AircraftScript", ScriptSystem.Script.class, new Aircrafts.AircraftScript());
+        assetsManager.addAsset("GunScript", ScriptSystem.Script.class, new Guns.GunScript());
     }
 
     public static class RemoveScript implements ScriptSystem.Script {
