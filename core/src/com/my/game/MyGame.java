@@ -57,6 +57,7 @@ public class MyGame extends Base3DGame {
     private ConstraintSystem constraintSystem;
     private MotionSystem motionSystem;
     private ScriptSystem scriptSystem;
+    private Aircrafts.AircraftSystem aircraftSystem;
     private LoaderManager loaderManager;
     private Array<Controllable> vehicles = new Array<>();
     private Server server;
@@ -114,15 +115,18 @@ public class MyGame extends Base3DGame {
         addDisposable(motionSystem);
         // Create ScriptSystem
         scriptSystem = world.getSystemManager().addSystem(new ScriptSystem());
+        // Create AircraftSystem
+        aircraftSystem = world.getSystemManager().addSystem(new Aircrafts.AircraftSystem());
         // Create ObjectBuilder
         SceneBuilder.init(world);
-        AircraftBuilder.init(world);
+        Aircrafts.initAssets(world.getAssetsManager());
         GunBuilder.init(world);
-        Scripts.init(world);
+        Scripts.initAssets(world.getAssetsManager());
         // Create LoaderManager
         loaderManager = new LoaderManager();
         loaderManager.getLoaders().add(new Motions.Loader());
         loaderManager.getLoaders().add(new Collisions.Loader());
+        loaderManager.getLoaders().add(new Aircrafts.AircraftLoader(loaderManager));
         loaderManager.getEnvironment().put("world", world);
         // Init MyInstance.assetsManager
         MyInstance.assetsManager = world.getAssetsManager();
@@ -160,14 +164,17 @@ public class MyGame extends Base3DGame {
                     LoaderManager loaderManager1 = new LoaderManager();
                     loaderManager1.getLoaders().add(new Motions.Loader());
                     loaderManager1.getLoaders().add(new Collisions.Loader());
+                    loaderManager1.getLoaders().add(new Aircrafts.AircraftLoader(loaderManager1));
                     loaderManager1.getLoader(WorldLoader.class).setBeforeLoad(world1 -> {
                         AssetsManager assetsManager = world1.getAssetsManager();
                         MyGame.initAssets(assetsManager, skyModel);
                         SceneBuilder.initAssets(assetsManager);
-                        AircraftBuilder.initAssets(assetsManager);
+                        Aircrafts.initAssets(assetsManager);
                         GunBuilder.initAssets(assetsManager);
+                        Scripts.initAssets(assetsManager);
                     });
-                    loaderManager1.load(loadedConfig, World.class);
+                    World world = loaderManager1.load(loadedConfig, World.class);
+                    Aircrafts.Aircraft aircraft = world.getEntityManager().getEntity("Aircraft-0").getComponent(Aircrafts.Aircraft.class);
                 }
                 return false;
             }
@@ -235,14 +242,15 @@ public class MyGame extends Base3DGame {
         for (int i = 1; i < 5; i++) {
             SceneBuilder.createTower(new Matrix4().setToTranslation(-5, 0, -200 * i), 5 * i);
         }
+        Aircrafts.AircraftBuilder aircraftBuilder = new Aircrafts.AircraftBuilder(world);
         for (int x = -20; x <= 20; x+=40) {
             for (int y = 0; y <= 0; y+=20) {
                 for (int z = -20; z <= 20; z+=20) {
-                    AircraftBuilder.createAircraft(new Matrix4().translate(x, y, z), 4000, 40);
+                    aircraftBuilder.createAircraft(new Matrix4().translate(x, y, z), 4000, 40);
                 }
             }
         }
-        vehicles.add(AircraftBuilder.createAircraft(new Matrix4().translate(0, 0, 200), 8000, 40));
+        vehicles.add(aircraftBuilder.createAircraft(new Matrix4().translate(0, 0, 200), 8000, 40));
         vehicles.add(GunBuilder.createGun(new Matrix4().translate(0, 0, -20)));
 
         // ----- Init World & Constraint ----- //
@@ -301,7 +309,7 @@ public class MyGame extends Base3DGame {
         renderSystem.render(camera, environment);
 
         // Update Info
-        AircraftBuilder.Aircraft aircraft = (AircraftBuilder.Aircraft) vehicles.get(0);
+        Aircrafts.Aircraft aircraft = (Aircrafts.Aircraft) vehicles.get(0);
         ui.getWidget("label", Label.class).setText(
                 "Velocity: " + Math.floor(aircraft.getVelocity()) +
                         "\nHeight: " + Math.floor(aircraft.getHeight()));
