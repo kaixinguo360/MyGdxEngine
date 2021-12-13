@@ -28,12 +28,22 @@ public class ConstraintLoader implements Loader {
     public <E, T> T load(E config, Class<T> type) {
         if (assetsManager == null) assetsManager = getAssetsManager();
         Map<String, Object> map = (Map<String, Object>) config;
+        ConstraintSystem.ConstraintController constraintController = null;
+        if (map.containsKey("controllerType") && map.containsKey("controllerConfig")) {
+            try {
+                Class<?> controllerType = Class.forName((String) map.get("controllerType"));
+                Map<String, Object> controllerConfig = (Map<String, Object>) map.get("controllerConfig");
+                constraintController = (ConstraintSystem.ConstraintController) loaderManager.load(controllerConfig, controllerType);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException("Constraint controller create error: " + e.getMessage(), e);
+            }
+        }
         return (T) new Constraint(
                 (String) map.get("bodyA"),
                 (String) map.get("bodyB"),
                 assetsManager.getAsset((String) map.get("type"), ConstraintSystem.ConstraintType.class),
                 (Map<String, Object>) map.get("config"),
-                null // TODO: Controller
+                constraintController
         );
     }
 
@@ -46,7 +56,10 @@ public class ConstraintLoader implements Loader {
             put("bodyB", constraint.bodyB);
             put("type", assetsManager.getId(ConstraintSystem.ConstraintType.class, constraint.type));
             put("config", constraint.config);
-            // TODO: Controller
+            if (constraint.controller != null) {
+                put("controllerType", constraint.controller.getClass().getName());
+                put("controllerConfig", loaderManager.getConfig(constraint.controller, HashMap.class));
+            }
         }};
     }
 

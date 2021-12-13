@@ -39,7 +39,6 @@ import com.my.utils.world.com.Position;
 import com.my.utils.world.com.ScriptComponent;
 import com.my.utils.world.loader.WorldLoader;
 import com.my.utils.world.sys.*;
-import org.yaml.snakeyaml.Yaml;
 
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -128,10 +127,10 @@ public class MyGame extends Base3DGame {
         loaderManager.getLoaders().add(new Collisions.Loader());
         loaderManager.getLoaders().add(new Constraints.Loader());
         loaderManager.getLoaders().add(new Aircrafts.AircraftLoader(loaderManager));
+        loaderManager.getLoaders().add(new Aircrafts.AircraftControllerLoader());
         loaderManager.getLoaders().add(new Guns.GunLoader(loaderManager));
+        loaderManager.getLoaders().add(new Guns.GunControllerLoader());
         loaderManager.getEnvironment().put("world", world);
-        // Init MyInstance.assetsManager
-        MyInstance.assetsManager = world.getAssetsManager();
 
         // ----- Create Environment ----- //
         environment = new Environment();
@@ -156,17 +155,19 @@ public class MyGame extends Base3DGame {
                 if (keycode == Input.Keys.SHIFT_LEFT) mainView.changeCamera();
                 if (keycode == Input.Keys.ENTER) {
                     Map config = loaderManager.getConfig(world, Map.class);
-                    Yaml yaml = new Yaml();
-                    String yamlConfig = yaml.dumpAsMap(config);
-                    System.out.println(yamlConfig);
-                    Map loadedConfig = yaml.loadAs(yamlConfig, Map.class);
+//                    Yaml yaml = new Yaml();
+//                    String yamlConfig = yaml.dumpAsMap(config);
+//                    System.out.println(yamlConfig);
+//                    Map loadedConfig = yaml.loadAs(yamlConfig, Map.class);
 
                     LoaderManager loaderManager1 = new LoaderManager();
                     loaderManager1.getLoaders().add(new Motions.Loader());
                     loaderManager1.getLoaders().add(new Collisions.Loader());
                     loaderManager1.getLoaders().add(new Constraints.Loader());
                     loaderManager1.getLoaders().add(new Aircrafts.AircraftLoader(loaderManager1));
+                    loaderManager1.getLoaders().add(new Aircrafts.AircraftControllerLoader());
                     loaderManager1.getLoaders().add(new Guns.GunLoader(loaderManager1));
+                    loaderManager1.getLoaders().add(new Guns.GunControllerLoader());
                     loaderManager1.getLoader(WorldLoader.class).setBeforeLoadAssets(world1 -> {
                         AssetsManager assetsManager = world1.getAssetsManager();
                         MyGame.initAssets(assetsManager, skyModel);
@@ -175,8 +176,19 @@ public class MyGame extends Base3DGame {
                         Guns.initAssets(assetsManager);
                         Scripts.initAssets(assetsManager);
                     });
-                    World world = loaderManager1.load(loadedConfig, World.class);
-                    Aircrafts.Aircraft aircraft = world.getEntityManager().getEntity("Aircraft-0").getComponent(Aircrafts.Aircraft.class);
+
+                    world = loaderManager1.load(config, World.class);
+                    renderSystem = world.getSystemManager().getSystem(RenderSystem.class);
+                    physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
+                    serializationSystem = world.getSystemManager().getSystem(SerializationSystem.class);
+                    constraintSystem = world.getSystemManager().getSystem(ConstraintSystem.class);
+                    motionSystem = world.getSystemManager().getSystem(MotionSystem.class);
+                    scriptSystem = world.getSystemManager().getSystem(ScriptSystem.class);
+                    loaderManager = loaderManager1;
+                    Aircrafts.Aircraft aircraft = world.getEntityManager().getEntity("Aircraft-6").getComponent(Aircrafts.Aircraft.class);
+                    Guns.Gun gun = world.getEntityManager().getEntity("Gun-0").getComponent(Guns.Gun.class);
+                    vehicles.set(0, aircraft);
+                    vehicles.set(1, gun);
                 }
                 return false;
             }
@@ -227,13 +239,14 @@ public class MyGame extends Base3DGame {
         System.out.println("doneLoading");
 
         skyModel = assetManager.get("obj/sky.g3db", Model.class);
+        skyModel.nodes.get(0).scale.scl(20);
         initAssets(world.getAssetsManager(), skyModel);
 
         // ----- Init Static Objects ----- //
-        MyInstance sky = new MyInstance("sky");
+        MyInstance sky = new MyInstance(world.getAssetsManager(), "sky");
         sky.setId("sky");
         world.getEntityManager().addEntity(sky);
-        MyInstance ground = new MyInstance("ground");
+        MyInstance ground = new MyInstance(world.getAssetsManager(), "ground");
         ground.setId("ground");
         world.getEntityManager().addEntity(ground);
 
@@ -282,7 +295,6 @@ public class MyGame extends Base3DGame {
         ModelBuilder mdBuilder = new ModelBuilder();
         ArrayMap<String, Model> models = new ArrayMap<>();
         models.put("sky", skyModel);
-        models.get("sky").nodes.get(0).scale.scl(20);
         models.put("ground", mdBuilder.createBox(10000f, 0.01f, 20000f, new Material(ColorAttribute.createDiffuse(Color.WHITE)), attributes));
 
         // ----- Init Configs ----- //

@@ -64,7 +64,7 @@ public class SceneBuilder {
     // ----- Builder Methods ----- //
     private static int boxNum = 0;
     public static Entity createBox(Matrix4 transform, String base) {
-        Entity entity = new MyInstance("box", "box");
+        Entity entity = new MyInstance(assetsManager, "box", "box");
         String id = "Box-" + boxNum++;
         addObject(
                 id, transform, entity,
@@ -80,7 +80,7 @@ public class SceneBuilder {
                 addObject(
                         "Box-" + boxNum++,
                         tmpM.setToTranslation(tmp + j, 0.5f + i, 0).mulLeft(transform),
-                        new MyInstance("box1", "box1"), null
+                        new MyInstance(assetsManager, "box1", "box1"), null
                 );
             }
         }

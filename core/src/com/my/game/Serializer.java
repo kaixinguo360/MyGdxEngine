@@ -34,7 +34,7 @@ public class Serializer implements Serialization.Serializer {
     @Override
     public void add(String id, String group, String serializerId, String data) {
         try {
-            MyInstance myInstance = new MyInstance(serializerId, group);
+            MyInstance myInstance = new MyInstance(world.getAssetsManager(), serializerId, group);
             myInstance.setId(id);
             Entity entity = world.getEntityManager().addEntity(myInstance);
             update(entity, data);

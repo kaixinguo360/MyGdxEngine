@@ -10,28 +10,24 @@ import com.my.utils.world.sys.RenderSystem;
 
 public class MyInstance extends Entity implements Disposable {
 
-    public static AssetsManager assetsManager;
-
     protected Position position;
     protected Render render;
     protected RigidBody rigidBody;
     protected Serialization serialization;
 
-    public MyInstance() {}
-
-    public MyInstance(String className) {
-        this(className, null);
+    public MyInstance(AssetsManager assetsManager, String className) {
+        this(assetsManager, className, null);
     }
 
-    public MyInstance(String className, String group) {
-        this(className, group, null);
+    public MyInstance(AssetsManager assetsManager, String className, String group) {
+        this(assetsManager, className, group, null);
     }
 
-    public MyInstance(String className, String group, Motion motion) {
-        this(className, group, motion, null);
+    public MyInstance(AssetsManager assetsManager, String className, String group, Motion motion) {
+        this(assetsManager, className, group, motion, null);
     }
 
-    public MyInstance(String className, String group, Motion motion, Collision collision) {
+    public MyInstance(AssetsManager assetsManager, String className, String group, Motion motion, Collision collision) {
         position = addComponent(new Position(new Matrix4()));
         if (assetsManager.hasAsset(className, RenderSystem.RenderConfig.class)) {
             RenderSystem.RenderConfig renderConfig = assetsManager.getAsset(className, RenderSystem.RenderConfig.class);
