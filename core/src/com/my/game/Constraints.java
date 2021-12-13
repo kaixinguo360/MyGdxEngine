@@ -4,7 +4,6 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.dynamics.*;
 import com.my.utils.world.AssetsManager;
-import com.my.utils.world.World;
 import com.my.utils.world.com.Constraint;
 import com.my.utils.world.sys.ConstraintSystem;
 
@@ -13,8 +12,7 @@ import java.util.Map;
 
 public class Constraints {
 
-    public static void init(World world) {
-        AssetsManager assetsManager = world.getAssetsManager();
+    public static void initAssets(AssetsManager assetsManager) {
         assetsManager.addAsset("Point2PointConstraint", ConstraintSystem.ConstraintType.class, new Point2PointConstraint());
         assetsManager.addAsset("FixedConstraint", ConstraintSystem.ConstraintType.class, new FixedConstraint());
         assetsManager.addAsset("ConnectConstraint", ConstraintSystem.ConstraintType.class, new ConnectConstraint());

@@ -16,40 +16,14 @@ import com.my.utils.world.World;
 import com.my.utils.world.com.Constraint;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.Serialization;
-import com.my.utils.world.sys.ConstraintSystem;
 import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.RenderSystem;
 
 public class SceneBuilder {
 
-    // ----- Temporary ----- //
-    private static final Matrix4 tmpM = new Matrix4();
-
-    // ----- Constants ----- //
-    private final static short BOMB_FLAG = 1 << 8;
-    private final static short ALL_FLAG = -1;
-
-    // ----- Variables ----- //
-    private static World world;
-    private static AssetsManager assetsManager;
-    private static ConstraintSystem constraintSystem;
-
-    // ----- Init ----- //
-    private static ArrayMap<String, Model> models = new ArrayMap<>();
-    public static void init(World world) {
-        SceneBuilder.world = world;
-        SceneBuilder.assetsManager = world.getAssetsManager();
-        SceneBuilder.constraintSystem = world.getSystemManager().getSystem(ConstraintSystem.class);
-
-        initAssets(assetsManager);
-
-        Serialization.Serializer serializer = new Serializer(world);
-        Serialization.addSerializer("box", serializer);
-    }
-
     public static void initAssets(AssetsManager assetsManager) {
-
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
+        ArrayMap<String, Model> models = new ArrayMap<>();
         ModelBuilder mdBuilder = new ModelBuilder();
         models.put("box", mdBuilder.createBox(1, 1, 1, new Material(ColorAttribute.createDiffuse(Color.RED)), attributes));
         models.put("box1", mdBuilder.createBox(2, 1, 1, new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)), attributes));
@@ -61,9 +35,25 @@ public class SceneBuilder {
         assetsManager.addAsset("box1", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btBoxShape(new Vector3(1,0.5f,0.5f)), 50f));
     }
 
+    // ----- Temporary ----- //
+    private final Matrix4 tmpM = new Matrix4();
+
+    // ----- Variables ----- //
+    private final World world;
+    private final AssetsManager assetsManager;
+
+    public SceneBuilder(World world) {
+        this.world = world;
+        this.assetsManager = world.getAssetsManager();
+
+        Serialization.Serializer serializer = new Serializer(world);
+        Serialization.addSerializer("box", serializer);
+    }
+
     // ----- Builder Methods ----- //
-    private static int boxNum = 0;
-    public static Entity createBox(Matrix4 transform, String base) {
+
+    private int boxNum = 0;
+    public Entity createBox(Matrix4 transform, String base) {
         Entity entity = new MyInstance(assetsManager, "box", "box");
         String id = "Box-" + boxNum++;
         addObject(
@@ -73,7 +63,7 @@ public class SceneBuilder {
         return entity;
     }
 
-    public static void createWall(Matrix4 transform, int height) {
+    public void createWall(Matrix4 transform, int height) {
         for (int i = 0; i < height; i++) {
             float tmp = 0.5f + (i % 2);
             for (int j = 0; j < 10; j+=2) {
@@ -86,7 +76,7 @@ public class SceneBuilder {
         }
     }
 
-    public static void createTower(Matrix4 transform, int height) {
+    public void createTower(Matrix4 transform, int height) {
         createWall(transform.cpy(), height);
         createWall(transform.cpy().set(transform).translate(0, 0, 10).rotate(Vector3.Y, 90), height);
         createWall(transform.cpy().set(transform).translate(10, 0, 10).rotate(Vector3.Y, 180), height);
@@ -94,7 +84,7 @@ public class SceneBuilder {
     }
 
     // ----- Private ----- //
-    private static String addObject(String id, Matrix4 transform, Entity entity, Constraint constraint) {
+    private String addObject(String id, Matrix4 transform, Entity entity, Constraint constraint) {
         entity.setId(id);
         world.getEntityManager().addEntity(entity)
                 .getComponent(Position.class).transform.set(transform);

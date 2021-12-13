@@ -17,8 +17,7 @@ public class Collisions {
     private static final Vector3 tmpV1 = new Vector3();
     private static final Vector3 tmpV2 = new Vector3();
 
-    public static void init(World world) {
-        AssetsManager assetsManager = world.getAssetsManager();
+    public static void initAssets(AssetsManager assetsManager) {
         assetsManager.addAsset("BombCollisionHandler", PhysicsSystem.CollisionHandler.class, new BombCollisionHandler());
         assetsManager.addAsset("BulletCollisionHandler", PhysicsSystem.CollisionHandler.class, new BulletCollisionHandler());
     }

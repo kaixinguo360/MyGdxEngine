@@ -3,7 +3,6 @@ package com.my.game;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.my.utils.world.AssetsManager;
-import com.my.utils.world.World;
 import com.my.utils.world.com.Motion;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.sys.MotionSystem;
@@ -16,8 +15,7 @@ public class Motions {
     private static final Vector3 TMP_1 = new Vector3();
     private static final Vector3 TMP_2 = new Vector3();
 
-    public static void init(World world) {
-        AssetsManager assetsManager = world.getAssetsManager();
+    public static void initAssets(AssetsManager assetsManager) {
         assetsManager.addAsset("Force", MotionSystem.MotionHandler.class, new Force());
         assetsManager.addAsset("FixedForce", MotionSystem.MotionHandler.class, new FixedForce());
         assetsManager.addAsset("LimitedForce", MotionSystem.MotionHandler.class, new LimitedForce());
