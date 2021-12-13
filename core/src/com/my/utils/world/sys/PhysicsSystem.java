@@ -10,20 +10,13 @@ import com.badlogic.gdx.physics.bullet.dynamics.*;
 import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
 import com.badlogic.gdx.utils.Array;
-import com.my.utils.world.AssetsManager;
 import com.my.utils.world.BaseSystem;
 import com.my.utils.world.Entity;
 import com.my.utils.world.com.Collision;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.RigidBody;
-import lombok.Getter;
-import lombok.Setter;
 
 public class PhysicsSystem extends BaseSystem {
-
-    @Getter
-    @Setter
-    private AssetsManager assetsManager;
 
     // ----- Tmp ----- //
     private static final Vector3 tmpV1 = new Vector3();

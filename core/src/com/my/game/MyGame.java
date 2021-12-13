@@ -100,7 +100,6 @@ public class MyGame extends Base3DGame {
         addDisposable(renderSystem);
         // Create physicsSystem
         physicsSystem = world.getSystemManager().addSystem(new PhysicsSystem());
-        physicsSystem.setAssetsManager(world.getAssetsManager());
         Collisions.init(world);
         addDisposable(physicsSystem);
         // Create serializationSystem
