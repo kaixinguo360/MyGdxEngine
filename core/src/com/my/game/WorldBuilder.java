@@ -2,9 +2,11 @@ package com.my.game;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
@@ -14,6 +16,7 @@ import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
 import com.my.utils.world.LoaderManager;
 import com.my.utils.world.World;
+import com.my.utils.world.com.Camera;
 import com.my.utils.world.sys.*;
 
 public class WorldBuilder {
@@ -29,9 +32,13 @@ public class WorldBuilder {
         world.getSystemManager().addSystem(new SerializationSystem());
         world.getSystemManager().addSystem(new ConstraintSystem());
         world.getSystemManager().addSystem(new ScriptSystem());
+        world.getSystemManager().addSystem(new EnvironmentSystem());
+        world.getSystemManager().addSystem(new CameraSystem());
 
         // Init Assets
         initAssets(world);
+        Environment environment = world.getSystemManager().getSystem(EnvironmentSystem.class).getCommonEnvironment();
+        environment.set(world.getAssetsManager().getAsset("commonEnvironment", Environment.class));
 
         // ----- Init Static Objects ----- //
         MyInstance sky = new MyInstance(world.getAssetsManager(), "sky");
@@ -62,9 +69,11 @@ public class WorldBuilder {
 
         Entity aircraftEntity = aircraftBuilder.createAircraft(new Matrix4().translate(0, 0, 200), 8000, 40);
         aircraftEntity.addComponent(new Aircrafts.AircraftScript());
+        aircraftEntity.getComponent(Aircrafts.Aircraft.class).body.addComponent(new Camera(0, 0, 1, 1, 0, CameraSystem.FollowType.A));
 
         Entity gunEntity = gunBuilder.createGun("ground", new Matrix4().translate(0, 0, -20));
         gunEntity.addComponent(new Guns.GunScript()).disabled = true;
+        gunEntity.getComponent(Guns.Gun.class).barrel.addComponent(new Camera(0, 0.7f, 0.3f, 1, 1, CameraSystem.FollowType.A));
 
         // Init World Entity Filters
         world.update();
@@ -94,5 +103,12 @@ public class WorldBuilder {
         assetsManager.addAsset("ground", RenderSystem.RenderConfig.class, new RenderSystem.RenderConfig(models.get("ground")));
 
         assetsManager.addAsset("ground", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btBoxShape(new Vector3(5000,0.005f,10000)), 0f));
+
+        Environment environment = new Environment();
+        environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
+        environment.set(new ColorAttribute(ColorAttribute.Fog, 0.8f, 0.8f, 0.8f, 1f));
+        environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -0.2f, -0.8f, 1f));
+        environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, 0.2f, 0.8f, -1f));
+        world.getAssetsManager().addAsset("commonEnvironment", Environment.class, environment);
     }
 }

@@ -3,12 +3,8 @@ package com.my.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
-import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -26,7 +22,6 @@ import com.my.utils.net.Server;
 import com.my.utils.world.Entity;
 import com.my.utils.world.LoaderManager;
 import com.my.utils.world.World;
-import com.my.utils.world.com.Position;
 import com.my.utils.world.com.Script;
 import com.my.utils.world.loader.WorldLoader;
 import com.my.utils.world.sys.*;
@@ -37,9 +32,6 @@ import java.net.UnknownHostException;
 public class MyGame extends Base3DGame {
 
     private GameWorld gameWorld;
-
-    private PerspectiveCamera camera;
-    private Environment environment;
 
     private Array<CameraController> vehicles = new Array<>();
     private Server server;
@@ -65,20 +57,6 @@ public class MyGame extends Base3DGame {
         }
 
         super.create();
-
-        // ----- Create Environment ----- //
-        environment = new Environment();
-        environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
-        environment.set(new ColorAttribute(ColorAttribute.Fog, 0.8f, 0.8f, 0.8f, 1f));
-        environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -0.2f, -0.8f, 1f));
-        environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, 0.2f, 0.8f, -1f));
-
-        // ----- Init Camera ----- //
-        camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        camera.far = 2000;
-        camera.near = 0.1f;
-        camera.position.set(0, 0, 0);
-        camera.update();
 
         // ----- Loading Assets ----- //
         assetManager.load("obj/sky.g3db", Model.class);
@@ -201,17 +179,18 @@ public class MyGame extends Base3DGame {
             }
         }
 
+        gameWorld.world.getSystemManager().getSystem(CameraSystem.class).render();
         // Render
-        Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        mainView.setCamera(camera);
-        gameWorld.world.getEntityManager().getEntity("sky").getComponent(Position.class).transform.setToTranslation(camera.position);
-        Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
-        gameWorld.renderSystem.render(camera, environment);
-        Gdx.gl.glViewport(0, Gdx.graphics.getHeight() - 250, 400, 250);
-        secondaryView.setCamera(camera);
-        gameWorld.world.getEntityManager().getEntity("sky").getComponent(Position.class).transform.setToTranslation(camera.position);
-        Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
-        gameWorld.renderSystem.render(camera, environment);
+//        Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+//        mainView.setCamera(camera);
+//        gameWorld.world.getEntityManager().getEntity("sky").getComponent(Position.class).transform.setToTranslation(camera.position);
+//        Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
+//        gameWorld.renderSystem.render(camera, environment);
+//        Gdx.gl.glViewport(0, Gdx.graphics.getHeight() - 250, 400, 250);
+//        secondaryView.setCamera(camera);
+//        gameWorld.world.getEntityManager().getEntity("sky").getComponent(Position.class).transform.setToTranslation(camera.position);
+//        Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
+//        gameWorld.renderSystem.render(camera, environment);
 
         // Update UI
         Aircrafts.Aircraft aircraft = (Aircrafts.Aircraft) vehicles.get(0);
