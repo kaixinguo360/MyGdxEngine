@@ -19,7 +19,7 @@ import com.my.utils.world.com.Serialization;
 import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.RenderSystem;
 
-public class SceneBuilder {
+public class ObjectBuilder {
 
     public static void initAssets(AssetsManager assetsManager) {
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
@@ -42,7 +42,7 @@ public class SceneBuilder {
     private final World world;
     private final AssetsManager assetsManager;
 
-    public SceneBuilder(World world) {
+    public ObjectBuilder(World world) {
         this.world = world;
         this.assetsManager = world.getAssetsManager();
 
