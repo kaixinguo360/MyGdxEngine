@@ -78,11 +78,11 @@ public class RenderSystem extends BaseSystem implements EntityListener {
 
     // ----- Config ----- //
     public static class RenderConfig {
-        private Model model;
-        private boolean includeEnv;
-        private final Vector3 center = new Vector3();
-        private final Vector3 dimensions = new Vector3();
-        private float radius;
+        public Model model;
+        public boolean includeEnv;
+        public final Vector3 center = new Vector3();
+        public final Vector3 dimensions = new Vector3();
+        public float radius;
 
 
         public RenderConfig(Model model) {

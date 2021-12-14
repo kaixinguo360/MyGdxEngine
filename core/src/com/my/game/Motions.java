@@ -3,7 +3,6 @@ package com.my.game;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.my.utils.world.AssetsManager;
-import com.my.utils.world.LoadContext;
 import com.my.utils.world.com.Motion;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.sys.MotionSystem;
@@ -89,27 +88,4 @@ public class Motions {
         }
     }
 
-    public static class Loader implements com.my.utils.world.Loader {
-
-        @Override
-        public <E, T> T load(E config, Class<T> type, LoadContext context) {
-            try {
-                return (T) Class.forName(((Map<String, String>) config).get("type")).newInstance();
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-                throw new RuntimeException("MotionHandler create error: " + e.getMessage(), e);
-            }
-        }
-
-        @Override
-        public <E, T> E getConfig(T obj, Class<E> configType, LoadContext context) {
-            return (E) new HashMap<String, String>() {{
-                put("type", obj.getClass().getName());
-            }};
-        }
-
-        @Override
-        public <E, T> boolean handleable(Class<E> configType, Class<T> targetType) {
-            return (Map.class.isAssignableFrom(configType)) && (MotionSystem.MotionHandler.class.isAssignableFrom(targetType));
-        }
-    }
 }

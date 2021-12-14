@@ -123,7 +123,7 @@ public class Guns {
         }
     }
 
-    public static class Gun implements CameraController, Component {
+    public static class Gun implements CameraController, Component, LoadableResource {
 
         // ----- Temporary ----- //
         private static final Vector3 tmpV = new Vector3();
@@ -160,6 +160,27 @@ public class Guns {
         }
         public btRigidBody getBody() {
             return barrel.getComponent(RigidBody.class).body;
+        }
+
+        @Override
+        public void load(Map<String, Object> config, LoadContext context) {
+            EntityManager entityManager = context.getEnvironment("world", World.class).getEntityManager();
+            rotate_Y = entityManager.getEntity((String) config.get("rotate_Y"));
+            rotate_X = entityManager.getEntity((String) config.get("rotate_X"));
+            barrel = entityManager.getEntity((String) config.get("barrel"));
+            if (rotate_Y.contain(Constraint.class)) gunController_Y = (GunController) rotate_Y.getComponent(Constraint.class).controller;
+            if (rotate_X.contain(Constraint.class)) gunController_X = (GunController) rotate_X.getComponent(Constraint.class).controller;
+            bulletNum = (Integer) config.get("bulletNum");
+        }
+
+        @Override
+        public Map<String, Object> getConfig(Class<Map<String, Object>> configType, LoadContext context) {
+            return new HashMap<String, Object>() {{
+                put("rotate_Y", rotate_Y.getId());
+                put("rotate_X", rotate_X.getId());
+                put("barrel", barrel.getId());
+                put("bulletNum", bulletNum);
+            }};
         }
     }
 
@@ -253,50 +274,21 @@ public class Guns {
         }
     }
 
-    public static class GunLoader implements Loader {
+    public static class GunController implements ConstraintSystem.ConstraintController, LoadableResource {
 
-        @Override
-        public <E, T> T load(E config, Class<T> type, LoadContext context) {
-            EntityManager entityManager = context.getEnvironment("world", World.class).getEntityManager();
-            Map<String, Object> map = (Map<String, Object>) config;
-            Guns.Gun gun = new Guns.Gun();
-            gun.rotate_Y = entityManager.getEntity((String) map.get("rotate_Y"));
-            gun.rotate_X = entityManager.getEntity((String) map.get("rotate_X"));
-            gun.barrel = entityManager.getEntity((String) map.get("barrel"));
-            if (gun.rotate_Y.contain(Constraint.class)) gun.gunController_Y = (GunController) gun.rotate_Y.getComponent(Constraint.class).controller;
-            if (gun.rotate_X.contain(Constraint.class)) gun.gunController_X = (GunController) gun.rotate_X.getComponent(Constraint.class).controller;
-            gun.bulletNum = (Integer) map.get("bulletNum");
-            return (T) gun;
-        }
-
-        @Override
-        public <E, T> E getConfig(T obj, Class<E> configType, LoadContext context) {
-            Guns.Gun gun = (Guns.Gun) obj;
-            return (E) new HashMap<String, Object>() {{
-                put("rotate_Y", gun.rotate_Y.getId());
-                put("rotate_X", gun.rotate_X.getId());
-                put("barrel", gun.barrel.getId());
-                put("bulletNum", gun.bulletNum);
-            }};
-        }
-
-        @Override
-        public <E, T> boolean handleable(Class<E> configType, Class<T> targetType) {
-            return (Map.class.isAssignableFrom(configType)) && (targetType == Guns.Gun.class);
-        }
-    }
-
-    private static class GunController implements ConstraintSystem.ConstraintController {
         private float target = 0;
         private float max = 0;
         private float min = 0;
         private boolean limit = false;
-        private GunController() {}
+
+        public GunController() {}
+
         private GunController(float min, float max) {
             limit = true;
             this.min = (float) Math.toRadians(min);
             this.max = (float) Math.toRadians(max);
         }
+
         @Override
         public void update(btTypedConstraint constraint) {
             if (limit) {
@@ -306,36 +298,23 @@ public class Guns {
             btHingeConstraint hingeConstraint = (btHingeConstraint) constraint;
             hingeConstraint.setLimit(target, target, 0, 0.5f);
         }
-    }
-
-    public static class GunControllerLoader implements Loader {
 
         @Override
-        public <E, T> T load(E config, Class<T> type, LoadContext context) {
-            Map<String, Object> map = (Map<String, Object>) config;
-            Guns.GunController controller = new Guns.GunController(
-                    (float) (double) map.get("min"),
-                    (float) (double) map.get("max")
-            );
-            controller.target = (float) (double) map.get("target");
-            controller.limit = (Boolean) map.get("limit");
-            return (T) controller;
+        public void load(Map<String, Object> config, LoadContext context) {
+            min = (float) (double) config.get("min");
+            max = (float) (double) config.get("max");
+            target = (float) (double) config.get("target");
+            limit = (Boolean) config.get("limit");
         }
 
         @Override
-        public <E, T> E getConfig(T obj, Class<E> configType, LoadContext context) {
-            Guns.GunController controller = (Guns.GunController) obj;
-            return (E) new HashMap<String, Object>(){{
-                put("min", (double) controller.min);
-                put("max", (double) controller.max);
-                put("target", (double) controller.target);
-                put("limit", controller.limit);
+        public Map<String, Object> getConfig(Class<Map<String, Object>> configType, LoadContext context) {
+            return new HashMap<String, Object>(){{
+                put("min", (double) min);
+                put("max", (double) max);
+                put("target", (double) target);
+                put("limit", limit);
             }};
-        }
-
-        @Override
-        public <E, T> boolean handleable(Class<E> configType, Class<T> targetType) {
-            return (Map.class.isAssignableFrom(configType)) && (targetType == Guns.GunController.class);
         }
     }
 }

@@ -275,7 +275,6 @@ public class MyGame extends Base3DGame {
 
     private static GameWorld loadGameWorld(Map config) {
         LoaderManager loaderManager = new GameLoaderManager();
-        loaderManager.getLoader(WorldLoader.class).setBeforeLoadAssets(MyGame::initAssets);
 
         World world = loaderManager.load(config, World.class);
         world.update();
@@ -398,15 +397,8 @@ public class MyGame extends Base3DGame {
     }
 
     private static class GameLoaderManager extends LoaderManager {
-        private GameLoaderManager() {
-            super();
-            loaders.add(new Motions.Loader());
-            loaders.add(new Collisions.Loader());
-            loaders.add(new Constraints.Loader());
-            loaders.add(new Aircrafts.AircraftLoader());
-            loaders.add(new Aircrafts.AircraftControllerLoader());
-            loaders.add(new Guns.GunLoader());
-            loaders.add(new Guns.GunControllerLoader());
+        public GameLoaderManager() {
+            getLoader(WorldLoader.class).setBeforeLoadAssets(MyGame::initAssets);
         }
     }
 }

@@ -169,7 +169,7 @@ public class Aircrafts {
         }
     }
 
-    public static class Aircraft implements CameraController, Component {
+    public static class Aircraft implements CameraController, Component, LoadableResource {
 
         // ----- Temporary ----- //
         private static final Vector3 tmpV1 = new Vector3();
@@ -220,6 +220,49 @@ public class Aircrafts {
         }
         public btRigidBody getBody() {
             return body.getComponent(RigidBody.class).body;
+        }
+
+        @Override
+        public void load(Map<String, Object> config, LoadContext context) {
+            EntityManager entityManager = context.getEnvironment("world", World.class).getEntityManager();
+            Map<String, Object> map = config;
+            body = entityManager.getEntity((String) map.get("body"));
+            engine = entityManager.getEntity((String) map.get("engine"));
+            rotate_L = entityManager.getEntity((String) map.get("rotate_L"));
+            wing_L1 = entityManager.getEntity((String) map.get("wing_L1"));
+            wing_L2 = entityManager.getEntity((String) map.get("wing_L2"));
+            rotate_R = entityManager.getEntity((String) map.get("rotate_R"));
+            wing_R1 = entityManager.getEntity((String) map.get("wing_R1"));
+            wing_R2 = entityManager.getEntity((String) map.get("wing_R2"));
+            rotate_T = entityManager.getEntity((String) map.get("rotate_T"));
+            wing_TL = entityManager.getEntity((String) map.get("wing_TL"));
+            wing_TR = entityManager.getEntity((String) map.get("wing_TR"));
+            wing_VL = entityManager.getEntity((String) map.get("wing_VL"));
+            wing_VR = entityManager.getEntity((String) map.get("wing_VR"));
+            if (rotate_L.contain(Constraint.class)) aircraftController_L = (AircraftController) rotate_L.getComponent(Constraint.class).controller;
+            if (rotate_R.contain(Constraint.class)) aircraftController_R = (AircraftController) rotate_R.getComponent(Constraint.class).controller;
+            if (rotate_T.contain(Constraint.class)) aircraftController_T = (AircraftController) rotate_T.getComponent(Constraint.class).controller;
+            bombNum = (Integer) map.get("bombNum");
+        }
+
+        @Override
+        public Map<String, Object> getConfig(Class<Map<String, Object>> configType, LoadContext context) {
+            return new HashMap<String, Object>() {{
+                put("body", body.getId());
+                put("engine", engine.getId());
+                put("rotate_L", rotate_L.getId());
+                put("wing_L1", wing_L1.getId());
+                put("wing_L2", wing_L2.getId());
+                put("rotate_R", rotate_R.getId());
+                put("wing_R1", wing_R1.getId());
+                put("wing_R2", wing_R2.getId());
+                put("rotate_T", rotate_T.getId());
+                put("wing_TL", wing_TL.getId());
+                put("wing_TR", wing_TR.getId());
+                put("wing_VL", wing_VL.getId());
+                put("wing_VR", wing_VR.getId());
+                put("bombNum", bombNum);
+            }};
         }
     }
 
@@ -321,66 +364,16 @@ public class Aircrafts {
         }
     }
 
-    public static class AircraftLoader implements Loader {
+    public static class AircraftController implements ConstraintSystem.ConstraintController, LoadableResource {
 
-        @Override
-        public <E, T> T load(E config, Class<T> type, LoadContext context) {
-            EntityManager entityManager = context.getEnvironment("world", World.class).getEntityManager();
-            Map<String, Object> map = (Map<String, Object>) config;
-            Aircraft aircraft = new Aircraft();
-            aircraft.body = entityManager.getEntity((String) map.get("body"));
-            aircraft.engine = entityManager.getEntity((String) map.get("engine"));
-            aircraft.rotate_L = entityManager.getEntity((String) map.get("rotate_L"));
-            aircraft.wing_L1 = entityManager.getEntity((String) map.get("wing_L1"));
-            aircraft.wing_L2 = entityManager.getEntity((String) map.get("wing_L2"));
-            aircraft.rotate_R = entityManager.getEntity((String) map.get("rotate_R"));
-            aircraft.wing_R1 = entityManager.getEntity((String) map.get("wing_R1"));
-            aircraft.wing_R2 = entityManager.getEntity((String) map.get("wing_R2"));
-            aircraft.rotate_T = entityManager.getEntity((String) map.get("rotate_T"));
-            aircraft.wing_TL = entityManager.getEntity((String) map.get("wing_TL"));
-            aircraft.wing_TR = entityManager.getEntity((String) map.get("wing_TR"));
-            aircraft.wing_VL = entityManager.getEntity((String) map.get("wing_VL"));
-            aircraft.wing_VR = entityManager.getEntity((String) map.get("wing_VR"));
-            if (aircraft.rotate_L.contain(Constraint.class)) aircraft.aircraftController_L = (AircraftController) aircraft.rotate_L.getComponent(Constraint.class).controller;
-            if (aircraft.rotate_R.contain(Constraint.class)) aircraft.aircraftController_R = (AircraftController) aircraft.rotate_R.getComponent(Constraint.class).controller;
-            if (aircraft.rotate_T.contain(Constraint.class)) aircraft.aircraftController_T = (AircraftController) aircraft.rotate_T.getComponent(Constraint.class).controller;
-            aircraft.bombNum = (Integer) map.get("bombNum");
-            return (T) aircraft;
-        }
-
-        @Override
-        public <E, T> E getConfig(T obj, Class<E> configType, LoadContext context) {
-            Aircraft aircraft = (Aircraft) obj;
-            return (E) new HashMap<String, Object>() {{
-                put("body", aircraft.body.getId());
-                put("engine", aircraft.engine.getId());
-                put("rotate_L", aircraft.rotate_L.getId());
-                put("wing_L1", aircraft.wing_L1.getId());
-                put("wing_L2", aircraft.wing_L2.getId());
-                put("rotate_R", aircraft.rotate_R.getId());
-                put("wing_R1", aircraft.wing_R1.getId());
-                put("wing_R2", aircraft.wing_R2.getId());
-                put("rotate_T", aircraft.rotate_T.getId());
-                put("wing_TL", aircraft.wing_TL.getId());
-                put("wing_TR", aircraft.wing_TR.getId());
-                put("wing_VL", aircraft.wing_VL.getId());
-                put("wing_VR", aircraft.wing_VR.getId());
-                put("bombNum", aircraft.bombNum);
-            }};
-        }
-
-        @Override
-        public <E, T> boolean handleable(Class<E> configType, Class<T> targetType) {
-            return (Map.class.isAssignableFrom(configType)) && (targetType == Aircraft.class);
-        }
-    }
-
-    public static class AircraftController implements ConstraintSystem.ConstraintController {
         private float low;
         private float high;
         private float resilience;
         private float target = 0;
         private boolean isRotated = false;
+
+        public AircraftController() {}
+
         private AircraftController(float low, float high, float resilience) {
             this.low = low;
             this.high = high;
@@ -391,6 +384,7 @@ public class Aircrafts {
             isRotated = true;
             target += step;
         }
+
         @Override
         public void update(btTypedConstraint constraint) {
             if (!isRotated) {
@@ -402,38 +396,25 @@ public class Aircrafts {
             btHingeConstraint hingeConstraint = (btHingeConstraint) constraint;
             hingeConstraint.setLimit(target, target, 0, 0.5f);
         }
-    }
-
-    public static class AircraftControllerLoader implements Loader {
 
         @Override
-        public <E, T> T load(E config, Class<T> type, LoadContext context) {
-            Map<String, Object> map = (Map<String, Object>) config;
-            AircraftController controller = new AircraftController(
-                    (float) (double) map.get("low"),
-                    (float) (double) map.get("high"),
-                    (float) (double) map.get("resilience")
-            );
-            controller.target = (float) (double) map.get("target");
-            controller.isRotated = (Boolean) map.get("isRotated");
-            return (T) controller;
+        public void load(Map<String, Object> config, LoadContext context) {
+            low = (float) (double) config.get("low");
+            high = (float) (double) config.get("high");
+            resilience = (float) (double) config.get("resilience");
+            target = (float) (double) config.get("target");
+            isRotated = (Boolean) config.get("isRotated");
         }
 
         @Override
-        public <E, T> E getConfig(T obj, Class<E> configType, LoadContext context) {
-            AircraftController controller = (AircraftController) obj;
-            return (E) new HashMap<String, Object>(){{
-                put("low", (double) controller.low);
-                put("high", (double) controller.high);
-                put("resilience", (double) controller.resilience);
-                put("target", (double) controller.target);
-                put("isRotated", controller.isRotated);
+        public Map<String, Object> getConfig(Class<Map<String, Object>> configType, LoadContext context) {
+            return new HashMap<String, Object>(){{
+                put("low", (double) low);
+                put("high", (double) high);
+                put("resilience", (double) resilience);
+                put("target", (double) target);
+                put("isRotated", isRotated);
             }};
-        }
-
-        @Override
-        public <E, T> boolean handleable(Class<E> configType, Class<T> targetType) {
-            return (Map.class.isAssignableFrom(configType)) && (targetType == AircraftController.class);
         }
     }
 }

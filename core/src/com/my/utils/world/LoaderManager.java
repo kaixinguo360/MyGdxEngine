@@ -1,6 +1,5 @@
 package com.my.utils.world;
 
-import com.my.utils.world.com.*;
 import com.my.utils.world.loader.DefaultLoader;
 import com.my.utils.world.loader.EntityLoader;
 import com.my.utils.world.loader.SystemLoader;
@@ -22,14 +21,6 @@ public class LoaderManager {
         loaders.add(new WorldLoader());
         loaders.add(new SystemLoader());
         loaders.add(new EntityLoader());
-        loaders.add(new CollisionLoader());
-        loaders.add(new MotionLoader());
-        loaders.add(new PositionLoader());
-        loaders.add(new RenderLoader());
-        loaders.add(new RigidBodyLoader());
-        loaders.add(new ConstraintLoader());
-        loaders.add(new ScriptComponentLoader());
-        loaders.add(new SerializationLoader());
         loaders.add(new DefaultLoader());
     }
 
