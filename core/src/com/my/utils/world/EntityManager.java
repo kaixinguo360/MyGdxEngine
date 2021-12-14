@@ -59,7 +59,7 @@ public class EntityManager implements Disposable {
         filters.get(entityFilter).clear();
         filters.remove(entityFilter);
     }
-    public Collection<? extends Entity> getEntitiesByFilter(EntityFilter entityFilter) {
+    public Collection<Entity> getEntitiesByFilter(EntityFilter entityFilter) {
         if (!filters.containsKey(entityFilter)) throw new RuntimeException("No Such Entity Filter: " + entityFilter);
         return filters.get(entityFilter);
     }

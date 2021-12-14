@@ -2,7 +2,6 @@ package com.my.utils.world;
 
 import com.my.utils.world.loader.DefaultLoader;
 import com.my.utils.world.loader.EntityLoader;
-import com.my.utils.world.loader.SystemLoader;
 import com.my.utils.world.loader.WorldLoader;
 import lombok.Getter;
 
@@ -19,7 +18,6 @@ public class LoaderManager {
 
     public LoaderManager() {
         loaders.add(new WorldLoader());
-        loaders.add(new SystemLoader());
         loaders.add(new EntityLoader());
         loaders.add(new DefaultLoader());
     }

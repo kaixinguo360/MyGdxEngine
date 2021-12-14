@@ -5,7 +5,7 @@ import com.badlogic.gdx.utils.Disposable;
 
 import java.util.Collection;
 
-public abstract class BaseSystem implements System, Disposable, AfterAdded {
+public abstract class BaseSystem implements System, StandaloneResource, Disposable, AfterAdded {
 
     protected World world;
     private EntityFilter entityFilter;
@@ -21,7 +21,7 @@ public abstract class BaseSystem implements System, Disposable, AfterAdded {
     }
 
     // ----- Entities ----- //
-    protected Collection<? extends Entity> getEntities() {
+    protected Collection<Entity> getEntities() {
         return world.getEntityManager().getEntitiesByFilter(entityFilter);
     }
     protected abstract boolean isHandleable(Entity entity);
