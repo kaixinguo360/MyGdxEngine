@@ -15,55 +15,59 @@ import java.util.Map;
 public class LoaderManager {
 
     @Getter
-    private final List<Loader> loaders = new ArrayList<>();
-
-    @Getter
-    private final Map<String, Object> environment = new HashMap<>();
-
-    private final Map<String, Loader> cache = new HashMap<>();
+    protected final List<Loader> loaders = new ArrayList<>();
+    private final Map<String, Loader> loaderCache = new HashMap<>();
 
     public LoaderManager() {
-        loaders.add(new WorldLoader(this));
-        loaders.add(new SystemLoader(this));
-        loaders.add(new EntityLoader(this));
-        loaders.add(new CollisionLoader(this));
-        loaders.add(new MotionLoader(this));
+        loaders.add(new WorldLoader());
+        loaders.add(new SystemLoader());
+        loaders.add(new EntityLoader());
+        loaders.add(new CollisionLoader());
+        loaders.add(new MotionLoader());
         loaders.add(new PositionLoader());
-        loaders.add(new RenderLoader(this));
-        loaders.add(new RigidBodyLoader(this));
-        loaders.add(new ConstraintLoader(this));
-        loaders.add(new ScriptComponentLoader(this));
+        loaders.add(new RenderLoader());
+        loaders.add(new RigidBodyLoader());
+        loaders.add(new ConstraintLoader());
+        loaders.add(new ScriptComponentLoader());
         loaders.add(new SerializationLoader());
         loaders.add(new DefaultLoader());
     }
 
-    public <T, E> T load(E config, Class<T> type) {
+    public <E, T> T load(E config, Class<T> type) {
+        return load(config, type, new LoadContextImpl());
+    }
+
+    public <E, T> T load(E config, Class<T> type, LoadContext context) {
         if (config == null) {
             throw new RuntimeException("No such loader: null -> " + type);
         }
         String hash = config.getClass() + " -> " + type;
-        if (cache.containsKey(hash)) {
-            return cache.get(hash).load(config, type);
+        if (loaderCache.containsKey(hash)) {
+            return loaderCache.get(hash).load(config, type, context);
         } else {
             for (Loader loader : loaders) {
                 if (loader.handleable(config.getClass(), type)) {
-                    cache.put(hash, loader);
-                    return loader.load(config, type);
+                    loaderCache.put(hash, loader);
+                    return loader.load(config, type, context);
                 }
             }
         }
         throw new RuntimeException("No such loader: " + config.getClass() + " -> " + type);
     }
 
-    public <T, E> E getConfig(T obj, Class<E> configType) {
+    public <E, T> E getConfig(T obj, Class<E> configType) {
+        return getConfig(obj, configType, new LoadContextImpl());
+    }
+
+    public <E, T> E getConfig(T obj, Class<E> configType, LoadContext context) {
         String hash = configType + " -> " + obj.getClass();
-        if (cache.containsKey(hash)) {
-            return cache.get(hash).getConfig(obj, configType);
+        if (loaderCache.containsKey(hash)) {
+            return loaderCache.get(hash).getConfig(obj, configType, context);
         } else {
             for (Loader loader : loaders) {
                 if (loader.handleable(configType, obj.getClass())) {
-                    cache.put(hash, loader);
-                    return loader.getConfig(obj, configType);
+                    loaderCache.put(hash, loader);
+                    return loader.getConfig(obj, configType, context);
                 }
             }
         }
@@ -77,5 +81,32 @@ public class LoaderManager {
             }
         }
         return null;
+    }
+
+    private class LoadContextImpl implements LoadContext {
+
+        private final Map<String, Object> environment = new HashMap<>();
+
+        private LoadContextImpl() {}
+
+        @Override
+        public LoaderManager getLoaderManager() {
+            return LoaderManager.this;
+        }
+
+        @Override
+        public <T> T setEnvironment(String id, T value) {
+            if (id == null) throw new RuntimeException("Environment variable id can not be null");
+            if (value == null) throw new RuntimeException("Environment variable value can not be null");
+            environment.put(id, value);
+            return value;
+        }
+
+        @Override
+        public <T> T getEnvironment(String id, Class<T> type) {
+            if (!environment.containsKey(id) || environment.get(id) == null) throw new RuntimeException("No such environment variable: " + id);
+            if (!type.isInstance(environment.get(id))) throw new RuntimeException("Unmatched Environment variable type: " + environment.get(id).getClass() + " != " + type);
+            return type.cast(environment.get(id));
+        }
     }
 }

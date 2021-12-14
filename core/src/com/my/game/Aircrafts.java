@@ -323,22 +323,9 @@ public class Aircrafts {
 
     public static class AircraftLoader implements Loader {
 
-        private LoaderManager loaderManager;
-        private EntityManager entityManager;
-
-        public AircraftLoader(LoaderManager loaderManager) {
-            this.loaderManager = loaderManager;
-        }
-
-        private EntityManager getEntityManager() {
-            World world = (World) loaderManager.getEnvironment().get("world");
-            if (world == null) throw new RuntimeException("Required params not set: world");
-            return world.getEntityManager();
-        }
-
         @Override
-        public <E, T> T load(E config, Class<T> type) {
-            if (entityManager == null) entityManager = getEntityManager();
+        public <E, T> T load(E config, Class<T> type, LoadContext context) {
+            EntityManager entityManager = context.getEnvironment("world", World.class).getEntityManager();
             Map<String, Object> map = (Map<String, Object>) config;
             Aircraft aircraft = new Aircraft();
             aircraft.body = entityManager.getEntity((String) map.get("body"));
@@ -362,8 +349,7 @@ public class Aircrafts {
         }
 
         @Override
-        public <E, T> E getConfig(T obj, Class<E> configType) {
-            if (entityManager == null) entityManager = getEntityManager();
+        public <E, T> E getConfig(T obj, Class<E> configType, LoadContext context) {
             Aircraft aircraft = (Aircraft) obj;
             return (E) new HashMap<String, Object>() {{
                 put("body", aircraft.body.getId());
@@ -421,7 +407,7 @@ public class Aircrafts {
     public static class AircraftControllerLoader implements Loader {
 
         @Override
-        public <E, T> T load(E config, Class<T> type) {
+        public <E, T> T load(E config, Class<T> type, LoadContext context) {
             Map<String, Object> map = (Map<String, Object>) config;
             AircraftController controller = new AircraftController(
                     (float) (double) map.get("low"),
@@ -434,7 +420,7 @@ public class Aircrafts {
         }
 
         @Override
-        public <E, T> E getConfig(T obj, Class<E> configType) {
+        public <E, T> E getConfig(T obj, Class<E> configType, LoadContext context) {
             AircraftController controller = (AircraftController) obj;
             return (E) new HashMap<String, Object>(){{
                 put("low", (double) controller.low);

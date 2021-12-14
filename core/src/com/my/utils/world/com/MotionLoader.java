@@ -1,8 +1,8 @@
 package com.my.utils.world.com;
 
 import com.my.utils.world.AssetsManager;
+import com.my.utils.world.LoadContext;
 import com.my.utils.world.Loader;
-import com.my.utils.world.LoaderManager;
 import com.my.utils.world.World;
 import com.my.utils.world.sys.MotionSystem;
 
@@ -11,22 +11,9 @@ import java.util.Map;
 
 public class MotionLoader implements Loader {
 
-    private LoaderManager loaderManager;
-    private AssetsManager assetsManager;
-
-    public MotionLoader(LoaderManager loaderManager) {
-        this.loaderManager = loaderManager;
-    }
-
-    private AssetsManager getAssetsManager() {
-        World world = (World) loaderManager.getEnvironment().get("world");
-        if (world == null) throw new RuntimeException("Required params not set: world");
-        return world.getAssetsManager();
-    }
-
     @Override
-    public <E, T> T load(E config, Class<T> type) {
-        if (assetsManager == null) assetsManager = getAssetsManager();
+    public <E, T> T load(E config, Class<T> type, LoadContext context) {
+        AssetsManager assetsManager = context.getEnvironment("world", World.class).getAssetsManager();
         Map<String, Object> map = (Map<String, Object>) config;
         return (T) new Motion(
                 assetsManager.getAsset((String) map.get("type"), MotionSystem.MotionHandler.class),
@@ -35,8 +22,8 @@ public class MotionLoader implements Loader {
     }
 
     @Override
-    public <E, T> E getConfig(T obj, Class<E> configType) {
-        if (assetsManager == null) assetsManager = getAssetsManager();
+    public <E, T> E getConfig(T obj, Class<E> configType, LoadContext context) {
+        AssetsManager assetsManager = context.getEnvironment("world", World.class).getAssetsManager();
         Motion motion = (Motion) obj;
         return (E) new HashMap<String, Object>() {{
             put("type", assetsManager.getId(MotionSystem.MotionHandler.class, motion.handler));

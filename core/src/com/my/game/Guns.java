@@ -255,22 +255,9 @@ public class Guns {
 
     public static class GunLoader implements Loader {
 
-        private LoaderManager loaderManager;
-        private EntityManager entityManager;
-
-        public GunLoader(LoaderManager loaderManager) {
-            this.loaderManager = loaderManager;
-        }
-
-        private EntityManager getEntityManager() {
-            World world = (World) loaderManager.getEnvironment().get("world");
-            if (world == null) throw new RuntimeException("Required params not set: world");
-            return world.getEntityManager();
-        }
-
         @Override
-        public <E, T> T load(E config, Class<T> type) {
-            if (entityManager == null) entityManager = getEntityManager();
+        public <E, T> T load(E config, Class<T> type, LoadContext context) {
+            EntityManager entityManager = context.getEnvironment("world", World.class).getEntityManager();
             Map<String, Object> map = (Map<String, Object>) config;
             Guns.Gun gun = new Guns.Gun();
             gun.rotate_Y = entityManager.getEntity((String) map.get("rotate_Y"));
@@ -283,8 +270,7 @@ public class Guns {
         }
 
         @Override
-        public <E, T> E getConfig(T obj, Class<E> configType) {
-            if (entityManager == null) entityManager = getEntityManager();
+        public <E, T> E getConfig(T obj, Class<E> configType, LoadContext context) {
             Guns.Gun gun = (Guns.Gun) obj;
             return (E) new HashMap<String, Object>() {{
                 put("rotate_Y", gun.rotate_Y.getId());
@@ -325,7 +311,7 @@ public class Guns {
     public static class GunControllerLoader implements Loader {
 
         @Override
-        public <E, T> T load(E config, Class<T> type) {
+        public <E, T> T load(E config, Class<T> type, LoadContext context) {
             Map<String, Object> map = (Map<String, Object>) config;
             Guns.GunController controller = new Guns.GunController(
                     (float) (double) map.get("min"),
@@ -337,7 +323,7 @@ public class Guns {
         }
 
         @Override
-        public <E, T> E getConfig(T obj, Class<E> configType) {
+        public <E, T> E getConfig(T obj, Class<E> configType, LoadContext context) {
             Guns.GunController controller = (Guns.GunController) obj;
             return (E) new HashMap<String, Object>(){{
                 put("min", (double) controller.min);

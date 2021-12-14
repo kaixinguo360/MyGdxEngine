@@ -2,8 +2,8 @@ package com.my.utils.world.loader;
 
 import com.my.utils.world.Component;
 import com.my.utils.world.Entity;
+import com.my.utils.world.LoadContext;
 import com.my.utils.world.Loader;
-import com.my.utils.world.LoaderManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,14 +23,8 @@ import java.util.Map;
  */
 public class EntityLoader implements Loader {
 
-    private LoaderManager loaderManager;
-
-    public EntityLoader(LoaderManager loaderManager) {
-        this.loaderManager = loaderManager;
-    }
-
     @Override
-    public <E, T> T load(E config, Class<T> type) {
+    public <E, T> T load(E config, Class<T> type, LoadContext context) {
         Map<String, Object> map = (Map<String, Object>) config;
         Entity entity = new Entity();
 
@@ -46,7 +40,7 @@ public class EntityLoader implements Loader {
                     String componentTypeName = (String) component.get("type");
                     Object componentConfig = component.get("config");
                     Class<? extends Component> componentType = (Class<? extends Component>) Class.forName(componentTypeName);
-                    entity.addComponent(loaderManager.load(componentConfig, componentType));
+                    entity.addComponent(context.getLoaderManager().load(componentConfig, componentType, context));
                 }
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException("No such class error: " + e.getMessage(), e);
@@ -57,7 +51,7 @@ public class EntityLoader implements Loader {
     }
 
     @Override
-    public <E, T> E getConfig(T obj, Class<E> configType) {
+    public <E, T> E getConfig(T obj, Class<E> configType, LoadContext context) {
         Map<String, Object> map = new HashMap<>();
         Entity entity = (Entity) obj;
 
@@ -69,7 +63,7 @@ public class EntityLoader implements Loader {
         List<Map<String, Object>> components = new ArrayList<>();
         for (Component component : entity.getComponents().values()) {
             String componentTypeName = component.getClass().getName();
-            Object componentConfig = loaderManager.getConfig(component, Map.class);
+            Object componentConfig = context.getLoaderManager().getConfig(component, Map.class, context);
             Map<String, Object> componentMap = new HashMap<>();
             componentMap.put("type", componentTypeName);
             componentMap.put("config", componentConfig);

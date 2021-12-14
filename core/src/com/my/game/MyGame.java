@@ -46,15 +46,6 @@ import java.util.Map;
 
 public class MyGame extends Base3DGame {
 
-    private static void initLoaders(LoaderManager loaderManager) {
-        loaderManager.getLoaders().add(new Motions.Loader());
-        loaderManager.getLoaders().add(new Collisions.Loader());
-        loaderManager.getLoaders().add(new Constraints.Loader());
-        loaderManager.getLoaders().add(new Aircrafts.AircraftLoader(loaderManager));
-        loaderManager.getLoaders().add(new Aircrafts.AircraftControllerLoader());
-        loaderManager.getLoaders().add(new Guns.GunLoader(loaderManager));
-        loaderManager.getLoaders().add(new Guns.GunControllerLoader());
-    }
     private static void initAssets(World world) {
 
         AssetsManager assetsManager = world.getAssetsManager();
@@ -277,16 +268,13 @@ public class MyGame extends Base3DGame {
         world.update();
 
         // Create LoaderManager
-        LoaderManager loaderManager = new LoaderManager();
-        MyGame.initLoaders(loaderManager);
-        loaderManager.getEnvironment().put("world", world);
+        LoaderManager loaderManager = new GameLoaderManager();
 
         return new GameWorld(world, loaderManager);
     }
 
     private static GameWorld loadGameWorld(Map config) {
-        LoaderManager loaderManager = new LoaderManager();
-        MyGame.initLoaders(loaderManager);
+        LoaderManager loaderManager = new GameLoaderManager();
         loaderManager.getLoader(WorldLoader.class).setBeforeLoadAssets(MyGame::initAssets);
 
         World world = loaderManager.load(config, World.class);
@@ -392,7 +380,7 @@ public class MyGame extends Base3DGame {
         private final ScriptSystem scriptSystem;
         private final LoaderManager loaderManager;
 
-        public GameWorld(World world, LoaderManager loaderManager) {
+        private GameWorld(World world, LoaderManager loaderManager) {
             renderSystem = world.getSystemManager().getSystem(RenderSystem.class);
             physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
             serializationSystem = world.getSystemManager().getSystem(SerializationSystem.class);
@@ -406,6 +394,19 @@ public class MyGame extends Base3DGame {
         @Override
         public void dispose() {
             this.world.dispose();
+        }
+    }
+
+    private static class GameLoaderManager extends LoaderManager {
+        private GameLoaderManager() {
+            super();
+            loaders.add(new Motions.Loader());
+            loaders.add(new Collisions.Loader());
+            loaders.add(new Constraints.Loader());
+            loaders.add(new Aircrafts.AircraftLoader());
+            loaders.add(new Aircrafts.AircraftControllerLoader());
+            loaders.add(new Guns.GunLoader());
+            loaders.add(new Guns.GunControllerLoader());
         }
     }
 }

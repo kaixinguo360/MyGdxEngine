@@ -35,8 +35,6 @@ import java.util.function.Consumer;
  */
 public class WorldLoader implements Loader {
 
-    private LoaderManager loaderManager;
-
     @Getter
     @Setter
     Consumer<World> beforeLoadSystems;
@@ -49,14 +47,10 @@ public class WorldLoader implements Loader {
     @Setter
     Consumer<World> beforeLoadEntities;
 
-    public WorldLoader(LoaderManager loaderManager) {
-        this.loaderManager = loaderManager;
-    }
-
     @Override
-    public <E, T> T load(E config, Class<T> type) {
+    public <E, T> T load(E config, Class<T> type, LoadContext context) {
         World world = new World();
-        loaderManager.getEnvironment().put("world", world);
+        context.setEnvironment("world", world);
 
         try {
             Map<String, Object> map = (Map<String, Object>) config;
@@ -68,7 +62,7 @@ public class WorldLoader implements Loader {
                 for (Map<String, Object> system : systems) {
                     Class<? extends System> systemType = (Class<? extends System>) Class.forName((String) system.get("type"));
                     Object systemConfig = system.get("config");
-                    systemManager.addSystem(loaderManager.load(systemConfig, systemType));
+                    systemManager.addSystem(context.getLoaderManager().load(systemConfig, systemType, context));
                 }
             }
 
@@ -83,7 +77,7 @@ public class WorldLoader implements Loader {
                     boolean assetProvided = asset.containsKey("provided") && (Boolean) asset.get("provided");
                     if (!assetProvided) {
                         if (!assetsManager.hasAsset(assetId, assetType)) {
-                            assetsManager.addAsset(assetId, assetType, loaderManager.load(assetConfig, assetType));
+                            assetsManager.addAsset(assetId, assetType, context.getLoaderManager().load(assetConfig, assetType, context));
                         } else {
                             java.lang.System.out.println("Asset already loaded: " + assetId + " (" + assetType.getName() + ")");
                         }
@@ -103,7 +97,7 @@ public class WorldLoader implements Loader {
                     Class<? extends Entity> entityType = (Class<? extends Entity>) Class.forName((String) entity.get("type"));
                     Object entityConfig = entity.get("config");
                     try {
-                        entityManager.addEntity(loaderManager.load(entityConfig, entityType));
+                        entityManager.addEntity(context.getLoaderManager().load(entityConfig, entityType, context));
                     } catch (RuntimeException e) {
                         if (e.getMessage() == null || !e.getMessage().startsWith("No Such Entity")) throw e;
                         nextEntities.add(entity);
@@ -121,9 +115,10 @@ public class WorldLoader implements Loader {
     }
 
     @Override
-    public <E, T> E getConfig(T obj, Class<E> configType) {
+    public <E, T> E getConfig(T obj, Class<E> configType, LoadContext context) {
         World world = (World) obj;
         Map<String, Object> map = new HashMap<>();
+        context.setEnvironment("world", world);
 
         Map<Class<?>, System> systems = world.getSystemManager().getSystems();
         if (systems.size() > 0) {
@@ -131,7 +126,7 @@ public class WorldLoader implements Loader {
             for (System system : systems.values()) {
                 Map<String, Object> systemMap = new HashMap<>();
                 systemMap.put("type", system.getClass().getName());
-                systemMap.put("config", loaderManager.getConfig(system, Map.class));
+                systemMap.put("config", context.getLoaderManager().getConfig(system, Map.class, context));
                 systemList.add(systemMap);
             }
             map.put("systems", systemList);
@@ -147,7 +142,7 @@ public class WorldLoader implements Loader {
                     assetMap.put("id", assetEntry.getKey());
                     assetMap.put("type", assetType.getName());
                     try {
-                        assetMap.put("config", loaderManager.getConfig(assetEntry.getValue(), Map.class));
+                        assetMap.put("config", context.getLoaderManager().getConfig(assetEntry.getValue(), Map.class, context));
                     } catch (RuntimeException e) {
                         assetMap.put("provided", true);
                     }
@@ -164,7 +159,7 @@ public class WorldLoader implements Loader {
                 Entity entity = entry.getValue();
                 Map<String, Object> entityMap = new HashMap<>();
                 entityMap.put("type", entity.getClass().getName());
-                entityMap.put("config", loaderManager.getConfig(entity, Map.class));
+                entityMap.put("config", context.getLoaderManager().getConfig(entity, Map.class, context));
                 entityList.add(entityMap);
             }
             map.put("entities", entityList);

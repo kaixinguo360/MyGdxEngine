@@ -1,5 +1,6 @@
 package com.my.utils.world.com;
 
+import com.my.utils.world.LoadContext;
 import com.my.utils.world.Loader;
 
 import java.util.HashMap;
@@ -8,7 +9,7 @@ import java.util.Map;
 public class SerializationLoader implements Loader {
 
     @Override
-    public <E, T> T load(E config, Class<T> type) {
+    public <E, T> T load(E config, Class<T> type, LoadContext context) {
         Map<String, Object> map = (Map<String, Object>) config;
         return (T) new Serialization(
                 (String) map.get("group"),
@@ -17,7 +18,7 @@ public class SerializationLoader implements Loader {
     }
 
     @Override
-    public <E, T> E getConfig(T obj, Class<E> configType) {
+    public <E, T> E getConfig(T obj, Class<E> configType, LoadContext context) {
         Serialization serialization = (Serialization) obj;
         return (E) new HashMap<String, Object>() {{
             put("group", serialization.group);

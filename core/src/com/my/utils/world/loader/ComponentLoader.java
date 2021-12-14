@@ -1,22 +1,16 @@
 package com.my.utils.world.loader;
 
 import com.my.utils.world.Component;
+import com.my.utils.world.LoadContext;
 import com.my.utils.world.Loader;
-import com.my.utils.world.LoaderManager;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class ComponentLoader implements Loader {
 
-    private LoaderManager loaderManager;
-
-    public ComponentLoader(LoaderManager loaderManager) {
-        this.loaderManager = loaderManager;
-    }
-
     @Override
-    public <E, T> T load(E config, Class<T> type) {
+    public <E, T> T load(E config, Class<T> type, LoadContext context) {
         try {
             return type.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
@@ -25,7 +19,7 @@ public class ComponentLoader implements Loader {
     }
 
     @Override
-    public <E, T> E getConfig(T obj, Class<E> configType) {
+    public <E, T> E getConfig(T obj, Class<E> configType, LoadContext context) {
         return (E) new HashMap<String, Object>();
     }
 
