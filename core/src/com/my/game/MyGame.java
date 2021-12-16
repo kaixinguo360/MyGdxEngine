@@ -49,7 +49,6 @@ public class MyGame extends Base3DGame {
     private static void initAssets(World world) {
 
         AssetsManager assetsManager = world.getAssetsManager();
-        Collisions.initAssets(assetsManager);
         Constraints.initAssets(assetsManager);
         Aircrafts.initAssets(assetsManager);
         Guns.initAssets(assetsManager);

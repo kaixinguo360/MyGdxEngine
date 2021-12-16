@@ -20,7 +20,10 @@ import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.my.utils.world.*;
-import com.my.utils.world.com.*;
+import com.my.utils.world.com.Constraint;
+import com.my.utils.world.com.Position;
+import com.my.utils.world.com.RigidBody;
+import com.my.utils.world.com.Script;
 import com.my.utils.world.sys.ConstraintSystem;
 import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.RenderSystem;
@@ -244,7 +247,7 @@ public class Guns {
 
         private Entity createBullet(Guns.Gun gun, Matrix4 transform) {
             Entity entity = new MyInstance(assetsManager, "bullet", "bullet", null,
-                    new Collision(BOMB_FLAG, ALL_FLAG, assetsManager.getAsset("BulletCollisionHandler", PhysicsSystem.CollisionHandler.class)));
+                    new Collisions.BulletCollisionHandler(BOMB_FLAG, ALL_FLAG));
             entity.setId("Bullet-" + gun.bulletNum++);
             world.getEntityManager().addEntity(entity).getComponent(Position.class).transform.set(transform);
             entity.addComponent(new Scripts.RemoveScript());

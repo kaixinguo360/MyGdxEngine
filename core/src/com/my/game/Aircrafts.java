@@ -21,7 +21,10 @@ import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.my.utils.world.*;
-import com.my.utils.world.com.*;
+import com.my.utils.world.com.Constraint;
+import com.my.utils.world.com.Position;
+import com.my.utils.world.com.RigidBody;
+import com.my.utils.world.com.Script;
 import com.my.utils.world.sys.ConstraintSystem;
 import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.RenderSystem;
@@ -348,7 +351,7 @@ public class Aircrafts {
         }
         public Entity createBomb(Aircrafts.Aircraft aircraft, Matrix4 transform) {
             Entity entity = new MyInstance(assetsManager, "bomb", "bomb", null,
-                    new Collision(BOMB_FLAG, ALL_FLAG, assetsManager.getAsset("BombCollisionHandler", PhysicsSystem.CollisionHandler.class)));
+                    new Collisions.BombCollisionHandler(BOMB_FLAG, ALL_FLAG));
             entity.setId("Bomb-" + aircraft.bombNum++);
             world.getEntityManager().addEntity(entity).getComponent(Position.class).transform.set(transform);
             entity.addComponent(new Scripts.RemoveScript());

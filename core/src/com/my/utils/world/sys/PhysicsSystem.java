@@ -12,11 +12,14 @@ import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
 import com.badlogic.gdx.utils.Array;
 import com.my.utils.world.BaseSystem;
 import com.my.utils.world.Entity;
+import com.my.utils.world.EntityListener;
 import com.my.utils.world.com.Collision;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.RigidBody;
 
-public class PhysicsSystem extends BaseSystem {
+import java.util.List;
+
+public class PhysicsSystem extends BaseSystem implements EntityListener {
 
     // ----- Tmp ----- //
     private static final Vector3 tmpV1 = new Vector3();
@@ -152,8 +155,10 @@ public class PhysicsSystem extends BaseSystem {
         body.setMotionState(new MotionState(position.transform));
         body.userData = entity;
 
-        if (entity.contain(Collision.class)) {
-            Collision c = entity.getComponent(Collision.class);
+        if (entity.contains(Collision.class)) {
+            List<Collision> collisionList = entity.getComponents(Collision.class);
+            if (collisionList.size() != 1) throw new RuntimeException("TODO"); // TODO ...
+            Collision c = collisionList.get(0);
             body.setContactCallbackFlag(c.callbackFlag);
             body.setContactCallbackFilter(c.callbackFilter);
             body.setCollisionFlags(body.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
@@ -167,6 +172,19 @@ public class PhysicsSystem extends BaseSystem {
         body.setMotionState(null);
         dynamicsWorld.removeRigidBody(body);
         activatedEntities.removeValue(entity, true);
+    }
+
+    @Override
+    public void afterAdded(Entity entity) {
+        List<Collision> collisionList = entity.getComponents(Collision.class);
+        for (Collision collision : collisionList) {
+            collision.init(world, entity);
+        }
+    }
+
+    @Override
+    public void afterRemoved(Entity entity) {
+
     }
 
     private static class MotionState extends btMotionState {
@@ -189,17 +207,19 @@ public class PhysicsSystem extends BaseSystem {
             if(colObj0.userData instanceof Entity && colObj1.userData instanceof Entity) {
                 Entity entity0 = (Entity) colObj0.userData;
                 Entity entity1 = (Entity) colObj1.userData;
-                if (match0 && entity0.contain(Collision.class)) {
+                if (match0) {
 //                    System.out.println(entity0.getId() + " =>" + entity1.getId());
-                    Collision collision = entity0.getComponent(Collision.class);
-                    CollisionHandler handler = collision.handler;
-                    handler.handle(entity0, entity1);
+                    List<Collision> collisionList = entity0.getComponents(Collision.class);
+                    for (Collision collision : collisionList) {
+                        collision.handle(entity1);
+                    }
                 }
-                if (match1 && entity1.contain(Collision.class)) {
+                if (match1) {
 //                    System.out.println(entity1.getId() + " <= " + entity0.getId());
-                    Collision collision = entity1.getComponent(Collision.class);
-                    CollisionHandler handler = collision.handler;
-                    handler.handle(entity1, entity0);
+                    List<Collision> collisionList = entity1.getComponents(Collision.class);
+                    for (Collision collision : collisionList) {
+                        collision.handle(entity0);
+                    }
                 }
             }
             return true;

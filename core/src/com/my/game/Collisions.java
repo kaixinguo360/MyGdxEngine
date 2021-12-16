@@ -1,37 +1,26 @@
 package com.my.game;
 
 import com.badlogic.gdx.math.Vector3;
-import com.my.utils.world.AfterAdded;
-import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
-import com.my.utils.world.World;
+import com.my.utils.world.com.Collision;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.RigidBody;
-import com.my.utils.world.sys.PhysicsSystem;
+import lombok.NoArgsConstructor;
 
 public class Collisions {
 
     private static final Vector3 tmpV1 = new Vector3();
     private static final Vector3 tmpV2 = new Vector3();
 
-    public static void initAssets(AssetsManager assetsManager) {
-        assetsManager.addAsset("BombCollisionHandler", PhysicsSystem.CollisionHandler.class, new BombCollisionHandler());
-        assetsManager.addAsset("BulletCollisionHandler", PhysicsSystem.CollisionHandler.class, new BulletCollisionHandler());
-    }
+    @NoArgsConstructor
+    public static class BombCollisionHandler extends Collision {
 
-    public static class BombCollisionHandler implements PhysicsSystem.CollisionHandler, AfterAdded {
-
-        private World world;
-        private PhysicsSystem physicsSystem;
-
-        @Override
-        public void afterAdded(World world) {
-            this.world = world;
-            this.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
+        public BombCollisionHandler(int callbackFlag, int callbackFilter) {
+            super(callbackFlag, callbackFilter);
         }
 
         @Override
-        public void handle(Entity self, Entity target) {
+        public void handle(Entity target) {
             if (checkVelocity(self, target, 20)) {
 //                System.out.println("Boom! " + self.getId() + " ==> " + target.getId());
                 physicsSystem.addExplosion(self.getComponent(Position.class).transform.getTranslation(tmpV1), 5000);
@@ -39,19 +28,16 @@ public class Collisions {
             }
         }
     }
-    public static class BulletCollisionHandler implements PhysicsSystem.CollisionHandler, AfterAdded {
 
-        private World world;
-        private PhysicsSystem physicsSystem;
+    @NoArgsConstructor
+    public static class BulletCollisionHandler extends Collision {
 
-        @Override
-        public void afterAdded(World world) {
-            this.world = world;
-            this.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
+        public BulletCollisionHandler(int callbackFlag, int callbackFilter) {
+            super(callbackFlag, callbackFilter);
         }
 
         @Override
-        public void handle(Entity self, Entity target) {
+        public void handle(Entity target) {
             if (checkVelocity(self, target, 20)) {
 //                System.out.println("Boom! " + self.getId() + " ==> " + target.getId());
                 physicsSystem.addExplosion(self.getComponent(Position.class).transform.getTranslation(tmpV1), 5000);
