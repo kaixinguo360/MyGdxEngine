@@ -1,33 +1,29 @@
 package com.my.utils.world.com;
 
-import com.my.utils.world.*;
-import com.my.utils.world.sys.MotionSystem;
+import com.my.utils.world.Entity;
+import com.my.utils.world.World;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @NoArgsConstructor
 @AllArgsConstructor
-public class Motion implements Component, LoadableResource {
+public abstract class Motion extends Script {
 
-    public MotionSystem.MotionHandler handler;
-    public Map<String, Object> config;
+    protected RigidBody rigidBody;
+    protected Position position;
 
     @Override
-    public void load(Map<String, Object> config, LoadContext context) {
-        AssetsManager assetsManager = context.getEnvironment("world", World.class).getAssetsManager();
-        this.handler = assetsManager.getAsset((String) config.get("type"), MotionSystem.MotionHandler.class);
-        this.config = (Map<String, Object>) config.get("config");
+    public void init(World world, Entity entity) {
+        if (!entity.contain(RigidBody.class)) throw new RuntimeException("Required component not found: RigidBody");
+        if (!entity.contain(Position.class)) throw new RuntimeException("Required component not found: Position");
+        rigidBody = entity.getComponent(RigidBody.class);
+        position = entity.getComponent(Position.class);
     }
 
     @Override
-    public Map<String, Object> getConfig(Class<Map<String, Object>> configType, LoadContext context) {
-        AssetsManager assetsManager = context.getEnvironment("world", World.class).getAssetsManager();
-        return new HashMap<String, Object>() {{
-            put("type", assetsManager.getId(MotionSystem.MotionHandler.class, handler));
-            put("config", config);
-        }};
+    public void execute(World world, Entity entity) {
+        this.update();
     }
+
+    public abstract void update();
 }

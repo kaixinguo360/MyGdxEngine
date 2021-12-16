@@ -51,7 +51,6 @@ public class MyGame extends Base3DGame {
         AssetsManager assetsManager = world.getAssetsManager();
         Collisions.initAssets(assetsManager);
         Constraints.initAssets(assetsManager);
-        Motions.initAssets(assetsManager);
         Aircrafts.initAssets(assetsManager);
         Guns.initAssets(assetsManager);
         SceneBuilder.initAssets(assetsManager);
@@ -221,7 +220,6 @@ public class MyGame extends Base3DGame {
         world.getSystemManager().addSystem(new PhysicsSystem());
         world.getSystemManager().addSystem(new SerializationSystem());
         world.getSystemManager().addSystem(new ConstraintSystem());
-        world.getSystemManager().addSystem(new MotionSystem());
         world.getSystemManager().addSystem(new ScriptSystem());
         MyGame.initAssets(world);
 
@@ -317,7 +315,6 @@ public class MyGame extends Base3DGame {
         // Update World
         gameWorld.world.update();
         gameWorld.constraintSystem.update();
-        gameWorld.motionSystem.update();
         gameWorld.physicsSystem.update(deltaTime);
         gameWorld.scriptSystem.update();
         gameWorld.world.getEntityManager().getBatch().commit();
@@ -369,7 +366,6 @@ public class MyGame extends Base3DGame {
         private final PhysicsSystem physicsSystem;
         private final SerializationSystem serializationSystem;
         private final ConstraintSystem constraintSystem;
-        private final MotionSystem motionSystem;
         private final ScriptSystem scriptSystem;
         private final LoaderManager loaderManager;
 
@@ -378,7 +374,6 @@ public class MyGame extends Base3DGame {
             physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
             serializationSystem = world.getSystemManager().getSystem(SerializationSystem.class);
             constraintSystem = world.getSystemManager().getSystem(ConstraintSystem.class);
-            motionSystem = world.getSystemManager().getSystem(MotionSystem.class);
             scriptSystem = world.getSystemManager().getSystem(ScriptSystem.class);
             this.world = world;
             this.loaderManager = loaderManager;

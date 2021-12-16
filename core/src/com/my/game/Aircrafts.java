@@ -85,7 +85,7 @@ public class Aircrafts {
         private Entity createWing(Matrix4 transform, Entity base) {
             String id = "Wing-" + wingNum++;
             return addObject(
-                    id, transform, new MyInstance(assetsManager, "wing", group, Motions.Lift.getConfig(assetsManager, new Vector3(0, 200, 0))),
+                    id, transform, new MyInstance(assetsManager, "wing", group, new Motions.Lift(new Vector3(0, 200, 0))),
                     base == null ? null : Constraints.ConnectConstraint.getConfig(assetsManager, base.getId(), id, null, 500)
             );
         }
@@ -110,7 +110,7 @@ public class Aircrafts {
             String id = "Engine-" + engineNum++;
             return addObject(
                     id, transform,
-                    new MyInstance(assetsManager, "engine", group, Motions.LimitedForce.getConfig(assetsManager, maxVelocity, new Vector3(0, force, 0), new Vector3())),
+                    new MyInstance(assetsManager, "engine", group, new Motions.LimitedForce(maxVelocity, new Vector3(0, force, 0), new Vector3())),
                     base == null ? null : Constraints.ConnectConstraint.getConfig(assetsManager, base.getId(), id, null, 2000)
             );
         }

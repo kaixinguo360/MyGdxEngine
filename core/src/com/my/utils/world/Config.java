@@ -6,5 +6,5 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
 public @interface Config {
-    boolean isPrimitive() default false;
+    boolean isPrimitive() default true;
 }
