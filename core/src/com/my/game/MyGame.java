@@ -36,7 +36,7 @@ import com.my.utils.world.Entity;
 import com.my.utils.world.LoaderManager;
 import com.my.utils.world.World;
 import com.my.utils.world.com.Position;
-import com.my.utils.world.com.ScriptComponent;
+import com.my.utils.world.com.Script;
 import com.my.utils.world.loader.WorldLoader;
 import com.my.utils.world.sys.*;
 
@@ -52,7 +52,6 @@ public class MyGame extends Base3DGame {
         Collisions.initAssets(assetsManager);
         Constraints.initAssets(assetsManager);
         Motions.initAssets(assetsManager);
-        Scripts.initAssets(assetsManager);
         Aircrafts.initAssets(assetsManager);
         Guns.initAssets(assetsManager);
         SceneBuilder.initAssets(assetsManager);
@@ -254,15 +253,10 @@ public class MyGame extends Base3DGame {
         }
 
         Entity aircraftEntity = aircraftBuilder.createAircraft(new Matrix4().translate(0, 0, 200), 8000, 40);
-        ScriptComponent aircraftScriptComponent = new ScriptComponent();
-        aircraftScriptComponent.script = world.getAssetsManager().getAsset("AircraftScript", ScriptSystem.Script.class);
-        aircraftEntity.addComponent(aircraftScriptComponent);
+        aircraftEntity.addComponent(new Aircrafts.AircraftScript());
 
         Entity gunEntity = gunBuilder.createGun("ground", new Matrix4().translate(0, 0, -20));
-        ScriptComponent gunScriptComponent = new ScriptComponent();
-        gunScriptComponent.script = world.getAssetsManager().getAsset("GunScript", ScriptSystem.Script.class);
-        gunScriptComponent.disabled = true;
-        gunEntity.addComponent(gunScriptComponent);
+        gunEntity.addComponent(new Guns.GunScript()).disabled = true;
 
         // Init World Entity Filters
         world.update();
@@ -338,8 +332,8 @@ public class MyGame extends Base3DGame {
         View tmp = mainView;
         mainView = secondaryView;
         secondaryView = tmp;
-        secondaryView.getEntity().getComponent(ScriptComponent.class).disabled = true;
-        mainView.getEntity().getComponent(ScriptComponent.class).disabled = false;
+        secondaryView.getEntity().getComponents(Script.class).get(0).disabled = true;
+        mainView.getEntity().getComponents(Script.class).get(0).disabled = false;
     }
 
     private class View {

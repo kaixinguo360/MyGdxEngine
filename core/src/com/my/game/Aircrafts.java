@@ -25,7 +25,6 @@ import com.my.utils.world.com.*;
 import com.my.utils.world.sys.ConstraintSystem;
 import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.RenderSystem;
-import com.my.utils.world.sys.ScriptSystem;
 
 import java.lang.System;
 import java.util.HashMap;
@@ -266,28 +265,23 @@ public class Aircrafts {
         }
     }
 
-    public static class AircraftScript implements ScriptSystem.Script, AfterAdded {
+    public static class AircraftScript extends Script {
 
         private World world;
         private AssetsManager assetsManager;
         private PhysicsSystem physicsSystem;
+        private Aircrafts.Aircraft aircraft;
 
         @Override
-        public void afterAdded(World world) {
+        public void init(World world, Entity entity) {
             this.world = world;
             this.assetsManager = world.getAssetsManager();
             this.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
+            this.aircraft = entity.getComponent(Aircrafts.Aircraft.class);
         }
 
         @Override
-        public void init(World world, Entity entity, ScriptComponent scriptComponent) {
-            scriptComponent.customObj = entity.getComponent(Aircrafts.Aircraft.class);
-            Aircrafts.Aircraft aircraft = entity.getComponent(Aircrafts.Aircraft.class);
-        }
-
-        @Override
-        public void execute(World world, Entity entity, ScriptComponent scriptComponent) {
-            Aircrafts.Aircraft aircraft = (Aircrafts.Aircraft) scriptComponent.customObj;
+        public void execute(World world, Entity entity) {
             update(aircraft);
         }
 
@@ -357,9 +351,7 @@ public class Aircrafts {
                     new Collision(BOMB_FLAG, ALL_FLAG, assetsManager.getAsset("BombCollisionHandler", PhysicsSystem.CollisionHandler.class)));
             entity.setId("Bomb-" + aircraft.bombNum++);
             world.getEntityManager().addEntity(entity).getComponent(Position.class).transform.set(transform);
-            ScriptComponent scriptComponent = new ScriptComponent();
-            scriptComponent.script = assetsManager.getAsset("RemoveScript", ScriptSystem.Script.class);
-            entity.addComponent(scriptComponent);
+            entity.addComponent(new Scripts.RemoveScript());
             return entity;
         }
     }

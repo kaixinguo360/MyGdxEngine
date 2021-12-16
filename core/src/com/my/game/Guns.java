@@ -24,7 +24,6 @@ import com.my.utils.world.com.*;
 import com.my.utils.world.sys.ConstraintSystem;
 import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.RenderSystem;
-import com.my.utils.world.sys.ScriptSystem;
 
 import java.lang.System;
 import java.util.HashMap;
@@ -184,28 +183,23 @@ public class Guns {
         }
     }
 
-    public static class GunScript implements ScriptSystem.Script, AfterAdded {
+    public static class GunScript extends Script {
 
         private World world;
         private AssetsManager assetsManager;
         private PhysicsSystem physicsSystem;
+        private Guns.Gun gun;
 
         @Override
-        public void afterAdded(World world) {
+        public void init(World world, Entity entity) {
             this.world = world;
             this.assetsManager = world.getAssetsManager();
             this.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
+            this.gun = entity.getComponent(Guns.Gun.class);
         }
 
         @Override
-        public void init(World world, Entity entity, ScriptComponent scriptComponent) {
-            scriptComponent.customObj = entity.getComponent(Guns.Gun.class);
-            Guns.Gun gun = entity.getComponent(Guns.Gun.class);
-        }
-
-        @Override
-        public void execute(World world, Entity entity, ScriptComponent scriptComponent) {
-            Guns.Gun gun = (Guns.Gun) scriptComponent.customObj;
+        public void execute(World world, Entity entity) {
             update(gun);
         }
 
@@ -253,9 +247,7 @@ public class Guns {
                     new Collision(BOMB_FLAG, ALL_FLAG, assetsManager.getAsset("BulletCollisionHandler", PhysicsSystem.CollisionHandler.class)));
             entity.setId("Bullet-" + gun.bulletNum++);
             world.getEntityManager().addEntity(entity).getComponent(Position.class).transform.set(transform);
-            ScriptComponent scriptComponent = new ScriptComponent();
-            scriptComponent.script = assetsManager.getAsset("RemoveScript", ScriptSystem.Script.class);
-            entity.addComponent(scriptComponent);
+            entity.addComponent(new Scripts.RemoveScript());
             return entity;
         }
         public void rotate(Guns.Gun gun, float stepY, float stepX) {
