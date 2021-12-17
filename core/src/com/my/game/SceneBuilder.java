@@ -58,7 +58,7 @@ public class SceneBuilder {
         String id = "Box-" + boxNum++;
         addObject(
                 id, transform, entity,
-                base == null ? null : Constraints.ConnectConstraint.getConfig(assetsManager, base, id, null, 2000)
+                base == null ? null : new Constraints.ConnectConstraint(base, id, null, 2000)
         );
         return entity;
     }

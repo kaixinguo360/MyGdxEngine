@@ -24,7 +24,6 @@ import com.my.utils.world.com.Constraint;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.RigidBody;
 import com.my.utils.world.com.Script;
-import com.my.utils.world.sys.ConstraintSystem;
 import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.RenderSystem;
 
@@ -73,18 +72,18 @@ public class Guns {
             String id = "Barrel-" + barrelNum++;
             return addObject(
                     id, transform, new MyInstance(assetsManager, "barrel", group),
-                    base == null ? null : Constraints.ConnectConstraint.getConfig(assetsManager, base.getId(), id, null, 2000)
+                    base == null ? null : new Constraints.ConnectConstraint(base.getId(), id, null, 2000)
             );
         }
 
         private int rotateNum = 0;
-        private Entity createRotate(Matrix4 transform, ConstraintSystem.ConstraintController controller, Entity base) {
+        private Entity createRotate(Matrix4 transform, Constraint.ConstraintController controller, Entity base) {
             Matrix4 relTransform = new Matrix4(base.getComponent(Position.class).transform).inv().mul(transform);
             String id = "GunRotate-" + rotateNum++;
             Entity entity = addObject(
                     id, transform, new MyInstance(assetsManager, "gunRotate", group),
-                    base == null ? null : Constraints.HingeConstraint.getConfig(
-                            assetsManager, base.getId(), id, controller,
+                    base == null ? null : new Constraints.HingeConstraint(
+                            base.getId(), id, controller,
                             relTransform.rotate(Vector3.X, 90),
                             new Matrix4().rotate(Vector3.X, 90),
                             false)
@@ -170,8 +169,9 @@ public class Guns {
             rotate_Y = entityManager.getEntity((String) config.get("rotate_Y"));
             rotate_X = entityManager.getEntity((String) config.get("rotate_X"));
             barrel = entityManager.getEntity((String) config.get("barrel"));
-            if (rotate_Y.contain(Constraint.class)) gunController_Y = (GunController) rotate_Y.getComponent(Constraint.class).controller;
-            if (rotate_X.contain(Constraint.class)) gunController_X = (GunController) rotate_X.getComponent(Constraint.class).controller;
+            // TODO: Optimize Constraint Component
+            if (rotate_Y.contains(Constraint.class)) gunController_Y = (GunController) rotate_Y.getComponents(Constraint.class).get(0).controller;
+            if (rotate_X.contains(Constraint.class)) gunController_X = (GunController) rotate_X.getComponents(Constraint.class).get(0).controller;
             bulletNum = (Integer) config.get("bulletNum");
         }
 
@@ -239,9 +239,10 @@ public class Guns {
         }
         public void explode(Guns.Gun gun) {
             System.out.println("Explosion!");
-            gun.rotate_Y.removeComponent(Constraint.class);
-            gun.rotate_X.removeComponent(Constraint.class);
-            gun.barrel.removeComponent(Constraint.class);
+            // TODO: Optimize Constraint Component
+            gun.rotate_Y.removeComponents(Constraint.class);
+            gun.rotate_X.removeComponents(Constraint.class);
+            gun.barrel.removeComponents(Constraint.class);
             physicsSystem.addExplosion(getTransform(gun).getTranslation(tmpV), 2000);
         }
 
@@ -269,12 +270,12 @@ public class Guns {
         }
     }
 
-    public static class GunController implements ConstraintSystem.ConstraintController, LoadableResource {
+    public static class GunController implements Constraint.ConstraintController, StandaloneResource {
 
-        private float target = 0;
-        private float max = 0;
-        private float min = 0;
-        private boolean limit = false;
+        @Config public float target = 0;
+        @Config public float max = 0;
+        @Config public float min = 0;
+        @Config public boolean limit = false;
 
         public GunController() {}
 
@@ -292,24 +293,6 @@ public class Guns {
             }
             btHingeConstraint hingeConstraint = (btHingeConstraint) constraint;
             hingeConstraint.setLimit(target, target, 0, 0.5f);
-        }
-
-        @Override
-        public void load(Map<String, Object> config, LoadContext context) {
-            min = (float) (double) config.get("min");
-            max = (float) (double) config.get("max");
-            target = (float) (double) config.get("target");
-            limit = (Boolean) config.get("limit");
-        }
-
-        @Override
-        public Map<String, Object> getConfig(Class<Map<String, Object>> configType, LoadContext context) {
-            return new HashMap<String, Object>(){{
-                put("min", (double) min);
-                put("max", (double) max);
-                put("target", (double) target);
-                put("limit", limit);
-            }};
         }
     }
 }

@@ -3,63 +3,62 @@ package com.my.game;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.dynamics.*;
-import com.my.utils.world.AssetsManager;
+import com.my.utils.world.Config;
 import com.my.utils.world.com.Constraint;
-import com.my.utils.world.sys.ConstraintSystem;
-
-import java.util.HashMap;
-import java.util.Map;
+import lombok.NoArgsConstructor;
 
 public class Constraints {
 
-    public static void initAssets(AssetsManager assetsManager) {
-        assetsManager.addAsset("Point2PointConstraint", ConstraintSystem.ConstraintType.class, new Point2PointConstraint());
-        assetsManager.addAsset("FixedConstraint", ConstraintSystem.ConstraintType.class, new FixedConstraint());
-        assetsManager.addAsset("ConnectConstraint", ConstraintSystem.ConstraintType.class, new ConnectConstraint());
-        assetsManager.addAsset("SliderConstraint", ConstraintSystem.ConstraintType.class, new SliderConstraint());
-        assetsManager.addAsset("HingeConstraint", ConstraintSystem.ConstraintType.class, new HingeConstraint());
-    }
+    @NoArgsConstructor
+    public static class Point2PointConstraint extends Constraint {
 
-    public static class Point2PointConstraint implements ConstraintSystem.ConstraintType {
+        @Config public Vector3 pivotInA;
+        @Config public Vector3 pivotInB;
+
+        public Point2PointConstraint(String bodyA, String bodyB, ConstraintController controller, Vector3 pivotInA, Vector3 pivotInB) {
+            super(bodyA, bodyB, controller);
+            this.pivotInA = pivotInA;
+            this.pivotInB = pivotInB;
+        }
+
         @Override
-        public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB, Map<String, Object> config) {
-            Vector3 pivotInA = (Vector3) config.get("pivotInA");
-            Vector3 pivotInB = (Vector3) config.get("pivotInB");
+        public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB) {
             return new btPoint2PointConstraint(bodyA, bodyB, pivotInA, pivotInB);
         }
-        public static Constraint getConfig(AssetsManager assetsManager, String bodyA, String bodyB, ConstraintSystem.ConstraintController controller, Vector3 pivotInA, Vector3 pivotInB) {
-            return new Constraint(
-                    bodyA, bodyB,
-                    assetsManager.getAsset("Point2PointConstraint", ConstraintSystem.ConstraintType.class),
-                    new HashMap<String, Object>() {{
-                        put("pivotInA", pivotInA);
-                        put("pivotInB", pivotInB);
-                    }}, controller);
-        }
     }
-    public static class FixedConstraint implements ConstraintSystem.ConstraintType {
+
+    @NoArgsConstructor
+    public static class FixedConstraint extends Constraint {
+
+        @Config public Matrix4 frameInA;
+        @Config public Matrix4 frameInB;
+
+        public FixedConstraint(String bodyA, String bodyB, ConstraintController controller, Matrix4 frameInA, Matrix4 frameInB) {
+            super(bodyA, bodyB, controller);
+            this.frameInA = frameInA;
+            this.frameInB = frameInB;
+        }
+
         @Override
-        public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB, Map<String, Object> config) {
-            Matrix4 frameInA = (Matrix4) config.get("frameInA");
-            Matrix4 frameInB = (Matrix4) config.get("frameInB");
+        public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB) {
             return new btFixedConstraint(bodyA, bodyB, frameInA, frameInB);
         }
-        public static Constraint getConfig(AssetsManager assetsManager, String bodyA, String bodyB, ConstraintSystem.ConstraintController controller, Matrix4 frameInA, Matrix4 frameInB) {
-            return new Constraint(
-                    bodyA, bodyB,
-                    assetsManager.getAsset("FixedConstraint", ConstraintSystem.ConstraintType.class),
-                    new HashMap<String, Object>() {{
-                        put("frameInA", frameInA);
-                        put("frameInB", frameInB);
-                    }}, controller);
-        }
     }
-    public static class ConnectConstraint implements ConstraintSystem.ConstraintType {
+
+    @NoArgsConstructor
+    public static class ConnectConstraint extends Constraint {
+
+        @Config public float breakingImpulseThreshold;
+
+        public ConnectConstraint(String bodyA, String bodyB, ConstraintController controller, float breakingImpulseThreshold) {
+            super(bodyA, bodyB, controller);
+            this.breakingImpulseThreshold = breakingImpulseThreshold;
+        }
+
         @Override
-        public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB, Map<String, Object> config) {
+        public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB) {
             Matrix4 tmp1 = new Matrix4();
             Matrix4 tmp2 = new Matrix4();
-            float breakingImpulseThreshold = (float) (double) config.get("breakingImpulseThreshold");
             tmp1.set(bodyA.getWorldTransform());
             tmp2.set(bodyB.getWorldTransform());
             tmp1.inv().mul(tmp2);
@@ -68,55 +67,49 @@ public class Constraints {
             constraint.setBreakingImpulseThreshold(breakingImpulseThreshold);
             return constraint;
         }
-        public static Constraint getConfig(AssetsManager assetsManager, String bodyA, String bodyB, ConstraintSystem.ConstraintController controller, float breakingImpulseThreshold) {
-            return new Constraint(
-                    bodyA, bodyB,
-                    assetsManager.getAsset("ConnectConstraint", ConstraintSystem.ConstraintType.class),
-                    new HashMap<String, Object>() {{
-                        put("breakingImpulseThreshold", (double) breakingImpulseThreshold);
-                    }}, controller);
-        }
     }
-    public static class SliderConstraint implements ConstraintSystem.ConstraintType {
+
+    @NoArgsConstructor
+    public static class SliderConstraint extends Constraint {
+
+        @Config public Matrix4 frameInA;
+        @Config public Matrix4 frameInB;
+        @Config public boolean useLinearReferenceFrameA;
+
+        public SliderConstraint(String bodyA, String bodyB, ConstraintController controller, Matrix4 frameInA, Matrix4 frameInB, boolean useLinearReferenceFrameA) {
+            super(bodyA, bodyB, controller);
+            this.frameInA = frameInA;
+            this.frameInB = frameInB;
+            this.useLinearReferenceFrameA = useLinearReferenceFrameA;
+        }
+
         @Override
-        public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB, Map<String, Object> config) {
-            Matrix4 frameInA = (Matrix4) config.get("frameInA");
-            Matrix4 frameInB = (Matrix4) config.get("frameInB");
-            boolean useLinearReferenceFrameA = (Boolean) config.get("useLinearReferenceFrameA");
+        public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB) {
             return (bodyA != bodyB) ?
                     new btSliderConstraint(bodyA, bodyB, frameInA, frameInB, useLinearReferenceFrameA) :
                     new btSliderConstraint(bodyA, frameInA, useLinearReferenceFrameA);
         }
-        public static Constraint getConfig(AssetsManager assetsManager, String bodyA, String bodyB, ConstraintSystem.ConstraintController controller, Matrix4 frameInA, Matrix4 frameInB, boolean useLinearReferenceFrameA) {
-            return new Constraint(
-                    bodyA, bodyB,
-                    assetsManager.getAsset("SliderConstraint", ConstraintSystem.ConstraintType.class),
-                    new HashMap<String, Object>() {{
-                        put("frameInA", frameInA);
-                        put("frameInB", frameInB);
-                        put("useLinearReferenceFrameA", useLinearReferenceFrameA);
-                    }}, controller);
-        }
     }
-    public static class HingeConstraint implements ConstraintSystem.ConstraintType {
+
+    @NoArgsConstructor
+    public static class HingeConstraint extends Constraint {
+
+        @Config public Matrix4 frameInA;
+        @Config public Matrix4 frameInB;
+        @Config public boolean useLinearReferenceFrameA;
+
+        public HingeConstraint(String bodyA, String bodyB, ConstraintController controller, Matrix4 frameInA, Matrix4 frameInB, boolean useLinearReferenceFrameA) {
+            super(bodyA, bodyB, controller);
+            this.frameInA = frameInA;
+            this.frameInB = frameInB;
+            this.useLinearReferenceFrameA = useLinearReferenceFrameA;
+        }
+
         @Override
-        public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB, Map<String, Object> config) {
-            Matrix4 frameInA = (Matrix4) config.get("frameInA");
-            Matrix4 frameInB = (Matrix4) config.get("frameInB");
-            boolean useLinearReferenceFrameA = (Boolean) config.get("useLinearReferenceFrameA");
+        public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB) {
             return (bodyA != bodyB) ?
                     new btHingeConstraint(bodyA, bodyB, frameInA, frameInB, useLinearReferenceFrameA) :
                     new btHingeConstraint(bodyA, frameInA, useLinearReferenceFrameA);
-        }
-        public static Constraint getConfig(AssetsManager assetsManager, String bodyA, String bodyB, ConstraintSystem.ConstraintController controller, Matrix4 frameInA, Matrix4 frameInB, boolean useLinearReferenceFrameA) {
-            return new Constraint(
-                    bodyA, bodyB,
-                    assetsManager.getAsset("HingeConstraint", ConstraintSystem.ConstraintType.class),
-                    new HashMap<String, Object>() {{
-                        put("frameInA", frameInA);
-                        put("frameInB", frameInB);
-                        put("useLinearReferenceFrameA", useLinearReferenceFrameA);
-                    }}, controller);
         }
     }
 

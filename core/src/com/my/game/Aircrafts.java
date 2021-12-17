@@ -25,9 +25,9 @@ import com.my.utils.world.com.Constraint;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.RigidBody;
 import com.my.utils.world.com.Script;
-import com.my.utils.world.sys.ConstraintSystem;
 import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.RenderSystem;
+import lombok.NoArgsConstructor;
 
 import java.lang.System;
 import java.util.HashMap;
@@ -80,7 +80,7 @@ public class Aircrafts {
             String id = "Body-" + bodyNum++;
             return addObject(
                     id, transform, new MyInstance(assetsManager, "body", group),
-                    base == null ? null : Constraints.ConnectConstraint.getConfig(assetsManager, base.getId(), id, null, 2000)
+                    base == null ? null : new Constraints.ConnectConstraint(base.getId(), id, null, 2000)
             );
         }
 
@@ -89,18 +89,18 @@ public class Aircrafts {
             String id = "Wing-" + wingNum++;
             return addObject(
                     id, transform, new MyInstance(assetsManager, "wing", group, new Motions.Lift(new Vector3(0, 200, 0))),
-                    base == null ? null : Constraints.ConnectConstraint.getConfig(assetsManager, base.getId(), id, null, 500)
+                    base == null ? null : new Constraints.ConnectConstraint(base.getId(), id, null, 500)
             );
         }
 
         private int rotateNum = 0;
-        private Entity createRotate(Matrix4 transform, ConstraintSystem.ConstraintController controller, Entity base) {
+        private Entity createRotate(Matrix4 transform, Constraint.ConstraintController controller, Entity base) {
             Matrix4 relTransform = new Matrix4(base.getComponent(Position.class).transform).inv().mul(transform);
             String id = "Rotate-" + rotateNum++;
             Entity entity = addObject(
                     id, transform, new MyInstance(assetsManager, "rotate", group),
-                    base == null ? null : Constraints.HingeConstraint.getConfig(
-                            assetsManager, base.getId(), id, controller,
+                    base == null ? null : new Constraints.HingeConstraint(
+                            base.getId(), id, controller,
                             relTransform.rotate(Vector3.X, 90),
                             new Matrix4().rotate(Vector3.X, 90),
                             false)
@@ -114,7 +114,7 @@ public class Aircrafts {
             return addObject(
                     id, transform,
                     new MyInstance(assetsManager, "engine", group, new Motions.LimitedForce(maxVelocity, new Vector3(0, force, 0), new Vector3())),
-                    base == null ? null : Constraints.ConnectConstraint.getConfig(assetsManager, base.getId(), id, null, 2000)
+                    base == null ? null : new Constraints.ConnectConstraint(base.getId(), id, null, 2000)
             );
         }
 
@@ -241,9 +241,10 @@ public class Aircrafts {
             wing_TR = entityManager.getEntity((String) map.get("wing_TR"));
             wing_VL = entityManager.getEntity((String) map.get("wing_VL"));
             wing_VR = entityManager.getEntity((String) map.get("wing_VR"));
-            if (rotate_L.contain(Constraint.class)) aircraftController_L = (AircraftController) rotate_L.getComponent(Constraint.class).controller;
-            if (rotate_R.contain(Constraint.class)) aircraftController_R = (AircraftController) rotate_R.getComponent(Constraint.class).controller;
-            if (rotate_T.contain(Constraint.class)) aircraftController_T = (AircraftController) rotate_T.getComponent(Constraint.class).controller;
+            // TODO: Optimize Constraint Component
+            if (rotate_L.contains(Constraint.class)) aircraftController_L = (AircraftController) rotate_L.getComponents(Constraint.class).get(0).controller;
+            if (rotate_R.contains(Constraint.class)) aircraftController_R = (AircraftController) rotate_R.getComponents(Constraint.class).get(0).controller;
+            if (rotate_T.contains(Constraint.class)) aircraftController_T = (AircraftController) rotate_T.getComponents(Constraint.class).get(0).controller;
             bombNum = (Integer) map.get("bombNum");
         }
 
@@ -328,19 +329,20 @@ public class Aircrafts {
         }
         public void explode(Aircrafts.Aircraft aircraft) {
             System.out.println("Explosion!");
-            aircraft.body.removeComponent(Constraint.class);
-            aircraft.engine.removeComponent(Constraint.class);
-            aircraft.rotate_L.removeComponent(Constraint.class);
-            aircraft.rotate_R.removeComponent(Constraint.class);
-            aircraft.rotate_T.removeComponent(Constraint.class);
-            aircraft.wing_L1.removeComponent(Constraint.class);
-            aircraft.wing_L2.removeComponent(Constraint.class);
-            aircraft.wing_R1.removeComponent(Constraint.class);
-            aircraft.wing_R2.removeComponent(Constraint.class);
-            aircraft.wing_TL.removeComponent(Constraint.class);
-            aircraft.wing_TR.removeComponent(Constraint.class);
-            aircraft.wing_VL.removeComponent(Constraint.class);
-            aircraft.wing_VR.removeComponent(Constraint.class);
+            // TODO: Optimize Constraint Component
+            aircraft.body.removeComponents(Constraint.class);
+            aircraft.engine.removeComponents(Constraint.class);
+            aircraft.rotate_L.removeComponents(Constraint.class);
+            aircraft.rotate_R.removeComponents(Constraint.class);
+            aircraft.rotate_T.removeComponents(Constraint.class);
+            aircraft.wing_L1.removeComponents(Constraint.class);
+            aircraft.wing_L2.removeComponents(Constraint.class);
+            aircraft.wing_R1.removeComponents(Constraint.class);
+            aircraft.wing_R2.removeComponents(Constraint.class);
+            aircraft.wing_TL.removeComponents(Constraint.class);
+            aircraft.wing_TR.removeComponents(Constraint.class);
+            aircraft.wing_VL.removeComponents(Constraint.class);
+            aircraft.wing_VR.removeComponents(Constraint.class);
             physicsSystem.addExplosion(getTransform(aircraft).getTranslation(tmpV1), 2000);
         }
         public Matrix4 getTransform(Aircrafts.Aircraft aircraft) {
@@ -359,15 +361,14 @@ public class Aircrafts {
         }
     }
 
-    public static class AircraftController implements ConstraintSystem.ConstraintController, LoadableResource {
+    @NoArgsConstructor
+    public static class AircraftController implements Constraint.ConstraintController, StandaloneResource {
 
-        private float low;
-        private float high;
-        private float resilience;
-        private float target = 0;
-        private boolean isRotated = false;
-
-        public AircraftController() {}
+        @Config public float low;
+        @Config public float high;
+        @Config public float resilience;
+        @Config public float target = 0;
+        @Config public boolean isRotated = false;
 
         private AircraftController(float low, float high, float resilience) {
             this.low = low;
@@ -390,26 +391,6 @@ public class Aircrafts {
             target = Math.max(low, target);
             btHingeConstraint hingeConstraint = (btHingeConstraint) constraint;
             hingeConstraint.setLimit(target, target, 0, 0.5f);
-        }
-
-        @Override
-        public void load(Map<String, Object> config, LoadContext context) {
-            low = (float) (double) config.get("low");
-            high = (float) (double) config.get("high");
-            resilience = (float) (double) config.get("resilience");
-            target = (float) (double) config.get("target");
-            isRotated = (Boolean) config.get("isRotated");
-        }
-
-        @Override
-        public Map<String, Object> getConfig(Class<Map<String, Object>> configType, LoadContext context) {
-            return new HashMap<String, Object>(){{
-                put("low", (double) low);
-                put("high", (double) high);
-                put("resilience", (double) resilience);
-                put("target", (double) target);
-                put("isRotated", isRotated);
-            }};
         }
     }
 }
