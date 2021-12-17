@@ -28,16 +28,23 @@ public interface StandaloneResource extends Loadable<Map<String, Object>> {
                     Config annotation = field.getAnnotation(Config.class);
                     String name = annotation.name();
                     if ("".equals(name)) name = field.getName();
-                    if (annotation.isPrimitive() || config.get(name) == null) {
+                    if (annotation.isPrimitive() || field.getType().isPrimitive() || field.getType() == String.class || config.get(name) == null) {
                         field.set(this, config.get(name));
                     } else {
-                        // Use LoaderManager to load field
-                        Map<String, Object> map = (Map<String, Object>) config.get(name);
-                        String typeName = (String) map.get("type");
-                        Object configValue = map.get("config");
-                        Class<?> type = Class.forName(typeName);
-                        Object obj = context.getLoaderManager().load(configValue, type, context);
-                        field.set(this, obj);
+                        try {
+                            // Use LoaderManager <Object.class> to load field
+                            Object obj = context.getLoaderManager().load(config.get(name), field.getType(), context);
+                            field.set(this, obj);
+                        } catch (RuntimeException e) {
+                            if (!(e.getMessage().startsWith("No such loader") || e.getMessage().startsWith("Can not load"))) throw e;
+                            // Use LoaderManager <configType> to load field
+                            Map<String, Object> map = (Map<String, Object>) config.get(name);
+                            String typeName = (String) map.get("type");
+                            Object configValue = map.get("config");
+                            Class<?> type = Class.forName(typeName);
+                            Object obj = context.getLoaderManager().load(configValue, type, context);
+                            field.set(this, obj);
+                        }
                     }
                 }
             }
@@ -56,15 +63,21 @@ public interface StandaloneResource extends Loadable<Map<String, Object>> {
                     String name = annotation.name();
                     if ("".equals(name)) name = field.getName();
                     Object obj = field.get(this);
-                    if (annotation.isPrimitive() || obj == null) {
+                    if (annotation.isPrimitive() || field.getType().isPrimitive() || field.getType() == String.class || obj == null) {
                         map.put(name, obj);
                     } else {
-                        // Use LoaderManager to get config
-                        Class<?> type = obj.getClass();
-                        map.put(name, new HashMap<String, Object>() {{
-                            put("type", type.getName());
-                            put("config", context.getLoaderManager().getConfig(type.cast(obj), configType, context));
-                        }});
+                        try {
+                            // Use LoaderManager <Object.class> to get config
+                            map.put(name, context.getLoaderManager().getConfig(obj, Object.class, context));
+                        } catch (RuntimeException e) {
+                            if (!(e.getMessage().startsWith("No such loader") || e.getMessage().startsWith("Can not get config"))) throw e;
+                            // Use LoaderManager <configType> to get config
+                            Class<?> type = obj.getClass();
+                            map.put(name, new HashMap<String, Object>() {{
+                                put("type", type.getName());
+                                put("config", context.getLoaderManager().getConfig(type.cast(obj), configType, context));
+                            }});
+                        }
                     }
                 }
             }

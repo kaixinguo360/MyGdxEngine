@@ -7,5 +7,5 @@ import java.lang.annotation.*;
 @Target({ElementType.FIELD})
 public @interface Config {
     String name() default "";
-    boolean isPrimitive() default true;
+    boolean isPrimitive() default false;
 }

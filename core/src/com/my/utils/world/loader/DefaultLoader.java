@@ -19,9 +19,6 @@ public class DefaultLoader implements Loader {
                 throw new RuntimeException("Loadable create error: " + e.getMessage(), e);
             }
         }
-        if (type.isInstance(config)) {
-            return type.cast(config);
-        }
         throw new RuntimeException("Can not load this config: " + config);
     }
 
@@ -33,14 +30,11 @@ public class DefaultLoader implements Loader {
                 return loadable.getConfig(configType, context);
             }
         }
-        if (configType.isInstance(obj)) {
-            return configType.cast(obj);
-        }
         throw new RuntimeException("Can not get config from this obj: " + obj);
     }
 
     @Override
     public <E, T> boolean handleable(Class<E> configType, Class<T> targetType) {
-        return configType == targetType || Loadable.class.isAssignableFrom(targetType);
+        return Loadable.class.isAssignableFrom(targetType);
     }
 }

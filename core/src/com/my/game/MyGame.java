@@ -39,10 +39,13 @@ import com.my.utils.world.com.Position;
 import com.my.utils.world.com.Script;
 import com.my.utils.world.loader.WorldLoader;
 import com.my.utils.world.sys.*;
+import org.yaml.snakeyaml.Yaml;
 
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class MyGame extends Base3DGame {
 
@@ -130,12 +133,39 @@ public class MyGame extends Base3DGame {
 
                     // ----- Get Config ----- //
                     Map config = gameWorld.loaderManager.getConfig(gameWorld.world, Map.class);
-//                    Yaml yaml = new Yaml();
-//                    String yamlConfig = yaml.dumpAsMap(config);
-//                    Map loadedConfig = yaml.loadAs(yamlConfig, Map.class);
+                    Yaml yaml = new Yaml();
+                    String yamlConfig = yaml.dumpAsMap(config);
+                    System.out.println(yamlConfig);
+                    Map<String, Object> loadedConfig = yaml.loadAs(yamlConfig, Map.class);
+                    new Consumer<Map<String, Object>>() {
+                        public void accept(Map<String, Object> map) {
+                            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                                Object value = entry.getValue();
+                                if (value instanceof Double) {
+                                    entry.setValue((float) (double) value);
+                                } else if (value instanceof Map) {
+                                    accept((Map<String, Object>) value);
+                                } else if (value instanceof List) {
+                                    accept((List<Object>) value);
+                                }
+                            }
+                        }
+                        public void accept(List<Object> list) {
+                            for (int i = 0; i < list.size(); i++) {
+                                Object o = list.get(i);
+                                if (o instanceof Double) {
+                                    list.set(i, (float) (double) o);
+                                } else if (o instanceof Map) {
+                                    accept((Map<String, Object>) o);
+                                } else if (o instanceof List) {
+                                    accept((List<Object>) o);
+                                }
+                            }
+                        }
+                    }.accept(loadedConfig);
 
                     // ----- Load GameWorld ----- //
-                    gameWorld = loadGameWorld(config);
+                    gameWorld = loadGameWorld(loadedConfig);
                     addDisposable(gameWorld);
 
                     // ----- Update Vehicles ----- //

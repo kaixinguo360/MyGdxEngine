@@ -1,8 +1,6 @@
 package com.my.utils.world;
 
-import com.my.utils.world.loader.DefaultLoader;
-import com.my.utils.world.loader.EntityLoader;
-import com.my.utils.world.loader.WorldLoader;
+import com.my.utils.world.loader.*;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -19,6 +17,9 @@ public class LoaderManager {
     public LoaderManager() {
         loaders.add(new WorldLoader());
         loaders.add(new EntityLoader());
+        loaders.add(new Matrix4Loader());
+        loaders.add(new Vector3Loader());
+        loaders.add(new QuaternionLoader());
         loaders.add(new DefaultLoader());
     }
 
