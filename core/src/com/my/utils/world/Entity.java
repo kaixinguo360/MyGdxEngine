@@ -40,6 +40,11 @@ public class Entity {
         cache.clear();
         return (T) components.remove(type);
     }
+    public <T extends Component> void removeComponents(Class<T> type) {
+        components.entrySet().removeIf(entry -> type.isAssignableFrom(entry.getKey()));
+        handled = false;
+        cache.clear();
+    }
     public <T extends Component> T getComponent(Class<T> type) {
         return (T) components.get(type);
     }
