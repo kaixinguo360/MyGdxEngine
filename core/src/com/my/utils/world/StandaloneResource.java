@@ -4,6 +4,20 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Config Example:
+ * <pre>
+ *     intField: 1
+ *     floatField: 2.0
+ *     stringField: "string"
+ *     customField1:
+ *          type: com.my.com.customObject1
+ *          config: ...
+ *     customField2:
+ *          type: com.my.com.customObject2
+ *          config: ...
+ * </pre>
+ */
 public interface StandaloneResource extends Loadable<Map<String, Object>> {
 
     default void load(Map<String, Object> config, LoadContext context) {
@@ -11,18 +25,24 @@ public interface StandaloneResource extends Loadable<Map<String, Object>> {
             Field[] fields = this.getClass().getFields();
             for (Field field : fields) {
                 if (field.isAnnotationPresent(Config.class)) {
-                    String name = field.getName();
-                    Class<?> type = field.getType();
-                    Object configValue = config.get(name);
-                    if (type.isPrimitive()) {
-                        field.set(this, configValue);
+                    Config annotation = field.getAnnotation(Config.class);
+                    String name = annotation.name();
+                    if ("".equals(name)) name = field.getName();
+                    if (annotation.isPrimitive() || config.get(name) == null) {
+                        field.set(this, config.get(name));
                     } else {
-                        field.set(this, context.getLoaderManager().load(configValue, type));
+                        // Use LoaderManager to load field
+                        Map<String, Object> map = (Map<String, Object>) config.get(name);
+                        String typeName = (String) map.get("type");
+                        Object configValue = map.get("config");
+                        Class<?> type = Class.forName(typeName);
+                        Object obj = context.getLoaderManager().load(configValue, type, context);
+                        field.set(this, obj);
                     }
                 }
             }
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException("StandaloneResource(" + this.getClass() + ") getConfig error: " + e.getMessage(), e);
+        } catch (IllegalAccessException | ClassNotFoundException e) {
+            throw new RuntimeException("Load StandaloneResource(" + this.getClass() + ") error: " + e.getMessage(), e);
         }
     }
 
@@ -33,18 +53,23 @@ public interface StandaloneResource extends Loadable<Map<String, Object>> {
             for (Field field : fields) {
                 if (field.isAnnotationPresent(Config.class)) {
                     Config annotation = field.getAnnotation(Config.class);
-                    String name = field.getName();
+                    String name = annotation.name();
+                    if ("".equals(name)) name = field.getName();
                     Object obj = field.get(this);
-                    Class<?> type = field.getType();
-                    if (annotation.isPrimitive() || type.isPrimitive()) {
+                    if (annotation.isPrimitive() || obj == null) {
                         map.put(name, obj);
                     } else {
-                        map.put(name, context.getLoaderManager().getConfig(type.cast(obj), configType));
+                        // Use LoaderManager to get config
+                        Class<?> type = obj.getClass();
+                        map.put(name, new HashMap<String, Object>() {{
+                            put("type", type.getName());
+                            put("config", context.getLoaderManager().getConfig(type.cast(obj), configType, context));
+                        }});
                     }
                 }
             }
         } catch (IllegalAccessException e) {
-            throw new RuntimeException("StandaloneResource(" + this.getClass() + ") getConfig error: " + e.getMessage(), e);
+            throw new RuntimeException("Get config from StandaloneResource(" + this.getClass() + ") error: " + e.getMessage(), e);
         }
         return map;
     }
