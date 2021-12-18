@@ -14,26 +14,23 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Disposable;
-import com.my.utils.base.Base3DGame;
+import com.my.utils.base.BaseGame;
 import com.my.utils.net.Client;
 import com.my.utils.net.Server;
 import com.my.utils.world.Entity;
 import com.my.utils.world.LoaderManager;
 import com.my.utils.world.World;
-import com.my.utils.world.com.Script;
 import com.my.utils.world.loader.WorldLoader;
 import com.my.utils.world.sys.*;
 
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-public class MyGame extends Base3DGame {
+public class MyGame extends BaseGame {
 
     private GameWorld gameWorld;
 
     private Aircrafts.Aircraft aircraft;
-    private Aircrafts.AircraftScript aircraftScript;
-    private Guns.GunScript gunScript;
 
     private Server server;
     private String receivedData = null;
@@ -70,9 +67,7 @@ public class MyGame extends Base3DGame {
         inputMultiplexer.addProcessor(new InputAdapter(){
             @Override
             public boolean keyDown(int keycode) {
-                if (keycode == Input.Keys.ESCAPE) Gdx.app.exit();
-                if (keycode == Input.Keys.TAB) changeCamera();
-                if (keycode == Input.Keys.SHIFT_LEFT) changeCameraFollowType();
+                gameWorld.scriptSystem.keyDown(keycode);
                 if (keycode == Input.Keys.ENTER) {
 
                     // ----- Get Config ----- //
@@ -86,11 +81,6 @@ public class MyGame extends Base3DGame {
                     // ----- Get Aircraft ----- //
                     Entity aircraftEntity = gameWorld.world.getEntityManager().getEntity("Aircraft-6");
                     aircraft = aircraftEntity.getComponent(Aircrafts.Aircraft.class);
-                    aircraftScript = (Aircrafts.AircraftScript) aircraftEntity.getComponents(Script.class).get(0);
-
-                    // ----- Get Gun ----- //
-                    Entity gunEntity = gameWorld.world.getEntityManager().getEntity("Gun-0");
-                    gunScript = (Guns.GunScript) gunEntity.getComponents(Script.class).get(0);
                 }
                 return false;
             }
@@ -159,11 +149,6 @@ public class MyGame extends Base3DGame {
         // ----- Get Aircraft ----- //
         Entity aircraftEntity = gameWorld.world.getEntityManager().getEntity("Aircraft-6");
         aircraft = aircraftEntity.getComponent(Aircrafts.Aircraft.class);
-        aircraftScript = (Aircrafts.AircraftScript) aircraftEntity.getComponents(Script.class).get(0);
-
-        // ----- Get Gun ----- //
-        Entity gunEntity = gameWorld.world.getEntityManager().getEntity("Gun-0");
-        gunScript = (Guns.GunScript) gunEntity.getComponents(Script.class).get(0);
     }
 
     @Override
@@ -212,19 +197,6 @@ public class MyGame extends Base3DGame {
         gameWorld.world.getEntityManager().getBatch().commit();
 
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-    }
-
-    // ----- Camera Control ----- //
-    private void changeCamera() {
-        aircraftScript.disabled = !aircraftScript.disabled;
-        aircraftScript.changeCamera();
-        gunScript.disabled = !gunScript.disabled;
-        gunScript.changeCamera();
-        gameWorld.world.getSystemManager().getSystem(CameraSystem.class).updateCameras();
-    }
-    private void changeCameraFollowType() {
-        if (!aircraftScript.disabled) aircraftScript.changeCameraFollowType();
-        if (!gunScript.disabled) gunScript.changeCameraFollowType();
     }
 
     public static class GameWorld implements Disposable {

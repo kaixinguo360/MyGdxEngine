@@ -76,6 +76,11 @@ public class WorldBuilder {
         gunEntity.addComponent(new Guns.GunScript()).disabled = true;
         gunEntity.getComponent(Guns.Gun.class).barrel.addComponent(new Camera(0, 0.7f, 0.3f, 1, 1, CameraSystem.FollowType.A));
 
+        Entity exitScriptEntity = new Entity();
+        exitScriptEntity.setId("exitScriptEntity");
+        exitScriptEntity.addComponent(new Scripts.ExitScript());
+        world.getEntityManager().addEntity(exitScriptEntity);
+
         // Init World Entity Filters
         world.update();
 

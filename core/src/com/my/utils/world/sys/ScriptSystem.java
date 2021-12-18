@@ -18,7 +18,9 @@ public class ScriptSystem extends BaseSystem implements EntityListener {
     public void afterAdded(Entity entity) {
         List<Script> scriptList = entity.getComponents(Script.class);
         for (Script script : scriptList) {
-            script.init(world, entity);
+            if (script instanceof Script.OnInit) {
+                ((Script.OnInit) script).init(world, entity);
+            }
         }
     }
 
@@ -30,7 +32,19 @@ public class ScriptSystem extends BaseSystem implements EntityListener {
     public void update() {
         for (Entity entity : getEntities()) {
             for (Script script : entity.getComponents(Script.class)) {
-                if (!script.disabled) script.execute(world, entity);
+                if (!script.disabled && script instanceof Script.OnUpdate) {
+                    ((Script.OnUpdate) script).update(world, entity);
+                }
+            }
+        }
+    }
+
+    public void keyDown(int keycode) {
+        for (Entity entity : getEntities()) {
+            for (Script script : entity.getComponents(Script.class)) {
+                if (script instanceof Script.OnKeyDown) {
+                    ((Script.OnKeyDown) script).keyDown(world, entity, keycode);
+                }
             }
         }
     }

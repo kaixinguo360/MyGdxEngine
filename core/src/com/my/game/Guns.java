@@ -184,7 +184,7 @@ public class Guns {
         }
     }
 
-    public static class GunScript extends Script {
+    public static class GunScript extends Script implements Script.OnInit, Script.OnUpdate, Script.OnKeyDown {
 
         private World world;
         private AssetsManager assetsManager;
@@ -200,8 +200,14 @@ public class Guns {
         }
 
         @Override
-        public void execute(World world, Entity entity) {
+        public void update(World world, Entity entity) {
             update();
+        }
+
+        @Override
+        public void keyDown(World world, Entity entity, int keycode) {
+            if (keycode == Input.Keys.TAB) changeCamera();
+            if (keycode == Input.Keys.SHIFT_LEFT && !disabled) changeCameraFollowType();
         }
 
         // ----- Constants ----- //
@@ -267,25 +273,22 @@ public class Guns {
             return gun.barrel.getComponent(RigidBody.class).body;
         }
         public void changeCamera() {
+            disabled = !disabled;
             Camera camera = gun.barrel.getComponent(Camera.class);
-//            camera.followType = CameraSystem.FollowType.B;
-            camera.layer = (camera.layer + 1) % 2;
-            switch (camera.layer) {
-                case 0: {
-                    camera.startX = 0;
-                    camera.startY = 0;
-                    camera.endX = 1;
-                    camera.endY = 1;
-                    break;
-                }
-                case 1: {
-                    camera.startX = 0;
-                    camera.startY = 0.7f;
-                    camera.endX = 0.3f;
-                    camera.endY = 1;
-                    break;
-                }
+            if (!disabled) {
+                camera.layer = 0;
+                camera.startX = 0;
+                camera.startY = 0;
+                camera.endX = 1;
+                camera.endY = 1;
+            } else {
+                camera.layer = 1;
+                camera.startX = 0;
+                camera.startY = 0.7f;
+                camera.endX = 0.3f;
+                camera.endY = 1;
             }
+            world.getSystemManager().getSystem(CameraSystem.class).updateCameras();
         }
         public void changeCameraFollowType() {
             Camera camera = gun.barrel.getComponent(Camera.class);
