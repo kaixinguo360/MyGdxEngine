@@ -44,6 +44,7 @@ public class WorldBuilder {
         MyInstance sky = new MyInstance(world.getAssetsManager(), "sky");
         sky.setId("sky");
         world.getEntityManager().addEntity(sky);
+        world.getSystemManager().getSystem(CameraSystem.class).addSkyBox("sky");
         MyInstance ground = new MyInstance(world.getAssetsManager(), "ground");
         ground.setId("ground");
         world.getEntityManager().addEntity(ground);

@@ -7,16 +7,11 @@ import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
-import com.my.utils.world.BaseSystem;
-import com.my.utils.world.Entity;
-import com.my.utils.world.EntityListener;
-import com.my.utils.world.World;
+import com.my.utils.world.*;
 import com.my.utils.world.com.Camera;
 import com.my.utils.world.com.Position;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class CameraSystem extends BaseSystem implements EntityListener {
 
@@ -44,7 +39,6 @@ public class CameraSystem extends BaseSystem implements EntityListener {
         cameraInner.perspectiveCamera.update();
         cameraInner.position = entity.getComponent(Position.class);
         this.cameraInners.add(cameraInner);
-        Collections.sort(this.cameraInners);
         updateCameras();
     }
 
@@ -53,10 +47,30 @@ public class CameraSystem extends BaseSystem implements EntityListener {
         this.cameraInners.removeIf(cameraInner -> cameraInner.entity == entity);
     }
 
+    @Override
+    public void load(Map<String, Object> config, LoadContext context) {
+        List<String> skyBoxes = (List<String>) config.get("skyBoxes");
+        for (String skyBox : skyBoxes) {
+            addSkyBox(skyBox);
+        }
+    }
+
+    @Override
+    public Map<String, Object> getConfig(Class<Map<String, Object>> configType, LoadContext context) {
+        Map<String, Object> map = new LinkedHashMap<>();
+        List<String> skyBoxes = new ArrayList<>();
+        for (SkyBoxInner skyBoxInner : this.skyBoxInners) {
+            skyBoxes.add(skyBoxInner.id);
+        }
+        map.put("skyBoxes", skyBoxes);
+        return map;
+    }
+
     private RenderSystem renderSystem;
     private EnvironmentSystem environmentSystem;
 
-    private List<CameraInner> cameraInners = new LinkedList<>();
+    private final List<CameraInner> cameraInners = new LinkedList<>();
+    private final List<SkyBoxInner> skyBoxInners = new LinkedList<>();
 
     public void render() {
         int width = Gdx.graphics.getWidth();
@@ -70,13 +84,27 @@ public class CameraSystem extends BaseSystem implements EntityListener {
                     (int) (width * cameraInner.camera.endX - width * cameraInner.camera.startX),
                     (int) (height * cameraInner.camera.endY - height * cameraInner.camera.startY)
             );
-            world.getEntityManager().getEntity("sky").getComponent(Position.class).transform.setToTranslation(cameraInner.perspectiveCamera.position);
+            for (SkyBoxInner skyBox : skyBoxInners) {
+                if (skyBox.position == null) {
+                    skyBox.entity = world.getEntityManager().getEntity(skyBox.id);
+                    skyBox.position = skyBox.entity.getComponent(Position.class);
+                }
+                skyBox.position.transform.setToTranslation(cameraInner.perspectiveCamera.position);
+            }
             Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
             renderSystem.render(cameraInner.perspectiveCamera, environment);
         }
     }
     public void updateCameras() {
         Collections.sort(this.cameraInners);
+    }
+    public void addSkyBox(String id) {
+        SkyBoxInner skyBoxInner = new SkyBoxInner();
+        skyBoxInner.id = id;
+        this.skyBoxInners.add(skyBoxInner);
+    }
+    public void removeSkyBox(String id) {
+        this.skyBoxInners.removeIf(skyBoxInner -> id.equals(skyBoxInner.id));
     }
 
     private static final Vector3 tmpV1 = new Vector3();
@@ -113,6 +141,12 @@ public class CameraSystem extends BaseSystem implements EntityListener {
         public int compareTo(CameraInner o) {
             return this.camera.layer - o.camera.layer;
         }
+    }
+
+    private static class SkyBoxInner {
+        private String id;
+        private Entity entity;
+        private Position position;
     }
 
     public enum FollowType {
