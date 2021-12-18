@@ -1,6 +1,8 @@
 package com.my.utils.world;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -30,6 +32,10 @@ public interface StandaloneResource extends Loadable<Map<String, Object>> {
                     if ("".equals(name)) name = field.getName();
                     if (annotation.isPrimitive() || field.getType().isPrimitive() || field.getType() == String.class || config.get(name) == null) {
                         field.set(this, config.get(name));
+                    } else if (field.getType().isEnum()) {
+                        Method toString = field.getType().getMethod("valueOf", String.class);
+                        Object obj = toString.invoke(null, config.get(name));
+                        field.set(this, obj);
                     } else {
                         try {
                             // Use LoaderManager <Object.class> to load field
@@ -48,7 +54,7 @@ public interface StandaloneResource extends Loadable<Map<String, Object>> {
                     }
                 }
             }
-        } catch (IllegalAccessException | ClassNotFoundException e) {
+        } catch (IllegalAccessException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException e) {
             throw new RuntimeException("Load StandaloneResource(" + this.getClass() + ") error: " + e.getMessage(), e);
         }
     }
@@ -65,6 +71,9 @@ public interface StandaloneResource extends Loadable<Map<String, Object>> {
                     Object obj = field.get(this);
                     if (annotation.isPrimitive() || field.getType().isPrimitive() || field.getType() == String.class || obj == null) {
                         map.put(name, obj);
+                    } else if (field.getType().isEnum()) {
+                        Method toString = field.getType().getMethod("toString");
+                        map.put(name, toString.invoke(obj));
                     } else {
                         try {
                             // Use LoaderManager <Object.class> to get config
@@ -81,7 +90,7 @@ public interface StandaloneResource extends Loadable<Map<String, Object>> {
                     }
                 }
             }
-        } catch (IllegalAccessException e) {
+        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             throw new RuntimeException("Get config from StandaloneResource(" + this.getClass() + ") error: " + e.getMessage(), e);
         }
         return map;
