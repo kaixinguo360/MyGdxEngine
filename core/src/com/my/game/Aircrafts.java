@@ -178,17 +178,17 @@ public class Aircrafts {
         private static final Matrix4 tmpM = new Matrix4();
         private static final Quaternion tmpQ = new Quaternion();;
 
-        private Entity body;
-        private Entity engine;
-        private Entity rotate_L, rotate_R, rotate_T;
-        private Entity wing_L1, wing_L2;
-        private Entity wing_R1, wing_R2;
-        private Entity wing_TL, wing_TR;
-        private Entity wing_VL, wing_VR;
+        public Entity body;
+        public Entity engine;
+        public Entity rotate_L, rotate_R, rotate_T;
+        public Entity wing_L1, wing_L2;
+        public Entity wing_R1, wing_R2;
+        public Entity wing_TL, wing_TR;
+        public Entity wing_VL, wing_VR;
 
-        private AircraftController aircraftController_L;
-        private AircraftController aircraftController_R;
-        private AircraftController aircraftController_T;
+        public AircraftController aircraftController_L;
+        public AircraftController aircraftController_R;
+        public AircraftController aircraftController_T;
 
         public int bombNum;
 
@@ -286,7 +286,7 @@ public class Aircrafts {
 
         @Override
         public void execute(World world, Entity entity) {
-            update(aircraft);
+            update();
         }
 
         // ----- Constants ----- //
@@ -299,7 +299,7 @@ public class Aircrafts {
         private static final Matrix4 tmpM = new Matrix4();
         private static final Quaternion tmpQ = new Quaternion();
 
-        public void update(Aircrafts.Aircraft aircraft) {
+        public void update() {
             float v1 = 1f;
             float v2 = 0.5f;
             if (aircraft.aircraftController_L != null && aircraft.aircraftController_R != null) {
@@ -314,44 +314,44 @@ public class Aircrafts {
                     aircraft.aircraftController_R.rotate(v2);
                 }
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.J)) fire(aircraft);
-            if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) explode(aircraft);
+            if (Gdx.input.isKeyPressed(Input.Keys.J)) fire();
+            if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) explode();
         }
-        public void fire(Aircrafts.Aircraft aircraft) {
-            tmpM.set(getTransform(aircraft)).translate(0, 0, -20 + (float) (Math.random() * 15)).rotate(Vector3.X, 90);
-            getTransform(aircraft).getRotation(tmpQ);
-            tmpV1.set(getBody(aircraft).getLinearVelocity());
+        public void fire() {
+            tmpM.set(getTransform()).translate(0, 0, -20 + (float) (Math.random() * 15)).rotate(Vector3.X, 90);
+            getTransform().getRotation(tmpQ);
+            tmpV1.set(getBody().getLinearVelocity());
             tmpV1.add(new Vector3(0, 0, -1).mul(tmpQ).scl(2000));
-            btRigidBody body = createBomb(aircraft, tmpM).getComponent(RigidBody.class).body;
+            btRigidBody body = createBomb(tmpM).getComponent(RigidBody.class).body;
             body.setLinearVelocity(tmpV1);
             body.setCcdMotionThreshold(1e-7f);
             body.setCcdSweptSphereRadius(2);
         }
-        public void explode(Aircrafts.Aircraft aircraft) {
+        public void explode() {
             System.out.println("Explosion!");
             // TODO: Optimize Constraint Component
-            aircraft.body.removeComponents(Constraint.class);
-            aircraft.engine.removeComponents(Constraint.class);
-            aircraft.rotate_L.removeComponents(Constraint.class);
-            aircraft.rotate_R.removeComponents(Constraint.class);
-            aircraft.rotate_T.removeComponents(Constraint.class);
-            aircraft.wing_L1.removeComponents(Constraint.class);
-            aircraft.wing_L2.removeComponents(Constraint.class);
-            aircraft.wing_R1.removeComponents(Constraint.class);
-            aircraft.wing_R2.removeComponents(Constraint.class);
-            aircraft.wing_TL.removeComponents(Constraint.class);
-            aircraft.wing_TR.removeComponents(Constraint.class);
-            aircraft.wing_VL.removeComponents(Constraint.class);
-            aircraft.wing_VR.removeComponents(Constraint.class);
-            physicsSystem.addExplosion(getTransform(aircraft).getTranslation(tmpV1), 2000);
+            aircraft.body.removeComponent(Constraint.class);
+            aircraft.engine.removeComponent(Constraint.class);
+            aircraft.rotate_L.removeComponent(Constraint.class);
+            aircraft.rotate_R.removeComponent(Constraint.class);
+            aircraft.rotate_T.removeComponent(Constraint.class);
+            aircraft.wing_L1.removeComponent(Constraint.class);
+            aircraft.wing_L2.removeComponent(Constraint.class);
+            aircraft.wing_R1.removeComponent(Constraint.class);
+            aircraft.wing_R2.removeComponent(Constraint.class);
+            aircraft.wing_TL.removeComponent(Constraint.class);
+            aircraft.wing_TR.removeComponent(Constraint.class);
+            aircraft.wing_VL.removeComponent(Constraint.class);
+            aircraft.wing_VR.removeComponent(Constraint.class);
+            physicsSystem.addExplosion(getTransform().getTranslation(tmpV1), 2000);
         }
-        public Matrix4 getTransform(Aircrafts.Aircraft aircraft) {
+        public Matrix4 getTransform() {
             return aircraft.body.getComponent(Position.class).transform;
         }
-        public btRigidBody getBody(Aircrafts.Aircraft aircraft) {
+        public btRigidBody getBody() {
             return aircraft.body.getComponent(RigidBody.class).body;
         }
-        public Entity createBomb(Aircrafts.Aircraft aircraft, Matrix4 transform) {
+        public Entity createBomb(Matrix4 transform) {
             Entity entity = new MyInstance(assetsManager, "bomb", "bomb", null,
                     new Collisions.BombCollisionHandler(BOMB_FLAG, ALL_FLAG));
             entity.setId("Bomb-" + aircraft.bombNum++);

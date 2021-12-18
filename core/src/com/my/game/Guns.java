@@ -131,9 +131,9 @@ public class Guns {
         private static final Matrix4 tmpM = new Matrix4();
         private static final Quaternion tmpQ = new Quaternion();
 
-        private Entity rotate_Y, rotate_X, barrel;
-        private GunController gunController_Y;
-        private GunController gunController_X;
+        public Entity rotate_Y, rotate_X, barrel;
+        public GunController gunController_Y;
+        public GunController gunController_X;
 
         int bulletNum;
 
@@ -203,7 +203,7 @@ public class Guns {
 
         @Override
         public void execute(World world, Entity entity) {
-            update(gun);
+            update();
         }
 
         // ----- Constants ----- //
@@ -216,37 +216,37 @@ public class Guns {
         private static final Matrix4 tmpM = new Matrix4();
         private static final Quaternion tmpQ = new Quaternion();
 
-        public void update(Guns.Gun gun) {
+        public void update() {
             float v = 0.025f;
             if (gun.gunController_Y != null && gun.gunController_X != null) {
-                if (Gdx.input.isKeyPressed(Input.Keys.W)) rotate(gun, 0, -v);
-                if (Gdx.input.isKeyPressed(Input.Keys.S)) rotate(gun, 0, v);
-                if (Gdx.input.isKeyPressed(Input.Keys.A)) rotate(gun, v, 0);
-                if (Gdx.input.isKeyPressed(Input.Keys.D)) rotate(gun, -v, 0);
+                if (Gdx.input.isKeyPressed(Input.Keys.W)) rotate(0, -v);
+                if (Gdx.input.isKeyPressed(Input.Keys.S)) rotate(0, v);
+                if (Gdx.input.isKeyPressed(Input.Keys.A)) rotate(v, 0);
+                if (Gdx.input.isKeyPressed(Input.Keys.D)) rotate(-v, 0);
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.J)) fire(gun);
-            if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) explode(gun);
+            if (Gdx.input.isKeyPressed(Input.Keys.J)) fire();
+            if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) explode();
         }
-        public void fire(Guns.Gun gun) {
-            tmpM.set(getTransform(gun)).translate(0, 0, -20 + (float) (Math.random() * 15)).rotate(Vector3.X, 90);
-            getTransform(gun).getRotation(tmpQ);
-            tmpV.set(getBody(gun).getLinearVelocity());
+        public void fire() {
+            tmpM.set(getTransform()).translate(0, 0, -20 + (float) (Math.random() * 15)).rotate(Vector3.X, 90);
+            getTransform().getRotation(tmpQ);
+            tmpV.set(getBody().getLinearVelocity());
             tmpV.add(new Vector3(0, 0, -1).mul(tmpQ).scl(2000));
-            btRigidBody body = createBullet(gun, tmpM).getComponent(RigidBody.class).body;
+            btRigidBody body = createBullet(tmpM).getComponent(RigidBody.class).body;
             body.setLinearVelocity(tmpV);
             body.setCcdMotionThreshold(1e-7f);
             body.setCcdSweptSphereRadius(2);
         }
-        public void explode(Guns.Gun gun) {
+        public void explode() {
             System.out.println("Explosion!");
             // TODO: Optimize Constraint Component
-            gun.rotate_Y.removeComponents(Constraint.class);
-            gun.rotate_X.removeComponents(Constraint.class);
-            gun.barrel.removeComponents(Constraint.class);
-            physicsSystem.addExplosion(getTransform(gun).getTranslation(tmpV), 2000);
+            gun.rotate_Y.removeComponent(Constraint.class);
+            gun.rotate_X.removeComponent(Constraint.class);
+            gun.barrel.removeComponent(Constraint.class);
+            physicsSystem.addExplosion(getTransform().getTranslation(tmpV), 2000);
         }
 
-        private Entity createBullet(Guns.Gun gun, Matrix4 transform) {
+        private Entity createBullet(Matrix4 transform) {
             Entity entity = new MyInstance(assetsManager, "bullet", "bullet", null,
                     new Collisions.BulletCollisionHandler(BOMB_FLAG, ALL_FLAG));
             entity.setId("Bullet-" + gun.bulletNum++);
@@ -254,18 +254,18 @@ public class Guns {
             entity.addComponent(new Scripts.RemoveScript());
             return entity;
         }
-        public void rotate(Guns.Gun gun, float stepY, float stepX) {
-            setDirection(gun, gun.gunController_Y.target + stepY, gun.gunController_X.target + stepX);
+        public void rotate(float stepY, float stepX) {
+            setDirection(gun.gunController_Y.target + stepY, gun.gunController_X.target + stepX);
         }
-        public void setDirection(Guns.Gun gun, float angleY, float angleX) {
-            getBody(gun).activate();
+        public void setDirection(float angleY, float angleX) {
+            getBody().activate();
             gun.gunController_Y.target = angleY;
             gun.gunController_X.target = angleX;
         }
-        public Matrix4 getTransform(Guns.Gun gun) {
+        public Matrix4 getTransform() {
             return gun.barrel.getComponent(Position.class).transform;
         }
-        public btRigidBody getBody(Guns.Gun gun) {
+        public btRigidBody getBody() {
             return gun.barrel.getComponent(RigidBody.class).body;
         }
     }

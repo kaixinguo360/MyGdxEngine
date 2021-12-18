@@ -18,55 +18,73 @@ public class Entity {
 
     // ----- Components ----- //
     @Getter
-    protected final Map<Class<?>, Component> components = new LinkedHashMap<>();
+    protected final List<Component> components = new LinkedList<>();
 
-    protected final Map<Class<?>, List<Component>> cache = new HashMap<>();
+    @Getter
+    protected final Map<Class<?>, Component> cache1 = new LinkedHashMap<>();
+    protected final Map<Class<?>, List<Component>> cache2 = new HashMap<>();
 
     // ----- Add & Remove & Get & Contain ----- //
     public <T extends Component> T addComponent(T component) {
         if (component == null) return null;
-        Class<?> type = component.getClass();
-        if (components.containsKey(type)) throw new RuntimeException("Duplicate Component: " + type);
-        components.put(type, component);
-        handled = false;
-        cache.clear();
+        components.add(component);
+        notifyChange();
         return component;
     }
-    public <T extends Component> T removeComponent(Class<T> type) {
-        handled = false;
-        cache.clear();
-        return (T) components.remove(type);
-    }
-    public <T extends Component> void removeComponents(Class<T> type) {
-        components.entrySet().removeIf(entry -> type.isAssignableFrom(entry.getKey()));
-        handled = false;
-        cache.clear();
+    public <T extends Component> void removeComponent(Class<T> type) {
+        components.removeIf(type::isInstance);
+        notifyChange();
     }
     public <T extends Component> T getComponent(Class<T> type) {
-        return (T) components.get(type);
-    }
-    public <T extends Component> List<T> getComponents(Class<T> type) {
-        if (cache.containsKey(type)) {
-            return (List<T>) cache.get(type);
+        Component cached = cache1.get(type);
+        if (cached != null) {
+            return (T) cached;
         } else {
-            List<Component> list = new ArrayList<>();
-            for (Map.Entry<Class<?>, Component> entry : components.entrySet()) {
-                if (type.isAssignableFrom(entry.getValue().getClass())) {
-                    list.add(entry.getValue());
+            for (Component component : components) {
+                if (type.isInstance(component)) {
+                    cache1.put(type, component);
+                    return (T) component;
                 }
             }
-            cache.put(type, list);
+            cache1.put(type, null);
+            return null;
+        }
+    }
+    public <T extends Component> List<T> getComponents(Class<T> type) {
+        List<Component> cached = cache2.get(type);
+        if (cached != null) {
+            return (List<T>) cached;
+        } else {
+            List<Component> list = new ArrayList<>();
+            for (Component component : this.components) {
+                if (type.isInstance(component)) {
+                    list.add(component);
+                }
+            }
+            cache2.put(type, list);
             return (List<T>) list;
         }
     }
+    public boolean contain(Class<?> type) {
+        if (!cache1.containsKey(type)) getComponent((Class<? extends Component>) type);
+        return !(cache1.get(type) == null);
+    }
     public boolean contain(Class<?>... types) {
         for (Class<?> type : types) {
-            if (!components.containsKey(type)) return false;
+            if (!contain(type)) {
+                return false;
+            }
         }
         return true;
     }
     public boolean contains(Class<? extends Component> type) {
-        if (!cache.containsKey(type)) getComponents(type);
-        return !cache.get(type).isEmpty();
+        if (!cache2.containsKey(type)) getComponents(type);
+        return !cache2.get(type).isEmpty();
+    }
+
+    private void notifyChange() {
+        handled = false;
+        cache1.clear();
+        cache2.clear();
     }
 }

@@ -61,7 +61,7 @@ public class EntityLoader implements Loader {
 
         // Process Components
         List<Map<String, Object>> components = new ArrayList<>();
-        for (Component component : entity.getComponents().values()) {
+        for (Component component : entity.getComponents()) {
             String componentTypeName = component.getClass().getName();
             Object componentConfig = context.getLoaderManager().getConfig(component, Map.class, context);
             Map<String, Object> componentMap = new LinkedHashMap<>();
