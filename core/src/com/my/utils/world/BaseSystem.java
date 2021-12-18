@@ -5,7 +5,7 @@ import com.badlogic.gdx.utils.Disposable;
 
 import java.util.Collection;
 
-public abstract class BaseSystem implements System, StandaloneResource, Disposable, AfterAdded {
+public abstract class BaseSystem implements System, StandaloneResource, Disposable, System.AfterAdded {
 
     protected World world;
     private EntityFilter entityFilter;
@@ -35,7 +35,7 @@ public abstract class BaseSystem implements System, StandaloneResource, Disposab
                 disposable.dispose();
         }
     }
-    private Array<Disposable> disposables = new Array<>();
+    private final Array<Disposable> disposables = new Array<>();
     protected void addDisposable(Disposable disposable) {
         disposables.add(disposable);
     }

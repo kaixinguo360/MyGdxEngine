@@ -14,7 +14,6 @@ import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
-import com.my.utils.world.LoaderManager;
 import com.my.utils.world.World;
 import com.my.utils.world.com.Camera;
 import com.my.utils.world.sys.*;
@@ -23,16 +22,16 @@ public class WorldBuilder {
 
     public static Model skyModel;
 
-    public static MyGame.GameWorld createWorld() {
+    public static World createWorld() {
         World world = new World();
 
         // Init System
-        world.getSystemManager().addSystem(new RenderSystem());
-        world.getSystemManager().addSystem(new PhysicsSystem());
-        world.getSystemManager().addSystem(new ConstraintSystem());
-        world.getSystemManager().addSystem(new ScriptSystem());
-        world.getSystemManager().addSystem(new EnvironmentSystem());
         world.getSystemManager().addSystem(new CameraSystem());
+        world.getSystemManager().addSystem(new ConstraintSystem());
+        world.getSystemManager().addSystem(new PhysicsSystem());
+        world.getSystemManager().addSystem(new ScriptSystem());
+        world.getSystemManager().addSystem(new RenderSystem());
+        world.getSystemManager().addSystem(new EnvironmentSystem());
 
         // Init Assets
         initAssets(world);
@@ -81,12 +80,9 @@ public class WorldBuilder {
         world.getEntityManager().addEntity(exitScriptEntity);
 
         // Init World Entity Filters
-        world.update();
+        world.start();
 
-        // Create LoaderManager
-        LoaderManager loaderManager = new MyGame.GameLoaderManager();
-
-        return new MyGame.GameWorld(world, loaderManager);
+        return world;
     }
 
     public static void initAssets(World world) {

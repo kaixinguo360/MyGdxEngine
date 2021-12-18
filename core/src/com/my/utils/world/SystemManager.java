@@ -21,13 +21,13 @@ public class SystemManager implements Disposable {
         Class<? extends System> type = system.getClass();
         if (systems.containsKey(type)) throw new RuntimeException("Duplicate System: " + type);
         systems.put(type, system);
-        if (system instanceof AfterAdded) ((AfterAdded) system).afterAdded(world);
+        if (system instanceof System.AfterAdded) ((System.AfterAdded) system).afterAdded(world);
         return system;
     }
     public <T extends System> T removeSystem(Class<T> type) {
         if (!systems.containsKey(type)) throw new RuntimeException("No Such System: " + type);
         T removed = (T) systems.remove(type);
-        if (removed instanceof AfterRemoved) ((AfterRemoved) removed).afterRemoved(world);
+        if (removed instanceof System.AfterRemoved) ((System.AfterRemoved) removed).afterRemoved(world);
         return removed;
     }
     public <T extends System> T getSystem(Class<T> type) {

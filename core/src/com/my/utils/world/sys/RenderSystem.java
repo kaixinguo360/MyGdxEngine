@@ -16,23 +16,36 @@ import com.my.utils.world.com.RigidBody;
 
 public class RenderSystem extends BaseSystem implements EntityListener {
 
-    // ----- Tmp ----- //
-    private static final Vector3 tmp = new Vector3();
-    private static final BoundingBox boundingBox = new BoundingBox();
-
     protected ModelBatch batch;
 
-    // ----- Create ModelBatch ----- //
     public RenderSystem() {
         batch = new ModelBatch();
+        addDisposable(batch);
     }
 
-    // ----- Check ----- //
+    @Override
     public boolean isHandleable(Entity entity) {
         return entity.contain(Position.class, Render.class);
     }
 
+    @Override
+    public void afterEntityAdded(Entity entity) {
+        Position position = entity.getComponent(Position.class);
+        Render render = entity.getComponent(Render.class);
+        render.modelInstance.transform.set(position.transform);
+        position.transform = render.modelInstance.transform;
+        if (entity.contain(RigidBody.class)) {
+            entity.getComponent(RigidBody.class).body.proceedToTransform(position.transform);
+        }
+    }
+
+    @Override
+    public void afterEntityRemoved(Entity entity) {
+
+    }
+
     // ----- Custom ----- //
+
     public void render(PerspectiveCamera cam, Environment environment) {
         batch.begin(cam);
         for (Entity entity : getEntities()) {
@@ -48,35 +61,20 @@ public class RenderSystem extends BaseSystem implements EntityListener {
         }
         batch.end();
     }
+
+    // ----- Private ----- //
+
     private boolean isVisible(PerspectiveCamera cam, Position position, Render render) {
         position.transform.getTranslation(tmp);
         tmp.add(render.center);
         return cam.frustum.sphereInFrustum(tmp, render.radius);
     }
 
-    @Override
-    public void dispose() {
-        batch.dispose();
-        batch = null;
-    }
+    private static final Vector3 tmp = new Vector3();
+    private static final BoundingBox boundingBox = new BoundingBox();
 
-    @Override
-    public void afterAdded(Entity entity) {
-        Position position = entity.getComponent(Position.class);
-        Render render = entity.getComponent(Render.class);
-        render.modelInstance.transform.set(position.transform);
-        position.transform = render.modelInstance.transform;
-        if (entity.contain(RigidBody.class)) {
-            entity.getComponent(RigidBody.class).body.proceedToTransform(position.transform);
-        }
-    }
+    // ----- Inner Class ----- //
 
-    @Override
-    public void afterRemoved(Entity entity) {
-
-    }
-
-    // ----- Config ----- //
     public static class RenderConfig {
         public Model model;
         public boolean includeEnv;

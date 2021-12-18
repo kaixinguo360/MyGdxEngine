@@ -9,15 +9,24 @@ import java.util.Map;
 
 public class EnvironmentSystem extends BaseSystem {
 
+    @Getter
+    private final Environment commonEnvironment = new Environment();
+    private final Environment environment = new Environment();
+
     @Override
     public boolean isHandleable(Entity entity) {
         return entity.contain(Light.class);
     }
 
-    @Getter
-    private final Environment commonEnvironment = new Environment();
+    @Override
+    public void load(Map<String, Object> config, LoadContext context) {
+        // TODO: Better Common Environment Loader
+        AssetsManager assetsManager = context.getEnvironment("world", World.class).getAssetsManager();
+        Environment commonEnvironment = assetsManager.getAsset("commonEnvironment", Environment.class);
+        this.commonEnvironment.set(commonEnvironment);
+    }
 
-    private final Environment environment = new Environment();
+    // ----- Custom ----- //
 
     public Environment getEnvironment() {
         environment.clear();
@@ -29,13 +38,5 @@ public class EnvironmentSystem extends BaseSystem {
             }
         }
         return environment;
-    }
-
-    @Override
-    public void load(Map<String, Object> config, LoadContext context) {
-        // TODO: Better Common Environment Loader
-        AssetsManager assetsManager = context.getEnvironment("world", World.class).getAssetsManager();
-        Environment commonEnvironment = assetsManager.getAsset("commonEnvironment", Environment.class);
-        this.commonEnvironment.set(commonEnvironment);
     }
 }

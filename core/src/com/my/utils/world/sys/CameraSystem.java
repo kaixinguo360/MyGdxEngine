@@ -7,13 +7,20 @@ import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
+import com.my.utils.world.System;
 import com.my.utils.world.*;
 import com.my.utils.world.com.Camera;
 import com.my.utils.world.com.Position;
 
 import java.util.*;
 
-public class CameraSystem extends BaseSystem implements EntityListener {
+public class CameraSystem extends BaseSystem implements EntityListener, System.OnUpdate, System.OnStart {
+
+    private RenderSystem renderSystem;
+    private EnvironmentSystem environmentSystem;
+
+    private final List<CameraInner> cameraInners = new LinkedList<>();
+    private final List<SkyBoxInner> skyBoxInners = new LinkedList<>();
 
     @Override
     public boolean isHandleable(Entity entity) {
@@ -21,14 +28,13 @@ public class CameraSystem extends BaseSystem implements EntityListener {
     }
 
     @Override
-    public void afterAdded(World world) {
-        super.afterAdded(world);
+    public void start(World world) {
         renderSystem = world.getSystemManager().getSystem(RenderSystem.class);
         environmentSystem = world.getSystemManager().getSystem(EnvironmentSystem.class);
     }
 
     @Override
-    public void afterAdded(Entity entity) {
+    public void afterEntityAdded(Entity entity) {
         CameraInner cameraInner = new CameraInner();
         cameraInner.entity = entity;
         cameraInner.camera = entity.getComponent(Camera.class);
@@ -43,7 +49,7 @@ public class CameraSystem extends BaseSystem implements EntityListener {
     }
 
     @Override
-    public void afterRemoved(Entity entity) {
+    public void afterEntityRemoved(Entity entity) {
         this.cameraInners.removeIf(cameraInner -> cameraInner.entity == entity);
     }
 
@@ -66,13 +72,8 @@ public class CameraSystem extends BaseSystem implements EntityListener {
         return map;
     }
 
-    private RenderSystem renderSystem;
-    private EnvironmentSystem environmentSystem;
-
-    private final List<CameraInner> cameraInners = new LinkedList<>();
-    private final List<SkyBoxInner> skyBoxInners = new LinkedList<>();
-
-    public void render() {
+    @Override
+    public void update(float deltaTime) {
         int width = Gdx.graphics.getWidth();
         int height = Gdx.graphics.getHeight();
         Environment environment = environmentSystem.getEnvironment();
@@ -95,21 +96,29 @@ public class CameraSystem extends BaseSystem implements EntityListener {
             renderSystem.render(cameraInner.perspectiveCamera, environment);
         }
     }
+
+    // ----- Custom ----- //
+
     public void updateCameras() {
         Collections.sort(this.cameraInners);
     }
+
     public void addSkyBox(String id) {
         SkyBoxInner skyBoxInner = new SkyBoxInner();
         skyBoxInner.id = id;
         this.skyBoxInners.add(skyBoxInner);
     }
+
     public void removeSkyBox(String id) {
         this.skyBoxInners.removeIf(skyBoxInner -> id.equals(skyBoxInner.id));
     }
 
+    // ----- Private ----- //
+
     private static final Vector3 tmpV1 = new Vector3();
     private static final Matrix4 tmpM = new Matrix4();
     private static final Quaternion tmpQ = new Quaternion();
+
     private static void setCamera(FollowType type, PerspectiveCamera camera, Matrix4 transform) {
         switch (type) {
             case A: {
@@ -131,6 +140,8 @@ public class CameraSystem extends BaseSystem implements EntityListener {
         }
     }
 
+    // ----- Inner Class ----- //
+
     private static class CameraInner implements Comparable<CameraInner> {
         private Entity entity;
         private Camera camera;
@@ -150,6 +161,6 @@ public class CameraSystem extends BaseSystem implements EntityListener {
     }
 
     public enum FollowType {
-        A, B, C;
+        A, B, C
     }
 }

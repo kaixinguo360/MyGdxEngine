@@ -25,7 +25,7 @@ public class AssetsManager {
         if (assets.containsKey(id)) throw new RuntimeException("Duplicate Assets: " + id + " (" + type + ")");
         assets.put(id, asset);
         cache.remove(type + "#" + asset.hashCode());
-        if (asset instanceof AfterAdded) ((AfterAdded) asset).afterAdded(world);
+        if (asset instanceof System.AfterAdded) ((System.AfterAdded) asset).afterAdded(world);
         return (T) asset;
     }
     public <T> T removeAsset(String id, Class<T> type) {
@@ -33,7 +33,7 @@ public class AssetsManager {
         if (!allAssets.get(type).containsKey(id)) throw new RuntimeException("No Such Assets: " + id + " (" + type + ")");
         T removed = (T) allAssets.get(type).remove(id);
         cache.remove(type + "#" + removed.hashCode());
-        if (removed instanceof AfterRemoved) ((AfterRemoved) removed).afterRemoved(world);
+        if (removed instanceof System.AfterRemoved) ((System.AfterRemoved) removed).afterRemoved(world);
         return removed;
     }
     public <T> T getAsset(String id, Class<T> type) {

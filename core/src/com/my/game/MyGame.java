@@ -7,17 +7,13 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.utils.Disposable;
 import com.my.utils.base.BaseGame;
 import com.my.utils.world.Entity;
-import com.my.utils.world.LoaderManager;
 import com.my.utils.world.World;
-import com.my.utils.world.loader.WorldLoader;
-import com.my.utils.world.sys.*;
 
 public class MyGame extends BaseGame {
 
-    private GameWorld gameWorld;
+    private World world;
 
     private Aircrafts.Aircraft aircraft;
 
@@ -36,19 +32,19 @@ public class MyGame extends BaseGame {
         inputMultiplexer.addProcessor(new InputAdapter(){
             @Override
             public boolean keyDown(int keycode) {
-                gameWorld.scriptSystem.keyDown(keycode);
+                world.keyDown(keycode);
                 if (keycode == Input.Keys.ENTER) {
 
                     // ----- Get Config ----- //
-                    String yamlConfig = LoadUtil.saveWorldToYaml(gameWorld);
+                    String yamlConfig = LoadUtil.saveWorldToYaml(world);
                     System.out.println(yamlConfig);
 
-                    // ----- Load GameWorld ----- //
-                    gameWorld = LoadUtil.loadWorldFromYaml(yamlConfig);
-                    addDisposable(gameWorld);
+                    // ----- Load World ----- //
+                    world = LoadUtil.loadWorldFromYaml(yamlConfig);
+                    addDisposable(world);
 
                     // ----- Get Aircraft ----- //
-                    Entity aircraftEntity = gameWorld.world.getEntityManager().getEntity("Aircraft-6");
+                    Entity aircraftEntity = world.getEntityManager().getEntity("Aircraft-6");
                     aircraft = aircraftEntity.getComponent(Aircrafts.Aircraft.class);
                 }
                 return false;
@@ -72,17 +68,17 @@ public class MyGame extends BaseGame {
         // ----- Init Bullet ----- //
         Bullet.init();
 
-        // ----- Create / Save GameWorld ----- //
-        gameWorld = WorldBuilder.createWorld();
-//        addDisposable(gameWorld);
-//        LoadUtil.saveWorldToFile(gameWorld, "world.yml");
+        // ----- Create & Save World ----- //
+        world = WorldBuilder.createWorld();
+//        addDisposable(world);
+//        LoadUtil.saveWorldToFile(world, "world.yml");
 //
-//        // ----- Load GameWorld ----- //
-//        gameWorld = LoadUtil.loadWorldFromFile("world.yml");
-//        addDisposable(gameWorld);
+//        // ----- Load World ----- //
+//        world = LoadUtil.loadWorldFromFile("world.yml");
+//        addDisposable(world);
 
         // ----- Get Aircraft ----- //
-        Entity aircraftEntity = gameWorld.world.getEntityManager().getEntity("Aircraft-6");
+        Entity aircraftEntity = world.getEntityManager().getEntity("Aircraft-6");
         aircraft = aircraftEntity.getComponent(Aircrafts.Aircraft.class);
     }
 
@@ -90,12 +86,7 @@ public class MyGame extends BaseGame {
     protected void myRender() {
 
         // Update World
-        gameWorld.world.update();
-        gameWorld.cameraSystem.render();
-        gameWorld.constraintSystem.update();
-        gameWorld.physicsSystem.update(Gdx.graphics.getDeltaTime());
-        gameWorld.scriptSystem.update();
-        gameWorld.world.getEntityManager().getBatch().commit();
+        world.update(1 / 60f);
 
         // Update UI
         ui.getWidget("label", Label.class).setText(
@@ -103,37 +94,5 @@ public class MyGame extends BaseGame {
                         "\nH = " + Math.floor(aircraft.getHeight()) + "\n");
 
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-    }
-
-    public static class GameWorld implements Disposable {
-
-        public final World world;
-        public final RenderSystem renderSystem;
-        public final PhysicsSystem physicsSystem;
-        public final ConstraintSystem constraintSystem;
-        public final ScriptSystem scriptSystem;
-        public final CameraSystem cameraSystem;
-        public final LoaderManager loaderManager;
-
-        public GameWorld(World world, LoaderManager loaderManager) {
-            renderSystem = world.getSystemManager().getSystem(RenderSystem.class);
-            physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
-            constraintSystem = world.getSystemManager().getSystem(ConstraintSystem.class);
-            scriptSystem = world.getSystemManager().getSystem(ScriptSystem.class);
-            cameraSystem = world.getSystemManager().getSystem(CameraSystem.class);
-            this.world = world;
-            this.loaderManager = loaderManager;
-        }
-
-        @Override
-        public void dispose() {
-            this.world.dispose();
-        }
-    }
-
-    public static class GameLoaderManager extends LoaderManager {
-        public GameLoaderManager() {
-            getLoader(WorldLoader.class).setBeforeLoadAssets(WorldBuilder::initAssets);
-        }
     }
 }

@@ -1,6 +1,6 @@
 package com.my.utils.world;
 
 public interface EntityListener {
-    void afterAdded(Entity entity);
-    void afterRemoved(Entity entity);
+    void afterEntityAdded(Entity entity);
+    void afterEntityRemoved(Entity entity);
 }

@@ -13,23 +13,21 @@ import com.badlogic.gdx.utils.Array;
 import com.my.utils.world.BaseSystem;
 import com.my.utils.world.Entity;
 import com.my.utils.world.EntityListener;
+import com.my.utils.world.System;
 import com.my.utils.world.com.Collision;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.RigidBody;
 
 import java.util.List;
 
-public class PhysicsSystem extends BaseSystem implements EntityListener {
+public class PhysicsSystem extends BaseSystem implements EntityListener, System.OnUpdate {
 
-    // ----- Tmp ----- //
-    private static final Vector3 tmpV1 = new Vector3();
-    private static final Vector3 tmpV2 = new Vector3();
-
-    // ----- Create DynamicsWorld World ----- //
     protected btDynamicsWorld dynamicsWorld;
     protected ContactListener contactListener;
     protected DebugDrawer debugDrawer;
     protected ClosestRayResultCallback rayTestCB;
+    protected final Array<Entity> activatedEntities = new Array<>();
+
     public PhysicsSystem() {
 
         // ----- Create DynamicsWorld ----- //
@@ -71,15 +69,25 @@ public class PhysicsSystem extends BaseSystem implements EntityListener {
         addDisposable(rayTestCB);
     }
 
-    // ----- Check ----- //
+    @Override
     public boolean isHandleable(Entity entity) {
         return entity.contain(Position.class, RigidBody.class);
     }
 
-    // ----- Custom ----- //
+    @Override
+    public void afterEntityAdded(Entity entity) {
+        List<Collision> collisionList = entity.getComponents(Collision.class);
+        for (Collision collision : collisionList) {
+            collision.init(world, entity);
+        }
+    }
 
-    protected final Array<Entity> activatedEntities = new Array<>();
-    // Update dynamicsWorld
+    @Override
+    public void afterEntityRemoved(Entity entity) {
+
+    }
+
+    @Override
     public void update(float deltaTime) {
         for (Entity entity : getEntities()) {
             if (!activatedEntities.contains(entity, true)) {
@@ -94,16 +102,21 @@ public class PhysicsSystem extends BaseSystem implements EntityListener {
         }
         dynamicsWorld.stepSimulation(deltaTime);
     }
+
+    // ----- Custom ----- //
+
     // Render DebugDrawer
     public void renderDebug(Camera cam) {
         debugDrawer.begin(cam);
         dynamicsWorld.debugDrawWorld();
         debugDrawer.end();
     }
-    // Set DebugMode
+
+    // Set Debug Mode
     public void setDebugMode(int debugMode) {
         debugDrawer.setDebugMode(debugMode);
     }
+
     // Get Instance Name From PickRay
     public Entity pick(Camera cam, int X, int Y) {
         Ray ray = cam.getPickRay(X, Y);
@@ -130,8 +143,8 @@ public class PhysicsSystem extends BaseSystem implements EntityListener {
             return null;
         }
     }
+
     // Add Explosion
-    private static final float MIN_FORCE = 10;
     public void addExplosion(Vector3 position, float force) {
         for (Entity entity : activatedEntities) {
             entity.getComponent(Position.class).transform.getTranslation(tmpV1);
@@ -146,6 +159,7 @@ public class PhysicsSystem extends BaseSystem implements EntityListener {
     }
 
     // ----- Private ----- //
+
     private void addBody(Entity entity) {
         Position position = entity.getComponent(Position.class);
         RigidBody rigidBody = entity.getComponent(RigidBody.class);
@@ -157,7 +171,7 @@ public class PhysicsSystem extends BaseSystem implements EntityListener {
 
         if (entity.contains(Collision.class)) {
             List<Collision> collisionList = entity.getComponents(Collision.class);
-            if (collisionList.size() != 1) throw new RuntimeException("TODO"); // TODO ...
+            if (collisionList.size() != 1) throw new RuntimeException("TODO"); // TODO: Add OnCollision Script Interface
             Collision c = collisionList.get(0);
             body.setContactCallbackFlag(c.callbackFlag);
             body.setContactCallbackFilter(c.callbackFilter);
@@ -174,18 +188,9 @@ public class PhysicsSystem extends BaseSystem implements EntityListener {
         activatedEntities.removeValue(entity, true);
     }
 
-    @Override
-    public void afterAdded(Entity entity) {
-        List<Collision> collisionList = entity.getComponents(Collision.class);
-        for (Collision collision : collisionList) {
-            collision.init(world, entity);
-        }
-    }
-
-    @Override
-    public void afterRemoved(Entity entity) {
-
-    }
+    private static final Vector3 tmpV1 = new Vector3();
+    private static final Vector3 tmpV2 = new Vector3();
+    private static final float MIN_FORCE = 10;
 
     private static class MotionState extends btMotionState {
         Matrix4 transform;
@@ -226,7 +231,7 @@ public class PhysicsSystem extends BaseSystem implements EntityListener {
         }
     }
 
-    // ----- Assets ----- //
+    // ----- Inner Class ----- //
 
     public static class RigidBodyConfig {
 

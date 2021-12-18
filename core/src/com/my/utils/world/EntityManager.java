@@ -30,7 +30,7 @@ public class EntityManager implements Disposable {
         String id = entity.getId();
         if (entities.containsKey(id)) throw new RuntimeException("Duplicate Entity: " + id);
         entities.put(id, entity);
-        if (entity instanceof AfterAdded) ((AfterAdded) entity).afterAdded(world);
+        if (entity instanceof System.AfterAdded) ((System.AfterAdded) entity).afterAdded(world);
         return entity;
     }
     public Entity removeEntity(String id) {
@@ -39,9 +39,9 @@ public class EntityManager implements Disposable {
         for (Map.Entry<EntityFilter, Set<Entity>> entry : filters.entrySet()) {
             EntityFilter filter = entry.getKey();
             entry.getValue().remove(removed);
-            if (listeners.containsKey(filter)) listeners.get(filter).afterRemoved(removed);
+            if (listeners.containsKey(filter)) listeners.get(filter).afterEntityRemoved(removed);
         }
-        if (removed instanceof AfterRemoved) ((AfterRemoved) removed).afterRemoved(world);
+        if (removed instanceof System.AfterRemoved) ((System.AfterRemoved) removed).afterRemoved(world);
         return removed;
     }
     public Entity getEntity(String id) {
@@ -73,12 +73,12 @@ public class EntityManager implements Disposable {
                     if (filter.filter(entity)) {
                         if (!entities.contains(entity)) {
                             entities.add(entity);
-                            if (listeners.containsKey(filter)) listeners.get(filter).afterAdded(entity);
+                            if (listeners.containsKey(filter)) listeners.get(filter).afterEntityAdded(entity);
                         }
                     } else {
                         if (entities.contains(entity)){
                             entities.remove(entity);
-                            if (listeners.containsKey(filter)) listeners.get(filter).afterRemoved(entity);
+                            if (listeners.containsKey(filter)) listeners.get(filter).afterEntityRemoved(entity);
                         }
                     }
                 }

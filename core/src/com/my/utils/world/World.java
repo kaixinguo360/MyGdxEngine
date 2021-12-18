@@ -20,9 +20,32 @@ public class World implements Disposable {
     @Getter
     private final Map<String, Object> environments = new HashMap<>();
 
-    // ----- Update ----- //
-    public void update() {
+    public void start() {
         entityManager.updateFilters();
+        for (System system : systemManager.getSystems().values()) {
+            if (system instanceof System.OnStart) {
+                ((System.OnStart) system).start(this);
+            }
+        }
+        entityManager.getBatch().commit();
+    }
+
+    public void update(float deltaTime) {
+        entityManager.updateFilters();
+        for (System system : systemManager.getSystems().values()) {
+            if (system instanceof System.OnUpdate) {
+                ((System.OnUpdate) system).update(deltaTime);
+            }
+        }
+        entityManager.getBatch().commit();
+    }
+
+    public void keyDown(int keycode) {
+        for (System system : systemManager.getSystems().values()) {
+            if (system instanceof System.OnKeyDown) {
+                ((System.OnKeyDown) system).keyDown(keycode);
+            }
+        }
     }
 
     @Override
