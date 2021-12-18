@@ -13,7 +13,6 @@ public class MyInstance extends Entity implements Disposable {
     protected Position position;
     protected Render render;
     protected RigidBody rigidBody;
-    protected Serialization serialization;
 
     public MyInstance(AssetsManager assetsManager, String className) {
         this(assetsManager, className, null);
@@ -36,12 +35,6 @@ public class MyInstance extends Entity implements Disposable {
         if (assetsManager.hasAsset(className, PhysicsSystem.RigidBodyConfig.class)) {
             PhysicsSystem.RigidBodyConfig rigidBodyConfig = assetsManager.getAsset(className, PhysicsSystem.RigidBodyConfig.class);
             rigidBody = addComponent(rigidBodyConfig.newInstance());
-        }
-        if (group != null) {
-            serialization = new Serialization();
-            serialization.group = group;
-            serialization.serializerId = className;
-            addComponent(serialization);
         }
         if (motion != null) {
             addComponent(motion);

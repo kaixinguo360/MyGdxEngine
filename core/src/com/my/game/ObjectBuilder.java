@@ -15,7 +15,6 @@ import com.my.utils.world.Entity;
 import com.my.utils.world.World;
 import com.my.utils.world.com.Constraint;
 import com.my.utils.world.com.Position;
-import com.my.utils.world.com.Serialization;
 import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.RenderSystem;
 
@@ -45,9 +44,6 @@ public class ObjectBuilder {
     public ObjectBuilder(World world) {
         this.world = world;
         this.assetsManager = world.getAssetsManager();
-
-        Serialization.Serializer serializer = new Serializer(world);
-        Serialization.addSerializer("box", serializer);
     }
 
     // ----- Builder Methods ----- //
