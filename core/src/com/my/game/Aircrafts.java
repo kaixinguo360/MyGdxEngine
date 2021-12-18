@@ -21,10 +21,8 @@ import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.my.utils.world.*;
-import com.my.utils.world.com.Constraint;
-import com.my.utils.world.com.Position;
-import com.my.utils.world.com.RigidBody;
-import com.my.utils.world.com.Script;
+import com.my.utils.world.com.*;
+import com.my.utils.world.sys.CameraSystem;
 import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.RenderSystem;
 import lombok.NoArgsConstructor;
@@ -358,6 +356,34 @@ public class Aircrafts {
             world.getEntityManager().addEntity(entity).getComponent(Position.class).transform.set(transform);
             entity.addComponent(new Scripts.RemoveScript());
             return entity;
+        }
+        public void changeCamera() {
+            Camera camera = aircraft.body.getComponent(Camera.class);
+//            camera.followType = CameraSystem.FollowType.B;
+            camera.layer = (camera.layer + 1) % 2;
+            switch (camera.layer) {
+                case 0: {
+                    camera.startX = 0;
+                    camera.startY = 0;
+                    camera.endX = 1;
+                    camera.endY = 1;
+                    break;
+                }
+                case 1: {
+                    camera.startX = 0;
+                    camera.startY = 0.7f;
+                    camera.endX = 0.3f;
+                    camera.endY = 1;
+                    break;
+                }
+            }
+        }
+        public void changeCameraFollowType() {
+            Camera camera = aircraft.body.getComponent(Camera.class);
+            switch (camera.followType) {
+                case A: camera.followType = CameraSystem.FollowType.B; break;
+                case B: camera.followType = CameraSystem.FollowType.A; break;
+            }
         }
     }
 

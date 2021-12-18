@@ -3,7 +3,6 @@ package com.my.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -14,7 +13,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.my.utils.base.Base3DGame;
 import com.my.utils.net.Client;
@@ -33,7 +31,10 @@ public class MyGame extends Base3DGame {
 
     private GameWorld gameWorld;
 
-    private Array<CameraController> vehicles = new Array<>();
+    private Aircrafts.Aircraft aircraft;
+    private Aircrafts.AircraftScript aircraftScript;
+    private Guns.GunScript gunScript;
+
     private Server server;
     private String receivedData = null;
     private long receivedTime;
@@ -70,8 +71,8 @@ public class MyGame extends Base3DGame {
             @Override
             public boolean keyDown(int keycode) {
                 if (keycode == Input.Keys.ESCAPE) Gdx.app.exit();
-                if (keycode == Input.Keys.TAB) changeView();
-                if (keycode == Input.Keys.SHIFT_LEFT) mainView.changeCamera();
+                if (keycode == Input.Keys.TAB) changeCamera();
+                if (keycode == Input.Keys.SHIFT_LEFT) changeCameraFollowType();
                 if (keycode == Input.Keys.ENTER) {
 
                     // ----- Get Config ----- //
@@ -82,11 +83,14 @@ public class MyGame extends Base3DGame {
                     gameWorld = LoadUtil.loadWorldFromYaml(yamlConfig);
                     addDisposable(gameWorld);
 
-                    // ----- Update Vehicles ----- //
-                    Aircrafts.Aircraft aircraft = gameWorld.world.getEntityManager().getEntity("Aircraft-6").getComponent(Aircrafts.Aircraft.class);
-                    Guns.Gun gun = gameWorld.world.getEntityManager().getEntity("Gun-0").getComponent(Guns.Gun.class);
-                    vehicles.set(0, aircraft);
-                    vehicles.set(1, gun);
+                    // ----- Get Aircraft ----- //
+                    Entity aircraftEntity = gameWorld.world.getEntityManager().getEntity("Aircraft-6");
+                    aircraft = aircraftEntity.getComponent(Aircrafts.Aircraft.class);
+                    aircraftScript = (Aircrafts.AircraftScript) aircraftEntity.getComponents(Script.class).get(0);
+
+                    // ----- Get Gun ----- //
+                    Entity gunEntity = gameWorld.world.getEntityManager().getEntity("Gun-0");
+                    gunScript = (Guns.GunScript) gunEntity.getComponents(Script.class).get(0);
                 }
                 return false;
             }
@@ -152,11 +156,14 @@ public class MyGame extends Base3DGame {
 //        gameWorld = LoadUtil.loadWorldFromFile("world.yml");
 //        addDisposable(gameWorld);
 
-        // ----- Update Vehicles ----- //
-        Aircrafts.Aircraft aircraft = gameWorld.world.getEntityManager().getEntity("Aircraft-6").getComponent(Aircrafts.Aircraft.class);
-        Guns.Gun gun = gameWorld.world.getEntityManager().getEntity("Gun-0").getComponent(Guns.Gun.class);
-        vehicles.add(aircraft);
-        vehicles.add(gun);
+        // ----- Get Aircraft ----- //
+        Entity aircraftEntity = gameWorld.world.getEntityManager().getEntity("Aircraft-6");
+        aircraft = aircraftEntity.getComponent(Aircrafts.Aircraft.class);
+        aircraftScript = (Aircrafts.AircraftScript) aircraftEntity.getComponents(Script.class).get(0);
+
+        // ----- Get Gun ----- //
+        Entity gunEntity = gameWorld.world.getEntityManager().getEntity("Gun-0");
+        gunScript = (Guns.GunScript) gunEntity.getComponents(Script.class).get(0);
     }
 
     @Override
@@ -193,7 +200,6 @@ public class MyGame extends Base3DGame {
 //        gameWorld.renderSystem.render(camera, environment);
 
         // Update UI
-        Aircrafts.Aircraft aircraft = (Aircrafts.Aircraft) vehicles.get(0);
         ui.getWidget("label", Label.class).setText(
                 "  Velocity: " + Math.floor(aircraft.getVelocity()) +
                         "\n  Height: " + Math.floor(aircraft.getHeight()));
@@ -208,41 +214,17 @@ public class MyGame extends Base3DGame {
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
-    // ----- Custom ----- //
-    private View mainView = new View(0, 0, "Aircraft-6");
-    private View secondaryView = new View(1, 0, "Gun-0");
-    private void changeView() {
-        View tmp = mainView;
-        mainView = secondaryView;
-        secondaryView = tmp;
-        secondaryView.getEntity().getComponents(Script.class).get(0).disabled = true;
-        mainView.getEntity().getComponents(Script.class).get(0).disabled = false;
+    // ----- Camera Control ----- //
+    private void changeCamera() {
+        aircraftScript.disabled = !aircraftScript.disabled;
+        aircraftScript.changeCamera();
+        gunScript.disabled = !gunScript.disabled;
+        gunScript.changeCamera();
+        gameWorld.world.getSystemManager().getSystem(CameraSystem.class).updateCameras();
     }
-
-    private class View {
-        int cameraIndex;
-        int vehicleIndex;
-        String entityId;
-        private View(int vehicleIndex, int cameraIndex, String entityId) {
-            this.vehicleIndex = vehicleIndex;
-            this.cameraIndex = cameraIndex;
-            this.entityId = entityId;
-        }
-        private void setCamera(PerspectiveCamera camera) {
-            vehicles.get(vehicleIndex).setCamera(camera, cameraIndex);
-        }
-        private CameraController getVehicle() {
-            return vehicles.get(vehicleIndex);
-        }
-        private Entity getEntity() {
-            return gameWorld.world.getEntityManager().getEntity(entityId);
-        }
-        private void changeCamera() {
-            cameraIndex = (cameraIndex + 1) % 2;
-        }
-        private void changeVehicle() {
-            vehicleIndex = (vehicleIndex + 1) % vehicles.size;
-        }
+    private void changeCameraFollowType() {
+        if (!aircraftScript.disabled) aircraftScript.changeCameraFollowType();
+        if (!gunScript.disabled) gunScript.changeCameraFollowType();
     }
 
     public static class GameWorld implements Disposable {
