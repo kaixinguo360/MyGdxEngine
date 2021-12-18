@@ -55,17 +55,6 @@ public class WorldLoader implements Loader {
         try {
             Map<String, Object> map = (Map<String, Object>) config;
 
-            if (beforeLoadSystems != null) beforeLoadSystems.accept(world);
-            SystemManager systemManager = world.getSystemManager();
-            List<Map<String, Object>> systems = (List<Map<String, Object>>) map.get("systems");
-            if (systems != null) {
-                for (Map<String, Object> system : systems) {
-                    Class<? extends System> systemType = (Class<? extends System>) Class.forName((String) system.get("type"));
-                    Object systemConfig = system.get("config");
-                    systemManager.addSystem(context.getLoaderManager().load(systemConfig, systemType, context));
-                }
-            }
-
             if (beforeLoadAssets != null) beforeLoadAssets.accept(world);
             AssetsManager assetsManager = world.getAssetsManager();
             List<Map<String, Object>> assets = (List<Map<String, Object>>) map.get("assets");
@@ -82,6 +71,17 @@ public class WorldLoader implements Loader {
                             java.lang.System.out.println("Asset already loaded: " + assetId + " (" + assetType.getName() + ")");
                         }
                     }
+                }
+            }
+
+            if (beforeLoadSystems != null) beforeLoadSystems.accept(world);
+            SystemManager systemManager = world.getSystemManager();
+            List<Map<String, Object>> systems = (List<Map<String, Object>>) map.get("systems");
+            if (systems != null) {
+                for (Map<String, Object> system : systems) {
+                    Class<? extends System> systemType = (Class<? extends System>) Class.forName((String) system.get("type"));
+                    Object systemConfig = system.get("config");
+                    systemManager.addSystem(context.getLoaderManager().load(systemConfig, systemType, context));
                 }
             }
 
@@ -107,6 +107,19 @@ public class WorldLoader implements Loader {
         World world = (World) obj;
         Map<String, Object> map = new LinkedHashMap<>();
         context.setEnvironment("world", world);
+
+        Map<String, Entity> entities = world.getEntityManager().getEntities();
+        if (entities.size() > 0) {
+            List<Map<String, Object>> entityList = new ArrayList<>();
+            for (Map.Entry<String, Entity> entry : entities.entrySet()) {
+                Entity entity = entry.getValue();
+                Map<String, Object> entityMap = new LinkedHashMap<>();
+                entityMap.put("type", entity.getClass().getName());
+                entityMap.put("config", context.getLoaderManager().getConfig(entity, Map.class, context));
+                entityList.add(entityMap);
+            }
+            map.put("entities", entityList);
+        }
 
         Map<Class<?>, System> systems = world.getSystemManager().getSystems();
         if (systems.size() > 0) {
@@ -138,19 +151,6 @@ public class WorldLoader implements Loader {
                 }
             }
             map.put("assets", assetList);
-        }
-
-        Map<String, Entity> entities = world.getEntityManager().getEntities();
-        if (entities.size() > 0) {
-            List<Map<String, Object>> entityList = new ArrayList<>();
-            for (Map.Entry<String, Entity> entry : entities.entrySet()) {
-                Entity entity = entry.getValue();
-                Map<String, Object> entityMap = new LinkedHashMap<>();
-                entityMap.put("type", entity.getClass().getName());
-                entityMap.put("config", context.getLoaderManager().getConfig(entity, Map.class, context));
-                entityList.add(entityMap);
-            }
-            map.put("entities", entityList);
         }
 
         return (E) map;
