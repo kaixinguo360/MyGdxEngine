@@ -3,13 +3,13 @@ package com.my.utils.world;
 import com.badlogic.gdx.utils.Disposable;
 import lombok.Getter;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class SystemManager implements Disposable {
 
     @Getter
-    private final Map<Class<?>, System> systems = new HashMap<>();
+    private final Map<Class<?>, System> systems = new LinkedHashMap<>();
 
     private final World world;
 

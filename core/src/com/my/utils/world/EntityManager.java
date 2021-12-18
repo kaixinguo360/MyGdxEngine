@@ -8,10 +8,10 @@ import java.util.*;
 public class EntityManager implements Disposable {
 
     @Getter
-    private final Map<String, Entity> entities = new HashMap<>();
+    private final Map<String, Entity> entities = new LinkedHashMap<>();
 
     @Getter
-    private final Map<EntityFilter, Set<Entity>> filters = new HashMap<>();
+    private final Map<EntityFilter, Set<Entity>> filters = new LinkedHashMap<>();
 
     @Getter
     private final Map<EntityFilter, EntityListener> listeners = new HashMap<>();

@@ -1,7 +1,7 @@
 package com.my.utils.world;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -54,7 +54,7 @@ public interface StandaloneResource extends Loadable<Map<String, Object>> {
     }
 
     default Map<String, Object> getConfig(Class<Map<String, Object>> configType, LoadContext context) {
-        HashMap<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new LinkedHashMap<>();
         try {
             Field[] fields = this.getClass().getFields();
             for (Field field : fields) {
@@ -73,7 +73,7 @@ public interface StandaloneResource extends Loadable<Map<String, Object>> {
                             if (!(e.getMessage().startsWith("No such loader") || e.getMessage().startsWith("Can not get config"))) throw e;
                             // Use LoaderManager <configType> to get config
                             Class<?> type = obj.getClass();
-                            map.put(name, new HashMap<String, Object>() {{
+                            map.put(name, new LinkedHashMap<String, Object>() {{
                                 put("type", type.getName());
                                 put("config", context.getLoaderManager().getConfig(type.cast(obj), configType, context));
                             }});

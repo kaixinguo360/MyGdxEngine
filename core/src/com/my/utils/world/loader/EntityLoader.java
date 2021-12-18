@@ -6,7 +6,7 @@ import com.my.utils.world.LoadContext;
 import com.my.utils.world.Loader;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -52,7 +52,7 @@ public class EntityLoader implements Loader {
 
     @Override
     public <E, T> E getConfig(T obj, Class<E> configType, LoadContext context) {
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new LinkedHashMap<>();
         Entity entity = (Entity) obj;
 
         // Process ID
@@ -64,7 +64,7 @@ public class EntityLoader implements Loader {
         for (Component component : entity.getComponents().values()) {
             String componentTypeName = component.getClass().getName();
             Object componentConfig = context.getLoaderManager().getConfig(component, Map.class, context);
-            Map<String, Object> componentMap = new HashMap<>();
+            Map<String, Object> componentMap = new LinkedHashMap<>();
             componentMap.put("type", componentTypeName);
             componentMap.put("config", componentConfig);
             components.add(componentMap);

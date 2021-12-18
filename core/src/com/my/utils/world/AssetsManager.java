@@ -3,12 +3,13 @@ package com.my.utils.world;
 import lombok.Getter;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class AssetsManager {
 
     @Getter
-    private final Map<Class<?>, Map<String, Object>> allAssets = new HashMap<>();
+    private final Map<Class<?>, Map<String, Object>> allAssets = new LinkedHashMap<>();
 
     private final Map<String, String> cache = new HashMap<>();
     private final World world;
@@ -19,7 +20,7 @@ public class AssetsManager {
 
     public <T> T addAsset(String id, Class<?> type, Object asset) {
         if (!type.isInstance(asset)) throw new RuntimeException("Asset type not equal: " + type + " != " + asset.getClass());
-        if (!allAssets.containsKey(type)) allAssets.put(type, new HashMap<>());
+        if (!allAssets.containsKey(type)) allAssets.put(type, new LinkedHashMap<>());
         Map<String, Object> assets = allAssets.get(type);
         if (assets.containsKey(id)) throw new RuntimeException("Duplicate Assets: " + id + " (" + type + ")");
         assets.put(id, asset);

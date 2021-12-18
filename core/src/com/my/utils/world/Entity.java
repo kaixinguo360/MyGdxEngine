@@ -4,10 +4,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Entity {
 
@@ -21,7 +18,7 @@ public class Entity {
 
     // ----- Components ----- //
     @Getter
-    protected final Map<Class<?>, Component> components = new HashMap<>();
+    protected final Map<Class<?>, Component> components = new LinkedHashMap<>();
 
     protected final Map<Class<?>, List<Component>> cache = new HashMap<>();
 

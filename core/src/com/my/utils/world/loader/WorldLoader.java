@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -87,24 +87,12 @@ public class WorldLoader implements Loader {
 
             if (beforeLoadEntities != null) beforeLoadEntities.accept(world);
             EntityManager entityManager = world.getEntityManager();
-            List<Map<String, Object>> nextEntities = (List<Map<String, Object>>) map.get("entities");
-            List<Map<String, Object>> thisEntities;
-            // Use while loop to solve circular dependency
-            while (nextEntities != null && nextEntities.size() > 0) {
-                thisEntities = nextEntities;
-                nextEntities = new ArrayList<>();
-                for (Map<String, Object> entity : thisEntities) {
+            List<Map<String, Object>> entities = (List<Map<String, Object>>) map.get("entities");
+            if (entities != null) {
+                for (Map<String, Object> entity : entities) {
                     Class<? extends Entity> entityType = (Class<? extends Entity>) Class.forName((String) entity.get("type"));
                     Object entityConfig = entity.get("config");
-                    try {
-                        entityManager.addEntity(context.getLoaderManager().load(entityConfig, entityType, context));
-                    } catch (RuntimeException e) {
-                        if (e.getMessage() == null || !e.getMessage().startsWith("No Such Entity")) throw e;
-                        nextEntities.add(entity);
-                    }
-                }
-                if (nextEntities.size() == thisEntities.size()) {
-                    throw new RuntimeException("Entity Load Error: Unresolvable circular dependency (" + nextEntities + ")");
+                    entityManager.addEntity(context.getLoaderManager().load(entityConfig, entityType, context));
                 }
             }
         } catch (ClassNotFoundException e) {
@@ -117,14 +105,14 @@ public class WorldLoader implements Loader {
     @Override
     public <E, T> E getConfig(T obj, Class<E> configType, LoadContext context) {
         World world = (World) obj;
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new LinkedHashMap<>();
         context.setEnvironment("world", world);
 
         Map<Class<?>, System> systems = world.getSystemManager().getSystems();
         if (systems.size() > 0) {
             List<Map<String, Object>> systemList = new ArrayList<>();
             for (System system : systems.values()) {
-                Map<String, Object> systemMap = new HashMap<>();
+                Map<String, Object> systemMap = new LinkedHashMap<>();
                 systemMap.put("type", system.getClass().getName());
                 systemMap.put("config", context.getLoaderManager().getConfig(system, Map.class, context));
                 systemList.add(systemMap);
@@ -138,7 +126,7 @@ public class WorldLoader implements Loader {
             for (Map.Entry<Class<?>, Map<String, Object>> entry : assets.entrySet()) {
                 Class<?> assetType = entry.getKey();
                 for (Map.Entry<String, Object> assetEntry : entry.getValue().entrySet()) {
-                    Map<String, Object> assetMap = new HashMap<>();
+                    Map<String, Object> assetMap = new LinkedHashMap<>();
                     assetMap.put("id", assetEntry.getKey());
                     assetMap.put("type", assetType.getName());
                     try {
@@ -157,7 +145,7 @@ public class WorldLoader implements Loader {
             List<Map<String, Object>> entityList = new ArrayList<>();
             for (Map.Entry<String, Entity> entry : entities.entrySet()) {
                 Entity entity = entry.getValue();
-                Map<String, Object> entityMap = new HashMap<>();
+                Map<String, Object> entityMap = new LinkedHashMap<>();
                 entityMap.put("type", entity.getClass().getName());
                 entityMap.put("config", context.getLoaderManager().getConfig(entity, Map.class, context));
                 entityList.add(entityMap);
