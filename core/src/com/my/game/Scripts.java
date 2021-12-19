@@ -11,7 +11,6 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.my.utils.world.Entity;
 import com.my.utils.world.World;
 import com.my.utils.world.com.Position;
-import com.my.utils.world.com.Script;
 import com.my.utils.world.sys.KeyInputSystem;
 import com.my.utils.world.sys.ScriptSystem;
 
@@ -22,7 +21,7 @@ public class Scripts {
 
     private static final Vector3 TMP_1 = new Vector3();
 
-    public static class RemoveScript extends Script implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
+    public static class RemoveScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
 
         private Position position;
         private boolean handleable;
@@ -43,19 +42,19 @@ public class Scripts {
         }
     }
 
-    public static class ExitScript extends Script implements KeyInputSystem.OnKeyDown {
+    public static class ExitScript implements KeyInputSystem.OnKeyDown {
         @Override
         public void keyDown(World world, Entity entity, int keycode) {
             if (keycode == Input.Keys.ESCAPE) Gdx.app.exit();
         }
     }
 
-    public static class GUIScript extends Script implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
+    public static class GUIScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
 
         public Stage stage;
         public Skin skin;
         private VerticalGroup group;
-        private Map<String, Actor> widgets = new HashMap<>();
+        private final Map<String, Actor> widgets = new HashMap<>();
 
         private Aircrafts.AircraftScript aircraftScript;
 

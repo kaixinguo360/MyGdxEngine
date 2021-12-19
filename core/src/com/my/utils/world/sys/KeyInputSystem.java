@@ -3,8 +3,11 @@ package com.my.utils.world.sys;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
+import com.my.utils.world.BaseSystem;
+import com.my.utils.world.Entity;
 import com.my.utils.world.System;
-import com.my.utils.world.*;
+import com.my.utils.world.World;
+import com.my.utils.world.com.Script;
 import lombok.Getter;
 
 public class KeyInputSystem extends BaseSystem implements System.OnStart {
@@ -37,7 +40,7 @@ public class KeyInputSystem extends BaseSystem implements System.OnStart {
         Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
-    public interface OnKeyDown extends Component {
+    public interface OnKeyDown extends Script {
         void keyDown(World world, Entity entity, int keycode);
     }
 }

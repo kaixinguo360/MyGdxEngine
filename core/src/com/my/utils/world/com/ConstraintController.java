@@ -5,7 +5,7 @@ import com.my.utils.world.Entity;
 import com.my.utils.world.World;
 import com.my.utils.world.sys.ScriptSystem;
 
-public abstract class ConstraintController extends Script implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
+public abstract class ConstraintController implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
 
     private Constraint constraint;
 

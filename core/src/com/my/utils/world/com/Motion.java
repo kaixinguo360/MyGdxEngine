@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class Motion extends Script implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
+public abstract class Motion implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
 
     protected Entity entity;
     protected RigidBody rigidBody;

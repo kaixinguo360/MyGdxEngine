@@ -23,6 +23,7 @@ import com.my.utils.world.com.*;
 import com.my.utils.world.sys.*;
 
 import java.lang.System;
+import java.util.HashMap;
 import java.util.Map;
 
 public class Guns {
@@ -49,9 +50,10 @@ public class Guns {
     public static class GunBuilder {
 
         private static final String group = "group";
+
         // ----- Variables ----- //
-        private World world;
-        private AssetsManager assetsManager;
+        private final World world;
+        private final AssetsManager assetsManager;
 
         // ----- Init ----- //
         public GunBuilder(World world) {
@@ -119,7 +121,7 @@ public class Guns {
         }
     }
 
-    public static class GunScript extends Script implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, KeyInputSystem.OnKeyDown {
+    public static class GunScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, KeyInputSystem.OnKeyDown {
 
         // ----- Constants ----- //
         private final static short BOMB_FLAG = 1 << 8;
@@ -140,15 +142,17 @@ public class Guns {
         public GunController gunController_Y;
         public GunController gunController_X;
 
+        public boolean disabled;
+
         int bulletNum;
 
         @Override
         public void load(Map<String, Object> config, LoadContext context) {
-            super.load(config, context);
             EntityManager entityManager = context.getEnvironment("world", World.class).getEntityManager();
             rotate_Y = entityManager.getEntity((String) config.get("rotate_Y"));
             rotate_X = entityManager.getEntity((String) config.get("rotate_X"));
             barrel = entityManager.getEntity((String) config.get("barrel"));
+            disabled = (boolean) config.get("disabled");
             if (rotate_Y.contains(GunController.class)) gunController_Y = rotate_Y.getComponent(GunController.class);
             if (rotate_X.contains(GunController.class)) gunController_X = rotate_X.getComponent(GunController.class);
             bulletNum = (Integer) config.get("bulletNum");
@@ -156,11 +160,12 @@ public class Guns {
 
         @Override
         public Map<String, Object> getConfig(Class<Map<String, Object>> configType, LoadContext context) {
-            Map<String, Object> config = super.getConfig(configType, context);
+            Map<String, Object> config = new HashMap<>();
             config.put("rotate_Y", rotate_Y.getId());
             config.put("rotate_X", rotate_X.getId());
             config.put("barrel", barrel.getId());
             config.put("bulletNum", bulletNum);
+            config.put("disabled", disabled);
             return config;
         }
 
@@ -174,7 +179,7 @@ public class Guns {
 
         @Override
         public void update(World world, Entity entity) {
-            if (camera == null) return;
+            if (camera == null || disabled) return;
             update();
         }
 

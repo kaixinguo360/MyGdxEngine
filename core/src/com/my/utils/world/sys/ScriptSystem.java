@@ -27,18 +27,16 @@ public class ScriptSystem extends BaseSystem implements StandaloneResource, Enti
     public void update(float deltaTime) {
         for (Entity entity : getEntities()) {
             for (OnUpdate script : entity.getComponents(OnUpdate.class)) {
-                if (!((Script) script).disabled) {
-                    script.update(world, entity);
-                }
+                script.update(world, entity);
             }
         }
     }
 
-    public interface OnStart extends Component {
+    public interface OnStart extends Script {
         void start(World world, Entity entity);
     }
 
-    public interface OnUpdate extends Component {
+    public interface OnUpdate extends Script {
         void update(World world, Entity entity);
     }
 }

@@ -11,12 +11,12 @@ import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
 import com.badlogic.gdx.utils.Array;
 import com.my.utils.world.BaseSystem;
-import com.my.utils.world.Component;
 import com.my.utils.world.Entity;
 import com.my.utils.world.System;
 import com.my.utils.world.com.Collision;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.RigidBody;
+import com.my.utils.world.com.Script;
 
 import java.util.List;
 
@@ -254,7 +254,7 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate {
         }
     }
 
-    public interface OnCollision extends Component {
+    public interface OnCollision extends Script {
         void collision(Entity entity);
     }
 

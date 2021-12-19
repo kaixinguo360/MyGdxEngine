@@ -25,6 +25,7 @@ import com.my.utils.world.sys.*;
 import lombok.NoArgsConstructor;
 
 import java.lang.System;
+import java.util.HashMap;
 import java.util.Map;
 
 public class Aircrafts {
@@ -59,8 +60,8 @@ public class Aircrafts {
         private static final String group = "group";
 
         // ----- Variables ----- //
-        private World world;
-        private AssetsManager assetsManager;
+        private final World world;
+        private final AssetsManager assetsManager;
 
         public AircraftBuilder(World world) {
             this.world = world;
@@ -166,7 +167,7 @@ public class Aircrafts {
         }
     }
 
-    public static class AircraftScript extends Script implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, KeyInputSystem.OnKeyDown {
+    public static class AircraftScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, KeyInputSystem.OnKeyDown {
 
         // ----- Constants ----- //
         private final static short BOMB_FLAG = 1 << 8;
@@ -195,35 +196,36 @@ public class Aircrafts {
         public AircraftController aircraftController_R;
         public AircraftController aircraftController_T;
 
+        public boolean disabled;
+
         public int bombNum;
 
         @Override
         public void load(Map<String, Object> config, LoadContext context) {
-            super.load(config, context);
             EntityManager entityManager = context.getEnvironment("world", World.class).getEntityManager();
-            Map<String, Object> map = config;
-            body = entityManager.getEntity((String) map.get("body"));
-            engine = entityManager.getEntity((String) map.get("engine"));
-            rotate_L = entityManager.getEntity((String) map.get("rotate_L"));
-            wing_L1 = entityManager.getEntity((String) map.get("wing_L1"));
-            wing_L2 = entityManager.getEntity((String) map.get("wing_L2"));
-            rotate_R = entityManager.getEntity((String) map.get("rotate_R"));
-            wing_R1 = entityManager.getEntity((String) map.get("wing_R1"));
-            wing_R2 = entityManager.getEntity((String) map.get("wing_R2"));
-            rotate_T = entityManager.getEntity((String) map.get("rotate_T"));
-            wing_TL = entityManager.getEntity((String) map.get("wing_TL"));
-            wing_TR = entityManager.getEntity((String) map.get("wing_TR"));
-            wing_VL = entityManager.getEntity((String) map.get("wing_VL"));
-            wing_VR = entityManager.getEntity((String) map.get("wing_VR"));
+            body = entityManager.getEntity((String) config.get("body"));
+            engine = entityManager.getEntity((String) config.get("engine"));
+            rotate_L = entityManager.getEntity((String) config.get("rotate_L"));
+            wing_L1 = entityManager.getEntity((String) config.get("wing_L1"));
+            wing_L2 = entityManager.getEntity((String) config.get("wing_L2"));
+            rotate_R = entityManager.getEntity((String) config.get("rotate_R"));
+            wing_R1 = entityManager.getEntity((String) config.get("wing_R1"));
+            wing_R2 = entityManager.getEntity((String) config.get("wing_R2"));
+            rotate_T = entityManager.getEntity((String) config.get("rotate_T"));
+            wing_TL = entityManager.getEntity((String) config.get("wing_TL"));
+            wing_TR = entityManager.getEntity((String) config.get("wing_TR"));
+            wing_VL = entityManager.getEntity((String) config.get("wing_VL"));
+            wing_VR = entityManager.getEntity((String) config.get("wing_VR"));
+            disabled = (boolean) config.get("disabled");
             if (rotate_L.contains(AircraftController.class)) aircraftController_L = rotate_L.getComponent(AircraftController.class);
             if (rotate_R.contains(AircraftController.class)) aircraftController_R = rotate_R.getComponent(AircraftController.class);
             if (rotate_T.contains(AircraftController.class)) aircraftController_T = rotate_T.getComponent(AircraftController.class);
-            bombNum = (Integer) map.get("bombNum");
+            bombNum = (Integer) config.get("bombNum");
         }
 
         @Override
         public Map<String, Object> getConfig(Class<Map<String, Object>> configType, LoadContext context) {
-            Map<String, Object> config = super.getConfig(configType, context);
+            Map<String, Object> config = new HashMap<>();
             config.put("body", body.getId());
             config.put("engine", engine.getId());
             config.put("rotate_L", rotate_L.getId());
@@ -238,6 +240,7 @@ public class Aircrafts {
             config.put("wing_VL", wing_VL.getId());
             config.put("wing_VR", wing_VR.getId());
             config.put("bombNum", bombNum);
+            config.put("disabled", disabled);
             return config;
         }
 
@@ -251,7 +254,7 @@ public class Aircrafts {
 
         @Override
         public void update(World world, Entity entity) {
-            if (camera == null) return;
+            if (camera == null || disabled) return;
             update();
         }
 

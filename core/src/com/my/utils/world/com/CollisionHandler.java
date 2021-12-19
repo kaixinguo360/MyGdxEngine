@@ -7,7 +7,7 @@ import com.my.utils.world.sys.ScriptSystem;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public abstract class CollisionHandler extends Script implements ScriptSystem.OnStart, PhysicsSystem.OnCollision {
+public abstract class CollisionHandler implements ScriptSystem.OnStart, PhysicsSystem.OnCollision {
 
     protected World world;
     protected PhysicsSystem physicsSystem;
