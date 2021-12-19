@@ -324,10 +324,11 @@ public class Aircrafts {
         }
         public Entity createBomb(Matrix4 transform) {
             Entity entity = new MyInstance(assetsManager, "bomb", "bomb", null,
-                    new Collisions.BombCollisionHandler(BOMB_FLAG, ALL_FLAG));
+                    new Collision(BOMB_FLAG, ALL_FLAG));
             entity.setId("Bomb-" + bombNum++);
             world.getEntityManager().addEntity(entity).getComponent(Position.class).transform.set(transform);
             entity.addComponent(new Scripts.RemoveScript());
+            entity.addComponent(new Collisions.BombCollisionHandler());
             return entity;
         }
         public void changeCamera() {

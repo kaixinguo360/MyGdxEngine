@@ -218,10 +218,11 @@ public class Guns {
 
         private Entity createBullet(Matrix4 transform) {
             Entity entity = new MyInstance(assetsManager, "bullet", "bullet", null,
-                    new Collisions.BulletCollisionHandler(BOMB_FLAG, ALL_FLAG));
+                    new Collision(BOMB_FLAG, ALL_FLAG));
             entity.setId("Bullet-" + bulletNum++);
             world.getEntityManager().addEntity(entity).getComponent(Position.class).transform.set(transform);
             entity.addComponent(new Scripts.RemoveScript());
+            entity.addComponent(new Collisions.BulletCollisionHandler());
             return entity;
         }
         public void rotate(float stepY, float stepX) {

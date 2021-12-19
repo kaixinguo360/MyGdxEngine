@@ -11,8 +11,8 @@ import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
 import com.badlogic.gdx.utils.Array;
 import com.my.utils.world.BaseSystem;
+import com.my.utils.world.Component;
 import com.my.utils.world.Entity;
-import com.my.utils.world.EntityListener;
 import com.my.utils.world.System;
 import com.my.utils.world.com.Collision;
 import com.my.utils.world.com.Position;
@@ -20,7 +20,7 @@ import com.my.utils.world.com.RigidBody;
 
 import java.util.List;
 
-public class PhysicsSystem extends BaseSystem implements EntityListener, System.OnUpdate {
+public class PhysicsSystem extends BaseSystem implements System.OnUpdate {
 
     protected btDynamicsWorld dynamicsWorld;
     protected ContactListener contactListener;
@@ -72,19 +72,6 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
     @Override
     public boolean isHandleable(Entity entity) {
         return entity.contain(Position.class, RigidBody.class);
-    }
-
-    @Override
-    public void afterEntityAdded(Entity entity) {
-        List<Collision> collisionList = entity.getComponents(Collision.class);
-        for (Collision collision : collisionList) {
-            collision.init(world, entity);
-        }
-    }
-
-    @Override
-    public void afterEntityRemoved(Entity entity) {
-
     }
 
     @Override
@@ -170,9 +157,7 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
         body.userData = entity;
 
         if (entity.contains(Collision.class)) {
-            List<Collision> collisionList = entity.getComponents(Collision.class);
-            if (collisionList.size() != 1) throw new RuntimeException("TODO"); // TODO: Add OnCollision Script Interface
-            Collision c = collisionList.get(0);
+            Collision c = entity.getComponent(Collision.class);
             body.setContactCallbackFlag(c.callbackFlag);
             body.setContactCallbackFilter(c.callbackFilter);
             body.setCollisionFlags(body.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
@@ -214,16 +199,16 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
                 Entity entity1 = (Entity) colObj1.userData;
                 if (match0) {
 //                    System.out.println(entity0.getId() + " =>" + entity1.getId());
-                    List<Collision> collisionList = entity0.getComponents(Collision.class);
-                    for (Collision collision : collisionList) {
-                        collision.handle(entity1);
+                    List<OnCollision> scripts = entity0.getComponents(OnCollision.class);
+                    for (OnCollision script : scripts) {
+                        script.collision(entity1);
                     }
                 }
                 if (match1) {
 //                    System.out.println(entity1.getId() + " <= " + entity0.getId());
-                    List<Collision> collisionList = entity1.getComponents(Collision.class);
-                    for (Collision collision : collisionList) {
-                        collision.handle(entity0);
+                    List<OnCollision> scripts = entity1.getComponents(OnCollision.class);
+                    for (OnCollision script : scripts) {
+                        script.collision(entity0);
                     }
                 }
             }
@@ -269,8 +254,8 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
         }
     }
 
-    public interface CollisionHandler {
-        void handle(Entity self, Entity target);
+    public interface OnCollision extends Component {
+        void collision(Entity entity);
     }
 
 }
