@@ -2,40 +2,38 @@ package com.my.utils.world.com;
 
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.Disposable;
-import com.my.utils.world.*;
-import com.my.utils.world.sys.PhysicsSystem;
-import lombok.AllArgsConstructor;
+import com.my.utils.world.Component;
+import com.my.utils.world.Config;
+import com.my.utils.world.StandaloneResource;
 import lombok.NoArgsConstructor;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @NoArgsConstructor
-@AllArgsConstructor
-public class RigidBody implements Component, LoadableResource, Disposable {
+public class RigidBody implements Component, StandaloneResource, StandaloneResource.OnInit, Disposable {
 
-    public PhysicsSystem.RigidBodyConfig bodyConfig;
-    public int group;
-    public int mask;
+    // ----- Static ----- //
+    public final static short STATIC_FLAG = 1 << 8;
+    public final static short NORMAL_FLAG = 1 << 9;
+    public final static short ALL_FLAG = -1;
+
+    @Config(type = Config.Type.Asset)
+    public btRigidBody.btRigidBodyConstructionInfo bodyConfig;
+
+    @Config
+    public int group = NORMAL_FLAG;
+
+    @Config
+    public int mask = ALL_FLAG;
+
     public btRigidBody body;
 
-    @Override
-    public void load(Map<String, Object> config, LoadContext context) {
-        AssetsManager assetsManager = context.getEnvironment("world", World.class).getAssetsManager();
-        String bodyConfigId = (String) config.get("bodyConfigId");
-        this.bodyConfig = assetsManager.getAsset(bodyConfigId, PhysicsSystem.RigidBodyConfig.class);
-        this.body = new btRigidBody(bodyConfig.constructionInfo);
-        this.group = bodyConfig.group;
-        this.mask = bodyConfig.mask;
+    public RigidBody(btRigidBody.btRigidBodyConstructionInfo bodyConfig) {
+        this.bodyConfig = bodyConfig;
+        init();
     }
 
     @Override
-    public Map<String, Object> getConfig(Class<Map<String, Object>> configType, LoadContext context) {
-        AssetsManager assetsManager = context.getEnvironment("world", World.class).getAssetsManager();
-        String bodyConfigId = assetsManager.getId(PhysicsSystem.RigidBodyConfig.class, bodyConfig);
-        return new HashMap<String, Object>(){{
-            put("bodyConfigId", bodyConfigId);
-        }};
+    public void init() {
+        this.body = new btRigidBody(bodyConfig);
     }
 
     @Override

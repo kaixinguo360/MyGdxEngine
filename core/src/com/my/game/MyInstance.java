@@ -1,11 +1,11 @@
 package com.my.game;
 
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.Disposable;
 import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
 import com.my.utils.world.com.*;
-import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.RenderSystem;
 
 public class MyInstance extends Entity implements Disposable {
@@ -18,23 +18,19 @@ public class MyInstance extends Entity implements Disposable {
         this(assetsManager, className, null);
     }
 
-    public MyInstance(AssetsManager assetsManager, String className, String group) {
-        this(assetsManager, className, group, null);
+    public MyInstance(AssetsManager assetsManager, String className, Motion motion) {
+        this(assetsManager, className, motion, null);
     }
 
-    public MyInstance(AssetsManager assetsManager, String className, String group, Motion motion) {
-        this(assetsManager, className, group, motion, null);
-    }
-
-    public MyInstance(AssetsManager assetsManager, String className, String group, Motion motion, Collision collision) {
+    public MyInstance(AssetsManager assetsManager, String className, Motion motion, Collision collision) {
         position = addComponent(new Position(new Matrix4()));
-        if (assetsManager.hasAsset(className, RenderSystem.RenderConfig.class)) {
-            RenderSystem.RenderConfig renderConfig = assetsManager.getAsset(className, RenderSystem.RenderConfig.class);
-            render = addComponent(renderConfig.newInstance());
+        if (assetsManager.hasAsset(className, RenderSystem.RenderModel.class)) {
+            RenderSystem.RenderModel renderModel = assetsManager.getAsset(className, RenderSystem.RenderModel.class);
+            render = addComponent(new Render(renderModel));
         }
-        if (assetsManager.hasAsset(className, PhysicsSystem.RigidBodyConfig.class)) {
-            PhysicsSystem.RigidBodyConfig rigidBodyConfig = assetsManager.getAsset(className, PhysicsSystem.RigidBodyConfig.class);
-            rigidBody = addComponent(rigidBodyConfig.newInstance());
+        if (assetsManager.hasAsset(className, btRigidBody.btRigidBodyConstructionInfo.class)) {
+            btRigidBody.btRigidBodyConstructionInfo rigidBodyConfig = assetsManager.getAsset(className, btRigidBody.btRigidBodyConstructionInfo.class);
+            rigidBody = addComponent(new RigidBody(rigidBodyConfig));
         }
         if (motion != null) {
             addComponent(motion);

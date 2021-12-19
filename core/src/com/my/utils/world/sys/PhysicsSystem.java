@@ -145,6 +145,17 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate {
         }
     }
 
+    // Get Rigid Body Construction Info
+    private static final Vector3 localInertia = new Vector3();
+    public static btRigidBody.btRigidBodyConstructionInfo getRigidBodyConfig(btCollisionShape shape, float mass) {
+        if (mass > 0f) {
+            shape.calculateLocalInertia(mass, localInertia);
+        } else {
+            localInertia.set(0, 0, 0);
+        }
+        return new btRigidBody.btRigidBodyConstructionInfo(mass, null, shape, localInertia);
+    }
+
     // ----- Private ----- //
 
     private void addBody(Entity entity) {
@@ -213,44 +224,6 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate {
                 }
             }
             return true;
-        }
-    }
-
-    // ----- Inner Class ----- //
-
-    public static class RigidBodyConfig {
-
-        // ----- Static ----- //
-        public final static short STATIC_FLAG = 1 << 8;
-        public final static short NORMAL_FLAG = 1 << 9;
-        public final static short ALL_FLAG = -1;
-        private static final Vector3 localInertia = new Vector3();
-
-        public final btRigidBody.btRigidBodyConstructionInfo constructionInfo;
-        public final int group;
-        public final int mask;
-
-        public RigidBodyConfig(btCollisionShape shape, float mass) {
-            this(shape, mass, NORMAL_FLAG, ALL_FLAG);
-        }
-
-        public RigidBodyConfig(btCollisionShape shape, float mass, int group, int mask) {
-            this.group = group;
-            this.mask = mask;
-            if (mass > 0f)
-                shape.calculateLocalInertia(mass, localInertia);
-            else
-                localInertia.set(0, 0, 0);
-            this.constructionInfo = new btRigidBody.btRigidBodyConstructionInfo(mass, null, shape, localInertia);
-        }
-
-        public RigidBody newInstance() {
-            RigidBody rigidBody = new RigidBody();
-            rigidBody.body = new btRigidBody(constructionInfo);
-            rigidBody.group = group;
-            rigidBody.mask = mask;
-            rigidBody.bodyConfig = this;
-            return rigidBody;
         }
     }
 

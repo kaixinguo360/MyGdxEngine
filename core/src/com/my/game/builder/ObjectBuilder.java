@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
+import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.my.game.MyInstance;
 import com.my.game.constraint.ConnectConstraint;
@@ -29,11 +30,11 @@ public class ObjectBuilder {
         models.put("box", mdBuilder.createBox(1, 1, 1, new Material(ColorAttribute.createDiffuse(Color.RED)), attributes));
         models.put("box1", mdBuilder.createBox(2, 1, 1, new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)), attributes));
 
-        assetsManager.addAsset("box", RenderSystem.RenderConfig.class, new RenderSystem.RenderConfig(models.get("box")));
-        assetsManager.addAsset("box1", RenderSystem.RenderConfig.class, new RenderSystem.RenderConfig(models.get("box1")));
+        assetsManager.addAsset("box", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(models.get("box")));
+        assetsManager.addAsset("box1", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(models.get("box1")));
 
-        assetsManager.addAsset("box", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btBoxShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
-        assetsManager.addAsset("box1", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btBoxShape(new Vector3(1,0.5f,0.5f)), 50f));
+        assetsManager.addAsset("box", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btBoxShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
+        assetsManager.addAsset("box1", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btBoxShape(new Vector3(1,0.5f,0.5f)), 50f));
     }
 
     // ----- Temporary ----- //
@@ -52,7 +53,7 @@ public class ObjectBuilder {
 
     private int boxNum = 0;
     public Entity createBox(Matrix4 transform, String base) {
-        Entity entity = new MyInstance(assetsManager, "box", "box");
+        Entity entity = new MyInstance(assetsManager, "box");
         String id = "Box-" + boxNum++;
         addObject(
                 id, transform, entity,
@@ -68,7 +69,7 @@ public class ObjectBuilder {
                 addObject(
                         "Box-" + boxNum++,
                         tmpM.setToTranslation(tmp + j, 0.5f + i, 0).mulLeft(transform),
-                        new MyInstance(assetsManager, "box1", "box1"), null
+                        new MyInstance(assetsManager, "box1"), null
                 );
             }
         }

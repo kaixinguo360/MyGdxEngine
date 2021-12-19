@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
+import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.my.game.MyInstance;
 import com.my.game.script.AircraftScript;
@@ -21,6 +22,7 @@ import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
 import com.my.utils.world.World;
 import com.my.utils.world.com.Camera;
+import com.my.utils.world.com.Render;
 import com.my.utils.world.sys.*;
 
 public class WorldBuilder {
@@ -48,6 +50,7 @@ public class WorldBuilder {
         // ----- Init Static Objects ----- //
         MyInstance sky = new MyInstance(world.getAssetsManager(), "sky");
         sky.setId("sky");
+        sky.getComponent(Render.class).includeEnv = false;
         world.getEntityManager().addEntity(sky);
         world.getSystemManager().getSystem(CameraSystem.class).addSkyBox("sky");
         MyInstance ground = new MyInstance(world.getAssetsManager(), "ground");
@@ -109,10 +112,10 @@ public class WorldBuilder {
         models.put("ground", mdBuilder.createBox(10000f, 0.01f, 20000f, new Material(ColorAttribute.createDiffuse(Color.WHITE)), attributes));
 
         // ----- Init Configs ----- //
-        assetsManager.addAsset("sky", RenderSystem.RenderConfig.class, new RenderSystem.RenderConfig(models.get("sky"), false));
-        assetsManager.addAsset("ground", RenderSystem.RenderConfig.class, new RenderSystem.RenderConfig(models.get("ground")));
+        assetsManager.addAsset("sky", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(models.get("sky")));
+        assetsManager.addAsset("ground", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(models.get("ground")));
 
-        assetsManager.addAsset("ground", PhysicsSystem.RigidBodyConfig.class, new PhysicsSystem.RigidBodyConfig(new btBoxShape(new Vector3(5000,0.005f,10000)), 0f));
+        assetsManager.addAsset("ground", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btBoxShape(new Vector3(5000,0.005f,10000)), 0f));
 
         Environment environment = new Environment();
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));

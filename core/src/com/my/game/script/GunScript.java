@@ -121,7 +121,7 @@ public class GunScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, K
     }
 
     private Entity createBullet(Matrix4 transform) {
-        Entity entity = new MyInstance(assetsManager, "bullet", "bullet", null,
+        Entity entity = new MyInstance(assetsManager, "bullet", null,
                 new Collision(BOMB_FLAG, ALL_FLAG));
         entity.setId("Bullet-" + bulletNum++);
         world.getEntityManager().addEntity(entity).getComponent(Position.class).transform.set(transform);

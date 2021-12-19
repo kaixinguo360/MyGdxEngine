@@ -4,7 +4,6 @@ import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
-import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.my.utils.world.BaseSystem;
@@ -75,36 +74,19 @@ public class RenderSystem extends BaseSystem implements EntityListener {
 
     // ----- Inner Class ----- //
 
-    public static class RenderConfig {
+    public static class RenderModel {
+
         public Model model;
-        public boolean includeEnv;
         public final Vector3 center = new Vector3();
         public final Vector3 dimensions = new Vector3();
         public float radius;
 
-
-        public RenderConfig(Model model) {
-            this(model, true);
-        }
-
-        public RenderConfig(Model model, boolean includeEnv) {
+        public RenderModel(Model model) {
             this.model = model;
-            this.includeEnv = includeEnv;
             model.calculateBoundingBox(boundingBox);
             boundingBox.getCenter(center);
             boundingBox.getDimensions(dimensions);
             radius = dimensions.len() / 2f;
-        }
-
-        public Render newInstance() {
-            Render render = new Render();
-            render.renderConfig = this;
-            render.modelInstance = new ModelInstance(this.model);
-            render.includeEnv = this.includeEnv;
-            render.center.set(this.center);
-            render.dimensions.set(this.dimensions);
-            render.radius = this.radius;
-            return render;
         }
     }
 }

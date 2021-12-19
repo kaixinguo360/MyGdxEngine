@@ -187,7 +187,7 @@ public class AircraftScript implements ScriptSystem.OnStart, ScriptSystem.OnUpda
     }
 
     public Entity createBomb(Matrix4 transform) {
-        Entity entity = new MyInstance(assetsManager, "bomb", "bomb", null,
+        Entity entity = new MyInstance(assetsManager, "bomb", null,
                 new Collision(BOMB_FLAG, ALL_FLAG));
         entity.setId("Bomb-" + bombNum++);
         world.getEntityManager().addEntity(entity).getComponent(Position.class).transform.set(transform);
