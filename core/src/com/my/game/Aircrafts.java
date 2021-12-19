@@ -22,9 +22,7 @@ import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.my.utils.world.*;
 import com.my.utils.world.com.*;
-import com.my.utils.world.sys.CameraSystem;
-import com.my.utils.world.sys.PhysicsSystem;
-import com.my.utils.world.sys.RenderSystem;
+import com.my.utils.world.sys.*;
 import lombok.NoArgsConstructor;
 
 import java.lang.System;
@@ -267,7 +265,7 @@ public class Aircrafts {
         }
     }
 
-    public static class AircraftScript extends Script implements Script.OnStart, Script.OnUpdate, Script.OnKeyDown {
+    public static class AircraftScript extends Script implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, KeyInputSystem.OnKeyDown {
 
         private World world;
         private AssetsManager assetsManager;

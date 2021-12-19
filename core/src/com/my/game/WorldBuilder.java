@@ -32,6 +32,7 @@ public class WorldBuilder {
         world.getSystemManager().addSystem(new ScriptSystem());
         world.getSystemManager().addSystem(new RenderSystem());
         world.getSystemManager().addSystem(new EnvironmentSystem());
+        world.getSystemManager().addSystem(new KeyInputSystem());
 
         // Init Assets
         initAssets(world);

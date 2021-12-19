@@ -1,6 +1,8 @@
 package com.my.utils.world.com;
 
-import com.my.utils.world.*;
+import com.my.utils.world.Component;
+import com.my.utils.world.Config;
+import com.my.utils.world.StandaloneResource;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -10,19 +12,5 @@ public abstract class Script implements Component, StandaloneResource {
 
     @Config
     public boolean disabled;
-
-    public boolean running = false;
-
-    public interface OnStart extends Component {
-        void start(World world, Entity entity);
-    }
-
-    public interface OnUpdate extends Component {
-        void update(World world, Entity entity);
-    }
-
-    public interface OnKeyDown extends Component {
-        void keyDown(World world, Entity entity, int keycode);
-    }
 
 }

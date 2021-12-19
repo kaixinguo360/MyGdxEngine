@@ -4,51 +4,41 @@ import com.my.utils.world.System;
 import com.my.utils.world.*;
 import com.my.utils.world.com.Script;
 
-public class ScriptSystem implements StandaloneResource, System.AfterAdded, System.OnUpdate, System.OnKeyDown {
-
-    private World world;
-
-    private EntityFilter onOnUpdateFilter;
-
-    private EntityFilter onOnKeyDownFilter;
+public class ScriptSystem extends BaseSystem implements StandaloneResource, EntityListener, System.AfterAdded, System.OnUpdate {
 
     @Override
-    public void afterAdded(World world) {
-        this.world = world;
+    protected boolean isHandleable(Entity entity) {
+        return entity.contain(OnStart.class) || entity.contain(OnUpdate.class);
+    }
 
-        onOnUpdateFilter = entity -> entity.contain(Script.OnUpdate.class);
-        world.getEntityManager().addFilter(onOnUpdateFilter);
+    @Override
+    public void afterEntityAdded(Entity entity) {
+        for (OnStart script : entity.getComponents(OnStart.class)) {
+            script.start(world, entity);
+        }
+    }
 
-        onOnKeyDownFilter = entity -> entity.contain(Script.OnKeyDown.class);
-        world.getEntityManager().addFilter(onOnKeyDownFilter);
+    @Override
+    public void afterEntityRemoved(Entity entity) {
+
     }
 
     @Override
     public void update(float deltaTime) {
-        for (Entity entity : world.getEntityManager().getEntitiesByFilter(onOnUpdateFilter)) {
-            for (Script.OnUpdate onUpdateScript : entity.getComponents(Script.OnUpdate.class)) {
-                Script script = (Script) onUpdateScript;
-                if (!script.running) {
-                    if (script instanceof Script.OnStart) {
-                        ((Script.OnStart) script).start(world, entity);
-                    }
-                    script.running = true;
-                }
-                if (!script.disabled) {
-                    onUpdateScript.update(world, entity);
+        for (Entity entity : getEntities()) {
+            for (OnUpdate script : entity.getComponents(OnUpdate.class)) {
+                if (!((Script) script).disabled) {
+                    script.update(world, entity);
                 }
             }
         }
     }
 
-    @Override
-    public void keyDown(int keycode) {
-        for (Entity entity : world.getEntityManager().getEntitiesByFilter(onOnKeyDownFilter)) {
-            for (Script script : entity.getComponents(Script.class)) {
-                if (script instanceof Script.OnKeyDown) {
-                    ((Script.OnKeyDown) script).keyDown(world, entity, keycode);
-                }
-            }
-        }
+    public interface OnStart extends Component {
+        void start(World world, Entity entity);
+    }
+
+    public interface OnUpdate extends Component {
+        void update(World world, Entity entity);
     }
 }

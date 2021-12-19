@@ -7,10 +7,12 @@ import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.my.utils.base.BaseGame;
 import com.my.utils.world.World;
+import com.my.utils.world.sys.KeyInputSystem;
 
 public class MyGame extends BaseGame {
 
     private World world;
+    private InputAdapter inputAdapter;
 
     @Override
     public void create() {
@@ -20,10 +22,10 @@ public class MyGame extends BaseGame {
         assetManager.load("obj/sky.g3db", Model.class);
         waitLoad(true);
 
-        inputMultiplexer.addProcessor(new InputAdapter(){
+        // ----- Init InputAdapter ----- //
+        inputAdapter = new InputAdapter() {
             @Override
             public boolean keyDown(int keycode) {
-                world.keyDown(keycode);
                 if (keycode == Input.Keys.ENTER) {
 
                     // ----- Get Config ----- //
@@ -33,10 +35,11 @@ public class MyGame extends BaseGame {
                     // ----- Load World ----- //
                     world = LoadUtil.loadWorldFromYaml(yamlConfig);
                     addDisposable(world);
+                    world.getSystemManager().getSystem(KeyInputSystem.class).getInputMultiplexer().addProcessor(inputAdapter);
                 }
                 return false;
             }
-        });
+        };
     }
 
     @Override
@@ -58,6 +61,8 @@ public class MyGame extends BaseGame {
 //        // ----- Load World ----- //
 //        world = LoadUtil.loadWorldFromFile("world.yml");
 //        addDisposable(world);
+
+        world.getSystemManager().getSystem(KeyInputSystem.class).getInputMultiplexer().addProcessor(inputAdapter);
     }
 
     @Override

@@ -17,8 +17,4 @@ public interface System {
     interface OnUpdate extends System {
         void update(float deltaTime);
     }
-
-    interface OnKeyDown extends System {
-        void keyDown(int keycode);
-    }
 }

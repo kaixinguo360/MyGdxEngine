@@ -1,21 +1,15 @@
 package com.my.utils.base;
 
 import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 
 public abstract class BaseGame extends ApplicationAdapter {
 
-    protected InputMultiplexer inputMultiplexer = new InputMultiplexer();
     protected AssetManager assetManager;
     @Override
     public void create() {
-        // Set InputMultiplexer
-        Gdx.input.setInputProcessor(inputMultiplexer);
-
         // Create assetManager
         assetManager = new AssetManager();
         addDisposable(assetManager);

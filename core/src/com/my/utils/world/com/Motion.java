@@ -2,12 +2,13 @@ package com.my.utils.world.com;
 
 import com.my.utils.world.Entity;
 import com.my.utils.world.World;
+import com.my.utils.world.sys.ScriptSystem;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class Motion extends Script implements Script.OnStart, Script.OnUpdate {
+public abstract class Motion extends Script implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
 
     protected Entity entity;
     protected RigidBody rigidBody;

@@ -12,6 +12,8 @@ import com.my.utils.world.Entity;
 import com.my.utils.world.World;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.Script;
+import com.my.utils.world.sys.KeyInputSystem;
+import com.my.utils.world.sys.ScriptSystem;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +22,7 @@ public class Scripts {
 
     private static final Vector3 TMP_1 = new Vector3();
 
-    public static class RemoveScript extends Script implements Script.OnStart, Script.OnUpdate {
+    public static class RemoveScript extends Script implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
 
         private Position position;
         private boolean handleable;
@@ -41,14 +43,14 @@ public class Scripts {
         }
     }
 
-    public static class ExitScript extends Script implements Script.OnKeyDown {
+    public static class ExitScript extends Script implements KeyInputSystem.OnKeyDown {
         @Override
         public void keyDown(World world, Entity entity, int keycode) {
             if (keycode == Input.Keys.ESCAPE) Gdx.app.exit();
         }
     }
 
-    public static class GUIScript extends Script implements Script.OnStart, Script.OnUpdate {
+    public static class GUIScript extends Script implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
 
         public Stage stage;
         public Skin skin;

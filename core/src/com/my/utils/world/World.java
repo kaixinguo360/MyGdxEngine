@@ -36,12 +36,6 @@ public class World implements Disposable {
         entityManager.getBatch().commit();
     }
 
-    public void keyDown(int keycode) {
-        for (System.OnKeyDown system : systemManager.getSystems(System.OnKeyDown.class)) {
-            system.keyDown(keycode);
-        }
-    }
-
     @Override
     public void dispose() {
         systemManager.dispose();

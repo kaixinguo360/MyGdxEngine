@@ -21,9 +21,7 @@ import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.my.utils.world.*;
 import com.my.utils.world.com.*;
-import com.my.utils.world.sys.CameraSystem;
-import com.my.utils.world.sys.PhysicsSystem;
-import com.my.utils.world.sys.RenderSystem;
+import com.my.utils.world.sys.*;
 
 import java.lang.System;
 import java.util.HashMap;
@@ -184,7 +182,7 @@ public class Guns {
         }
     }
 
-    public static class GunScript extends Script implements Script.OnStart, Script.OnUpdate, Script.OnKeyDown {
+    public static class GunScript extends Script implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, KeyInputSystem.OnKeyDown {
 
         private World world;
         private AssetsManager assetsManager;
