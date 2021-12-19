@@ -267,7 +267,7 @@ public class Aircrafts {
         }
     }
 
-    public static class AircraftScript extends Script implements Script.OnInit, Script.OnUpdate, Script.OnKeyDown {
+    public static class AircraftScript extends Script implements Script.OnStart, Script.OnUpdate, Script.OnKeyDown {
 
         private World world;
         private AssetsManager assetsManager;
@@ -275,7 +275,7 @@ public class Aircrafts {
         private Aircrafts.Aircraft aircraft;
 
         @Override
-        public void init(World world, Entity entity) {
+        public void start(World world, Entity entity) {
             this.world = world;
             this.assetsManager = world.getAssetsManager();
             this.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);

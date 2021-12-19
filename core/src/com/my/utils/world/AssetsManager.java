@@ -12,11 +12,6 @@ public class AssetsManager {
     private final Map<Class<?>, Map<String, Object>> allAssets = new LinkedHashMap<>();
 
     private final Map<String, String> cache = new HashMap<>();
-    private final World world;
-
-    public AssetsManager(World world) {
-        this.world = world;
-    }
 
     public <T> T addAsset(String id, Class<?> type, Object asset) {
         if (!type.isInstance(asset)) throw new RuntimeException("Asset type not equal: " + type + " != " + asset.getClass());
@@ -25,7 +20,6 @@ public class AssetsManager {
         if (assets.containsKey(id)) throw new RuntimeException("Duplicate Assets: " + id + " (" + type + ")");
         assets.put(id, asset);
         cache.remove(type + "#" + asset.hashCode());
-        if (asset instanceof System.AfterAdded) ((System.AfterAdded) asset).afterAdded(world);
         return (T) asset;
     }
     public <T> T removeAsset(String id, Class<T> type) {
@@ -33,7 +27,6 @@ public class AssetsManager {
         if (!allAssets.get(type).containsKey(id)) throw new RuntimeException("No Such Assets: " + id + " (" + type + ")");
         T removed = (T) allAssets.get(type).remove(id);
         cache.remove(type + "#" + removed.hashCode());
-        if (removed instanceof System.AfterRemoved) ((System.AfterRemoved) removed).afterRemoved(world);
         return removed;
     }
     public <T> T getAsset(String id, Class<T> type) {

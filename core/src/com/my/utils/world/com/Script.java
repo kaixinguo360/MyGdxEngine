@@ -11,15 +11,18 @@ public abstract class Script implements Component, StandaloneResource {
     @Config
     public boolean disabled;
 
-    public interface OnInit {
-        void init(World world, Entity entity);
+    public boolean running = false;
+
+    public interface OnStart extends Component {
+        void start(World world, Entity entity);
     }
 
-    public interface OnUpdate {
+    public interface OnUpdate extends Component {
         void update(World world, Entity entity);
     }
 
-    public interface OnKeyDown {
+    public interface OnKeyDown extends Component {
         void keyDown(World world, Entity entity, int keycode);
     }
+
 }

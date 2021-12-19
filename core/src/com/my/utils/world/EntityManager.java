@@ -19,18 +19,11 @@ public class EntityManager implements Disposable {
     @Getter
     private final Batch batch = new Batch();
 
-    private final World world;
-
-    public EntityManager(World world) {
-        this.world = world;
-    }
-
     // ---- Entity ---- //
     public <T extends Entity> T addEntity(T entity) {
         String id = entity.getId();
         if (entities.containsKey(id)) throw new RuntimeException("Duplicate Entity: " + id);
         entities.put(id, entity);
-        if (entity instanceof System.AfterAdded) ((System.AfterAdded) entity).afterAdded(world);
         return entity;
     }
     public Entity removeEntity(String id) {
@@ -41,7 +34,6 @@ public class EntityManager implements Disposable {
             entry.getValue().remove(removed);
             if (listeners.containsKey(filter)) listeners.get(filter).afterEntityRemoved(removed);
         }
-        if (removed instanceof System.AfterRemoved) ((System.AfterRemoved) removed).afterRemoved(world);
         return removed;
     }
     public Entity getEntity(String id) {

@@ -12,13 +12,13 @@ public class Scripts {
 
     private static final Vector3 TMP_1 = new Vector3();
 
-    public static class RemoveScript extends Script implements Script.OnInit, Script.OnUpdate {
+    public static class RemoveScript extends Script implements Script.OnStart, Script.OnUpdate {
 
         private Position position;
         private boolean handleable;
 
         @Override
-        public void init(World world, Entity entity) {
+        public void start(World world, Entity entity) {
             this.handleable = entity.contain(Position.class);
             this.position = entity.getComponent(Position.class);
         }

@@ -9,42 +9,36 @@ import java.util.Map;
 public class World implements Disposable {
 
     @Getter
+    private final AssetsManager assetsManager = new AssetsManager();
+
+    @Getter
     private final SystemManager systemManager = new SystemManager(this);
 
     @Getter
-    private final AssetsManager assetsManager = new AssetsManager(this);
-
-    @Getter
-    private final EntityManager entityManager = new EntityManager(this);
+    private final EntityManager entityManager = new EntityManager();
 
     @Getter
     private final Map<String, Object> environments = new HashMap<>();
 
     public void start() {
         entityManager.updateFilters();
-        for (System system : systemManager.getSystems().values()) {
-            if (system instanceof System.OnStart) {
-                ((System.OnStart) system).start(this);
-            }
+        for (System.OnStart system : systemManager.getSystems(System.OnStart.class)) {
+            system.start(this);
         }
         entityManager.getBatch().commit();
     }
 
     public void update(float deltaTime) {
         entityManager.updateFilters();
-        for (System system : systemManager.getSystems().values()) {
-            if (system instanceof System.OnUpdate) {
-                ((System.OnUpdate) system).update(deltaTime);
-            }
+        for (System.OnUpdate system : systemManager.getSystems(System.OnUpdate.class)) {
+            system.update(deltaTime);
         }
         entityManager.getBatch().commit();
     }
 
     public void keyDown(int keycode) {
-        for (System system : systemManager.getSystems().values()) {
-            if (system instanceof System.OnKeyDown) {
-                ((System.OnKeyDown) system).keyDown(keycode);
-            }
+        for (System.OnKeyDown system : systemManager.getSystems(System.OnKeyDown.class)) {
+            system.keyDown(keycode);
         }
     }
 
