@@ -7,5 +7,9 @@ import java.lang.annotation.*;
 @Target({ElementType.FIELD})
 public @interface Config {
     String name() default "";
-    boolean isPrimitive() default false;
+    Type type() default Type.Loadable;
+
+    enum Type {
+        Primitive, Asset, Loadable
+    }
 }

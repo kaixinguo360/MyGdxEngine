@@ -23,6 +23,7 @@ import java.util.Map;
 public interface StandaloneResource extends Loadable<Map<String, Object>> {
 
     default void load(Map<String, Object> config, LoadContext context) {
+        AssetsManager assetsManager = context.getEnvironment("world", World.class).getAssetsManager();
         try {
             Field[] fields = this.getClass().getFields();
             for (Field field : fields) {
@@ -30,8 +31,12 @@ public interface StandaloneResource extends Loadable<Map<String, Object>> {
                     Config annotation = field.getAnnotation(Config.class);
                     String name = annotation.name();
                     if ("".equals(name)) name = field.getName();
-                    if (annotation.isPrimitive() || field.getType().isPrimitive() || field.getType() == String.class || config.get(name) == null) {
+                    if (annotation.type() == Config.Type.Primitive || field.getType().isPrimitive() || field.getType() == String.class || config.get(name) == null) {
                         field.set(this, config.get(name));
+                    } else if (annotation.type() == Config.Type.Asset) {
+                        String assetId = (String) config.get(name);
+                        Object obj = assetsManager.getAsset(assetId, field.getType());
+                        field.set(this, obj);
                     } else if (field.getType().isEnum()) {
                         Method toString = field.getType().getMethod("valueOf", String.class);
                         Object obj = toString.invoke(null, config.get(name));
@@ -60,6 +65,7 @@ public interface StandaloneResource extends Loadable<Map<String, Object>> {
     }
 
     default Map<String, Object> getConfig(Class<Map<String, Object>> configType, LoadContext context) {
+        AssetsManager assetsManager = context.getEnvironment("world", World.class).getAssetsManager();
         Map<String, Object> map = new LinkedHashMap<>();
         try {
             Field[] fields = this.getClass().getFields();
@@ -69,8 +75,11 @@ public interface StandaloneResource extends Loadable<Map<String, Object>> {
                     String name = annotation.name();
                     if ("".equals(name)) name = field.getName();
                     Object obj = field.get(this);
-                    if (annotation.isPrimitive() || field.getType().isPrimitive() || field.getType() == String.class || obj == null) {
+                    if (annotation.type() == Config.Type.Primitive || field.getType().isPrimitive() || field.getType() == String.class || obj == null) {
                         map.put(name, obj);
+                    } else if (annotation.type() == Config.Type.Asset) {
+                        String assetId = assetsManager.getId(field.getType(), field.get(this));
+                        map.put(name, assetId);
                     } else if (field.getType().isEnum()) {
                         Method toString = field.getType().getMethod("toString");
                         map.put(name, toString.invoke(obj));
