@@ -35,10 +35,10 @@ public abstract class BaseGame extends ApplicationAdapter {
     // Handle Asset Loading
     private boolean loading = false;
     private boolean waitLoading = true;
-    protected void waitLoad(boolean wait) {
+    protected void waitLoad() {
         // Call this method manually before loading complete
         loading = true;
-        this.waitLoading = wait;
+        this.waitLoading = true;
     }
     protected boolean isDoneLoading() {
         if (loading) {
@@ -53,7 +53,7 @@ public abstract class BaseGame extends ApplicationAdapter {
     }
 
     // Register Disposable Assets
-    private Array<Disposable> disposables = new Array<>();
+    private final Array<Disposable> disposables = new Array<>();
     protected void addDisposable(Disposable disposable) {
         disposables.add(disposable);
     }

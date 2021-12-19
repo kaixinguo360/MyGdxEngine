@@ -1,4 +1,4 @@
-package com.my.game;
+package com.my.game.builder;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
@@ -12,6 +12,11 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.utils.ArrayMap;
+import com.my.game.MyInstance;
+import com.my.game.script.AircraftScript;
+import com.my.game.script.ExitScript;
+import com.my.game.script.GUIScript;
+import com.my.game.script.GunScript;
 import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
 import com.my.utils.world.World;
@@ -50,8 +55,8 @@ public class WorldBuilder {
         world.getEntityManager().addEntity(ground);
 
         // ----- Init Dynamic Objects ----- //
-        Aircrafts.AircraftBuilder aircraftBuilder = new Aircrafts.AircraftBuilder(world);
-        Guns.GunBuilder gunBuilder = new Guns.GunBuilder(world);
+        AircraftBuilder aircraftBuilder = new AircraftBuilder(world);
+        GunBuilder gunBuilder = new GunBuilder(world);
         ObjectBuilder objectBuilder = new ObjectBuilder(world);
         for (int i = 0; i < 100; i++) {
             objectBuilder.createBox(new Matrix4().translate(10, 0.5f, -10 * i), ground.getId());
@@ -69,21 +74,21 @@ public class WorldBuilder {
         }
 
         Entity aircraftEntity = aircraftBuilder.createAircraft(new Matrix4().translate(0, 0, 200), 8000, 40);
-        aircraftEntity.getComponent(Aircrafts.AircraftScript.class).body.addComponent(new Camera(0, 0, 1, 1, 0, CameraSystem.FollowType.A));
+        aircraftEntity.getComponent(AircraftScript.class).body.addComponent(new Camera(0, 0, 1, 1, 0, CameraSystem.FollowType.A));
 
         Entity gunEntity = gunBuilder.createGun("ground", new Matrix4().translate(0, 0, -20));
-        gunEntity.getComponent(Guns.GunScript.class).disabled = true;
-        gunEntity.getComponent(Guns.GunScript.class).barrel.addComponent(new Camera(0, 0.7f, 0.3f, 1, 1, CameraSystem.FollowType.A));
+        gunEntity.getComponent(GunScript.class).disabled = true;
+        gunEntity.getComponent(GunScript.class).barrel.addComponent(new Camera(0, 0.7f, 0.3f, 1, 1, CameraSystem.FollowType.A));
 
         Entity exitScriptEntity = new Entity();
         exitScriptEntity.setId("exitScriptEntity");
-        exitScriptEntity.addComponent(new Scripts.ExitScript());
+        exitScriptEntity.addComponent(new ExitScript());
         world.getEntityManager().addEntity(exitScriptEntity);
 
         // Init GUI
         Entity guiEntity = new Entity();
         guiEntity.setId("guiEntity");
-        guiEntity.addComponent(new Scripts.GUIScript());
+        guiEntity.addComponent(new GUIScript());
         world.getEntityManager().addEntity(guiEntity);
 
         return world;
@@ -92,8 +97,8 @@ public class WorldBuilder {
     public static void initAssets(World world) {
 
         AssetsManager assetsManager = world.getAssetsManager();
-        Aircrafts.initAssets(assetsManager);
-        Guns.initAssets(assetsManager);
+        AircraftBuilder.initAssets(assetsManager);
+        GunBuilder.initAssets(assetsManager);
         ObjectBuilder.initAssets(assetsManager);
 
         // ----- Init Models ----- //

@@ -1,4 +1,4 @@
-package com.my.game;
+package com.my.game.builder;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
@@ -10,6 +10,8 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.utils.ArrayMap;
+import com.my.game.MyInstance;
+import com.my.game.constraint.ConnectConstraint;
 import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
 import com.my.utils.world.World;
@@ -54,7 +56,7 @@ public class ObjectBuilder {
         String id = "Box-" + boxNum++;
         addObject(
                 id, transform, entity,
-                base == null ? null : new Constraints.ConnectConstraint(base, id, 2000)
+                base == null ? null : new ConnectConstraint(base, id, 2000)
         );
         return entity;
     }

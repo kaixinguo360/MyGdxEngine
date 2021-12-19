@@ -1,22 +1,32 @@
-package com.my.utils.base;
+package com.my.game.script;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.my.utils.world.Entity;
+import com.my.utils.world.World;
+import com.my.utils.world.sys.ScriptSystem;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class BaseUI {
+public class GUIScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
 
     public Stage stage;
     public Skin skin;
     private VerticalGroup group;
-    private Map<String, Actor> widgets = new HashMap<>();
-    void init() {
+    private final Map<String, Actor> widgets = new HashMap<>();
+
+    private AircraftScript aircraftScript;
+
+    @Override
+    public void start(World world, Entity entity) {
+
+        Entity aircraftEntity = world.getEntityManager().getEntity("Aircraft-6");
+        aircraftScript = aircraftEntity.getComponent(AircraftScript.class);
 
         // Create Skin
         skin = new Skin(Gdx.files.internal("skin/neon-ui.json"));
@@ -38,22 +48,22 @@ public class BaseUI {
         group = new VerticalGroup();
         group.fill();
         window.add(group);
+
+        // Add Label
+        Label label = new Label("", skin);
+        label.getStyle().fontColor = Color.DARK_GRAY;
+        addWidget("label", label);
+
     }
 
-    void render() {
+    @Override
+    public void update(World world, Entity entity) {
+        getWidget("label", Label.class).setText(
+                "\nV = " + Math.floor(aircraftScript.getVelocity()) +
+                        "\nH = " + Math.floor(aircraftScript.getHeight()) + "\n");
         stage.act();
         stage.draw();
     }
-
-    void dispose() {
-        stage.dispose();
-    }
-
-    void resize(int width, int height) {
-        stage.getViewport().update(width, height, true);
-    }
-
-    // -------------------- Public & Protected -------------------- //
 
     // Add Widget
     public void addWidget(String name, Actor widget) {

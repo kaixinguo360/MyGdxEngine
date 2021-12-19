@@ -1,10 +1,10 @@
 package com.my.game;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.physics.bullet.Bullet;
+import com.my.game.builder.WorldBuilder;
 import com.my.utils.base.BaseGame;
 import com.my.utils.world.World;
 import com.my.utils.world.sys.KeyInputSystem;
@@ -20,7 +20,19 @@ public class MyGame extends BaseGame {
 
         // ----- Loading Assets ----- //
         assetManager.load("obj/sky.g3db", Model.class);
-        waitLoad(true);
+        waitLoad();
+    }
+
+    @Override
+    protected void doneLoading() {
+        System.out.println("doneLoading");
+
+        // ----- Create Models ----- //
+        WorldBuilder.skyModel = assetManager.get("obj/sky.g3db", Model.class);
+        WorldBuilder.skyModel.nodes.get(0).scale.scl(20);
+
+        // ----- Init Bullet ----- //
+        Bullet.init();
 
         // ----- Init InputAdapter ----- //
         inputAdapter = new InputAdapter() {
@@ -40,18 +52,6 @@ public class MyGame extends BaseGame {
                 return false;
             }
         };
-    }
-
-    @Override
-    protected void doneLoading() {
-        System.out.println("doneLoading");
-
-        // ----- Create Models ----- //
-        WorldBuilder.skyModel = assetManager.get("obj/sky.g3db", Model.class);
-        WorldBuilder.skyModel.nodes.get(0).scale.scl(20);
-
-        // ----- Init Bullet ----- //
-        Bullet.init();
 
         // ----- Create & Save World ----- //
         world = WorldBuilder.createWorld();
@@ -67,10 +67,6 @@ public class MyGame extends BaseGame {
 
     @Override
     protected void myRender() {
-
-        // Update World
         world.update(1 / 60f);
-
-        Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 }

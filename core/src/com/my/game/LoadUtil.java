@@ -1,5 +1,6 @@
 package com.my.game;
 
+import com.my.game.builder.WorldBuilder;
 import com.my.utils.world.LoaderManager;
 import com.my.utils.world.World;
 import com.my.utils.world.loader.WorldLoader;
