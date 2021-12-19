@@ -84,6 +84,7 @@ public class WorldLoader implements Loader {
                     systemManager.addSystem(context.getLoaderManager().load(systemConfig, systemType, context));
                 }
             }
+            world.start();
 
             if (beforeLoadEntities != null) beforeLoadEntities.accept(world);
             EntityManager entityManager = world.getEntityManager();

@@ -27,12 +27,13 @@ public class WorldBuilder {
 
         // Init System
         world.getSystemManager().addSystem(new CameraSystem());
-        world.getSystemManager().addSystem(new ConstraintSystem());
         world.getSystemManager().addSystem(new PhysicsSystem());
         world.getSystemManager().addSystem(new ScriptSystem());
         world.getSystemManager().addSystem(new RenderSystem());
         world.getSystemManager().addSystem(new EnvironmentSystem());
         world.getSystemManager().addSystem(new KeyInputSystem());
+        world.getSystemManager().addSystem(new ConstraintSystem());
+        world.start();
 
         // Init Assets
         initAssets(world);
@@ -84,9 +85,6 @@ public class WorldBuilder {
         guiEntity.setId("guiEntity");
         guiEntity.addComponent(new Scripts.GUIScript());
         world.getEntityManager().addEntity(guiEntity);
-
-        // Init World Entity Filters
-        world.start();
 
         return world;
     }

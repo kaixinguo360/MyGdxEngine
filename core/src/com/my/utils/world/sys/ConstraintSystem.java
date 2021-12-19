@@ -17,6 +17,12 @@ import static com.badlogic.gdx.physics.bullet.dynamics.btConstraintParams.BT_CON
 public class ConstraintSystem extends BaseSystem implements EntityListener, System.OnStart {
 
     private final List<Constraint> constraints = new ArrayList<>();
+    private btDynamicsWorld dynamicsWorld;
+
+    @Override
+    public void start(World world) {
+        dynamicsWorld = world.getSystemManager().getSystem(PhysicsSystem.class).dynamicsWorld;
+    }
 
     @Override
     public boolean isHandleable(Entity entity) {
@@ -25,7 +31,16 @@ public class ConstraintSystem extends BaseSystem implements EntityListener, Syst
 
     @Override
     public void afterEntityAdded(Entity entity) {
-        constraints.addAll(entity.getComponents(Constraint.class));
+        List<Constraint> constraintList = entity.getComponents(Constraint.class);
+        constraints.addAll(constraintList);
+        for (Constraint constraint : constraintList) {
+            btRigidBody bodyA = world.getEntityManager().getEntity(constraint.bodyA).getComponent(RigidBody.class).body;
+            btRigidBody bodyB = world.getEntityManager().getEntity(constraint.bodyB).getComponent(RigidBody.class).body;
+            constraint.btConstraint = constraint.get(bodyA, bodyB);
+            constraint.btConstraint.setParam(BT_CONSTRAINT_CFM, 0);
+            constraint.btConstraint.setParam(BT_CONSTRAINT_ERP, 0.5f);
+            dynamicsWorld.addConstraint(constraint.btConstraint);
+        }
     }
 
     @Override
@@ -43,19 +58,6 @@ public class ConstraintSystem extends BaseSystem implements EntityListener, Syst
                 }
                 it.remove();
             }
-        }
-    }
-
-    @Override
-    public void start(World world) {
-        btDynamicsWorld dynamicsWorld = world.getSystemManager().getSystem(PhysicsSystem.class).dynamicsWorld;
-        for (Constraint constraint : constraints) {
-            btRigidBody bodyA = world.getEntityManager().getEntity(constraint.bodyA).getComponent(RigidBody.class).body;
-            btRigidBody bodyB = world.getEntityManager().getEntity(constraint.bodyB).getComponent(RigidBody.class).body;
-            constraint.btConstraint = constraint.get(bodyA, bodyB);
-            constraint.btConstraint.setParam(BT_CONSTRAINT_CFM, 0);
-            constraint.btConstraint.setParam(BT_CONSTRAINT_ERP, 0.5f);
-            dynamicsWorld.addConstraint(constraint.btConstraint);
         }
     }
 

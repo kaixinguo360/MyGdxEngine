@@ -49,9 +49,7 @@ public class LoadUtil {
     }
 
     public static World loadWorld(Map config) {
-        World world = loaderManager.load(config, World.class);
-        world.start();
-        return world;
+        return loaderManager.load(config, World.class);
     }
 
     public static String saveWorldToYaml(World world) {
