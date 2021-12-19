@@ -68,12 +68,11 @@ public class WorldBuilder {
         }
 
         Entity aircraftEntity = aircraftBuilder.createAircraft(new Matrix4().translate(0, 0, 200), 8000, 40);
-        aircraftEntity.addComponent(new Aircrafts.AircraftScript());
-        aircraftEntity.getComponent(Aircrafts.Aircraft.class).body.addComponent(new Camera(0, 0, 1, 1, 0, CameraSystem.FollowType.A));
+        aircraftEntity.getComponent(Aircrafts.AircraftScript.class).body.addComponent(new Camera(0, 0, 1, 1, 0, CameraSystem.FollowType.A));
 
         Entity gunEntity = gunBuilder.createGun("ground", new Matrix4().translate(0, 0, -20));
-        gunEntity.addComponent(new Guns.GunScript()).disabled = true;
-        gunEntity.getComponent(Guns.Gun.class).barrel.addComponent(new Camera(0, 0.7f, 0.3f, 1, 1, CameraSystem.FollowType.A));
+        gunEntity.getComponent(Guns.GunScript.class).disabled = true;
+        gunEntity.getComponent(Guns.GunScript.class).barrel.addComponent(new Camera(0, 0.7f, 0.3f, 1, 1, CameraSystem.FollowType.A));
 
         Entity exitScriptEntity = new Entity();
         exitScriptEntity.setId("exitScriptEntity");

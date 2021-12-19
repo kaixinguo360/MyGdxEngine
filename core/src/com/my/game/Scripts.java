@@ -57,13 +57,13 @@ public class Scripts {
         private VerticalGroup group;
         private Map<String, Actor> widgets = new HashMap<>();
 
-        private Aircrafts.Aircraft aircraft;
+        private Aircrafts.AircraftScript aircraftScript;
 
         @Override
         public void start(World world, Entity entity) {
 
             Entity aircraftEntity = world.getEntityManager().getEntity("Aircraft-6");
-            aircraft = aircraftEntity.getComponent(Aircrafts.Aircraft.class);
+            aircraftScript = aircraftEntity.getComponent(Aircrafts.AircraftScript.class);
 
             // Create Skin
             skin = new Skin(Gdx.files.internal("skin/neon-ui.json"));
@@ -96,8 +96,8 @@ public class Scripts {
         @Override
         public void update(World world, Entity entity) {
             getWidget("label", Label.class).setText(
-                    "\nV = " + Math.floor(aircraft.getVelocity()) +
-                            "\nH = " + Math.floor(aircraft.getHeight()) + "\n");
+                    "\nV = " + Math.floor(aircraftScript.getVelocity()) +
+                            "\nH = " + Math.floor(aircraftScript.getHeight()) + "\n");
             stage.act();
             stage.draw();
         }

@@ -3,7 +3,6 @@ package com.my.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
@@ -24,7 +23,6 @@ import com.my.utils.world.com.*;
 import com.my.utils.world.sys.*;
 
 import java.lang.System;
-import java.util.HashMap;
 import java.util.Map;
 
 public class Guns {
@@ -91,18 +89,18 @@ public class Guns {
         public Entity createGun(String baseObjectId, Matrix4 transform) {
 
             // Gun
-            Guns.Gun gun = new Guns.Gun();
+            GunScript gunScript = new GunScript();
 
-            gun.gunController_Y = new GunController();
-            gun.gunController_X = new GunController(-90, 0);
-            gun.rotate_Y = createRotate(transform.cpy().translate(0, 0.5f, 0), gun.gunController_Y, world.getEntityManager().getEntity(baseObjectId));
-            gun.rotate_X = createRotate(transform.cpy().translate(0, 1.5f, 0).rotate(Vector3.Z, 90), gun.gunController_X, gun.rotate_Y);
-            gun.barrel = createBarrel(transform.cpy().translate(0, 1.5f, -3), gun.rotate_X);
+            gunScript.gunController_Y = new GunController();
+            gunScript.gunController_X = new GunController(-90, 0);
+            gunScript.rotate_Y = createRotate(transform.cpy().translate(0, 0.5f, 0), gunScript.gunController_Y, world.getEntityManager().getEntity(baseObjectId));
+            gunScript.rotate_X = createRotate(transform.cpy().translate(0, 1.5f, 0).rotate(Vector3.Z, 90), gunScript.gunController_X, gunScript.rotate_Y);
+            gunScript.barrel = createBarrel(transform.cpy().translate(0, 1.5f, -3), gunScript.rotate_X);
 
             // Gun Entity
             Entity entity = new Entity();
             entity.setId("Gun-" + gunNum++);
-            entity.addComponent(gun);
+            entity.addComponent(gunScript);
             world.getEntityManager().addEntity(entity);
 
             return entity;
@@ -120,12 +118,22 @@ public class Guns {
         }
     }
 
-    public static class Gun implements CameraController, Component, LoadableResource {
+    public static class GunScript extends Script implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, KeyInputSystem.OnKeyDown {
+
+        // ----- Constants ----- //
+        private final static short BOMB_FLAG = 1 << 8;
+        private final static short GUN_FLAG = 1 << 9;
+        private final static short ALL_FLAG = -1;
 
         // ----- Temporary ----- //
         private static final Vector3 tmpV = new Vector3();
         private static final Matrix4 tmpM = new Matrix4();
         private static final Quaternion tmpQ = new Quaternion();
+
+        private World world;
+        private AssetsManager assetsManager;
+        private PhysicsSystem physicsSystem;
+        private Camera camera;
 
         public Entity rotate_Y, rotate_X, barrel;
         public GunController gunController_Y;
@@ -134,33 +142,8 @@ public class Guns {
         int bulletNum;
 
         @Override
-        public void setCamera(PerspectiveCamera camera, int index) {
-            if (index == 0) {
-                Matrix4 transform = getTransform();
-                camera.position.set(0, 1, 0).mul(transform);
-                camera.direction.set(0, 0, -1).rot(transform);
-                camera.up.set(0, 1 , 0).rot(transform);
-                camera.update();
-            } else if (index == 1){
-                Matrix4 transform = getTransform();
-                transform.getTranslation(tmpV);
-                float angle = transform.getRotation(tmpQ).getAngleAround(Vector3.Y);
-                tmpM.setToTranslation(tmpV).rotate(Vector3.Y, angle).translate(0, 0, 20);
-                camera.position.setZero().mul(tmpM);
-                camera.lookAt(transform.getTranslation(tmpV).add(0, 0, 0));
-                camera.up.set(0, 1, 0);
-                camera.update();
-            }
-        }
-        public Matrix4 getTransform() {
-            return barrel.getComponent(Position.class).transform;
-        }
-        public btRigidBody getBody() {
-            return barrel.getComponent(RigidBody.class).body;
-        }
-
-        @Override
         public void load(Map<String, Object> config, LoadContext context) {
+            super.load(config, context);
             EntityManager entityManager = context.getEnvironment("world", World.class).getEntityManager();
             rotate_Y = entityManager.getEntity((String) config.get("rotate_Y"));
             rotate_X = entityManager.getEntity((String) config.get("rotate_X"));
@@ -173,54 +156,38 @@ public class Guns {
 
         @Override
         public Map<String, Object> getConfig(Class<Map<String, Object>> configType, LoadContext context) {
-            return new HashMap<String, Object>() {{
-                put("rotate_Y", rotate_Y.getId());
-                put("rotate_X", rotate_X.getId());
-                put("barrel", barrel.getId());
-                put("bulletNum", bulletNum);
-            }};
+            Map<String, Object> config = super.getConfig(configType, context);
+            config.put("rotate_Y", rotate_Y.getId());
+            config.put("rotate_X", rotate_X.getId());
+            config.put("barrel", barrel.getId());
+            config.put("bulletNum", bulletNum);
+            return config;
         }
-    }
-
-    public static class GunScript extends Script implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, KeyInputSystem.OnKeyDown {
-
-        private World world;
-        private AssetsManager assetsManager;
-        private PhysicsSystem physicsSystem;
-        private Guns.Gun gun;
 
         @Override
         public void start(World world, Entity entity) {
             this.world = world;
             this.assetsManager = world.getAssetsManager();
             this.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
-            this.gun = entity.getComponent(Guns.Gun.class);
+            this.camera = barrel.getComponent(Camera.class);
         }
 
         @Override
         public void update(World world, Entity entity) {
+            if (camera == null) return;
             update();
         }
 
         @Override
         public void keyDown(World world, Entity entity, int keycode) {
+            if (camera == null) return;
             if (keycode == Input.Keys.TAB) changeCamera();
             if (keycode == Input.Keys.SHIFT_LEFT && !disabled) changeCameraFollowType();
         }
 
-        // ----- Constants ----- //
-        private final static short BOMB_FLAG = 1 << 8;
-        private final static short GUN_FLAG = 1 << 9;
-        private final static short ALL_FLAG = -1;
-
-        // ----- Temporary ----- //
-        private static final Vector3 tmpV = new Vector3();
-        private static final Matrix4 tmpM = new Matrix4();
-        private static final Quaternion tmpQ = new Quaternion();
-
         public void update() {
             float v = 0.025f;
-            if (gun.gunController_Y != null && gun.gunController_X != null) {
+            if (gunController_Y != null && gunController_X != null) {
                 if (Gdx.input.isKeyPressed(Input.Keys.W)) rotate(0, -v);
                 if (Gdx.input.isKeyPressed(Input.Keys.S)) rotate(0, v);
                 if (Gdx.input.isKeyPressed(Input.Keys.A)) rotate(v, 0);
@@ -242,37 +209,36 @@ public class Guns {
         public void explode() {
             System.out.println("Explosion!");
             // TODO: Optimize Constraint Component
-            gun.rotate_Y.removeComponent(Constraint.class);
-            gun.rotate_X.removeComponent(Constraint.class);
-            gun.barrel.removeComponent(Constraint.class);
+            rotate_Y.removeComponent(Constraint.class);
+            rotate_X.removeComponent(Constraint.class);
+            barrel.removeComponent(Constraint.class);
             physicsSystem.addExplosion(getTransform().getTranslation(tmpV), 2000);
         }
 
         private Entity createBullet(Matrix4 transform) {
             Entity entity = new MyInstance(assetsManager, "bullet", "bullet", null,
                     new Collisions.BulletCollisionHandler(BOMB_FLAG, ALL_FLAG));
-            entity.setId("Bullet-" + gun.bulletNum++);
+            entity.setId("Bullet-" + bulletNum++);
             world.getEntityManager().addEntity(entity).getComponent(Position.class).transform.set(transform);
             entity.addComponent(new Scripts.RemoveScript());
             return entity;
         }
         public void rotate(float stepY, float stepX) {
-            setDirection(gun.gunController_Y.target + stepY, gun.gunController_X.target + stepX);
+            setDirection(gunController_Y.target + stepY, gunController_X.target + stepX);
         }
         public void setDirection(float angleY, float angleX) {
             getBody().activate();
-            gun.gunController_Y.target = angleY;
-            gun.gunController_X.target = angleX;
+            gunController_Y.target = angleY;
+            gunController_X.target = angleX;
         }
         public Matrix4 getTransform() {
-            return gun.barrel.getComponent(Position.class).transform;
+            return barrel.getComponent(Position.class).transform;
         }
         public btRigidBody getBody() {
-            return gun.barrel.getComponent(RigidBody.class).body;
+            return barrel.getComponent(RigidBody.class).body;
         }
         public void changeCamera() {
             disabled = !disabled;
-            Camera camera = gun.barrel.getComponent(Camera.class);
             if (!disabled) {
                 camera.layer = 0;
                 camera.startX = 0;
@@ -289,7 +255,6 @@ public class Guns {
             world.getSystemManager().getSystem(CameraSystem.class).updateCameras();
         }
         public void changeCameraFollowType() {
-            Camera camera = gun.barrel.getComponent(Camera.class);
             switch (camera.followType) {
                 case A: camera.followType = CameraSystem.FollowType.B; break;
                 case B: camera.followType = CameraSystem.FollowType.A; break;

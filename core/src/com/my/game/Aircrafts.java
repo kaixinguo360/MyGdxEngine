@@ -3,7 +3,6 @@ package com.my.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
@@ -26,7 +25,6 @@ import com.my.utils.world.sys.*;
 import lombok.NoArgsConstructor;
 
 import java.lang.System;
-import java.util.HashMap;
 import java.util.Map;
 
 public class Aircrafts {
@@ -118,38 +116,38 @@ public class Aircrafts {
         public Entity createAircraft(Matrix4 transform, float force, float maxVelocity) {
 
             // Aircraft
-            Aircraft aircraft = new Aircraft();
+            AircraftScript aircraftScript = new AircraftScript();
 
             // Body
-            aircraft.body = createBody(transform.cpy().translate(0, 0.5f, -3), null);
-            aircraft.engine = createEngine(transform.cpy().translate(0, 0.6f, -6).rotate(Vector3.X, -90), force, maxVelocity, aircraft.body);
+            aircraftScript.body = createBody(transform.cpy().translate(0, 0.5f, -3), null);
+            aircraftScript.engine = createEngine(transform.cpy().translate(0, 0.6f, -6).rotate(Vector3.X, -90), force, maxVelocity, aircraftScript.body);
 
             // Left
-            aircraft.aircraftController_L = new AircraftController(-0.15f, 0.2f, 0.5f);
-            aircraft.rotate_L = createRotate(transform.cpy().translate(-1, 0.5f, -5).rotate(Vector3.Z, 90), aircraft.aircraftController_L, aircraft.body);
-            aircraft.wing_L1 = createWing(transform.cpy().translate(-2.5f, 0.5f, -5).rotate(Vector3.X, 14), aircraft.rotate_L);
-            aircraft.wing_L2 = createWing(transform.cpy().translate(-4.5f, 0.5f, -5).rotate(Vector3.X, 14), aircraft.wing_L1);
+            aircraftScript.aircraftController_L = new AircraftController(-0.15f, 0.2f, 0.5f);
+            aircraftScript.rotate_L = createRotate(transform.cpy().translate(-1, 0.5f, -5).rotate(Vector3.Z, 90), aircraftScript.aircraftController_L, aircraftScript.body);
+            aircraftScript.wing_L1 = createWing(transform.cpy().translate(-2.5f, 0.5f, -5).rotate(Vector3.X, 14), aircraftScript.rotate_L);
+            aircraftScript.wing_L2 = createWing(transform.cpy().translate(-4.5f, 0.5f, -5).rotate(Vector3.X, 14), aircraftScript.wing_L1);
 
             // Right
-            aircraft.aircraftController_R = new AircraftController(-0.15f, 0.2f, 0.5f);
-            aircraft.rotate_R = createRotate(transform.cpy().translate(1, 0.5f, -5).rotate(Vector3.Z, 90), aircraft.aircraftController_R, aircraft.body);
-            aircraft.wing_R1 = createWing(transform.cpy().translate(2.5f, 0.5f, -5).rotate(Vector3.X, 14), aircraft.rotate_R);
-            aircraft.wing_R2 = createWing(transform.cpy().translate(4.5f, 0.5f, -5).rotate(Vector3.X, 14), aircraft.wing_R1);
+            aircraftScript.aircraftController_R = new AircraftController(-0.15f, 0.2f, 0.5f);
+            aircraftScript.rotate_R = createRotate(transform.cpy().translate(1, 0.5f, -5).rotate(Vector3.Z, 90), aircraftScript.aircraftController_R, aircraftScript.body);
+            aircraftScript.wing_R1 = createWing(transform.cpy().translate(2.5f, 0.5f, -5).rotate(Vector3.X, 14), aircraftScript.rotate_R);
+            aircraftScript.wing_R2 = createWing(transform.cpy().translate(4.5f, 0.5f, -5).rotate(Vector3.X, 14), aircraftScript.wing_R1);
 
             // Horizontal Tail
-            aircraft.aircraftController_T = new AircraftController(-0.2f, 0.2f, 1f);
-            aircraft.rotate_T = createRotate(transform.cpy().translate(0, 0.5f, 0.1f).rotate(Vector3.Z, 90), aircraft.aircraftController_T, aircraft.body);
-            aircraft.wing_TL = createWing(transform.cpy().translate(-1.5f, 0.5f, 0.1f).rotate(Vector3.X, 13f), aircraft.rotate_T);
-            aircraft.wing_TR = createWing(transform.cpy().translate(1.5f, 0.5f, 0.1f).rotate(Vector3.X, 13f), aircraft.rotate_T);
+            aircraftScript.aircraftController_T = new AircraftController(-0.2f, 0.2f, 1f);
+            aircraftScript.rotate_T = createRotate(transform.cpy().translate(0, 0.5f, 0.1f).rotate(Vector3.Z, 90), aircraftScript.aircraftController_T, aircraftScript.body);
+            aircraftScript.wing_TL = createWing(transform.cpy().translate(-1.5f, 0.5f, 0.1f).rotate(Vector3.X, 13f), aircraftScript.rotate_T);
+            aircraftScript.wing_TR = createWing(transform.cpy().translate(1.5f, 0.5f, 0.1f).rotate(Vector3.X, 13f), aircraftScript.rotate_T);
 
             // Vertical Tail
-            aircraft.wing_VL = createWing(transform.cpy().translate(-0.6f, 1f, -1).rotate(Vector3.Z, 90), aircraft.body);
-            aircraft.wing_VR = createWing(transform.cpy().translate(0.6f, 1f, -1).rotate(Vector3.Z, 90), aircraft.body);
+            aircraftScript.wing_VL = createWing(transform.cpy().translate(-0.6f, 1f, -1).rotate(Vector3.Z, 90), aircraftScript.body);
+            aircraftScript.wing_VR = createWing(transform.cpy().translate(0.6f, 1f, -1).rotate(Vector3.Z, 90), aircraftScript.body);
 
             // Aircraft Entity
             Entity entity = new Entity();
             entity.setId("Aircraft-" + aircraftNum++);
-            entity.addComponent(aircraft);
+            entity.addComponent(aircraftScript);
             world.getEntityManager().addEntity(entity);
 
             return entity;
@@ -167,12 +165,22 @@ public class Aircrafts {
         }
     }
 
-    public static class Aircraft implements CameraController, Component, LoadableResource {
+    public static class AircraftScript extends Script implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, KeyInputSystem.OnKeyDown {
+
+        // ----- Constants ----- //
+        private final static short BOMB_FLAG = 1 << 8;
+        private final static short AIRCRAFT_FLAG = 1 << 9;
+        private final static short ALL_FLAG = -1;
 
         // ----- Temporary ----- //
         private static final Vector3 tmpV1 = new Vector3();
         private static final Matrix4 tmpM = new Matrix4();
-        private static final Quaternion tmpQ = new Quaternion();;
+        private static final Quaternion tmpQ = new Quaternion();
+
+        private World world;
+        private AssetsManager assetsManager;
+        private PhysicsSystem physicsSystem;
+        private Camera camera;
 
         public Entity body;
         public Entity engine;
@@ -189,39 +197,8 @@ public class Aircrafts {
         public int bombNum;
 
         @Override
-        public void setCamera(PerspectiveCamera camera, int index) {
-            if (index == 0) {
-                Matrix4 transform = getTransform();
-                camera.position.set(0, 0.8f, -1.5f).mul(transform);
-                camera.direction.set(0, 0, -1).rot(transform);
-                camera.up.set(0, 1 , 0).rot(transform);
-                camera.update();
-            } else if (index == 1){
-                Matrix4 transform = getTransform();
-                transform.getTranslation(tmpV1);
-                float angle = transform.getRotation(tmpQ).getAngleAround(Vector3.Y);
-                tmpM.setToTranslation(tmpV1).rotate(Vector3.Y, angle).translate(0, 0, 20);
-                camera.position.setZero().mul(tmpM);
-                camera.lookAt(transform.getTranslation(tmpV1).add(0, 0, 0));
-                camera.up.set(0, 1, 0);
-                camera.update();
-            }
-        }
-        public float getVelocity() {
-            return getBody().getLinearVelocity().len();
-        }
-        public float getHeight() {
-            return getTransform().getTranslation(tmpV1).y;
-        }
-        public Matrix4 getTransform() {
-            return body.getComponent(Position.class).transform;
-        }
-        public btRigidBody getBody() {
-            return body.getComponent(RigidBody.class).body;
-        }
-
-        @Override
         public void load(Map<String, Object> config, LoadContext context) {
+            super.load(config, context);
             EntityManager entityManager = context.getEnvironment("world", World.class).getEntityManager();
             Map<String, Object> map = config;
             body = entityManager.getEntity((String) map.get("body"));
@@ -246,74 +223,58 @@ public class Aircrafts {
 
         @Override
         public Map<String, Object> getConfig(Class<Map<String, Object>> configType, LoadContext context) {
-            return new HashMap<String, Object>() {{
-                put("body", body.getId());
-                put("engine", engine.getId());
-                put("rotate_L", rotate_L.getId());
-                put("wing_L1", wing_L1.getId());
-                put("wing_L2", wing_L2.getId());
-                put("rotate_R", rotate_R.getId());
-                put("wing_R1", wing_R1.getId());
-                put("wing_R2", wing_R2.getId());
-                put("rotate_T", rotate_T.getId());
-                put("wing_TL", wing_TL.getId());
-                put("wing_TR", wing_TR.getId());
-                put("wing_VL", wing_VL.getId());
-                put("wing_VR", wing_VR.getId());
-                put("bombNum", bombNum);
-            }};
+            Map<String, Object> config = super.getConfig(configType, context);
+            config.put("body", body.getId());
+            config.put("engine", engine.getId());
+            config.put("rotate_L", rotate_L.getId());
+            config.put("wing_L1", wing_L1.getId());
+            config.put("wing_L2", wing_L2.getId());
+            config.put("rotate_R", rotate_R.getId());
+            config.put("wing_R1", wing_R1.getId());
+            config.put("wing_R2", wing_R2.getId());
+            config.put("rotate_T", rotate_T.getId());
+            config.put("wing_TL", wing_TL.getId());
+            config.put("wing_TR", wing_TR.getId());
+            config.put("wing_VL", wing_VL.getId());
+            config.put("wing_VR", wing_VR.getId());
+            config.put("bombNum", bombNum);
+            return config;
         }
-    }
-
-    public static class AircraftScript extends Script implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, KeyInputSystem.OnKeyDown {
-
-        private World world;
-        private AssetsManager assetsManager;
-        private PhysicsSystem physicsSystem;
-        private Aircrafts.Aircraft aircraft;
 
         @Override
         public void start(World world, Entity entity) {
             this.world = world;
             this.assetsManager = world.getAssetsManager();
             this.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
-            this.aircraft = entity.getComponent(Aircrafts.Aircraft.class);
+            this.camera = body.getComponent(Camera.class);
         }
 
         @Override
         public void update(World world, Entity entity) {
+            if (camera == null) return;
             update();
         }
 
         @Override
         public void keyDown(World world, Entity entity, int keycode) {
+            if (camera == null) return;
             if (keycode == Input.Keys.TAB) changeCamera();
             if (keycode == Input.Keys.SHIFT_LEFT && !disabled) changeCameraFollowType();
         }
 
-        // ----- Constants ----- //
-        private final static short BOMB_FLAG = 1 << 8;
-        private final static short AIRCRAFT_FLAG = 1 << 9;
-        private final static short ALL_FLAG = -1;
-
-        // ----- Temporary ----- //
-        private static final Vector3 tmpV1 = new Vector3();
-        private static final Matrix4 tmpM = new Matrix4();
-        private static final Quaternion tmpQ = new Quaternion();
-
         public void update() {
             float v1 = 1f;
             float v2 = 0.5f;
-            if (aircraft.aircraftController_L != null && aircraft.aircraftController_R != null) {
-                if (Gdx.input.isKeyPressed(Input.Keys.W)) aircraft.aircraftController_T.rotate(v1);
-                if (Gdx.input.isKeyPressed(Input.Keys.S)) aircraft.aircraftController_T.rotate(-v1);
+            if (aircraftController_L != null && aircraftController_R != null) {
+                if (Gdx.input.isKeyPressed(Input.Keys.W)) aircraftController_T.rotate(v1);
+                if (Gdx.input.isKeyPressed(Input.Keys.S)) aircraftController_T.rotate(-v1);
                 if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-                    aircraft.aircraftController_L.rotate(v2);
-                    aircraft.aircraftController_R.rotate(-v2);
+                    aircraftController_L.rotate(v2);
+                    aircraftController_R.rotate(-v2);
                 }
                 if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-                    aircraft.aircraftController_L.rotate(-v2);
-                    aircraft.aircraftController_R.rotate(v2);
+                    aircraftController_L.rotate(-v2);
+                    aircraftController_R.rotate(v2);
                 }
             }
             if (Gdx.input.isKeyPressed(Input.Keys.J)) fire();
@@ -332,38 +293,43 @@ public class Aircrafts {
         public void explode() {
             System.out.println("Explosion!");
             // TODO: Optimize Constraint Component
-            aircraft.body.removeComponent(Constraint.class);
-            aircraft.engine.removeComponent(Constraint.class);
-            aircraft.rotate_L.removeComponent(Constraint.class);
-            aircraft.rotate_R.removeComponent(Constraint.class);
-            aircraft.rotate_T.removeComponent(Constraint.class);
-            aircraft.wing_L1.removeComponent(Constraint.class);
-            aircraft.wing_L2.removeComponent(Constraint.class);
-            aircraft.wing_R1.removeComponent(Constraint.class);
-            aircraft.wing_R2.removeComponent(Constraint.class);
-            aircraft.wing_TL.removeComponent(Constraint.class);
-            aircraft.wing_TR.removeComponent(Constraint.class);
-            aircraft.wing_VL.removeComponent(Constraint.class);
-            aircraft.wing_VR.removeComponent(Constraint.class);
+            body.removeComponent(Constraint.class);
+            engine.removeComponent(Constraint.class);
+            rotate_L.removeComponent(Constraint.class);
+            rotate_R.removeComponent(Constraint.class);
+            rotate_T.removeComponent(Constraint.class);
+            wing_L1.removeComponent(Constraint.class);
+            wing_L2.removeComponent(Constraint.class);
+            wing_R1.removeComponent(Constraint.class);
+            wing_R2.removeComponent(Constraint.class);
+            wing_TL.removeComponent(Constraint.class);
+            wing_TR.removeComponent(Constraint.class);
+            wing_VL.removeComponent(Constraint.class);
+            wing_VR.removeComponent(Constraint.class);
             physicsSystem.addExplosion(getTransform().getTranslation(tmpV1), 2000);
         }
+        public float getVelocity() {
+            return getBody().getLinearVelocity().len();
+        }
+        public float getHeight() {
+            return getTransform().getTranslation(tmpV1).y;
+        }
         public Matrix4 getTransform() {
-            return aircraft.body.getComponent(Position.class).transform;
+            return body.getComponent(Position.class).transform;
         }
         public btRigidBody getBody() {
-            return aircraft.body.getComponent(RigidBody.class).body;
+            return body.getComponent(RigidBody.class).body;
         }
         public Entity createBomb(Matrix4 transform) {
             Entity entity = new MyInstance(assetsManager, "bomb", "bomb", null,
                     new Collisions.BombCollisionHandler(BOMB_FLAG, ALL_FLAG));
-            entity.setId("Bomb-" + aircraft.bombNum++);
+            entity.setId("Bomb-" + bombNum++);
             world.getEntityManager().addEntity(entity).getComponent(Position.class).transform.set(transform);
             entity.addComponent(new Scripts.RemoveScript());
             return entity;
         }
         public void changeCamera() {
             disabled = !disabled;
-            Camera camera = aircraft.body.getComponent(Camera.class);
             if (!disabled) {
                 camera.layer = 0;
                 camera.startX = 0;
@@ -380,7 +346,6 @@ public class Aircrafts {
             world.getSystemManager().getSystem(CameraSystem.class).updateCameras();
         }
         public void changeCameraFollowType() {
-            Camera camera = aircraft.body.getComponent(Camera.class);
             switch (camera.followType) {
                 case A: camera.followType = CameraSystem.FollowType.B; break;
                 case B: camera.followType = CameraSystem.FollowType.A; break;
