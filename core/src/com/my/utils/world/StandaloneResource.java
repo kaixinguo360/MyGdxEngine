@@ -62,6 +62,9 @@ public interface StandaloneResource extends Loadable<Map<String, Object>> {
         } catch (IllegalAccessException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException e) {
             throw new RuntimeException("Load StandaloneResource(" + this.getClass() + ") error: " + e.getMessage(), e);
         }
+        if (this instanceof OnInit) {
+            ((OnInit) this).init();
+        }
     }
 
     default Map<String, Object> getConfig(Class<Map<String, Object>> configType, LoadContext context) {
@@ -108,5 +111,9 @@ public interface StandaloneResource extends Loadable<Map<String, Object>> {
     @Override
     default <E> boolean handleable(Class<E> configType) {
         return Map.class.isAssignableFrom(configType);
+    }
+
+    interface OnInit {
+        void init();
     }
 }
