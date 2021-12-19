@@ -9,24 +9,26 @@ import com.badlogic.gdx.physics.bullet.collision.*;
 import com.badlogic.gdx.physics.bullet.dynamics.*;
 import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
-import com.badlogic.gdx.utils.Array;
 import com.my.utils.world.BaseSystem;
 import com.my.utils.world.Entity;
+import com.my.utils.world.EntityListener;
 import com.my.utils.world.System;
 import com.my.utils.world.com.Collision;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.RigidBody;
 import com.my.utils.world.com.Script;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
-public class PhysicsSystem extends BaseSystem implements System.OnUpdate {
+public class PhysicsSystem extends BaseSystem implements EntityListener, System.OnUpdate {
 
     protected btDynamicsWorld dynamicsWorld;
     protected ContactListener contactListener;
     protected DebugDrawer debugDrawer;
     protected ClosestRayResultCallback rayTestCB;
-    protected final Array<Entity> activatedEntities = new Array<>();
+    protected final List<RigidBodyInner> rigidBodyInners = new ArrayList<>();
 
     public PhysicsSystem() {
 
@@ -75,18 +77,46 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate {
     }
 
     @Override
+    public void afterEntityAdded(Entity entity) {
+        RigidBodyInner rigidBodyInner = new RigidBodyInner();
+
+        rigidBodyInner.entity = entity;
+        rigidBodyInner.position = entity.getComponent(Position.class);
+        rigidBodyInner.rigidBody = entity.getComponent(RigidBody.class);
+
+        btRigidBody body = rigidBodyInner.rigidBody.body;
+        body.proceedToTransform(rigidBodyInner.position.transform);
+        body.setMotionState(new MotionState(rigidBodyInner.position.transform));
+        body.userData = entity;
+
+        if (entity.contains(Collision.class)) {
+            Collision c = entity.getComponent(Collision.class);
+            body.setContactCallbackFlag(c.callbackFlag);
+            body.setContactCallbackFilter(c.callbackFilter);
+            body.setCollisionFlags(body.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
+        }
+
+        dynamicsWorld.addRigidBody(body, rigidBodyInner.rigidBody.group, rigidBodyInner.rigidBody.mask);
+
+        rigidBodyInners.add(rigidBodyInner);
+    }
+
+    @Override
+    public void afterEntityRemoved(Entity entity) {
+        Iterator<RigidBodyInner> it = rigidBodyInners.iterator();
+        while (it.hasNext()) {
+            RigidBodyInner rigidBodyInner = it.next();
+            if (rigidBodyInner.entity == entity) {
+                btRigidBody body = rigidBodyInner.rigidBody.body;
+                body.setMotionState(null);
+                dynamicsWorld.removeRigidBody(body);
+                it.remove();
+            }
+        }
+    }
+
+    @Override
     public void update(float deltaTime) {
-        for (Entity entity : getEntities()) {
-            if (!activatedEntities.contains(entity, true)) {
-                addBody(entity);
-            }
-        }
-        for (int i = activatedEntities.size - 1; i >= 0; i--) {
-            Entity entity = activatedEntities.get(i);
-            if (!getEntities().contains(entity)) {
-                removeBody(entity);
-            }
-        }
         dynamicsWorld.stepSimulation(deltaTime);
     }
 
@@ -133,14 +163,14 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate {
 
     // Add Explosion
     public void addExplosion(Vector3 position, float force) {
-        for (Entity entity : activatedEntities) {
-            entity.getComponent(Position.class).transform.getTranslation(tmpV1);
+        for (RigidBodyInner rigidBodyInner : rigidBodyInners) {
+            rigidBodyInner.position.transform.getTranslation(tmpV1);
             tmpV1.sub(position);
             float len2 = tmpV1.len2();
             tmpV1.nor().scl(force * 1/len2);
             if (tmpV1.len() > MIN_FORCE) {
-                entity.getComponent(RigidBody.class).body.activate();
-                entity.getComponent(RigidBody.class).body.applyCentralImpulse(tmpV1);
+                rigidBodyInner.rigidBody.body.activate();
+                rigidBodyInner.rigidBody.body.applyCentralImpulse(tmpV1);
             }
         }
     }
@@ -158,36 +188,15 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate {
 
     // ----- Private ----- //
 
-    private void addBody(Entity entity) {
-        Position position = entity.getComponent(Position.class);
-        RigidBody rigidBody = entity.getComponent(RigidBody.class);
-
-        btRigidBody body = rigidBody.body;
-        body.proceedToTransform(position.transform);
-        body.setMotionState(new MotionState(position.transform));
-        body.userData = entity;
-
-        if (entity.contains(Collision.class)) {
-            Collision c = entity.getComponent(Collision.class);
-            body.setContactCallbackFlag(c.callbackFlag);
-            body.setContactCallbackFilter(c.callbackFilter);
-            body.setCollisionFlags(body.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
-        }
-
-        dynamicsWorld.addRigidBody(body, rigidBody.group, rigidBody.mask);
-        activatedEntities.add(entity);
-    }
-    private void removeBody(Entity entity) {
-        btRigidBody body = entity.getComponent(RigidBody.class).body;
-        body.setMotionState(null);
-        dynamicsWorld.removeRigidBody(body);
-        activatedEntities.removeValue(entity, true);
-    }
-
     private static final Vector3 tmpV1 = new Vector3();
     private static final Vector3 tmpV2 = new Vector3();
     private static final float MIN_FORCE = 10;
 
+    private static class RigidBodyInner {
+        private Entity entity;
+        private RigidBody rigidBody;
+        private Position position;
+    }
     private static class MotionState extends btMotionState {
         Matrix4 transform;
         MotionState(Matrix4 transform) {

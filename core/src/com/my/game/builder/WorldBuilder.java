@@ -34,9 +34,9 @@ public class WorldBuilder {
 
         // Init System
         world.getSystemManager().addSystem(new CameraSystem());
+        world.getSystemManager().addSystem(new RenderSystem());
         world.getSystemManager().addSystem(new PhysicsSystem());
         world.getSystemManager().addSystem(new ScriptSystem());
-        world.getSystemManager().addSystem(new RenderSystem());
         world.getSystemManager().addSystem(new EnvironmentSystem());
         world.getSystemManager().addSystem(new KeyInputSystem());
         world.getSystemManager().addSystem(new ConstraintSystem());
