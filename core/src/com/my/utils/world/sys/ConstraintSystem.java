@@ -14,7 +14,7 @@ import java.util.List;
 import static com.badlogic.gdx.physics.bullet.dynamics.btConstraintParams.BT_CONSTRAINT_CFM;
 import static com.badlogic.gdx.physics.bullet.dynamics.btConstraintParams.BT_CONSTRAINT_ERP;
 
-public class ConstraintSystem extends BaseSystem implements EntityListener, System.OnUpdate, System.OnStart {
+public class ConstraintSystem extends BaseSystem implements EntityListener, System.OnStart {
 
     private final List<Constraint> constraints = new ArrayList<>();
 
@@ -56,15 +56,6 @@ public class ConstraintSystem extends BaseSystem implements EntityListener, Syst
             constraint.btConstraint.setParam(BT_CONSTRAINT_CFM, 0);
             constraint.btConstraint.setParam(BT_CONSTRAINT_ERP, 0.5f);
             dynamicsWorld.addConstraint(constraint.btConstraint);
-        }
-    }
-
-    @Override
-    public void update(float deltaTime) {
-        for (Constraint constraint : constraints) {
-            if (constraint.controller != null) {
-                constraint.controller.update(constraint.btConstraint);
-            }
         }
     }
 

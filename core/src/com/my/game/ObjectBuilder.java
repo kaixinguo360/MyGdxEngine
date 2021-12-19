@@ -54,7 +54,7 @@ public class ObjectBuilder {
         String id = "Box-" + boxNum++;
         addObject(
                 id, transform, entity,
-                base == null ? null : new Constraints.ConnectConstraint(base, id, null, 2000)
+                base == null ? null : new Constraints.ConnectConstraint(base, id, 2000)
         );
         return entity;
     }

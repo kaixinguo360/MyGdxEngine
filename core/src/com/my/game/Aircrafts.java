@@ -74,7 +74,7 @@ public class Aircrafts {
             String id = "Body-" + bodyNum++;
             return addObject(
                     id, transform, new MyInstance(assetsManager, "body", group),
-                    base == null ? null : new Constraints.ConnectConstraint(base.getId(), id, null, 2000)
+                    base == null ? null : new Constraints.ConnectConstraint(base.getId(), id, 2000)
             );
         }
 
@@ -83,22 +83,23 @@ public class Aircrafts {
             String id = "Wing-" + wingNum++;
             return addObject(
                     id, transform, new MyInstance(assetsManager, "wing", group, new Motions.Lift(new Vector3(0, 200, 0))),
-                    base == null ? null : new Constraints.ConnectConstraint(base.getId(), id, null, 500)
+                    base == null ? null : new Constraints.ConnectConstraint(base.getId(), id, 500)
             );
         }
 
         private int rotateNum = 0;
-        private Entity createRotate(Matrix4 transform, Constraint.ConstraintController controller, Entity base) {
+        private Entity createRotate(Matrix4 transform, ConstraintController controller, Entity base) {
             Matrix4 relTransform = new Matrix4(base.getComponent(Position.class).transform).inv().mul(transform);
             String id = "Rotate-" + rotateNum++;
             Entity entity = addObject(
                     id, transform, new MyInstance(assetsManager, "rotate", group),
                     base == null ? null : new Constraints.HingeConstraint(
-                            base.getId(), id, controller,
+                            base.getId(), id,
                             relTransform.rotate(Vector3.X, 90),
                             new Matrix4().rotate(Vector3.X, 90),
                             false)
             );
+            entity.addComponent(controller);
             return entity;
         }
 
@@ -108,7 +109,7 @@ public class Aircrafts {
             return addObject(
                     id, transform,
                     new MyInstance(assetsManager, "engine", group, new Motions.LimitedForce(maxVelocity, new Vector3(0, force, 0), new Vector3())),
-                    base == null ? null : new Constraints.ConnectConstraint(base.getId(), id, null, 2000)
+                    base == null ? null : new Constraints.ConnectConstraint(base.getId(), id, 2000)
             );
         }
 
@@ -214,10 +215,9 @@ public class Aircrafts {
             wing_TR = entityManager.getEntity((String) map.get("wing_TR"));
             wing_VL = entityManager.getEntity((String) map.get("wing_VL"));
             wing_VR = entityManager.getEntity((String) map.get("wing_VR"));
-            // TODO: Optimize Constraint Component
-            if (rotate_L.contains(Constraint.class)) aircraftController_L = (AircraftController) rotate_L.getComponents(Constraint.class).get(0).controller;
-            if (rotate_R.contains(Constraint.class)) aircraftController_R = (AircraftController) rotate_R.getComponents(Constraint.class).get(0).controller;
-            if (rotate_T.contains(Constraint.class)) aircraftController_T = (AircraftController) rotate_T.getComponents(Constraint.class).get(0).controller;
+            if (rotate_L.contains(AircraftController.class)) aircraftController_L = rotate_L.getComponent(AircraftController.class);
+            if (rotate_R.contains(AircraftController.class)) aircraftController_R = rotate_R.getComponent(AircraftController.class);
+            if (rotate_T.contains(AircraftController.class)) aircraftController_T = rotate_T.getComponent(AircraftController.class);
             bombNum = (Integer) map.get("bombNum");
         }
 
@@ -292,12 +292,14 @@ public class Aircrafts {
         }
         public void explode() {
             System.out.println("Explosion!");
-            // TODO: Optimize Constraint Component
             body.removeComponent(Constraint.class);
             engine.removeComponent(Constraint.class);
             rotate_L.removeComponent(Constraint.class);
             rotate_R.removeComponent(Constraint.class);
             rotate_T.removeComponent(Constraint.class);
+            rotate_L.removeComponent(ConstraintController.class);
+            rotate_R.removeComponent(ConstraintController.class);
+            rotate_T.removeComponent(ConstraintController.class);
             wing_L1.removeComponent(Constraint.class);
             wing_L2.removeComponent(Constraint.class);
             wing_R1.removeComponent(Constraint.class);
@@ -354,7 +356,7 @@ public class Aircrafts {
     }
 
     @NoArgsConstructor
-    public static class AircraftController implements Constraint.ConstraintController, StandaloneResource {
+    public static class AircraftController extends ConstraintController {
 
         @Config public float low;
         @Config public float high;

@@ -15,8 +15,8 @@ public class Constraints {
         @Config public Vector3 pivotInA;
         @Config public Vector3 pivotInB;
 
-        public Point2PointConstraint(String bodyA, String bodyB, ConstraintController controller, Vector3 pivotInA, Vector3 pivotInB) {
-            super(bodyA, bodyB, controller);
+        public Point2PointConstraint(String bodyA, String bodyB, Vector3 pivotInA, Vector3 pivotInB) {
+            super(bodyA, bodyB);
             this.pivotInA = pivotInA;
             this.pivotInB = pivotInB;
         }
@@ -33,8 +33,8 @@ public class Constraints {
         @Config public Matrix4 frameInA;
         @Config public Matrix4 frameInB;
 
-        public FixedConstraint(String bodyA, String bodyB, ConstraintController controller, Matrix4 frameInA, Matrix4 frameInB) {
-            super(bodyA, bodyB, controller);
+        public FixedConstraint(String bodyA, String bodyB, Matrix4 frameInA, Matrix4 frameInB) {
+            super(bodyA, bodyB);
             this.frameInA = frameInA;
             this.frameInB = frameInB;
         }
@@ -50,8 +50,8 @@ public class Constraints {
 
         @Config public float breakingImpulseThreshold;
 
-        public ConnectConstraint(String bodyA, String bodyB, ConstraintController controller, float breakingImpulseThreshold) {
-            super(bodyA, bodyB, controller);
+        public ConnectConstraint(String bodyA, String bodyB, float breakingImpulseThreshold) {
+            super(bodyA, bodyB);
             this.breakingImpulseThreshold = breakingImpulseThreshold;
         }
 
@@ -76,8 +76,8 @@ public class Constraints {
         @Config public Matrix4 frameInB;
         @Config public boolean useLinearReferenceFrameA;
 
-        public SliderConstraint(String bodyA, String bodyB, ConstraintController controller, Matrix4 frameInA, Matrix4 frameInB, boolean useLinearReferenceFrameA) {
-            super(bodyA, bodyB, controller);
+        public SliderConstraint(String bodyA, String bodyB, Matrix4 frameInA, Matrix4 frameInB, boolean useLinearReferenceFrameA) {
+            super(bodyA, bodyB);
             this.frameInA = frameInA;
             this.frameInB = frameInB;
             this.useLinearReferenceFrameA = useLinearReferenceFrameA;
@@ -98,8 +98,8 @@ public class Constraints {
         @Config public Matrix4 frameInB;
         @Config public boolean useLinearReferenceFrameA;
 
-        public HingeConstraint(String bodyA, String bodyB, ConstraintController controller, Matrix4 frameInA, Matrix4 frameInB, boolean useLinearReferenceFrameA) {
-            super(bodyA, bodyB, controller);
+        public HingeConstraint(String bodyA, String bodyB, Matrix4 frameInA, Matrix4 frameInB, boolean useLinearReferenceFrameA) {
+            super(bodyA, bodyB);
             this.frameInA = frameInA;
             this.frameInB = frameInB;
             this.useLinearReferenceFrameA = useLinearReferenceFrameA;

@@ -66,22 +66,23 @@ public class Guns {
             String id = "Barrel-" + barrelNum++;
             return addObject(
                     id, transform, new MyInstance(assetsManager, "barrel", group),
-                    base == null ? null : new Constraints.ConnectConstraint(base.getId(), id, null, 2000)
+                    base == null ? null : new Constraints.ConnectConstraint(base.getId(), id, 2000)
             );
         }
 
         private int rotateNum = 0;
-        private Entity createRotate(Matrix4 transform, Constraint.ConstraintController controller, Entity base) {
+        private Entity createRotate(Matrix4 transform, ConstraintController controller, Entity base) {
             Matrix4 relTransform = new Matrix4(base.getComponent(Position.class).transform).inv().mul(transform);
             String id = "GunRotate-" + rotateNum++;
             Entity entity = addObject(
                     id, transform, new MyInstance(assetsManager, "gunRotate", group),
                     base == null ? null : new Constraints.HingeConstraint(
-                            base.getId(), id, controller,
+                            base.getId(), id,
                             relTransform.rotate(Vector3.X, 90),
                             new Matrix4().rotate(Vector3.X, 90),
                             false)
             );
+            entity.addComponent(controller);
             return entity;
         }
 
@@ -148,9 +149,8 @@ public class Guns {
             rotate_Y = entityManager.getEntity((String) config.get("rotate_Y"));
             rotate_X = entityManager.getEntity((String) config.get("rotate_X"));
             barrel = entityManager.getEntity((String) config.get("barrel"));
-            // TODO: Optimize Constraint Component
-            if (rotate_Y.contains(Constraint.class)) gunController_Y = (GunController) rotate_Y.getComponents(Constraint.class).get(0).controller;
-            if (rotate_X.contains(Constraint.class)) gunController_X = (GunController) rotate_X.getComponents(Constraint.class).get(0).controller;
+            if (rotate_Y.contains(GunController.class)) gunController_Y = rotate_Y.getComponent(GunController.class);
+            if (rotate_X.contains(GunController.class)) gunController_X = rotate_X.getComponent(GunController.class);
             bulletNum = (Integer) config.get("bulletNum");
         }
 
@@ -208,9 +208,10 @@ public class Guns {
         }
         public void explode() {
             System.out.println("Explosion!");
-            // TODO: Optimize Constraint Component
             rotate_Y.removeComponent(Constraint.class);
             rotate_X.removeComponent(Constraint.class);
+            rotate_Y.removeComponent(ConstraintController.class);
+            rotate_X.removeComponent(ConstraintController.class);
             barrel.removeComponent(Constraint.class);
             physicsSystem.addExplosion(getTransform().getTranslation(tmpV), 2000);
         }
@@ -262,7 +263,7 @@ public class Guns {
         }
     }
 
-    public static class GunController implements Constraint.ConstraintController, StandaloneResource {
+    public static class GunController extends ConstraintController {
 
         @Config public float target = 0;
         @Config public float max = 0;

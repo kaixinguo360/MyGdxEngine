@@ -12,18 +12,13 @@ public abstract class Constraint implements Component, StandaloneResource {
 
     @Config public String bodyA;
     @Config public String bodyB;
-    @Config public ConstraintController controller;
     public btTypedConstraint btConstraint;
 
-    public Constraint(String bodyA, String bodyB, ConstraintController controller) {
+    public Constraint(String bodyA, String bodyB) {
         this.bodyA = bodyA;
         this.bodyB = bodyB;
-        this.controller = controller;
     }
 
     abstract public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB);
 
-    public interface ConstraintController {
-        void update(btTypedConstraint constraint);
-    }
 }
