@@ -3,19 +3,14 @@ package com.my.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.physics.bullet.Bullet;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.my.utils.base.BaseGame;
-import com.my.utils.world.Entity;
 import com.my.utils.world.World;
 
 public class MyGame extends BaseGame {
 
     private World world;
-
-    private Aircrafts.Aircraft aircraft;
 
     @Override
     public void create() {
@@ -24,10 +19,6 @@ public class MyGame extends BaseGame {
         // ----- Loading Assets ----- //
         assetManager.load("obj/sky.g3db", Model.class);
         waitLoad(true);
-    }
-
-    @Override
-    protected void initUI() {
 
         inputMultiplexer.addProcessor(new InputAdapter(){
             @Override
@@ -42,19 +33,10 @@ public class MyGame extends BaseGame {
                     // ----- Load World ----- //
                     world = LoadUtil.loadWorldFromYaml(yamlConfig);
                     addDisposable(world);
-
-                    // ----- Get Aircraft ----- //
-                    Entity aircraftEntity = world.getEntityManager().getEntity("Aircraft-6");
-                    aircraft = aircraftEntity.getComponent(Aircrafts.Aircraft.class);
                 }
                 return false;
             }
         });
-
-        // Add Label
-        Label label = new Label("", ui.skin);
-        label.getStyle().fontColor = Color.DARK_GRAY;
-        ui.addWidget("label", label);
     }
 
     @Override
@@ -76,10 +58,6 @@ public class MyGame extends BaseGame {
 //        // ----- Load World ----- //
 //        world = LoadUtil.loadWorldFromFile("world.yml");
 //        addDisposable(world);
-
-        // ----- Get Aircraft ----- //
-        Entity aircraftEntity = world.getEntityManager().getEntity("Aircraft-6");
-        aircraft = aircraftEntity.getComponent(Aircrafts.Aircraft.class);
     }
 
     @Override
@@ -87,11 +65,6 @@ public class MyGame extends BaseGame {
 
         // Update World
         world.update(1 / 60f);
-
-        // Update UI
-        ui.getWidget("label", Label.class).setText(
-                "\nV = " + Math.floor(aircraft.getVelocity()) +
-                        "\nH = " + Math.floor(aircraft.getHeight()) + "\n");
 
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }

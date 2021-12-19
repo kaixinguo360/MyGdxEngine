@@ -79,6 +79,12 @@ public class WorldBuilder {
         exitScriptEntity.addComponent(new Scripts.ExitScript());
         world.getEntityManager().addEntity(exitScriptEntity);
 
+        // Init GUI
+        Entity guiEntity = new Entity();
+        guiEntity.setId("guiEntity");
+        guiEntity.addComponent(new Scripts.GUIScript());
+        world.getEntityManager().addEntity(guiEntity);
+
         // Init World Entity Filters
         world.start();
 
