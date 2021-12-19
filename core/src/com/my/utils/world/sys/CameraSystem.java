@@ -74,9 +74,15 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
 
     @Override
     public void update(float deltaTime) {
+
         int width = Gdx.graphics.getWidth();
         int height = Gdx.graphics.getHeight();
+
+        Gdx.gl.glViewport(0, 0, width, height);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
         Environment environment = environmentSystem.getEnvironment();
+
         for (CameraInner cameraInner : cameraInners) {
             setCamera(cameraInner.camera.followType, cameraInner.perspectiveCamera, cameraInner.position.transform);
             Gdx.gl.glViewport(
@@ -95,6 +101,8 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
             Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
             renderSystem.render(cameraInner.perspectiveCamera, environment);
         }
+
+        Gdx.gl.glViewport(0, 0, width, height);
     }
 
     // ----- Custom ----- //
