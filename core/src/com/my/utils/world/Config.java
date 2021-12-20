@@ -6,10 +6,12 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
 public @interface Config {
+
     String name() default "";
+
     Type type() default Type.Loadable;
 
     enum Type {
-        Primitive, Asset, Loadable
+        Primitive, Asset, Entity, Loadable
     }
 }
