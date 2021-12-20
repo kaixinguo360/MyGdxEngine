@@ -5,6 +5,7 @@ import com.badlogic.gdx.physics.bullet.dynamics.btPoint2PointConstraint;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
 import com.my.utils.world.Config;
+import com.my.utils.world.Entity;
 import com.my.utils.world.com.Constraint;
 import lombok.NoArgsConstructor;
 
@@ -16,14 +17,14 @@ public class Point2PointConstraint extends Constraint {
     @Config
     public Vector3 pivotInB;
 
-    public Point2PointConstraint(String bodyA, String bodyB, Vector3 pivotInA, Vector3 pivotInB) {
-        super(bodyA, bodyB);
+    public Point2PointConstraint(Entity base, Vector3 pivotInA, Vector3 pivotInB) {
+        super(base);
         this.pivotInA = pivotInA;
         this.pivotInB = pivotInB;
     }
 
     @Override
-    public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB) {
-        return new btPoint2PointConstraint(bodyA, bodyB, pivotInA, pivotInB);
+    public btTypedConstraint get(btRigidBody base, btRigidBody self) {
+        return new btPoint2PointConstraint(base, self, pivotInA, pivotInB);
     }
 }

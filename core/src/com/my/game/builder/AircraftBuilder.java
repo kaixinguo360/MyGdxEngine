@@ -76,7 +76,7 @@ public class AircraftBuilder {
         String id = "Body-" + bodyNum++;
         return addObject(
                 id, transform, new MyInstance(assetsManager, "body"),
-                base == null ? null : new ConnectConstraint(base.getId(), id, 2000)
+                base == null ? null : new ConnectConstraint(base, 2000)
         );
     }
 
@@ -86,7 +86,7 @@ public class AircraftBuilder {
         String id = "Wing-" + wingNum++;
         return addObject(
                 id, transform, new MyInstance(assetsManager, "wing", new Lift(new Vector3(0, 200, 0))),
-                base == null ? null : new ConnectConstraint(base.getId(), id, 500)
+                base == null ? null : new ConnectConstraint(base, 500)
         );
     }
 
@@ -98,7 +98,7 @@ public class AircraftBuilder {
         Entity entity = addObject(
                 id, transform, new MyInstance(assetsManager, "rotate"),
                 base == null ? null : new HingeConstraint(
-                        base.getId(), id,
+                        base,
                         relTransform.rotate(Vector3.X, 90),
                         new Matrix4().rotate(Vector3.X, 90),
                         false)
@@ -114,7 +114,7 @@ public class AircraftBuilder {
         return addObject(
                 id, transform,
                 new MyInstance(assetsManager, "engine", new LimitedForce(maxVelocity, new Vector3(0, force, 0), new Vector3())),
-                base == null ? null : new ConnectConstraint(base.getId(), id, 2000)
+                base == null ? null : new ConnectConstraint(base, 2000)
         );
     }
 

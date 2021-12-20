@@ -68,7 +68,7 @@ public class GunBuilder {
         String id = "Barrel-" + barrelNum++;
         return addObject(
                 id, transform, new MyInstance(assetsManager, "barrel"),
-                base == null ? null : new ConnectConstraint(base.getId(), id, 2000)
+                base == null ? null : new ConnectConstraint(base, 2000)
         );
     }
 
@@ -80,7 +80,7 @@ public class GunBuilder {
         Entity entity = addObject(
                 id, transform, new MyInstance(assetsManager, "gunRotate"),
                 base == null ? null : new HingeConstraint(
-                        base.getId(), id,
+                        base,
                         relTransform.rotate(Vector3.X, 90),
                         new Matrix4().rotate(Vector3.X, 90),
                         false)

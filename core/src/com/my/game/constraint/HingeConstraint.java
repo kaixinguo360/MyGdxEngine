@@ -5,6 +5,7 @@ import com.badlogic.gdx.physics.bullet.dynamics.btHingeConstraint;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
 import com.my.utils.world.Config;
+import com.my.utils.world.Entity;
 import com.my.utils.world.com.Constraint;
 import lombok.NoArgsConstructor;
 
@@ -18,17 +19,17 @@ public class HingeConstraint extends Constraint {
     @Config
     public boolean useLinearReferenceFrameA;
 
-    public HingeConstraint(String bodyA, String bodyB, Matrix4 frameInA, Matrix4 frameInB, boolean useLinearReferenceFrameA) {
-        super(bodyA, bodyB);
+    public HingeConstraint(Entity base, Matrix4 frameInA, Matrix4 frameInB, boolean useLinearReferenceFrameA) {
+        super(base);
         this.frameInA = frameInA;
         this.frameInB = frameInB;
         this.useLinearReferenceFrameA = useLinearReferenceFrameA;
     }
 
     @Override
-    public btTypedConstraint get(btRigidBody bodyA, btRigidBody bodyB) {
-        return (bodyA != bodyB) ?
-                new btHingeConstraint(bodyA, bodyB, frameInA, frameInB, useLinearReferenceFrameA) :
-                new btHingeConstraint(bodyA, frameInA, useLinearReferenceFrameA);
+    public btTypedConstraint get(btRigidBody base, btRigidBody self) {
+        return (base != self) ?
+                new btHingeConstraint(base, self, frameInA, frameInB, useLinearReferenceFrameA) :
+                new btHingeConstraint(base, frameInA, useLinearReferenceFrameA);
     }
 }

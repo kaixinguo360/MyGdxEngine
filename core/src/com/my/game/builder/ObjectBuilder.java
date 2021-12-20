@@ -52,12 +52,12 @@ public class ObjectBuilder {
     // ----- Builder Methods ----- //
 
     private int boxNum = 0;
-    public Entity createBox(Matrix4 transform, String base) {
+    public Entity createBox(Matrix4 transform, Entity base) {
         Entity entity = new MyInstance(assetsManager, "box");
         String id = "Box-" + boxNum++;
         addObject(
                 id, transform, entity,
-                base == null ? null : new ConnectConstraint(base, id, 2000)
+                base == null ? null : new ConnectConstraint(base, 2000)
         );
         return entity;
     }
