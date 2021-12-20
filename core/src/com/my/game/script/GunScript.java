@@ -15,10 +15,8 @@ import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.ScriptSystem;
 
 import java.lang.System;
-import java.util.HashMap;
-import java.util.Map;
 
-public class GunScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, KeyInputSystem.OnKeyDown {
+public class GunScript implements StandaloneResource.OnInit, ScriptSystem.OnStart, ScriptSystem.OnUpdate, KeyInputSystem.OnKeyDown {
 
     // ----- Constants ----- //
     private final static short BOMB_FLAG = 1 << 8;
@@ -35,35 +33,19 @@ public class GunScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, K
     private PhysicsSystem physicsSystem;
     private Camera camera;
 
-    public Entity rotate_Y, rotate_X, barrel;
+    @Config public Entity barrel;
+    @Config public Entity rotate_Y, rotate_X;
+
+    @Config public boolean disabled;
+    @Config public int bulletNum;
+
     public GunController gunController_Y;
     public GunController gunController_X;
 
-    public boolean disabled;
-
-    int bulletNum;
-
     @Override
-    public void load(Map<String, Object> config, LoadContext context) {
-        EntityManager entityManager = context.getEnvironment("world", World.class).getEntityManager();
-        rotate_Y = entityManager.getEntity((String) config.get("rotate_Y"));
-        rotate_X = entityManager.getEntity((String) config.get("rotate_X"));
-        barrel = entityManager.getEntity((String) config.get("barrel"));
-        disabled = (boolean) config.get("disabled");
+    public void init() {
         if (rotate_Y.contains(GunController.class)) gunController_Y = rotate_Y.getComponent(GunController.class);
         if (rotate_X.contains(GunController.class)) gunController_X = rotate_X.getComponent(GunController.class);
-        bulletNum = (Integer) config.get("bulletNum");
-    }
-
-    @Override
-    public Map<String, Object> getConfig(Class<Map<String, Object>> configType, LoadContext context) {
-        Map<String, Object> config = new HashMap<>();
-        config.put("rotate_Y", rotate_Y.getId());
-        config.put("rotate_X", rotate_X.getId());
-        config.put("barrel", barrel.getId());
-        config.put("bulletNum", bulletNum);
-        config.put("disabled", disabled);
-        return config;
     }
 
     @Override
