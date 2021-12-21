@@ -14,6 +14,8 @@ public class MyInstance extends Entity implements Disposable {
     protected Render render;
     protected RigidBody rigidBody;
 
+    public MyInstance() {}
+
     public MyInstance(AssetsManager assetsManager, String className) {
         this(assetsManager, className, null);
     }

@@ -16,7 +16,6 @@ public class LoaderManager {
 
     public LoaderManager() {
         loaders.add(new WorldLoader());
-        loaders.add(new EntityLoader());
         loaders.add(new Matrix4Loader());
         loaders.add(new Vector3Loader());
         loaders.add(new QuaternionLoader());

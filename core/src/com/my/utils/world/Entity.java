@@ -6,10 +6,11 @@ import lombok.Setter;
 
 import java.util.*;
 
-public class Entity {
+public class Entity implements StandaloneResource {
 
     @Getter
     @Setter
+    @Config
     private String id;
 
     @Getter(AccessLevel.PACKAGE)
@@ -18,6 +19,7 @@ public class Entity {
 
     // ----- Components ----- //
     @Getter
+    @Config(elementType = Component.class)
     protected final List<Component> components = new LinkedList<>();
 
     @Getter
