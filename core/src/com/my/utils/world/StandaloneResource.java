@@ -3,6 +3,7 @@ package com.my.utils.world;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,89 +31,104 @@ public interface StandaloneResource extends Loadable<Map<String, Object>> {
         AssetsManager assetsManager = world.getAssetsManager();
 
         try {
-            Field[] fields = this.getClass().getFields();
+            List<Field> fields = new ArrayList<>() ;
+            Class<?> tmpType = this.getClass();
+            while (tmpType != null && tmpType != Object.class) {
+                for (Field field : tmpType.getDeclaredFields()) {
+                    if (field.isAnnotationPresent(Config.class)) {
+                        fields.add(field);
+                    }
+                }
+                tmpType = tmpType.getSuperclass();
+            }
             for (Field field : fields) {
-                if (field.isAnnotationPresent(Config.class)) {
-                    Config annotation = field.getAnnotation(Config.class);
-                    String name = annotation.name();
-                    if ("".equals(name)) name = field.getName();
-                    if (config.get(name) == null) {
-                        field.set(this, config.get(name));
-                    } else if (List.class.isAssignableFrom(field.getType())) {
-                        Class<?> elementType = annotation.elementType();
-                        List<Object> list = (List<Object>) config.get(name);
-                        List<Object> objList = new ArrayList<>();
-                        for (Object value : list) {
-                            if (value == null) {
-                                objList.add(value);
-                            } else if (annotation.type() == Config.Type.Primitive || elementType.isPrimitive() || elementType == String.class) {
-                                if ((elementType == float.class || elementType == Float.class) && Number.class.isAssignableFrom(value.getClass())) {
-                                    value = ((Number) value).floatValue();
-                                }
-                                objList.add(value);
-                            } else if (annotation.type() == Config.Type.Asset) {
-                                String assetId = (String) value;
-                                Object obj = assetsManager.getAsset(assetId, elementType);
+                field.setAccessible(true);
+                Config annotation = field.getAnnotation(Config.class);
+                String name = annotation.name();
+                if ("".equals(name)) name = field.getName();
+                if (config.get(name) == null) {
+                    field.set(this, config.get(name));
+                } else if (List.class.isAssignableFrom(field.getType())) {
+                    Class<?> elementType = annotation.elementType();
+                    List<Object> list = (List<Object>) config.get(name);
+                    List<Object> objList = new ArrayList<>();
+                    for (Object value : list) {
+                        if (value == null) {
+                            objList.add(value);
+                        } else if (annotation.type() == Config.Type.Primitive || elementType.isPrimitive() || elementType == String.class) {
+                            if ((elementType == float.class || elementType == Float.class) && Number.class.isAssignableFrom(value.getClass())) {
+                                value = ((Number) value).floatValue();
+                            }
+                            objList.add(value);
+                        } else if (annotation.type() == Config.Type.Asset) {
+                            String assetId = (String) value;
+                            Object obj = assetsManager.getAsset(assetId, elementType);
+                            objList.add(obj);
+                        } else if (annotation.type() == Config.Type.Entity || Entity.class.isAssignableFrom(elementType)) {
+                            String entityId = (String) value;
+                            Entity obj = entityManager.getEntity(entityId);
+                            objList.add(obj);
+                        } else if (elementType.isEnum()) {
+                            Method valueOf = elementType.getMethod("valueOf", String.class);
+                            Object obj = valueOf.invoke(null, value);
+                            objList.add(obj);
+                        } else {
+                            try {
+                                // Use LoaderManager <Object.class> to load field
+                                Object obj = context.getLoaderManager().load(value, elementType, context);
                                 objList.add(obj);
-                            } else if (annotation.type() == Config.Type.Entity || Entity.class.isAssignableFrom(elementType)) {
-                                String entityId = (String) value;
-                                Entity obj = entityManager.getEntity(entityId);
+                            } catch (RuntimeException e) {
+                                if (!(e.getMessage().startsWith("No such loader") || e.getMessage().startsWith("Can not load"))) throw e;
+                                // Use LoaderManager <configType> to load field
+                                Map<String, Object> map = (Map<String, Object>) value;
+                                String typeName = (String) map.get("type");
+                                Object configValue = map.get("config");
+                                Class<?> type = Class.forName(typeName);
+                                Object obj = context.getLoaderManager().load(configValue, type, context);
                                 objList.add(obj);
-                            } else if (elementType.isEnum()) {
-                                Method valueOf = elementType.getMethod("valueOf", String.class);
-                                Object obj = valueOf.invoke(null, value);
-                                objList.add(obj);
-                            } else {
-                                try {
-                                    // Use LoaderManager <Object.class> to load field
-                                    Object obj = context.getLoaderManager().load(value, elementType, context);
-                                    objList.add(obj);
-                                } catch (RuntimeException e) {
-                                    if (!(e.getMessage().startsWith("No such loader") || e.getMessage().startsWith("Can not load"))) throw e;
-                                    // Use LoaderManager <configType> to load field
-                                    Map<String, Object> map = (Map<String, Object>) value;
-                                    String typeName = (String) map.get("type");
-                                    Object configValue = map.get("config");
-                                    Class<?> type = Class.forName(typeName);
-                                    Object obj = context.getLoaderManager().load(configValue, type, context);
-                                    objList.add(obj);
-                                }
                             }
                         }
-                        field.set(this, objList);
-                    } else if (annotation.type() == Config.Type.Primitive || field.getType().isPrimitive() || field.getType() == String.class) {
-                        Object value = config.get(name);
-                        if ((field.getType() == float.class || field.getType() == Float.class) && Number.class.isAssignableFrom(value.getClass())) {
-                            value = ((Number) value).floatValue();
-                        }
-                        field.set(this, value);
-                    } else if (annotation.type() == Config.Type.Asset) {
-                        String assetId = (String) config.get(name);
-                        Object obj = assetsManager.getAsset(assetId, field.getType());
-                        field.set(this, obj);
-                    } else if (annotation.type() == Config.Type.Entity || Entity.class.isAssignableFrom(field.getType())) {
-                        String entityId = (String) config.get(name);
-                        Entity obj = entityManager.getEntity(entityId);
-                        field.set(this, obj);
-                    } else if (field.getType().isEnum()) {
-                        Method valueOf = field.getType().getMethod("valueOf", String.class);
-                        Object obj = valueOf.invoke(null, config.get(name));
-                        field.set(this, obj);
+                    }
+                    if (Modifier.isFinal(field.getModifiers())) {
+                        if (field.get(this) == null) throw new RuntimeException("Can not set a final field: " + field);
+                        List<Object> fieldList = (List<Object>) field.get(this);
+                        fieldList.clear();
+                        fieldList.addAll(objList);
                     } else {
-                        try {
-                            // Use LoaderManager <Object.class> to load field
-                            Object obj = context.getLoaderManager().load(config.get(name), field.getType(), context);
-                            field.set(this, obj);
-                        } catch (RuntimeException e) {
-                            if (!(e.getMessage().startsWith("No such loader") || e.getMessage().startsWith("Can not load"))) throw e;
-                            // Use LoaderManager <configType> to load field
-                            Map<String, Object> map = (Map<String, Object>) config.get(name);
-                            String typeName = (String) map.get("type");
-                            Object configValue = map.get("config");
-                            Class<?> type = Class.forName(typeName);
-                            Object obj = context.getLoaderManager().load(configValue, type, context);
-                            field.set(this, obj);
-                        }
+                        field.set(this, objList);
+                    }
+                } else if (annotation.type() == Config.Type.Primitive || field.getType().isPrimitive() || field.getType() == String.class) {
+                    Object value = config.get(name);
+                    if ((field.getType() == float.class || field.getType() == Float.class) && Number.class.isAssignableFrom(value.getClass())) {
+                        value = ((Number) value).floatValue();
+                    }
+                    field.set(this, value);
+                } else if (annotation.type() == Config.Type.Asset) {
+                    String assetId = (String) config.get(name);
+                    Object obj = assetsManager.getAsset(assetId, field.getType());
+                    field.set(this, obj);
+                } else if (annotation.type() == Config.Type.Entity || Entity.class.isAssignableFrom(field.getType())) {
+                    String entityId = (String) config.get(name);
+                    Entity obj = entityManager.getEntity(entityId);
+                    field.set(this, obj);
+                } else if (field.getType().isEnum()) {
+                    Method valueOf = field.getType().getMethod("valueOf", String.class);
+                    Object obj = valueOf.invoke(null, config.get(name));
+                    field.set(this, obj);
+                } else {
+                    try {
+                        // Use LoaderManager <Object.class> to load field
+                        Object obj = context.getLoaderManager().load(config.get(name), field.getType(), context);
+                        field.set(this, obj);
+                    } catch (RuntimeException e) {
+                        if (!(e.getMessage().startsWith("No such loader") || e.getMessage().startsWith("Can not load"))) throw e;
+                        // Use LoaderManager <configType> to load field
+                        Map<String, Object> map = (Map<String, Object>) config.get(name);
+                        String typeName = (String) map.get("type");
+                        Object configValue = map.get("config");
+                        Class<?> type = Class.forName(typeName);
+                        Object obj = context.getLoaderManager().load(configValue, type, context);
+                        field.set(this, obj);
                     }
                 }
             }
@@ -130,8 +146,18 @@ public interface StandaloneResource extends Loadable<Map<String, Object>> {
         AssetsManager assetsManager = world.getAssetsManager();
         Map<String, Object> map = new LinkedHashMap<>();
         try {
-            Field[] fields = this.getClass().getFields();
+            List<Field> fields = new ArrayList<>() ;
+            Class<?> tmpType = this.getClass();
+            while (tmpType != null && tmpType != Object.class) {
+                for (Field field : tmpType.getDeclaredFields()) {
+                    if (field.isAnnotationPresent(Config.class)) {
+                        fields.add(field);
+                    }
+                }
+                tmpType = tmpType.getSuperclass();
+            }
             for (Field field : fields) {
+                field.setAccessible(true);
                 if (field.isAnnotationPresent(Config.class)) {
                     Config annotation = field.getAnnotation(Config.class);
                     String name = annotation.name();
