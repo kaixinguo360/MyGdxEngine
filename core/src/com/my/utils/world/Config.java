@@ -11,6 +11,8 @@ public @interface Config {
 
     Type type() default Type.Loadable;
 
+    Class<?> elementType() default Object.class;
+
     enum Type {
         Primitive, Asset, Entity, Loadable
     }
