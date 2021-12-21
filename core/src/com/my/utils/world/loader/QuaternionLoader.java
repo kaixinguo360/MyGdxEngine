@@ -11,14 +11,19 @@ public class QuaternionLoader implements Loader {
 
     @Override
     public <E, T> T load(E config, Class<T> type, LoadContext context) {
-        List<Float> values = (List<Float>) config;
-        return (T) new Quaternion(values.get(0), values.get(1), values.get(2), values.get(3));
+        List<Number> values = (List<Number>) config;
+        return (T) new Quaternion(
+                values.get(0).floatValue(),
+                values.get(1).floatValue(),
+                values.get(2).floatValue(),
+                values.get(3).floatValue()
+        );
     }
 
     @Override
     public <E, T> E getConfig(T obj, Class<E> configType, LoadContext context) {
         Quaternion quaternion = (Quaternion) obj;
-        return (E) new ArrayList<Float>() {{
+        return (E) new ArrayList<Number>() {{
             add(quaternion.x);
             add(quaternion.y);
             add(quaternion.z);

@@ -34,8 +34,14 @@ public interface StandaloneResource extends Loadable<Map<String, Object>> {
                     Config annotation = field.getAnnotation(Config.class);
                     String name = annotation.name();
                     if ("".equals(name)) name = field.getName();
-                    if (annotation.type() == Config.Type.Primitive || field.getType().isPrimitive() || field.getType() == String.class || config.get(name) == null) {
+                    if (config.get(name) == null) {
                         field.set(this, config.get(name));
+                    } else if (annotation.type() == Config.Type.Primitive || field.getType().isPrimitive() || field.getType() == String.class) {
+                        Object value = config.get(name);
+                        if ((field.getType() == float.class || field.getType() == Float.class) && Number.class.isAssignableFrom(value.getClass())) {
+                            value = ((Number) value).floatValue();
+                        }
+                        field.set(this, value);
                     } else if (annotation.type() == Config.Type.Asset) {
                         String assetId = (String) config.get(name);
                         Object obj = assetsManager.getAsset(assetId, field.getType());
@@ -87,7 +93,9 @@ public interface StandaloneResource extends Loadable<Map<String, Object>> {
                     String name = annotation.name();
                     if ("".equals(name)) name = field.getName();
                     Object obj = field.get(this);
-                    if (annotation.type() == Config.Type.Primitive || field.getType().isPrimitive() || field.getType() == String.class || obj == null) {
+                    if (obj == null) {
+                        map.put(name, obj);
+                    } else if (annotation.type() == Config.Type.Primitive || field.getType().isPrimitive() || field.getType() == String.class) {
                         map.put(name, obj);
                     } else if (annotation.type() == Config.Type.Asset) {
                         String assetId = assetsManager.getId(field.getType(), field.get(this));

@@ -11,10 +11,10 @@ public class Matrix4Loader implements Loader {
 
     @Override
     public <E, T> T load(E config, Class<T> type, LoadContext context) {
-        List<Float> list = (List<Float>) config;
+        List<Number> list = (List<Number>) config;
         float[] values = new float[list.size()];
         for (int i = 0; i < list.size(); i++) {
-            values[i] = list.get(i);
+            values[i] = list.get(i).floatValue();
         }
         return (T) new Matrix4(values);
     }
@@ -22,7 +22,7 @@ public class Matrix4Loader implements Loader {
     @Override
     public <E, T> E getConfig(T obj, Class<E> configType, LoadContext context) {
         Matrix4 transform = (Matrix4) obj;
-        return (E) new ArrayList<Float>() {{
+        return (E) new ArrayList<Number>() {{
             for (float v : transform.val) {
                 add(v);
             }

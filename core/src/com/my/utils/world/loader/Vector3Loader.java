@@ -11,14 +11,18 @@ public class Vector3Loader implements Loader {
 
     @Override
     public <E, T> T load(E config, Class<T> type, LoadContext context) {
-        List<Float> values = (List<Float>) config;
-        return (T) new Vector3(values.get(0), values.get(1), values.get(2));
+        List<Number> values = (List<Number>) config;
+        return (T) new Vector3(
+                values.get(0).floatValue(),
+                values.get(1).floatValue(),
+                values.get(2).floatValue()
+        );
     }
 
     @Override
     public <E, T> E getConfig(T obj, Class<E> configType, LoadContext context) {
         Vector3 vector3 = (Vector3) obj;
-        return (E) new ArrayList<Float>() {{
+        return (E) new ArrayList<Number>() {{
             add(vector3.x);
             add(vector3.y);
             add(vector3.z);
