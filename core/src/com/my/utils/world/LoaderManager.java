@@ -19,7 +19,7 @@ public class LoaderManager {
         loaders.add(new Matrix4Loader());
         loaders.add(new Vector3Loader());
         loaders.add(new QuaternionLoader());
-        loaders.add(new DefaultLoader());
+        loaders.add(new LoadableLoader());
     }
 
     public <E, T> T load(E config, Class<T> type) {

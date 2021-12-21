@@ -7,7 +7,7 @@ import lombok.Getter;
 
 import java.util.Map;
 
-public class EnvironmentSystem extends BaseSystem {
+public class EnvironmentSystem extends BaseSystem implements Loadable.OnLoad {
 
     @Getter
     private final Environment commonEnvironment = new Environment();

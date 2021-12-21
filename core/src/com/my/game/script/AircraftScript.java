@@ -16,7 +16,7 @@ import com.my.utils.world.sys.ScriptSystem;
 
 import java.lang.System;
 
-public class AircraftScript implements StandaloneResource.OnInit, ScriptSystem.OnStart, ScriptSystem.OnUpdate, KeyInputSystem.OnKeyDown {
+public class AircraftScript implements Loadable.OnInit, ScriptSystem.OnStart, ScriptSystem.OnUpdate, KeyInputSystem.OnKeyDown {
 
     // ----- Constants ----- //
     private final static short BOMB_FLAG = 1 << 8;

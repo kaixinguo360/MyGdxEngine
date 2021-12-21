@@ -4,11 +4,11 @@ import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.Disposable;
 import com.my.utils.world.Component;
 import com.my.utils.world.Config;
-import com.my.utils.world.StandaloneResource;
+import com.my.utils.world.Loadable;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class RigidBody implements Component, StandaloneResource, StandaloneResource.OnInit, Disposable {
+public class RigidBody implements Component, Loadable.OnInit, Disposable {
 
     // ----- Static ----- //
     public final static short STATIC_FLAG = 1 << 8;

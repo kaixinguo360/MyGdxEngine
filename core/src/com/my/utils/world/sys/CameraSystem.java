@@ -14,7 +14,8 @@ import com.my.utils.world.com.Position;
 
 import java.util.*;
 
-public class CameraSystem extends BaseSystem implements EntityListener, System.OnUpdate, System.OnStart {
+public class CameraSystem extends BaseSystem implements EntityListener, System.OnUpdate, System.OnStart,
+        Loadable.OnLoad, Loadable.OnGetConfig {
 
     private RenderSystem renderSystem;
     private EnvironmentSystem environmentSystem;
@@ -62,14 +63,14 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
     }
 
     @Override
-    public Map<String, Object> getConfig(Class<Map<String, Object>> configType, LoadContext context) {
-        Map<String, Object> map = new LinkedHashMap<>();
+    public Map<String, Object> getConfig(LoadContext context) {
+        Map<String, Object> config = new LinkedHashMap<>();
         List<String> skyBoxes = new ArrayList<>();
         for (SkyBoxInner skyBoxInner : this.skyBoxInners) {
             skyBoxes.add(skyBoxInner.id);
         }
-        map.put("skyBoxes", skyBoxes);
-        return map;
+        config.put("skyBoxes", skyBoxes);
+        return config;
     }
 
     @Override

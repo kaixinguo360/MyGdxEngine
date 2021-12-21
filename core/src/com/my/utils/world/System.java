@@ -1,6 +1,6 @@
 package com.my.utils.world;
 
-public interface System {
+public interface System extends Loadable {
 
     interface AfterAdded extends System {
         void afterAdded(World world);

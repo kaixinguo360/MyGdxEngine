@@ -2,14 +2,13 @@ package com.my.utils.world.com;
 
 import com.my.utils.world.Component;
 import com.my.utils.world.Config;
-import com.my.utils.world.StandaloneResource;
 import com.my.utils.world.sys.CameraSystem;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @AllArgsConstructor
-public class Camera implements Component, StandaloneResource {
+public class Camera implements Component {
 
     @Config public float startX;
     @Config public float startY;

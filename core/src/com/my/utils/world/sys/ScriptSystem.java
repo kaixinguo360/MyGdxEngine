@@ -4,7 +4,7 @@ import com.my.utils.world.System;
 import com.my.utils.world.*;
 import com.my.utils.world.com.Script;
 
-public class ScriptSystem extends BaseSystem implements StandaloneResource, EntityListener, System.AfterAdded, System.OnUpdate {
+public class ScriptSystem extends BaseSystem implements EntityListener, System.AfterAdded, System.OnUpdate {
 
     @Override
     protected boolean isHandleable(Entity entity) {

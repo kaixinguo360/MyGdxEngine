@@ -6,7 +6,7 @@ import lombok.Setter;
 
 import java.util.*;
 
-public class Entity implements StandaloneResource {
+public class Entity implements Loadable {
 
     @Getter
     @Setter

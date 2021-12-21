@@ -4,14 +4,14 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.math.Vector3;
 import com.my.utils.world.Component;
 import com.my.utils.world.Config;
-import com.my.utils.world.StandaloneResource;
+import com.my.utils.world.Loadable;
 import com.my.utils.world.sys.RenderSystem;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @AllArgsConstructor
-public class Render implements Component, StandaloneResource, StandaloneResource.OnInit {
+public class Render implements Component, Loadable.OnInit {
 
     @Config(type = Config.Type.Asset)
     public RenderSystem.RenderModel renderModel;

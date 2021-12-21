@@ -1,4 +1,4 @@
 package com.my.utils.world;
 
-public interface Component {
+public interface Component extends Loadable {
 }

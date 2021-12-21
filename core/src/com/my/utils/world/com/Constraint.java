@@ -5,11 +5,10 @@ import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
 import com.my.utils.world.Component;
 import com.my.utils.world.Config;
 import com.my.utils.world.Entity;
-import com.my.utils.world.StandaloneResource;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public abstract class Constraint implements Component, StandaloneResource {
+public abstract class Constraint implements Component {
 
     @Config public Entity base;
 
