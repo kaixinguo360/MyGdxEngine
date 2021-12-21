@@ -107,7 +107,7 @@ public class LoadableLoader implements Loader {
             return assetsManager.getAsset(assetId, elementType);
         } else if (annotation.type() == Config.Type.Entity || Entity.class.isAssignableFrom(elementType)) {
             String entityId = (String) value;
-            return entityManager.getEntity(entityId);
+            return entityManager.findEntityById(entityId);
         } else if (elementType.isEnum()) {
             Method valueOf = elementType.getMethod("valueOf", String.class);
             return valueOf.invoke(null, value);

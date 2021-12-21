@@ -21,13 +21,14 @@ public class EntityManager implements Disposable {
 
     // ---- Entity ---- //
     public <T extends Entity> T addEntity(T entity) {
+        if (entity.getId() == null) entity.setId(UUID.randomUUID().toString());
         String id = entity.getId();
-        if (entities.containsKey(id)) throw new RuntimeException("Duplicate Entity: " + id);
+        if (entities.containsKey(id)) throw new RuntimeException("Duplicate Entity: id=" + id);
         entities.put(id, entity);
         return entity;
     }
     public Entity removeEntity(String id) {
-        if (!entities.containsKey(id)) throw new RuntimeException("No Such Entity: " + id);
+        if (!entities.containsKey(id)) throw new RuntimeException("No Such Entity: id=" + id);
         Entity removed = entities.remove(id);
         for (Map.Entry<EntityFilter, Set<Entity>> entry : filters.entrySet()) {
             EntityFilter filter = entry.getKey();
@@ -36,9 +37,18 @@ public class EntityManager implements Disposable {
         }
         return removed;
     }
-    public Entity getEntity(String id) {
-        if (!entities.containsKey(id)) throw new RuntimeException("No Such Entity: " + id);
+    public Entity findEntityById(String id) {
+        if (!entities.containsKey(id)) throw new RuntimeException("No Such Entity: id=" + id);
         return entities.get(id);
+    }
+    public Entity findEntityByName(String name) {
+        if (name == null) throw new RuntimeException("Name of entity can not be null");
+        for (Entity entity : entities.values()) {
+            if (name.equals(entity.getName())) {
+                return entity;
+            }
+        }
+        throw new RuntimeException("No Such Entity: name=" + name);
     }
 
     // ---- Filter ---- //
@@ -108,12 +118,12 @@ public class EntityManager implements Disposable {
 
         public <T extends Entity> T addEntity(T entity) {
             String id = entity.getId();
-            if (entities.containsKey(id)) throw new RuntimeException("Duplicate Entity: " + id);
+            if (entities.containsKey(id)) throw new RuntimeException("Duplicate Entity: id=" + id);
             toAdd.add(entity);
             return entity;
         }
         public Entity removeEntity(String id) {
-            if (!entities.containsKey(id)) throw new RuntimeException("No Such Entity: " + id);
+            if (!entities.containsKey(id)) throw new RuntimeException("No Such Entity: id=" + id);
             toRemove.add(id);
             return entities.get(id);
         }

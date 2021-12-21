@@ -49,12 +49,12 @@ public class WorldBuilder {
 
         // ----- Init Static Objects ----- //
         MyInstance sky = new MyInstance(world.getAssetsManager(), "sky");
-        sky.setId("sky");
+        sky.setName("sky");
         sky.getComponent(Render.class).includeEnv = false;
         world.getEntityManager().addEntity(sky);
-        world.getSystemManager().getSystem(CameraSystem.class).addSkyBox("sky");
+        world.getSystemManager().getSystem(CameraSystem.class).addSkyBox(sky.getId());
         MyInstance ground = new MyInstance(world.getAssetsManager(), "ground");
-        ground.setId("ground");
+        ground.setName("ground");
         world.getEntityManager().addEntity(ground);
 
         // ----- Init Dynamic Objects ----- //
@@ -79,18 +79,18 @@ public class WorldBuilder {
         Entity aircraftEntity = aircraftBuilder.createAircraft(new Matrix4().translate(0, 0, 200), 8000, 40);
         aircraftEntity.getComponent(AircraftScript.class).body.addComponent(new Camera(0, 0, 1, 1, 0, CameraSystem.FollowType.A));
 
-        Entity gunEntity = gunBuilder.createGun("ground", new Matrix4().translate(0, 0, -20));
+        Entity gunEntity = gunBuilder.createGun(ground, new Matrix4().translate(0, 0, -20));
         gunEntity.getComponent(GunScript.class).disabled = true;
         gunEntity.getComponent(GunScript.class).barrel.addComponent(new Camera(0, 0.7f, 0.3f, 1, 1, CameraSystem.FollowType.A));
 
         Entity exitScriptEntity = new Entity();
-        exitScriptEntity.setId("exitScriptEntity");
+        exitScriptEntity.setName("exitScriptEntity");
         exitScriptEntity.addComponent(new ExitScript());
         world.getEntityManager().addEntity(exitScriptEntity);
 
         // Init GUI
         Entity guiEntity = new Entity();
-        guiEntity.setId("guiEntity");
+        guiEntity.setName("guiEntity");
         guiEntity.addComponent(new GUIScript());
         world.getEntityManager().addEntity(guiEntity);
 

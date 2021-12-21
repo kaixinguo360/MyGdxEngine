@@ -13,6 +13,11 @@ public class Entity implements Loadable {
     @Config
     private String id;
 
+    @Getter
+    @Setter
+    @Config
+    private String name;
+
     @Getter(AccessLevel.PACKAGE)
     @Setter(AccessLevel.PACKAGE)
     private boolean handled;

@@ -94,7 +94,7 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
             );
             for (SkyBoxInner skyBox : skyBoxInners) {
                 if (skyBox.position == null) {
-                    skyBox.entity = world.getEntityManager().getEntity(skyBox.id);
+                    skyBox.entity = world.getEntityManager().findEntityById(skyBox.id);
                     skyBox.position = skyBox.entity.getComponent(Position.class);
                 }
                 skyBox.position.transform.setToTranslation(cameraInner.perspectiveCamera.position);

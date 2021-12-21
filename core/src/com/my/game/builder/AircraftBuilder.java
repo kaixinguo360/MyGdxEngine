@@ -153,7 +153,7 @@ public class AircraftBuilder {
 
         // Aircraft Entity
         Entity entity = new Entity();
-        entity.setId("Aircraft-" + aircraftNum++);
+        entity.setName("Aircraft-" + aircraftNum++);
         entity.addComponent(aircraftScript);
         world.getEntityManager().addEntity(entity);
 
@@ -162,7 +162,7 @@ public class AircraftBuilder {
 
     // ----- Private ----- //
     private Entity addObject(String id, Matrix4 transform, Entity entity, Constraint constraint) {
-        entity.setId(id);
+        entity.setName(id);
         world.getEntityManager().addEntity(entity)
                 .getComponent(Position.class).transform.set(transform);
         if (constraint != null) {

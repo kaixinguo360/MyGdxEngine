@@ -91,20 +91,20 @@ public class GunBuilder {
 
     private int gunNum = 0;
 
-    public Entity createGun(String baseObjectId, Matrix4 transform) {
+    public Entity createGun(Entity base, Matrix4 transform) {
 
         // Gun
         GunScript gunScript = new GunScript();
 
         gunScript.gunController_Y = new GunController();
         gunScript.gunController_X = new GunController(-90, 0);
-        gunScript.rotate_Y = createRotate(transform.cpy().translate(0, 0.5f, 0), gunScript.gunController_Y, world.getEntityManager().getEntity(baseObjectId));
+        gunScript.rotate_Y = createRotate(transform.cpy().translate(0, 0.5f, 0), gunScript.gunController_Y, base);
         gunScript.rotate_X = createRotate(transform.cpy().translate(0, 1.5f, 0).rotate(Vector3.Z, 90), gunScript.gunController_X, gunScript.rotate_Y);
         gunScript.barrel = createBarrel(transform.cpy().translate(0, 1.5f, -3), gunScript.rotate_X);
 
         // Gun Entity
         Entity entity = new Entity();
-        entity.setId("Gun-" + gunNum++);
+        entity.setName("Gun-" + gunNum++);
         entity.addComponent(gunScript);
         world.getEntityManager().addEntity(entity);
 
@@ -113,7 +113,7 @@ public class GunBuilder {
 
     // ----- Private ----- //
     private Entity addObject(String id, Matrix4 transform, Entity entity, Constraint constraint) {
-        entity.setId(id);
+        entity.setName(id);
         world.getEntityManager().addEntity(entity)
                 .getComponent(Position.class).transform.set(transform);
         if (constraint != null) {

@@ -25,7 +25,7 @@ public class GUIScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
     @Override
     public void start(World world, Entity entity) {
 
-        Entity aircraftEntity = world.getEntityManager().getEntity("Aircraft-6");
+        Entity aircraftEntity = world.getEntityManager().findEntityByName("Aircraft-6");
         aircraftScript = aircraftEntity.getComponent(AircraftScript.class);
 
         // Create Skin

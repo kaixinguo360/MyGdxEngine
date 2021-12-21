@@ -105,7 +105,7 @@ public class GunScript implements Loadable.OnInit, ScriptSystem.OnStart, ScriptS
     private Entity createBullet(Matrix4 transform) {
         Entity entity = new MyInstance(assetsManager, "bullet", null,
                 new Collision(BOMB_FLAG, ALL_FLAG));
-        entity.setId("Bullet-" + bulletNum++);
+        entity.setName("Bullet-" + bulletNum++);
         world.getEntityManager().addEntity(entity).getComponent(Position.class).transform.set(transform);
         entity.addComponent(new RemoveScript());
         entity.addComponent(new GunBulletCollisionHandler());
