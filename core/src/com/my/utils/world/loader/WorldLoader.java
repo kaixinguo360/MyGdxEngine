@@ -50,7 +50,10 @@ public class WorldLoader implements Loader {
     @Override
     public <E, T> T load(E config, Class<T> type, LoadContext context) {
         World world = new World();
-        context.setEnvironment("world", world);
+
+        context.setEnvironment(Loaders.CONTEXT_ASSETS_MANAGER, world.getAssetsManager());
+        context.setEnvironment(Loaders.CONTEXT_SYSTEM_MANAGER, world.getSystemManager());
+        context.setEnvironment(Loaders.CONTEXT_ENTITY_MANAGER, world.getEntityManager());
 
         try {
             Map<String, Object> map = (Map<String, Object>) config;
@@ -107,7 +110,10 @@ public class WorldLoader implements Loader {
     public <E, T> E getConfig(T obj, Class<E> configType, LoadContext context) {
         World world = (World) obj;
         Map<String, Object> map = new LinkedHashMap<>();
-        context.setEnvironment("world", world);
+
+        context.setEnvironment(Loaders.CONTEXT_ASSETS_MANAGER, world.getAssetsManager());
+        context.setEnvironment(Loaders.CONTEXT_SYSTEM_MANAGER, world.getSystemManager());
+        context.setEnvironment(Loaders.CONTEXT_ENTITY_MANAGER, world.getEntityManager());
 
         Map<String, Entity> entities = world.getEntityManager().getEntities();
         if (entities.size() > 0) {

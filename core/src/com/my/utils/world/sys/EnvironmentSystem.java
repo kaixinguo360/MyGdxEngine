@@ -21,7 +21,7 @@ public class EnvironmentSystem extends BaseSystem implements Loadable.OnLoad {
     @Override
     public void load(Map<String, Object> config, LoadContext context) {
         // TODO: Better Common Environment Loader
-        AssetsManager assetsManager = context.getEnvironment("world", World.class).getAssetsManager();
+        AssetsManager assetsManager = context.getEnvironment(Loaders.CONTEXT_ASSETS_MANAGER, AssetsManager.class);
         Environment commonEnvironment = assetsManager.getAsset("commonEnvironment", Environment.class);
         this.commonEnvironment.set(commonEnvironment);
     }
