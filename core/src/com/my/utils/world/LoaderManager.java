@@ -72,6 +72,10 @@ public class LoaderManager {
         return null;
     }
 
+    public LoadContext newContext() {
+        return new LoadContextImpl();
+    }
+
     private class LoadContextImpl implements LoadContext {
 
         private final Map<String, Object> environment = new HashMap<>();

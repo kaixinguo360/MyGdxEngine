@@ -2,6 +2,7 @@ package com.my.utils.world;
 
 import com.badlogic.gdx.utils.Disposable;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,7 +10,8 @@ import java.util.Map;
 public class World implements Disposable {
 
     @Getter
-    private final AssetsManager assetsManager = new AssetsManager();
+    @Setter
+    private AssetsManager assetsManager = new AssetsManager();
 
     @Getter
     private final SystemManager systemManager = new SystemManager(this);

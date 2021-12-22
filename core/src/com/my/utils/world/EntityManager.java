@@ -21,7 +21,7 @@ public class EntityManager implements Disposable {
 
     // ---- Entity ---- //
     public <T extends Entity> T addEntity(T entity) {
-        if (entity.getId() == null) entity.setId(entity.getName() + UUID.randomUUID().toString());
+        if (entity.getId() == null) entity.setId(entity.getName() + UUID.randomUUID());
         String id = entity.getId();
         if (entities.containsKey(id)) throw new RuntimeException("Duplicate Entity: id=" + id);
         entities.put(id, entity);
@@ -97,6 +97,24 @@ public class EntityManager implements Disposable {
     public void removeListener(EntityFilter entityFilter, EntityListener entityListener) {
         if (!listeners.containsKey(entityFilter)) throw new RuntimeException("No Such Entity Listener Of This Filter: " + entityFilter);
         listeners.remove(entityFilter);
+    }
+
+    // ---- EntityManager ---- //
+    public Entity addAllEntities(EntityManager entityManager, boolean resetId) {
+        Entity returnEntity = null;
+        for (Entity entity : entityManager.getEntities().values()) {
+            if (resetId) entity.setId(null);
+            this.addEntity(entity);
+            if (returnEntity == null) returnEntity = entity;
+        }
+        return returnEntity;
+    }
+    public void clear() {
+        this.entities.clear();
+        this.filters.clear();
+        this.listeners.clear();
+        this.batch.toAdd.clear();
+        this.batch.toRemove.clear();
     }
 
     @Override
