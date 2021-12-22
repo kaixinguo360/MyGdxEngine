@@ -13,14 +13,15 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.ArrayMap;
+import com.my.game.LoadUtil;
 import com.my.game.MyInstance;
+import com.my.game.constraint.HingeConstraint;
 import com.my.game.script.ExitScript;
 import com.my.game.script.GUIScript;
 import com.my.game.script.GunScript;
-import com.my.utils.world.AssetsManager;
-import com.my.utils.world.Entity;
-import com.my.utils.world.World;
+import com.my.utils.world.*;
 import com.my.utils.world.com.Camera;
+import com.my.utils.world.com.Position;
 import com.my.utils.world.com.Render;
 import com.my.utils.world.sys.*;
 
@@ -43,6 +44,7 @@ public class WorldBuilder {
 
         // Init Assets
         initAssets(world);
+        PrefabBuilder.initAssets(world.getAssetsManager(), world.getSystemManager());
         Environment environment = world.getSystemManager().getSystem(EnvironmentSystem.class).getCommonEnvironment();
         environment.set(world.getAssetsManager().getAsset("commonEnvironment", Environment.class));
 
@@ -57,29 +59,48 @@ public class WorldBuilder {
         world.getEntityManager().addEntity(ground);
 
         // ----- Init Dynamic Objects ----- //
-        AircraftBuilder aircraftBuilder = new AircraftBuilder(world);
-        GunBuilder gunBuilder = new GunBuilder(world);
-        ObjectBuilder objectBuilder = new ObjectBuilder(world);
 
-        objectBuilder.createRunway("Runway", new Matrix4(), ground);
+        Prefab runway = world.getAssetsManager().getAsset("Runway", Prefab.class);
+        runway.newInstance(LoadUtil.loaderManager, world);
 
+        Prefab tower = world.getAssetsManager().getAsset("Tower", Prefab.class);
         for (int i = 1; i < 5; i++) {
-            objectBuilder.createTower("Tower", new Matrix4().setToTranslation(-5, 0, -200 * i), 5 * i);
+            for (int j = 0; j < i; j++) {
+                Entity entity = tower.newInstance(LoadUtil.loaderManager, world);
+                entity.getComponent(Position.class).getLocalTransform().setToTranslation(-5, 5 * j, -200 * i);
+            }
         }
+
+        Prefab aircraft = world.getAssetsManager().getAsset("Aircraft", Prefab.class);
         int aircraftNum = 0;
         for (int x = -20; x <= 20; x+=40) {
             for (int y = 0; y <= 0; y+=20) {
                 for (int z = -20; z <= 20; z+=20) {
-                    aircraftBuilder.createAircraft("Aircraft-" + aircraftNum++, new Matrix4().translate(x, y, z), 4000, 40);
+                    Entity entity = aircraft.newInstance(LoadUtil.loaderManager, world);
+                    entity.setName("Aircraft-" + aircraftNum++);
+                    entity.getComponent(Position.class).getLocalTransform().setToTranslation(x, y, z);
                 }
             }
         }
 
-        Entity aircraftEntity = aircraftBuilder.createAircraft("Aircraft-" + aircraftNum++, new Matrix4().translate(0, 0, 200), 8000, 40);
+        Entity aircraftEntity = aircraft.newInstance(LoadUtil.loaderManager, world);
+        aircraftEntity.setName("Aircraft-6");
+        aircraftEntity.getComponent(Position.class).getLocalTransform().translate(0, 0, 200);
         aircraftEntity.findChildByName("body").addComponent(new Camera(0, 0, 1, 1, 0, CameraSystem.FollowType.A));
 
-        Entity gunEntity = gunBuilder.createGun("Gun-0", ground, new Matrix4().translate(0, 0, -20));
+        Prefab gun = world.getAssetsManager().getAsset("Gun", Prefab.class);
+        Entity gunEntity = gun.newInstance(LoadUtil.loaderManager, world);
+        gunEntity.setName("Gun-0");
+        gunEntity.getComponent(Position.class).getLocalTransform().translate(0, 0.01f / 2, -20);
         gunEntity.getComponent(GunScript.class).disabled = true;
+        Entity rotateY = gunEntity.findChildByName("rotate_Y");
+        Matrix4 rotateYTransform = new Matrix4().translate(0, 0, -20).translate(0, 0.5f + 0.01f / 2, 0);
+        Matrix4 groundTransform = ground.getComponent(Position.class).getLocalTransform().cpy();
+        rotateY.addComponent(new HingeConstraint(ground,
+                groundTransform.inv().mul(rotateYTransform).rotate(Vector3.X, 90),
+                new Matrix4().rotate(Vector3.X, 90),
+                false
+        ));
         gunEntity.findChildByName("barrel").addComponent(new Camera(0, 0.7f, 0.3f, 1, 1, CameraSystem.FollowType.A));
 
         Entity exitScriptEntity = new Entity();
@@ -99,6 +120,7 @@ public class WorldBuilder {
     public static void initAssets(World world) {
 
         AssetsManager assetsManager = world.getAssetsManager();
+        SystemManager systemManager = world.getSystemManager();
         AircraftBuilder.initAssets(assetsManager);
         GunBuilder.initAssets(assetsManager);
         ObjectBuilder.initAssets(assetsManager);
