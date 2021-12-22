@@ -7,16 +7,17 @@ import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.my.game.MyInstance;
-import com.my.utils.world.*;
+import com.my.utils.world.AssetsManager;
+import com.my.utils.world.Config;
+import com.my.utils.world.Entity;
+import com.my.utils.world.World;
 import com.my.utils.world.com.*;
 import com.my.utils.world.sys.CameraSystem;
 import com.my.utils.world.sys.KeyInputSystem;
 import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.ScriptSystem;
 
-import java.lang.System;
-
-public class GunScript implements Loadable.OnInit, ScriptSystem.OnStart, ScriptSystem.OnUpdate, KeyInputSystem.OnKeyDown {
+public class GunScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, KeyInputSystem.OnKeyDown {
 
     // ----- Constants ----- //
     private final static short BOMB_FLAG = 1 << 8;
@@ -33,27 +34,29 @@ public class GunScript implements Loadable.OnInit, ScriptSystem.OnStart, ScriptS
     private PhysicsSystem physicsSystem;
     private Camera camera;
 
-    @Config public Entity barrel;
-    @Config public Entity rotate_Y, rotate_X;
+    private Entity barrel;
+    private Entity rotate_Y;
+    private Entity rotate_X;
 
-    @Config public boolean disabled;
-    @Config public int bulletNum;
+    private GunController gunController_Y;
+    private GunController gunController_X;
 
-    public GunController gunController_Y;
-    public GunController gunController_X;
-
-    @Override
-    public void init() {
-        if (rotate_Y.contains(GunController.class)) gunController_Y = rotate_Y.getComponent(GunController.class);
-        if (rotate_X.contains(GunController.class)) gunController_X = rotate_X.getComponent(GunController.class);
-    }
+    @Config
+    public boolean disabled;
 
     @Override
     public void start(World world, Entity entity) {
         this.world = world;
         this.assetsManager = world.getAssetsManager();
         this.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
+
+        barrel = entity.findChildByName("barrel");
+        rotate_Y = entity.findChildByName("rotate_Y");
+        rotate_X = entity.findChildByName("rotate_X");
+
         this.camera = barrel.getComponent(Camera.class);
+        if (rotate_Y.contains(GunController.class)) gunController_Y = rotate_Y.getComponent(GunController.class);
+        if (rotate_X.contains(GunController.class)) gunController_X = rotate_X.getComponent(GunController.class);
     }
 
     @Override
@@ -105,7 +108,7 @@ public class GunScript implements Loadable.OnInit, ScriptSystem.OnStart, ScriptS
     private Entity createBullet(Matrix4 transform) {
         Entity entity = new MyInstance(assetsManager, "bullet", null,
                 new Collision(BOMB_FLAG, ALL_FLAG));
-        entity.setName("Bullet-" + bulletNum++);
+        entity.setName("Bullet");
         world.getEntityManager().addEntity(entity).getComponent(Position.class).transform.set(transform);
         entity.addComponent(new RemoveScript());
         entity.addComponent(new GunBulletCollisionHandler());

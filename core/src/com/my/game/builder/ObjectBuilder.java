@@ -57,6 +57,7 @@ public class ObjectBuilder {
         String id = "Box-" + boxNum++;
         addObject(
                 id, transform, entity,
+                base,
                 base == null ? null : new ConnectConstraint(base, 2000)
         );
         return entity;
@@ -69,7 +70,7 @@ public class ObjectBuilder {
                 addObject(
                         "Box-" + boxNum++,
                         tmpM.setToTranslation(tmp + j, 0.5f + i, 0).mulLeft(transform),
-                        new MyInstance(assetsManager, "box1"), null
+                        new MyInstance(assetsManager, "box1"), null, null
                 );
             }
         }
@@ -83,13 +84,16 @@ public class ObjectBuilder {
     }
 
     // ----- Private ----- //
-    private String addObject(String id, Matrix4 transform, Entity entity, Constraint constraint) {
+    private Entity addObject(String id, Matrix4 transform, Entity entity, Entity base, Constraint constraint) {
         entity.setName(id);
         world.getEntityManager().addEntity(entity)
                 .getComponent(Position.class).transform.set(transform);
         if (constraint != null) {
             entity.addComponent(constraint);
         }
-        return id;
+        if (base != null) {
+            entity.setParent(base);
+        }
+        return entity;
     }
 }

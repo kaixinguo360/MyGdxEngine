@@ -32,22 +32,6 @@ import com.my.utils.world.sys.RenderSystem;
 
 public class AircraftBuilder {
 
-    // ----- Constants ----- //
-    private static final String group = "group";
-
-    // ----- Variables ----- //
-    private final World world;
-    private final AssetsManager assetsManager;
-
-    public AircraftBuilder(World world) {
-        this.world = world;
-        this.assetsManager = world.getAssetsManager();
-    }
-
-    // ----- Builder Methods ----- //
-
-    private int bodyNum = 0;
-
     public static void initAssets(AssetsManager assetsManager) {
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
         ArrayMap<String, Model> models = new ArrayMap<>();
@@ -72,31 +56,38 @@ public class AircraftBuilder {
         assetsManager.addAsset("engine", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btConeShape(0.45f,1), 50));
     }
 
-    private Entity createBody(Matrix4 transform, Entity base) {
-        String id = "Body-" + bodyNum++;
+    // ----- Constants ----- //
+    private static final String group = "group";
+
+    // ----- Variables ----- //
+    private final World world;
+    private final AssetsManager assetsManager;
+
+    public AircraftBuilder(World world) {
+        this.world = world;
+        this.assetsManager = world.getAssetsManager();
+    }
+
+    // ----- Builder Methods ----- //
+
+    private Entity createBody(String name, Matrix4 transform, Entity base) {
         return addObject(
-                id, transform, new MyInstance(assetsManager, "body"),
+                name, transform, new MyInstance(assetsManager, "body"),
                 base == null ? null : new ConnectConstraint(base, 2000)
         );
     }
 
-    private int wingNum = 0;
-
-    private Entity createWing(Matrix4 transform, Entity base) {
-        String id = "Wing-" + wingNum++;
+    private Entity createWing(String name, Matrix4 transform, Entity base) {
         return addObject(
-                id, transform, new MyInstance(assetsManager, "wing", new Lift(new Vector3(0, 200, 0))),
+                name, transform, new MyInstance(assetsManager, "wing", new Lift(new Vector3(0, 200, 0))),
                 base == null ? null : new ConnectConstraint(base, 500)
         );
     }
 
-    private int rotateNum = 0;
-
-    private Entity createRotate(Matrix4 transform, ConstraintController controller, Entity base) {
+    private Entity createRotate(String name, Matrix4 transform, ConstraintController controller, Entity base) {
         Matrix4 relTransform = new Matrix4(base.getComponent(Position.class).transform).inv().mul(transform);
-        String id = "Rotate-" + rotateNum++;
         Entity entity = addObject(
-                id, transform, new MyInstance(assetsManager, "rotate"),
+                name, transform, new MyInstance(assetsManager, "rotate"),
                 base == null ? null : new HingeConstraint(
                         base,
                         relTransform.rotate(Vector3.X, 90),
@@ -107,62 +98,66 @@ public class AircraftBuilder {
         return entity;
     }
 
-    private int engineNum = 0;
-
-    private Entity createEngine(Matrix4 transform, float force, float maxVelocity, Entity base) {
-        String id = "Engine-" + engineNum++;
+    private Entity createEngine(String name, Matrix4 transform, float force, float maxVelocity, Entity base) {
         return addObject(
-                id, transform,
+                name, transform,
                 new MyInstance(assetsManager, "engine", new LimitedForce(maxVelocity, new Vector3(0, force, 0), new Vector3())),
                 base == null ? null : new ConnectConstraint(base, 2000)
         );
     }
 
-    private int aircraftNum = 0;
-
-    public Entity createAircraft(Matrix4 transform, float force, float maxVelocity) {
-
-        // Aircraft
-        AircraftScript aircraftScript = new AircraftScript();
-
-        // Body
-        aircraftScript.body = createBody(transform.cpy().translate(0, 0.5f, -3), null);
-        aircraftScript.engine = createEngine(transform.cpy().translate(0, 0.6f, -6).rotate(Vector3.X, -90), force, maxVelocity, aircraftScript.body);
-
-        // Left
-        aircraftScript.aircraftController_L = new AircraftController(-0.15f, 0.2f, 0.5f);
-        aircraftScript.rotate_L = createRotate(transform.cpy().translate(-1, 0.5f, -5).rotate(Vector3.Z, 90), aircraftScript.aircraftController_L, aircraftScript.body);
-        aircraftScript.wing_L1 = createWing(transform.cpy().translate(-2.5f, 0.5f, -5).rotate(Vector3.X, 14), aircraftScript.rotate_L);
-        aircraftScript.wing_L2 = createWing(transform.cpy().translate(-4.5f, 0.5f, -5).rotate(Vector3.X, 14), aircraftScript.wing_L1);
-
-        // Right
-        aircraftScript.aircraftController_R = new AircraftController(-0.15f, 0.2f, 0.5f);
-        aircraftScript.rotate_R = createRotate(transform.cpy().translate(1, 0.5f, -5).rotate(Vector3.Z, 90), aircraftScript.aircraftController_R, aircraftScript.body);
-        aircraftScript.wing_R1 = createWing(transform.cpy().translate(2.5f, 0.5f, -5).rotate(Vector3.X, 14), aircraftScript.rotate_R);
-        aircraftScript.wing_R2 = createWing(transform.cpy().translate(4.5f, 0.5f, -5).rotate(Vector3.X, 14), aircraftScript.wing_R1);
-
-        // Horizontal Tail
-        aircraftScript.aircraftController_T = new AircraftController(-0.2f, 0.2f, 1f);
-        aircraftScript.rotate_T = createRotate(transform.cpy().translate(0, 0.5f, 0.1f).rotate(Vector3.Z, 90), aircraftScript.aircraftController_T, aircraftScript.body);
-        aircraftScript.wing_TL = createWing(transform.cpy().translate(-1.5f, 0.5f, 0.1f).rotate(Vector3.X, 13f), aircraftScript.rotate_T);
-        aircraftScript.wing_TR = createWing(transform.cpy().translate(1.5f, 0.5f, 0.1f).rotate(Vector3.X, 13f), aircraftScript.rotate_T);
-
-        // Vertical Tail
-        aircraftScript.wing_VL = createWing(transform.cpy().translate(-0.6f, 1f, -1).rotate(Vector3.Z, 90), aircraftScript.body);
-        aircraftScript.wing_VR = createWing(transform.cpy().translate(0.6f, 1f, -1).rotate(Vector3.Z, 90), aircraftScript.body);
+    public Entity createAircraft(String name, Matrix4 transform, float force, float maxVelocity) {
 
         // Aircraft Entity
         Entity entity = new Entity();
-        entity.setName("Aircraft-" + aircraftNum++);
-        entity.addComponent(aircraftScript);
+        entity.setName(name);
+        entity.addComponent(new AircraftScript());
         world.getEntityManager().addEntity(entity);
+
+        // Body
+        Entity body = createBody("body", transform.cpy().translate(0, 0.5f, -3), null);
+        body.setParent(entity);
+        Entity engine = createEngine("engine", transform.cpy().translate(0, 0.6f, -6).rotate(Vector3.X, -90), force, maxVelocity, body);
+
+        // Left
+        Entity rotate_L = createRotate("rotate_L", transform.cpy().translate(-1, 0.5f, -5).rotate(Vector3.Z, 90), new AircraftController(-0.15f, 0.2f, 0.5f), body);
+        Entity wing_L1 = createWing("wing_L1", transform.cpy().translate(-2.5f, 0.5f, -5).rotate(Vector3.X, 14), rotate_L);
+        Entity wing_L2 = createWing("wing_L2", transform.cpy().translate(-4.5f, 0.5f, -5).rotate(Vector3.X, 14), wing_L1);
+
+        // Right
+        Entity rotate_R = createRotate("rotate_R", transform.cpy().translate(1, 0.5f, -5).rotate(Vector3.Z, 90), new AircraftController(-0.15f, 0.2f, 0.5f), body);
+        Entity wing_R1 = createWing("wing_R1", transform.cpy().translate(2.5f, 0.5f, -5).rotate(Vector3.X, 14), rotate_R);
+        Entity wing_R2 = createWing("wing_R2", transform.cpy().translate(4.5f, 0.5f, -5).rotate(Vector3.X, 14), wing_R1);
+
+        // Horizontal Tail
+        Entity rotate_T = createRotate("rotate_T", transform.cpy().translate(0, 0.5f, 0.1f).rotate(Vector3.Z, 90), new AircraftController(-0.2f, 0.2f, 1f), body);
+        Entity wing_TL = createWing("wing_TL", transform.cpy().translate(-1.5f, 0.5f, 0.1f).rotate(Vector3.X, 13f), rotate_T);
+        Entity wing_TR = createWing("wing_TR", transform.cpy().translate(1.5f, 0.5f, 0.1f).rotate(Vector3.X, 13f), rotate_T);
+
+        // Vertical Tail
+        Entity wing_VL = createWing("wing_VL", transform.cpy().translate(-0.6f, 1f, -1).rotate(Vector3.Z, 90), body);
+        Entity wing_VR = createWing("wing_VR", transform.cpy().translate(0.6f, 1f, -1).rotate(Vector3.Z, 90), body);
+
+        body.setParent(entity);
+        engine.setParent(entity);
+        rotate_L.setParent(entity);
+        wing_L1.setParent(entity);
+        wing_L2.setParent(entity);
+        rotate_R.setParent(entity);
+        wing_R1.setParent(entity);
+        wing_R2.setParent(entity);
+        rotate_T.setParent(entity);
+        wing_TL.setParent(entity);
+        wing_TR.setParent(entity);
+        wing_VL.setParent(entity);
+        wing_VR.setParent(entity);
 
         return entity;
     }
 
     // ----- Private ----- //
-    private Entity addObject(String id, Matrix4 transform, Entity entity, Constraint constraint) {
-        entity.setName(id);
+    private Entity addObject(String name, Matrix4 transform, Entity entity, Constraint constraint) {
+        entity.setName(name);
         world.getEntityManager().addEntity(entity)
                 .getComponent(Position.class).transform.set(transform);
         if (constraint != null) {

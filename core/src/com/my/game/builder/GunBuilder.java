@@ -29,22 +29,6 @@ import com.my.utils.world.sys.RenderSystem;
 
 public class GunBuilder {
 
-    private static final String group = "group";
-
-    // ----- Variables ----- //
-    private final World world;
-    private final AssetsManager assetsManager;
-
-    // ----- Init ----- //
-    public GunBuilder(World world) {
-        this.world = world;
-        this.assetsManager = world.getAssetsManager();
-    }
-
-    // ----- Builder Methods ----- //
-
-    private int barrelNum = 0;
-
     public static void initAssets(AssetsManager assetsManager) {
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
         ModelBuilder mdBuilder = new ModelBuilder();
@@ -64,21 +48,31 @@ public class GunBuilder {
 
     }
 
-    private Entity createBarrel(Matrix4 transform, Entity base) {
-        String id = "Barrel-" + barrelNum++;
+    private static final String group = "group";
+
+    // ----- Variables ----- //
+    private final World world;
+    private final AssetsManager assetsManager;
+
+    // ----- Init ----- //
+    public GunBuilder(World world) {
+        this.world = world;
+        this.assetsManager = world.getAssetsManager();
+    }
+
+    // ----- Builder Methods ----- //
+
+    private Entity createBarrel(String name, Matrix4 transform, Entity base) {
         return addObject(
-                id, transform, new MyInstance(assetsManager, "barrel"),
+                name, transform, new MyInstance(assetsManager, "barrel"),
                 base == null ? null : new ConnectConstraint(base, 2000)
         );
     }
 
-    private int rotateNum = 0;
-
-    private Entity createRotate(Matrix4 transform, ConstraintController controller, Entity base) {
+    private Entity createRotate(String name, Matrix4 transform, ConstraintController controller, Entity base) {
         Matrix4 relTransform = new Matrix4(base.getComponent(Position.class).transform).inv().mul(transform);
-        String id = "GunRotate-" + rotateNum++;
         Entity entity = addObject(
-                id, transform, new MyInstance(assetsManager, "gunRotate"),
+                name, transform, new MyInstance(assetsManager, "gunRotate"),
                 base == null ? null : new HingeConstraint(
                         base,
                         relTransform.rotate(Vector3.X, 90),
@@ -89,31 +83,28 @@ public class GunBuilder {
         return entity;
     }
 
-    private int gunNum = 0;
-
-    public Entity createGun(Entity base, Matrix4 transform) {
-
-        // Gun
-        GunScript gunScript = new GunScript();
-
-        gunScript.gunController_Y = new GunController();
-        gunScript.gunController_X = new GunController(-90, 0);
-        gunScript.rotate_Y = createRotate(transform.cpy().translate(0, 0.5f, 0), gunScript.gunController_Y, base);
-        gunScript.rotate_X = createRotate(transform.cpy().translate(0, 1.5f, 0).rotate(Vector3.Z, 90), gunScript.gunController_X, gunScript.rotate_Y);
-        gunScript.barrel = createBarrel(transform.cpy().translate(0, 1.5f, -3), gunScript.rotate_X);
+    public Entity createGun(String name, Entity base, Matrix4 transform) {
 
         // Gun Entity
         Entity entity = new Entity();
-        entity.setName("Gun-" + gunNum++);
-        entity.addComponent(gunScript);
+        entity.setName(name);
+        entity.addComponent(new GunScript());
         world.getEntityManager().addEntity(entity);
+
+        Entity rotate_Y = createRotate("rotate_Y", transform.cpy().translate(0, 0.5f, 0), new GunController(), base);
+        Entity rotate_X = createRotate("rotate_X", transform.cpy().translate(0, 1.5f, 0).rotate(Vector3.Z, 90), new GunController(-90, 0), rotate_Y);
+        Entity barrel = createBarrel("barrel", transform.cpy().translate(0, 1.5f, -3), rotate_X);
+
+        rotate_Y.setParent(entity);
+        rotate_X.setParent(entity);
+        barrel.setParent(entity);
 
         return entity;
     }
 
     // ----- Private ----- //
-    private Entity addObject(String id, Matrix4 transform, Entity entity, Constraint constraint) {
-        entity.setName(id);
+    private Entity addObject(String name, Matrix4 transform, Entity entity, Constraint constraint) {
+        entity.setName(name);
         world.getEntityManager().addEntity(entity)
                 .getComponent(Position.class).transform.set(transform);
         if (constraint != null) {

@@ -7,16 +7,17 @@ import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.my.game.MyInstance;
-import com.my.utils.world.*;
+import com.my.utils.world.AssetsManager;
+import com.my.utils.world.Config;
+import com.my.utils.world.Entity;
+import com.my.utils.world.World;
 import com.my.utils.world.com.*;
 import com.my.utils.world.sys.CameraSystem;
 import com.my.utils.world.sys.KeyInputSystem;
 import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.ScriptSystem;
 
-import java.lang.System;
-
-public class AircraftScript implements Loadable.OnInit, ScriptSystem.OnStart, ScriptSystem.OnUpdate, KeyInputSystem.OnKeyDown {
+public class AircraftScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, KeyInputSystem.OnKeyDown {
 
     // ----- Constants ----- //
     private final static short BOMB_FLAG = 1 << 8;
@@ -24,7 +25,7 @@ public class AircraftScript implements Loadable.OnInit, ScriptSystem.OnStart, Sc
     private final static short ALL_FLAG = -1;
 
     // ----- Temporary ----- //
-    private static final Vector3 tmpV1 = new Vector3();
+    private static final Vector3 tmpV = new Vector3();
     private static final Matrix4 tmpM = new Matrix4();
     private static final Quaternion tmpQ = new Quaternion();
 
@@ -33,37 +34,48 @@ public class AircraftScript implements Loadable.OnInit, ScriptSystem.OnStart, Sc
     private PhysicsSystem physicsSystem;
     private Camera camera;
 
-    @Config public Entity body;
-    @Config public Entity engine;
-    @Config public Entity rotate_L, rotate_R, rotate_T;
-    @Config public Entity wing_L1, wing_L2;
-    @Config public Entity wing_R1, wing_R2;
-    @Config public Entity wing_TL, wing_TR;
-    @Config public Entity wing_VL, wing_VR;
+    public Entity body;
+    public Entity engine;
+    public Entity rotate_L, rotate_R, rotate_T;
+    public Entity wing_L1, wing_L2;
+    public Entity wing_R1, wing_R2;
+    public Entity wing_TL, wing_TR;
+    public Entity wing_VL, wing_VR;
 
-    @Config public boolean disabled;
-    @Config public int bombNum;
+    private AircraftController aircraftController_L;
+    private AircraftController aircraftController_R;
+    private AircraftController aircraftController_T;
 
-    public AircraftController aircraftController_L;
-    public AircraftController aircraftController_R;
-    public AircraftController aircraftController_T;
-
-    @Override
-    public void init() {
-        if (rotate_L.contains(AircraftController.class))
-            aircraftController_L = rotate_L.getComponent(AircraftController.class);
-        if (rotate_R.contains(AircraftController.class))
-            aircraftController_R = rotate_R.getComponent(AircraftController.class);
-        if (rotate_T.contains(AircraftController.class))
-            aircraftController_T = rotate_T.getComponent(AircraftController.class);
-    }
+    @Config
+    public boolean disabled;
 
     @Override
     public void start(World world, Entity entity) {
         this.world = world;
         this.assetsManager = world.getAssetsManager();
         this.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
+
+        body = entity.findChildByName("body");
+        engine = entity.findChildByName("engine");
+        rotate_L = entity.findChildByName("rotate_L");
+        rotate_R = entity.findChildByName("rotate_R");
+        rotate_T = entity.findChildByName("rotate_T");
+        wing_L1 = entity.findChildByName("wing_L1");
+        wing_L2 = entity.findChildByName("wing_L2");
+        wing_R1 = entity.findChildByName("wing_R1");
+        wing_R2 = entity.findChildByName("wing_R2");
+        wing_TL = entity.findChildByName("wing_TL");
+        wing_TR = entity.findChildByName("wing_TR");
+        wing_VL = entity.findChildByName("wing_VL");
+        wing_VR = entity.findChildByName("wing_VR");
+
         this.camera = body.getComponent(Camera.class);
+        if (rotate_L.contains(AircraftController.class))
+            aircraftController_L = rotate_L.getComponent(AircraftController.class);
+        if (rotate_R.contains(AircraftController.class))
+            aircraftController_R = rotate_R.getComponent(AircraftController.class);
+        if (rotate_T.contains(AircraftController.class))
+            aircraftController_T = rotate_T.getComponent(AircraftController.class);
     }
 
     @Override
@@ -101,10 +113,10 @@ public class AircraftScript implements Loadable.OnInit, ScriptSystem.OnStart, Sc
     public void fire() {
         tmpM.set(getTransform()).translate(0, 0, -20 + (float) (Math.random() * 15)).rotate(Vector3.X, 90);
         getTransform().getRotation(tmpQ);
-        tmpV1.set(getBody().getLinearVelocity());
-        tmpV1.add(new Vector3(0, 0, -1).mul(tmpQ).scl(2000));
+        tmpV.set(getBody().getLinearVelocity());
+        tmpV.add(new Vector3(0, 0, -1).mul(tmpQ).scl(2000));
         btRigidBody body = createBomb(tmpM).getComponent(RigidBody.class).body;
-        body.setLinearVelocity(tmpV1);
+        body.setLinearVelocity(tmpV);
         body.setCcdMotionThreshold(1e-7f);
         body.setCcdSweptSphereRadius(2);
     }
@@ -127,7 +139,7 @@ public class AircraftScript implements Loadable.OnInit, ScriptSystem.OnStart, Sc
         wing_TR.removeComponent(Constraint.class);
         wing_VL.removeComponent(Constraint.class);
         wing_VR.removeComponent(Constraint.class);
-        physicsSystem.addExplosion(getTransform().getTranslation(tmpV1), 2000);
+        physicsSystem.addExplosion(getTransform().getTranslation(tmpV), 2000);
     }
 
     public float getVelocity() {
@@ -135,7 +147,7 @@ public class AircraftScript implements Loadable.OnInit, ScriptSystem.OnStart, Sc
     }
 
     public float getHeight() {
-        return getTransform().getTranslation(tmpV1).y;
+        return getTransform().getTranslation(tmpV).y;
     }
 
     public Matrix4 getTransform() {
@@ -149,7 +161,7 @@ public class AircraftScript implements Loadable.OnInit, ScriptSystem.OnStart, Sc
     public Entity createBomb(Matrix4 transform) {
         Entity entity = new MyInstance(assetsManager, "bomb", null,
                 new Collision(BOMB_FLAG, ALL_FLAG));
-        entity.setName("Bomb-" + bombNum++);
+        entity.setName("Bomb");
         world.getEntityManager().addEntity(entity).getComponent(Position.class).transform.set(transform);
         entity.addComponent(new RemoveScript());
         entity.addComponent(new AircraftBombCollisionHandler());

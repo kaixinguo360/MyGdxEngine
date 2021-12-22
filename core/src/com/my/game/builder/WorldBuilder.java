@@ -14,7 +14,6 @@ import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.my.game.MyInstance;
-import com.my.game.script.AircraftScript;
 import com.my.game.script.ExitScript;
 import com.my.game.script.GUIScript;
 import com.my.game.script.GunScript;
@@ -68,20 +67,21 @@ public class WorldBuilder {
         for (int i = 1; i < 5; i++) {
             objectBuilder.createTower(new Matrix4().setToTranslation(-5, 0, -200 * i), 5 * i);
         }
+        int aircraftNum = 0;
         for (int x = -20; x <= 20; x+=40) {
             for (int y = 0; y <= 0; y+=20) {
                 for (int z = -20; z <= 20; z+=20) {
-                    aircraftBuilder.createAircraft(new Matrix4().translate(x, y, z), 4000, 40);
+                    aircraftBuilder.createAircraft("Aircraft-" + aircraftNum++, new Matrix4().translate(x, y, z), 4000, 40);
                 }
             }
         }
 
-        Entity aircraftEntity = aircraftBuilder.createAircraft(new Matrix4().translate(0, 0, 200), 8000, 40);
-        aircraftEntity.getComponent(AircraftScript.class).body.addComponent(new Camera(0, 0, 1, 1, 0, CameraSystem.FollowType.A));
+        Entity aircraftEntity = aircraftBuilder.createAircraft("Aircraft-" + aircraftNum++, new Matrix4().translate(0, 0, 200), 8000, 40);
+        aircraftEntity.findChildByName("body").addComponent(new Camera(0, 0, 1, 1, 0, CameraSystem.FollowType.A));
 
-        Entity gunEntity = gunBuilder.createGun(ground, new Matrix4().translate(0, 0, -20));
+        Entity gunEntity = gunBuilder.createGun("Gun-0", ground, new Matrix4().translate(0, 0, -20));
         gunEntity.getComponent(GunScript.class).disabled = true;
-        gunEntity.getComponent(GunScript.class).barrel.addComponent(new Camera(0, 0.7f, 0.3f, 1, 1, CameraSystem.FollowType.A));
+        gunEntity.findChildByName("barrel").addComponent(new Camera(0, 0.7f, 0.3f, 1, 1, CameraSystem.FollowType.A));
 
         Entity exitScriptEntity = new Entity();
         exitScriptEntity.setName("exitScriptEntity");
