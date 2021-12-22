@@ -35,11 +35,24 @@ public class Entity extends Relation<Entity> implements Loadable, Loadable.OnIni
     public <T extends Component> T addComponent(T component) {
         if (component == null) return null;
         components.add(component);
+        if (component instanceof Component.OnAttachToEntity) {
+            ((Component.OnAttachToEntity) component).attachToEntity(this);
+        }
         notifyChange();
         return component;
     }
     public <T extends Component> void removeComponent(Class<T> type) {
         components.removeIf(type::isInstance);
+        Iterator<Component> it = components.iterator();
+        while (it.hasNext()) {
+            Component component = it.next();
+            if (type.isInstance(component)) {
+                if (component instanceof Component.OnDetachFromEntity) {
+                    ((Component.OnDetachFromEntity) component).detachFromEntity(this);
+                }
+                it.remove();
+            }
+        }
         notifyChange();
     }
     public <T extends Component> T getComponent(Class<T> type) {
@@ -91,6 +104,11 @@ public class Entity extends Relation<Entity> implements Loadable, Loadable.OnIni
 
     @Override
     public void init() {
+        for (Component component : components) {
+            if (component instanceof Component.OnAttachToEntity) {
+                ((Component.OnAttachToEntity) component).attachToEntity(this);
+            }
+        }
         if (parent != null) {
             parent.addChild(this);
         }
