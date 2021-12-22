@@ -84,9 +84,15 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
         rigidBodyInner.position = entity.getComponent(Position.class);
         rigidBodyInner.rigidBody = entity.getComponent(RigidBody.class);
 
+        if (!rigidBodyInner.position.isDisableInherit()) {
+            rigidBodyInner.position.getGlobalTransform(tmpM);
+            rigidBodyInner.position.setLocalTransform(tmpM);
+            rigidBodyInner.position.setDisableInherit(true);
+        }
+
         btRigidBody body = rigidBodyInner.rigidBody.body;
-        body.proceedToTransform(rigidBodyInner.position.transform);
-        body.setMotionState(new MotionState(rigidBodyInner.position.transform));
+        body.proceedToTransform(rigidBodyInner.position.getLocalTransform());
+        body.setMotionState(new MotionState(rigidBodyInner.position.getLocalTransform()));
         body.userData = entity;
 
         if (entity.contains(Collision.class)) {
@@ -164,7 +170,7 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
     // Add Explosion
     public void addExplosion(Vector3 position, float force) {
         for (RigidBodyInner rigidBodyInner : rigidBodyInners) {
-            rigidBodyInner.position.transform.getTranslation(tmpV1);
+            rigidBodyInner.position.getLocalTransform().getTranslation(tmpV1);
             tmpV1.sub(position);
             float len2 = tmpV1.len2();
             tmpV1.nor().scl(force * 1/len2);
@@ -190,6 +196,7 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
 
     private static final Vector3 tmpV1 = new Vector3();
     private static final Vector3 tmpV2 = new Vector3();
+    private static final Matrix4 tmpM = new Matrix4();
     private static final float MIN_FORCE = 10;
 
     private static class RigidBodyInner {

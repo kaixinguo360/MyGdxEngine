@@ -20,6 +20,6 @@ public class Force extends Motion {
 
     @Override
     public void update() {
-        rigidBody.body.applyForce(TMP_1.set(force).rot(position.transform), rel_pos);
+        rigidBody.body.applyForce(TMP_1.set(force).rot(position.getLocalTransform()), rel_pos);
     }
 }

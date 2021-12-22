@@ -109,7 +109,7 @@ public class GunScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, K
         Entity entity = new MyInstance(assetsManager, "bullet", null,
                 new Collision(BOMB_FLAG, ALL_FLAG));
         entity.setName("Bullet");
-        world.getEntityManager().addEntity(entity).getComponent(Position.class).transform.set(transform);
+        world.getEntityManager().addEntity(entity).getComponent(Position.class).setLocalTransform(transform);
         entity.addComponent(new RemoveScript());
         entity.addComponent(new GunBulletCollisionHandler());
         return entity;
@@ -126,7 +126,7 @@ public class GunScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, K
     }
 
     public Matrix4 getTransform() {
-        return barrel.getComponent(Position.class).transform;
+        return barrel.getComponent(Position.class).getLocalTransform();
     }
 
     public btRigidBody getBody() {

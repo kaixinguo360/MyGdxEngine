@@ -85,7 +85,7 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
         Environment environment = environmentSystem.getEnvironment();
 
         for (CameraInner cameraInner : cameraInners) {
-            setCamera(cameraInner.camera.followType, cameraInner.perspectiveCamera, cameraInner.position.transform);
+            setCamera(cameraInner.camera.followType, cameraInner.perspectiveCamera, cameraInner.position.getGlobalTransform(tmpM1));
             Gdx.gl.glViewport(
                     (int) (width * cameraInner.camera.startX),
                     (int) (height * cameraInner.camera.startY),
@@ -97,7 +97,7 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
                     skyBox.entity = world.getEntityManager().findEntityById(skyBox.id);
                     skyBox.position = skyBox.entity.getComponent(Position.class);
                 }
-                skyBox.position.transform.setToTranslation(cameraInner.perspectiveCamera.position);
+                skyBox.position.getLocalTransform().setToTranslation(cameraInner.perspectiveCamera.position);
             }
             Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
             renderSystem.render(cameraInner.perspectiveCamera, environment);
@@ -125,7 +125,8 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
     // ----- Private ----- //
 
     private static final Vector3 tmpV1 = new Vector3();
-    private static final Matrix4 tmpM = new Matrix4();
+    private static final Matrix4 tmpM1 = new Matrix4();
+    private static final Matrix4 tmpM2 = new Matrix4();
     private static final Quaternion tmpQ = new Quaternion();
 
     private static void setCamera(FollowType type, PerspectiveCamera camera, Matrix4 transform) {
@@ -140,8 +141,8 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
             case B: {
                 transform.getTranslation(tmpV1);
                 float angle = transform.getRotation(tmpQ).getAngleAround(Vector3.Y);
-                tmpM.setToTranslation(tmpV1).rotate(Vector3.Y, angle).translate(0, 0, 20);
-                camera.position.setZero().mul(tmpM);
+                tmpM2.setToTranslation(tmpV1).rotate(Vector3.Y, angle).translate(0, 0, 20);
+                camera.position.setZero().mul(tmpM2);
                 camera.lookAt(transform.getTranslation(tmpV1).add(0, 0, 0));
                 camera.up.set(0, 1, 0);
                 camera.update();

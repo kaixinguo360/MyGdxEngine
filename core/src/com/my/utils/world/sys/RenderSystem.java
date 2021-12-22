@@ -8,12 +8,10 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.my.utils.world.BaseSystem;
 import com.my.utils.world.Entity;
-import com.my.utils.world.EntityListener;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.Render;
-import com.my.utils.world.com.RigidBody;
 
-public class RenderSystem extends BaseSystem implements EntityListener {
+public class RenderSystem extends BaseSystem {
 
     protected ModelBatch batch;
 
@@ -27,22 +25,6 @@ public class RenderSystem extends BaseSystem implements EntityListener {
         return entity.contain(Position.class, Render.class);
     }
 
-    @Override
-    public void afterEntityAdded(Entity entity) {
-        Position position = entity.getComponent(Position.class);
-        Render render = entity.getComponent(Render.class);
-        render.modelInstance.transform.set(position.transform);
-        position.transform = render.modelInstance.transform;
-        if (entity.contain(RigidBody.class)) {
-            entity.getComponent(RigidBody.class).body.proceedToTransform(position.transform);
-        }
-    }
-
-    @Override
-    public void afterEntityRemoved(Entity entity) {
-
-    }
-
     // ----- Custom ----- //
 
     public void render(PerspectiveCamera cam, Environment environment) {
@@ -50,6 +32,7 @@ public class RenderSystem extends BaseSystem implements EntityListener {
         for (Entity entity : getEntities()) {
             Position position = entity.getComponent(Position.class);
             Render render = entity.getComponent(Render.class);
+            position.getGlobalTransform(render.modelInstance.transform);
 
             if (isVisible(cam, position, render)) {
                 if (environment != null && render.includeEnv)
@@ -64,7 +47,7 @@ public class RenderSystem extends BaseSystem implements EntityListener {
     // ----- Private ----- //
 
     private boolean isVisible(PerspectiveCamera cam, Position position, Render render) {
-        position.transform.getTranslation(tmp);
+        position.getLocalTransform().getTranslation(tmp);
         tmp.add(render.center);
         return cam.frustum.sphereInFrustum(tmp, render.radius);
     }

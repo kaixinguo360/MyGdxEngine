@@ -70,7 +70,7 @@ public class GunBuilder {
     }
 
     private Entity createRotate(String name, Matrix4 transform, ConstraintController controller, Entity base) {
-        Matrix4 relTransform = new Matrix4(base.getComponent(Position.class).transform).inv().mul(transform);
+        Matrix4 relTransform = new Matrix4(base.getComponent(Position.class).getLocalTransform()).inv().mul(transform);
         Entity entity = addObject(
                 name, transform, new MyInstance(assetsManager, "gunRotate"),
                 base == null ? null : new HingeConstraint(
@@ -88,6 +88,7 @@ public class GunBuilder {
         // Gun Entity
         Entity entity = new Entity();
         entity.setName(name);
+        entity.addComponent(new Position());
         entity.addComponent(new GunScript());
         world.getEntityManager().addEntity(entity);
 
@@ -106,7 +107,7 @@ public class GunBuilder {
     private Entity addObject(String name, Matrix4 transform, Entity entity, Constraint constraint) {
         entity.setName(name);
         world.getEntityManager().addEntity(entity)
-                .getComponent(Position.class).transform.set(transform);
+                .getComponent(Position.class).setLocalTransform(transform);
         if (constraint != null) {
             entity.addComponent(constraint);
         }

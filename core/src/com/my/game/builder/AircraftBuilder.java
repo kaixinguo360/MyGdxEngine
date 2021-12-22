@@ -85,7 +85,7 @@ public class AircraftBuilder {
     }
 
     private Entity createRotate(String name, Matrix4 transform, ConstraintController controller, Entity base) {
-        Matrix4 relTransform = new Matrix4(base.getComponent(Position.class).transform).inv().mul(transform);
+        Matrix4 relTransform = new Matrix4(base.getComponent(Position.class).getLocalTransform()).inv().mul(transform);
         Entity entity = addObject(
                 name, transform, new MyInstance(assetsManager, "rotate"),
                 base == null ? null : new HingeConstraint(
@@ -111,12 +111,12 @@ public class AircraftBuilder {
         // Aircraft Entity
         Entity entity = new Entity();
         entity.setName(name);
+        entity.addComponent(new Position());
         entity.addComponent(new AircraftScript());
         world.getEntityManager().addEntity(entity);
 
         // Body
         Entity body = createBody("body", transform.cpy().translate(0, 0.5f, -3), null);
-        body.setParent(entity);
         Entity engine = createEngine("engine", transform.cpy().translate(0, 0.6f, -6).rotate(Vector3.X, -90), force, maxVelocity, body);
 
         // Left
@@ -159,7 +159,7 @@ public class AircraftBuilder {
     private Entity addObject(String name, Matrix4 transform, Entity entity, Constraint constraint) {
         entity.setName(name);
         world.getEntityManager().addEntity(entity)
-                .getComponent(Position.class).transform.set(transform);
+                .getComponent(Position.class).setLocalTransform(transform);
         if (constraint != null) {
             entity.addComponent(constraint);
         }

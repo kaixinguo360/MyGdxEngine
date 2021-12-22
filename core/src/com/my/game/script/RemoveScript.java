@@ -22,7 +22,7 @@ public class RemoveScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate
     @Override
     public void update(World world, Entity entity) {
         if (!handleable) return;
-        float dst = position.transform.getTranslation(TMP_1).dst(0, 0, 0);
+        float dst = position.getLocalTransform().getTranslation(TMP_1).dst(0, 0, 0);
         if (dst > 10000) {
             world.getEntityManager().getBatch().removeEntity(entity.getId());
         }

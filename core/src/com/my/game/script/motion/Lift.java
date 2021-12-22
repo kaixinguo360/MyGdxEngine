@@ -19,9 +19,9 @@ public class Lift extends Motion {
     @Override
     public void update() {
         TMP_1.set(rigidBody.body.getLinearVelocity());
-        TMP_2.set(up).rot(position.transform);
+        TMP_2.set(up).rot(position.getLocalTransform());
         float lift = -TMP_2.dot(TMP_1);
-        TMP_1.set(up).nor().scl(lift).rot(position.transform);
+        TMP_1.set(up).nor().scl(lift).rot(position.getLocalTransform());
         TMP_2.set(0, 0, 0);
         rigidBody.body.applyForce(TMP_1, TMP_2);
     }

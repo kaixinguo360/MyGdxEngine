@@ -151,7 +151,7 @@ public class AircraftScript implements ScriptSystem.OnStart, ScriptSystem.OnUpda
     }
 
     public Matrix4 getTransform() {
-        return body.getComponent(Position.class).transform;
+        return body.getComponent(Position.class).getLocalTransform();
     }
 
     public btRigidBody getBody() {
@@ -162,7 +162,7 @@ public class AircraftScript implements ScriptSystem.OnStart, ScriptSystem.OnUpda
         Entity entity = new MyInstance(assetsManager, "bomb", null,
                 new Collision(BOMB_FLAG, ALL_FLAG));
         entity.setName("Bomb");
-        world.getEntityManager().addEntity(entity).getComponent(Position.class).transform.set(transform);
+        world.getEntityManager().addEntity(entity).getComponent(Position.class).setLocalTransform(transform);
         entity.addComponent(new RemoveScript());
         entity.addComponent(new AircraftBombCollisionHandler());
         return entity;

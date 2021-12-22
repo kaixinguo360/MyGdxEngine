@@ -25,7 +25,7 @@ public class MyInstance extends Entity implements Disposable {
     }
 
     public MyInstance(AssetsManager assetsManager, String className, Motion motion, Collision collision) {
-        position = addComponent(new Position(new Matrix4()));
+        position = addComponent(new Position());
         if (assetsManager.hasAsset(className, RenderSystem.RenderModel.class)) {
             RenderSystem.RenderModel renderModel = assetsManager.getAsset(className, RenderSystem.RenderModel.class);
             render = addComponent(new Render(renderModel));
@@ -43,7 +43,7 @@ public class MyInstance extends Entity implements Disposable {
     }
 
     public void setTransform(Matrix4 transform) {
-        getComponent(Position.class).transform.set(transform);
+        getComponent(Position.class).setLocalTransform(transform);
         if (contain(RigidBody.class)) getComponent(RigidBody.class).body.proceedToTransform(transform);
     }
 

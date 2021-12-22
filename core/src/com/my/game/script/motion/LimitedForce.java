@@ -23,9 +23,9 @@ public class LimitedForce extends Motion {
 
     @Override
     public void update() {
-        TMP_1.set(force).rot(position.transform).nor();
+        TMP_1.set(force).rot(position.getLocalTransform()).nor();
         if (Math.abs(rigidBody.body.getLinearVelocity().dot(TMP_1)) <= maxVelocity) {
-            rigidBody.body.applyForce(TMP_1.set(force).rot(position.transform), rel_pos);
+            rigidBody.body.applyForce(TMP_1.set(force).rot(position.getLocalTransform()), rel_pos);
         }
     }
 }

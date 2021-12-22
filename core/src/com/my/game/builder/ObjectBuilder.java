@@ -87,7 +87,7 @@ public class ObjectBuilder {
     private Entity addObject(String id, Matrix4 transform, Entity entity, Entity base, Constraint constraint) {
         entity.setName(id);
         world.getEntityManager().addEntity(entity)
-                .getComponent(Position.class).transform.set(transform);
+                .getComponent(Position.class).setLocalTransform(transform);
         if (constraint != null) {
             entity.addComponent(constraint);
         }
