@@ -6,7 +6,7 @@ import lombok.Setter;
 
 import java.util.*;
 
-public class Entity implements Loadable {
+public class Entity extends Relation<Entity> implements Loadable, Loadable.OnInit {
 
     @Getter
     @Setter
@@ -87,6 +87,13 @@ public class Entity implements Loadable {
     public boolean contains(Class<? extends Component> type) {
         if (!cache2.containsKey(type)) getComponents(type);
         return !cache2.get(type).isEmpty();
+    }
+
+    @Override
+    public void init() {
+        if (parent != null) {
+            parent.addChild(this);
+        }
     }
 
     private void notifyChange() {

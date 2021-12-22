@@ -21,7 +21,7 @@ public class EntityManager implements Disposable {
 
     // ---- Entity ---- //
     public <T extends Entity> T addEntity(T entity) {
-        if (entity.getId() == null) entity.setId(UUID.randomUUID().toString());
+        if (entity.getId() == null) entity.setId(entity.getName() + UUID.randomUUID().toString());
         String id = entity.getId();
         if (entities.containsKey(id)) throw new RuntimeException("Duplicate Entity: id=" + id);
         entities.put(id, entity);
