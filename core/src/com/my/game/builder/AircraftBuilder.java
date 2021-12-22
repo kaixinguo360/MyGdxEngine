@@ -17,14 +17,14 @@ import com.badlogic.gdx.utils.ArrayMap;
 import com.my.game.MyInstance;
 import com.my.game.constraint.ConnectConstraint;
 import com.my.game.constraint.HingeConstraint;
+import com.my.game.script.AircraftBombCollisionHandler;
 import com.my.game.script.AircraftController;
 import com.my.game.script.AircraftScript;
+import com.my.game.script.RemoveScript;
 import com.my.game.script.motion.Lift;
 import com.my.game.script.motion.LimitedForce;
-import com.my.utils.world.AssetsManager;
-import com.my.utils.world.Entity;
-import com.my.utils.world.EntityManager;
-import com.my.utils.world.World;
+import com.my.utils.world.*;
+import com.my.utils.world.com.Collision;
 import com.my.utils.world.com.Constraint;
 import com.my.utils.world.com.ConstraintController;
 import com.my.utils.world.com.Position;
@@ -57,6 +57,11 @@ public class AircraftBuilder {
         assetsManager.addAsset("engine", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btConeShape(0.45f,1), 50));
     }
 
+    // ----- Constants ----- //
+    public final static short BOMB_FLAG = 1 << 8;
+    public final static short AIRCRAFT_FLAG = 1 << 9;
+    public final static short ALL_FLAG = -1;
+
     // ----- Variables ----- //
 
     private final AssetsManager assetsManager;
@@ -73,6 +78,17 @@ public class AircraftBuilder {
     }
 
     // ----- Builder Methods ----- //
+
+    public Entity createBomb(String name, Matrix4 transform, Entity base) {
+        MyInstance bomb = new MyInstance(assetsManager, "bomb", null, new Collision(BOMB_FLAG, ALL_FLAG));
+        addObject(
+                name, transform, bomb,
+                base == null ? null : new ConnectConstraint(base, 2000)
+        );
+        bomb.addComponent(new RemoveScript());
+        bomb.addComponent(new AircraftBombCollisionHandler());
+        return bomb;
+    }
 
     private Entity createBody(String name, Matrix4 transform, Entity base) {
         return addObject(
@@ -116,7 +132,7 @@ public class AircraftBuilder {
         Entity entity = new Entity();
         entity.setName(name);
         entity.addComponent(new Position());
-        entity.addComponent(new AircraftScript());
+        entity.addComponent(new AircraftScript()).bombPrefab = assetsManager.getAsset("Bomb", Prefab.class);
         entityManager.addEntity(entity);
 
         // Body

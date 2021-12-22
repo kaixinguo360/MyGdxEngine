@@ -6,10 +6,10 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
-import com.my.game.MyInstance;
-import com.my.utils.world.AssetsManager;
+import com.my.game.LoadUtil;
 import com.my.utils.world.Config;
 import com.my.utils.world.Entity;
+import com.my.utils.world.Prefab;
 import com.my.utils.world.World;
 import com.my.utils.world.com.*;
 import com.my.utils.world.sys.CameraSystem;
@@ -19,18 +19,12 @@ import com.my.utils.world.sys.ScriptSystem;
 
 public class AircraftScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, KeyInputSystem.OnKeyDown {
 
-    // ----- Constants ----- //
-    private final static short BOMB_FLAG = 1 << 8;
-    private final static short AIRCRAFT_FLAG = 1 << 9;
-    private final static short ALL_FLAG = -1;
-
     // ----- Temporary ----- //
     private static final Vector3 tmpV = new Vector3();
     private static final Matrix4 tmpM = new Matrix4();
     private static final Quaternion tmpQ = new Quaternion();
 
     private World world;
-    private AssetsManager assetsManager;
     private PhysicsSystem physicsSystem;
     private Camera camera;
 
@@ -49,10 +43,12 @@ public class AircraftScript implements ScriptSystem.OnStart, ScriptSystem.OnUpda
     @Config
     public boolean disabled;
 
+    @Config(type = Config.Type.Asset)
+    public Prefab bombPrefab;
+
     @Override
     public void start(World world, Entity entity) {
         this.world = world;
-        this.assetsManager = world.getAssetsManager();
         this.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
 
         body = entity.findChildByName("body");
@@ -115,7 +111,11 @@ public class AircraftScript implements ScriptSystem.OnStart, ScriptSystem.OnUpda
         getTransform().getRotation(tmpQ);
         tmpV.set(getBody().getLinearVelocity());
         tmpV.add(new Vector3(0, 0, -1).mul(tmpQ).scl(2000));
-        btRigidBody body = createBomb(tmpM).getComponent(RigidBody.class).body;
+
+        Entity entity = bombPrefab.newInstance(LoadUtil.loaderManager, world);
+        entity.getComponent(Position.class).setLocalTransform(tmpM);
+        btRigidBody body = entity.getComponent(RigidBody.class).body;
+
         body.setLinearVelocity(tmpV);
         body.setCcdMotionThreshold(1e-7f);
         body.setCcdSweptSphereRadius(2);
@@ -156,16 +156,6 @@ public class AircraftScript implements ScriptSystem.OnStart, ScriptSystem.OnUpda
 
     public btRigidBody getBody() {
         return body.getComponent(RigidBody.class).body;
-    }
-
-    public Entity createBomb(Matrix4 transform) {
-        Entity entity = new MyInstance(assetsManager, "bomb", null,
-                new Collision(BOMB_FLAG, ALL_FLAG));
-        entity.setName("Bomb");
-        world.getEntityManager().addEntity(entity).getComponent(Position.class).setLocalTransform(transform);
-        entity.addComponent(new RemoveScript());
-        entity.addComponent(new AircraftBombCollisionHandler());
-        return entity;
     }
 
     public void changeCamera() {

@@ -16,12 +16,12 @@ import com.badlogic.gdx.utils.ArrayMap;
 import com.my.game.MyInstance;
 import com.my.game.constraint.ConnectConstraint;
 import com.my.game.constraint.HingeConstraint;
+import com.my.game.script.GunBulletCollisionHandler;
 import com.my.game.script.GunController;
 import com.my.game.script.GunScript;
-import com.my.utils.world.AssetsManager;
-import com.my.utils.world.Entity;
-import com.my.utils.world.EntityManager;
-import com.my.utils.world.World;
+import com.my.game.script.RemoveScript;
+import com.my.utils.world.*;
+import com.my.utils.world.com.Collision;
 import com.my.utils.world.com.Constraint;
 import com.my.utils.world.com.ConstraintController;
 import com.my.utils.world.com.Position;
@@ -48,6 +48,12 @@ public class GunBuilder {
         assetsManager.addAsset("gunRotate", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btCylinderShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
     }
 
+    // ----- Constants ----- //
+
+    public final static short BOMB_FLAG = 1 << 8;
+    public final static short GUN_FLAG = 1 << 9;
+    public final static short ALL_FLAG = -1;
+
     // ----- Variables ----- //
 
     private final AssetsManager assetsManager;
@@ -64,6 +70,17 @@ public class GunBuilder {
     }
 
     // ----- Builder Methods ----- //
+
+    public Entity createBullet(String name, Matrix4 transform, Entity base) {
+        MyInstance bullet = new MyInstance(assetsManager, "bullet", null, new Collision(BOMB_FLAG, ALL_FLAG));
+        addObject(
+                name, transform, bullet,
+                base == null ? null : new ConnectConstraint(base, 2000)
+        );
+        bullet.addComponent(new RemoveScript());
+        bullet.addComponent(new GunBulletCollisionHandler());
+        return bullet;
+    }
 
     private Entity createBarrel(String name, Matrix4 transform, Entity base) {
         return addObject(
@@ -93,7 +110,7 @@ public class GunBuilder {
         Entity entity = new Entity();
         entity.setName(name);
         entity.addComponent(new Position());
-        entity.addComponent(new GunScript());
+        entity.addComponent(new GunScript()).bulletPrefab = assetsManager.getAsset("Bullet", Prefab.class);
         entityManager.addEntity(entity);
 
         Entity rotate_Y = createRotate("rotate_Y", transform.cpy().translate(0, 0.5f, 0), new GunController(), base);

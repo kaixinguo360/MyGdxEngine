@@ -34,6 +34,22 @@ public class PrefabBuilder {
                 tmpEntityManager
         ));
 
+        assetsManager.addAsset("Bomb", Prefab.class, Prefab.create(
+                aircraftBuilder.createBomb("Bomb", new Matrix4(), null),
+                LoadUtil.loaderManager,
+                assetsManager,
+                systemManager,
+                tmpEntityManager
+        ));
+
+        assetsManager.addAsset("Bullet", Prefab.class, Prefab.create(
+                gunBuilder.createBullet("Bullet", new Matrix4(), null),
+                LoadUtil.loaderManager,
+                assetsManager,
+                systemManager,
+                tmpEntityManager
+        ));
+
         assetsManager.addAsset("Aircraft", Prefab.class, Prefab.create(
                 aircraftBuilder.createAircraft("Aircraft", new Matrix4(), 4000, 40),
                 LoadUtil.loaderManager,
