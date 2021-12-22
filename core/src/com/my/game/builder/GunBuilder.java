@@ -20,6 +20,7 @@ import com.my.game.script.GunController;
 import com.my.game.script.GunScript;
 import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
+import com.my.utils.world.EntityManager;
 import com.my.utils.world.World;
 import com.my.utils.world.com.Constraint;
 import com.my.utils.world.com.ConstraintController;
@@ -45,19 +46,21 @@ public class GunBuilder {
         assetsManager.addAsset("bullet", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btCapsuleShape(0.5f, 1), 50f));
         assetsManager.addAsset("barrel", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btBoxShape(new Vector3(0.5f,0.5f,2.5f)), 5f));
         assetsManager.addAsset("gunRotate", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btCylinderShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
-
     }
 
-    private static final String group = "group";
-
     // ----- Variables ----- //
-    private final World world;
-    private final AssetsManager assetsManager;
 
-    // ----- Init ----- //
+    private final AssetsManager assetsManager;
+    private final EntityManager entityManager;
+
     public GunBuilder(World world) {
-        this.world = world;
         this.assetsManager = world.getAssetsManager();
+        this.entityManager = world.getEntityManager();
+    }
+
+    public GunBuilder(AssetsManager assetsManager, EntityManager entityManager) {
+        this.assetsManager = assetsManager;
+        this.entityManager = entityManager;
     }
 
     // ----- Builder Methods ----- //
@@ -70,7 +73,8 @@ public class GunBuilder {
     }
 
     private Entity createRotate(String name, Matrix4 transform, ConstraintController controller, Entity base) {
-        Matrix4 relTransform = new Matrix4(base.getComponent(Position.class).getLocalTransform()).inv().mul(transform);
+        Matrix4 relTransform = (base == null) ? new Matrix4().inv().mul(transform) :
+                new Matrix4(base.getComponent(Position.class).getLocalTransform()).inv().mul(transform);
         Entity entity = addObject(
                 name, transform, new MyInstance(assetsManager, "gunRotate"),
                 base == null ? null : new HingeConstraint(
@@ -90,7 +94,7 @@ public class GunBuilder {
         entity.setName(name);
         entity.addComponent(new Position());
         entity.addComponent(new GunScript());
-        world.getEntityManager().addEntity(entity);
+        entityManager.addEntity(entity);
 
         Entity rotate_Y = createRotate("rotate_Y", transform.cpy().translate(0, 0.5f, 0), new GunController(), base);
         Entity rotate_X = createRotate("rotate_X", transform.cpy().translate(0, 1.5f, 0).rotate(Vector3.Z, 90), new GunController(-90, 0), rotate_Y);
@@ -104,13 +108,12 @@ public class GunBuilder {
     }
 
     // ----- Private ----- //
+
     private Entity addObject(String name, Matrix4 transform, Entity entity, Constraint constraint) {
         entity.setName(name);
-        world.getEntityManager().addEntity(entity)
-                .getComponent(Position.class).setLocalTransform(transform);
-        if (constraint != null) {
-            entity.addComponent(constraint);
-        }
+        entity.getComponent(Position.class).setLocalTransform(transform);
+        if (constraint != null) entity.addComponent(constraint);
+        entityManager.addEntity(entity);
         return entity;
     }
 }

@@ -23,6 +23,7 @@ import com.my.game.script.motion.Lift;
 import com.my.game.script.motion.LimitedForce;
 import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
+import com.my.utils.world.EntityManager;
 import com.my.utils.world.World;
 import com.my.utils.world.com.Constraint;
 import com.my.utils.world.com.ConstraintController;
@@ -56,16 +57,19 @@ public class AircraftBuilder {
         assetsManager.addAsset("engine", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btConeShape(0.45f,1), 50));
     }
 
-    // ----- Constants ----- //
-    private static final String group = "group";
-
     // ----- Variables ----- //
-    private final World world;
+
     private final AssetsManager assetsManager;
+    private final EntityManager entityManager;
 
     public AircraftBuilder(World world) {
-        this.world = world;
         this.assetsManager = world.getAssetsManager();
+        this.entityManager = world.getEntityManager();
+    }
+
+    public AircraftBuilder(AssetsManager assetsManager, EntityManager entityManager) {
+        this.assetsManager = assetsManager;
+        this.entityManager = entityManager;
     }
 
     // ----- Builder Methods ----- //
@@ -113,7 +117,7 @@ public class AircraftBuilder {
         entity.setName(name);
         entity.addComponent(new Position());
         entity.addComponent(new AircraftScript());
-        world.getEntityManager().addEntity(entity);
+        entityManager.addEntity(entity);
 
         // Body
         Entity body = createBody("body", transform.cpy().translate(0, 0.5f, -3), null);
@@ -156,13 +160,12 @@ public class AircraftBuilder {
     }
 
     // ----- Private ----- //
+
     private Entity addObject(String name, Matrix4 transform, Entity entity, Constraint constraint) {
         entity.setName(name);
-        world.getEntityManager().addEntity(entity)
-                .getComponent(Position.class).setLocalTransform(transform);
-        if (constraint != null) {
-            entity.addComponent(constraint);
-        }
+        entity.getComponent(Position.class).setLocalTransform(transform);
+        if (constraint != null) entity.addComponent(constraint);
+        entityManager.addEntity(entity);
         return entity;
     }
 }

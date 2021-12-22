@@ -60,12 +60,11 @@ public class WorldBuilder {
         AircraftBuilder aircraftBuilder = new AircraftBuilder(world);
         GunBuilder gunBuilder = new GunBuilder(world);
         ObjectBuilder objectBuilder = new ObjectBuilder(world);
-        for (int i = 0; i < 100; i++) {
-            objectBuilder.createBox(new Matrix4().translate(10, 0.5f, -10 * i), ground);
-            objectBuilder.createBox(new Matrix4().translate(-10, 0.5f, -10 * i), ground);
-        }
+
+        objectBuilder.createRunway("Runway", new Matrix4(), ground);
+
         for (int i = 1; i < 5; i++) {
-            objectBuilder.createTower(new Matrix4().setToTranslation(-5, 0, -200 * i), 5 * i);
+            objectBuilder.createTower("Tower", new Matrix4().setToTranslation(-5, 0, -200 * i), 5 * i);
         }
         int aircraftNum = 0;
         for (int x = -20; x <= 20; x+=40) {
