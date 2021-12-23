@@ -21,6 +21,7 @@ import com.my.utils.world.com.Constraint;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.RenderSystem;
+import com.my.utils.world.util.pool.Matrix4Pool;
 
 public class ObjectBuilder {
 
@@ -37,10 +38,6 @@ public class ObjectBuilder {
         assetsManager.addAsset("box", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btBoxShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
         assetsManager.addAsset("box1", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btBoxShape(new Vector3(1,0.5f,0.5f)), 50f));
     }
-
-    // ----- Temporary ----- //
-
-    private final Matrix4 tmpM = new Matrix4();
 
     // ----- Variables ----- //
 
@@ -73,14 +70,17 @@ public class ObjectBuilder {
         Entity entity = new MyInstance(assetsManager, "box");
         entity.setName(name);
         entityManager.addEntity(entity);
+        Matrix4 tmpM = Matrix4Pool.obtain();
         for (int i = 0; i < 100; i++) {
-            createBox("Box", new Matrix4().translate(10, 0.5f, -10 * i).mulLeft(transform), base).setParent(entity);
-            createBox("Box", new Matrix4().translate(-10, 0.5f, -10 * i).mulLeft(transform), base).setParent(entity);
+            createBox("Box", tmpM.idt().translate(10, 0.5f, -10 * i).mulLeft(transform), base).setParent(entity);
+            createBox("Box", tmpM.idt().translate(-10, 0.5f, -10 * i).mulLeft(transform), base).setParent(entity);
         }
+        Matrix4Pool.free(tmpM);
         return entity;
     }
 
     public Entity createWall(String name, Matrix4 transform, int height) {
+        Matrix4 tmpM = Matrix4Pool.obtain();
         Entity entity = new Entity();
         entity.setName(name);
         entity.addComponent(new Position(new Matrix4()));
@@ -95,6 +95,7 @@ public class ObjectBuilder {
                 ).setParent(entity);
             }
         }
+        Matrix4Pool.free(tmpM);
         return entity;
     }
 

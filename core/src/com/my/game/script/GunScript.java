@@ -16,13 +16,11 @@ import com.my.utils.world.sys.CameraSystem;
 import com.my.utils.world.sys.KeyInputSystem;
 import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.ScriptSystem;
+import com.my.utils.world.util.pool.Matrix4Pool;
+import com.my.utils.world.util.pool.QuaternionPool;
+import com.my.utils.world.util.pool.Vector3Pool;
 
 public class GunScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, KeyInputSystem.OnKeyDown {
-
-    // ----- Temporary ----- //
-    private static final Vector3 tmpV = new Vector3();
-    private static final Matrix4 tmpM = new Matrix4();
-    private static final Quaternion tmpQ = new Quaternion();
 
     private World world;
     private PhysicsSystem physicsSystem;
@@ -81,6 +79,10 @@ public class GunScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, K
     }
 
     public void fire() {
+        Vector3 tmpV = Vector3Pool.obtain();
+        Matrix4 tmpM = Matrix4Pool.obtain();
+        Quaternion tmpQ = QuaternionPool.obtain();
+
         tmpM.set(getTransform()).translate(0, 0, -20 + (float) (Math.random() * 15)).rotate(Vector3.X, 90);
         getTransform().getRotation(tmpQ);
         tmpV.set(getBody().getLinearVelocity());
@@ -93,6 +95,10 @@ public class GunScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, K
         body.setLinearVelocity(tmpV);
         body.setCcdMotionThreshold(1e-7f);
         body.setCcdSweptSphereRadius(2);
+
+        Vector3Pool.free(tmpV);
+        Matrix4Pool.free(tmpM);
+        QuaternionPool.free(tmpQ);
     }
 
     public void explode() {
@@ -102,7 +108,9 @@ public class GunScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, K
         rotate_Y.removeComponent(ConstraintController.class);
         rotate_X.removeComponent(ConstraintController.class);
         barrel.removeComponent(Constraint.class);
+        Vector3 tmpV = Vector3Pool.obtain();
         physicsSystem.addExplosion(getTransform().getTranslation(tmpV), 2000);
+        Vector3Pool.free(tmpV);
     }
 
     public void rotate(float stepY, float stepX) {

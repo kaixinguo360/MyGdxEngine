@@ -25,7 +25,7 @@ public class MyInstance extends Entity implements Disposable {
     }
 
     public MyInstance(AssetsManager assetsManager, String className, Motion motion, Collision collision) {
-        position = addComponent(new Position());
+        position = addComponent(new Position(new Matrix4()));
         if (assetsManager.hasAsset(className, RenderSystem.RenderModel.class)) {
             RenderSystem.RenderModel renderModel = assetsManager.getAsset(className, RenderSystem.RenderModel.class);
             render = addComponent(new Render(renderModel));

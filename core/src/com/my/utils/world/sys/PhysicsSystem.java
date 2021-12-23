@@ -17,6 +17,8 @@ import com.my.utils.world.com.Collision;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.RigidBody;
 import com.my.utils.world.com.Script;
+import com.my.utils.world.util.pool.Matrix4Pool;
+import com.my.utils.world.util.pool.Vector3Pool;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -85,9 +87,11 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
         rigidBodyInner.rigidBody = entity.getComponent(RigidBody.class);
 
         if (!rigidBodyInner.position.isDisableInherit()) {
+            Matrix4 tmpM = Matrix4Pool.obtain();
             rigidBodyInner.position.getGlobalTransform(tmpM);
             rigidBodyInner.position.setLocalTransform(tmpM);
             rigidBodyInner.position.setDisableInherit(true);
+            Matrix4Pool.free(tmpM);
         }
 
         btRigidBody body = rigidBodyInner.rigidBody.body;
@@ -144,11 +148,12 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
     public Entity pick(Camera cam, int X, int Y) {
         Ray ray = cam.getPickRay(X, Y);
 
-        Vector3 rayFrom = tmpV1;
-        Vector3 rayTo = tmpV2;
+        Vector3 rayFrom = Vector3Pool.obtain();
+        Vector3 rayTo = Vector3Pool.obtain();
+        Vector3 tmpV = Vector3Pool.obtain();
 
         rayFrom.set(ray.origin);
-        rayTo.set(ray.origin).add(ray.direction.cpy().scl(100)); // 50 meters max from the origin
+        rayTo.set(ray.origin).add(tmpV.set(ray.direction).scl(100)); // 50 meters max from the origin
 
         // Because we reuse the ClosestRayResultCallback, we need reset it's values
         rayTestCB.setCollisionObject(null);
@@ -157,6 +162,10 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
         rayTestCB.setRayToWorld(rayTo);
 
         dynamicsWorld.rayTest(rayFrom, rayTo, rayTestCB);
+
+        Vector3Pool.free(rayFrom);
+        Vector3Pool.free(rayTo);
+        Vector3Pool.free(tmpV);
 
         if (rayTestCB.hasHit()) {
             final btCollisionObject obj = rayTestCB.getCollisionObject();
@@ -169,6 +178,7 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
 
     // Add Explosion
     public void addExplosion(Vector3 position, float force) {
+        Vector3 tmpV1 = Vector3Pool.obtain();
         for (RigidBodyInner rigidBodyInner : rigidBodyInners) {
             rigidBodyInner.position.getLocalTransform().getTranslation(tmpV1);
             tmpV1.sub(position);
@@ -179,6 +189,7 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
                 rigidBodyInner.rigidBody.body.applyCentralImpulse(tmpV1);
             }
         }
+        Vector3Pool.free(tmpV1);
     }
 
     // Get Rigid Body Construction Info
@@ -194,9 +205,6 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
 
     // ----- Private ----- //
 
-    private static final Vector3 tmpV1 = new Vector3();
-    private static final Vector3 tmpV2 = new Vector3();
-    private static final Matrix4 tmpM = new Matrix4();
     private static final float MIN_FORCE = 10;
 
     private static class RigidBodyInner {

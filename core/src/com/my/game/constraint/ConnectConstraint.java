@@ -7,6 +7,7 @@ import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
 import com.my.utils.world.Config;
 import com.my.utils.world.Entity;
 import com.my.utils.world.com.Constraint;
+import com.my.utils.world.util.pool.Matrix4Pool;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
@@ -22,14 +23,19 @@ public class ConnectConstraint extends Constraint {
 
     @Override
     public btTypedConstraint get(btRigidBody base, btRigidBody self) {
-        Matrix4 tmp1 = new Matrix4();
-        Matrix4 tmp2 = new Matrix4();
+        Matrix4 tmp1 = Matrix4Pool.obtain();
+        Matrix4 tmp2 = Matrix4Pool.obtain();
+
         tmp1.set(base.getWorldTransform());
         tmp2.set(self.getWorldTransform());
         tmp1.inv().mul(tmp2);
         tmp2.idt();
         btTypedConstraint constraint = new btFixedConstraint(base, self, tmp1, tmp2);
         constraint.setBreakingImpulseThreshold(breakingImpulseThreshold);
+
+        Matrix4Pool.free(tmp1);
+        Matrix4Pool.free(tmp2);
+
         return constraint;
     }
 }

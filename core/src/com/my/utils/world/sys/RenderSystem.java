@@ -10,6 +10,7 @@ import com.my.utils.world.BaseSystem;
 import com.my.utils.world.Entity;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.Render;
+import com.my.utils.world.util.pool.Vector3Pool;
 
 public class RenderSystem extends BaseSystem {
 
@@ -47,12 +48,14 @@ public class RenderSystem extends BaseSystem {
     // ----- Private ----- //
 
     private boolean isVisible(PerspectiveCamera cam, Position position, Render render) {
+        Vector3 tmp = Vector3Pool.obtain();
         position.getLocalTransform().getTranslation(tmp);
         tmp.add(render.center);
-        return cam.frustum.sphereInFrustum(tmp, render.radius);
+        boolean b = cam.frustum.sphereInFrustum(tmp, render.radius);
+        Vector3Pool.free(tmp);
+        return b;
     }
 
-    private static final Vector3 tmp = new Vector3();
     private static final BoundingBox boundingBox = new BoundingBox();
 
     // ----- Inner Class ----- //

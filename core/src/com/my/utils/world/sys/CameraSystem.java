@@ -11,6 +11,9 @@ import com.my.utils.world.System;
 import com.my.utils.world.*;
 import com.my.utils.world.com.Camera;
 import com.my.utils.world.com.Position;
+import com.my.utils.world.util.pool.Matrix4Pool;
+import com.my.utils.world.util.pool.QuaternionPool;
+import com.my.utils.world.util.pool.Vector3Pool;
 
 import java.util.*;
 
@@ -83,6 +86,7 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         Environment environment = environmentSystem.getEnvironment();
+        Matrix4 tmpM1 = Matrix4Pool.obtain();
 
         for (CameraInner cameraInner : cameraInners) {
             setCamera(cameraInner.camera.followType, cameraInner.perspectiveCamera, cameraInner.position.getGlobalTransform(tmpM1));
@@ -103,6 +107,7 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
             renderSystem.render(cameraInner.perspectiveCamera, environment);
         }
 
+        Matrix4Pool.free(tmpM1);
         Gdx.gl.glViewport(0, 0, width, height);
     }
 
@@ -124,11 +129,6 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
 
     // ----- Private ----- //
 
-    private static final Vector3 tmpV1 = new Vector3();
-    private static final Matrix4 tmpM1 = new Matrix4();
-    private static final Matrix4 tmpM2 = new Matrix4();
-    private static final Quaternion tmpQ = new Quaternion();
-
     private static void setCamera(FollowType type, PerspectiveCamera camera, Matrix4 transform) {
         switch (type) {
             case A: {
@@ -139,6 +139,10 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
                 break;
             }
             case B: {
+                Vector3 tmpV1 = Vector3Pool.obtain();
+                Quaternion tmpQ = QuaternionPool.obtain();
+                Matrix4 tmpM2 = Matrix4Pool.obtain();
+
                 transform.getTranslation(tmpV1);
                 float angle = transform.getRotation(tmpQ).getAngleAround(Vector3.Y);
                 tmpM2.setToTranslation(tmpV1).rotate(Vector3.Y, angle).translate(0, 0, 20);
@@ -146,6 +150,10 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
                 camera.lookAt(transform.getTranslation(tmpV1).add(0, 0, 0));
                 camera.up.set(0, 1, 0);
                 camera.update();
+
+                Vector3Pool.free(tmpV1);
+                QuaternionPool.free(tmpQ);
+                Matrix4Pool.free(tmpM2);
             }
         }
     }
