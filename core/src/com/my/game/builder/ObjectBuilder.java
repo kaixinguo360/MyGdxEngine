@@ -11,13 +11,9 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.ArrayMap;
-import com.my.game.MyInstance;
 import com.my.game.constraint.ConnectConstraint;
 import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
-import com.my.utils.world.EntityManager;
-import com.my.utils.world.World;
-import com.my.utils.world.com.Constraint;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.RenderSystem;
@@ -41,35 +37,26 @@ public class ObjectBuilder {
 
     // ----- Variables ----- //
 
-    private final AssetsManager assetsManager;
-    private final EntityManager entityManager;
+    private final EntityBuilder entityBuilder;
 
-    public ObjectBuilder(World world) {
-        this.assetsManager = world.getAssetsManager();
-        this.entityManager = world.getEntityManager();
-    }
-
-    public ObjectBuilder(AssetsManager assetsManager, EntityManager entityManager) {
-        this.assetsManager = assetsManager;
-        this.entityManager = entityManager;
+    public ObjectBuilder(EntityBuilder entityBuilder) {
+        this.entityBuilder = entityBuilder;
     }
 
     // ----- Builder Methods ----- //
 
     public Entity createBox(String name, Matrix4 transform, Entity base) {
-        Entity entity = new MyInstance(assetsManager, "box");
-        entity.setName(name);
-        addObject(
-                "Box", transform, entity,
-                base == null ? null : new ConnectConstraint(base, 2000)
-        );
-        return entity;
+        Entity entity = entityBuilder.createEntity("box");
+        if (base != null) {
+            entity.addComponent(new ConnectConstraint(base, 2000));
+        }
+        return entityBuilder.addEntity(name, transform, entity);
     }
 
     public Entity createRunway(String name, Matrix4 transform, Entity base) {
-        Entity entity = new MyInstance(assetsManager, "box");
+        Entity entity = entityBuilder.createEntity("box");
         entity.setName(name);
-        entityManager.addEntity(entity);
+        entityBuilder.entityManager.addEntity(entity);
         Matrix4 tmpM = Matrix4Pool.obtain();
         for (int i = 0; i < 100; i++) {
             createBox("Box", tmpM.idt().translate(10, 0.5f, -10 * i).mulLeft(transform), base).setParent(entity);
@@ -84,15 +71,13 @@ public class ObjectBuilder {
         Entity entity = new Entity();
         entity.setName(name);
         entity.addComponent(new Position(new Matrix4()));
-        entityManager.addEntity(entity);
+        entityBuilder.entityManager.addEntity(entity);
         for (int i = 0; i < height; i++) {
             float tmp = 0.5f + (i % 2);
             for (int j = 0; j < 10; j+=2) {
-                addObject(
-                        "Box",
-                        tmpM.setToTranslation(tmp + j, 0.5f + i, 0).mulLeft(transform),
-                        new MyInstance(assetsManager, "box1"), null
-                ).setParent(entity);
+                Entity entity1 = entityBuilder.createEntity("box1");
+                entity1.setParent(entity);
+                entityBuilder.addEntity("Box", tmpM.setToTranslation(tmp + j, 0.5f + i, 0).mulLeft(transform), entity1);
             }
         }
         Matrix4Pool.free(tmpM);
@@ -103,21 +88,11 @@ public class ObjectBuilder {
         Entity entity = new Entity();
         entity.setName(name);
         entity.addComponent(new Position(new Matrix4()));
-        entityManager.addEntity(entity);
+        entityBuilder.entityManager.addEntity(entity);
         createWall(name + "-1", transform.cpy(), height).setParent(entity);
         createWall(name + "-2", transform.cpy().set(transform).translate(0, 0, 10).rotate(Vector3.Y, 90), height).setParent(entity);
         createWall(name + "-3", transform.cpy().set(transform).translate(10, 0, 10).rotate(Vector3.Y, 180), height).setParent(entity);
         createWall(name + "-4", transform.cpy().set(transform).translate(10, 0, 0).rotate(Vector3.Y, 270), height).setParent(entity);
-        return entity;
-    }
-
-    // ----- Private ----- //
-
-    private Entity addObject(String name, Matrix4 transform, Entity entity, Constraint constraint) {
-        entity.setName(name);
-        entity.getComponent(Position.class).setLocalTransform(transform);
-        if (constraint != null) entity.addComponent(constraint);
-        entityManager.addEntity(entity);
         return entity;
     }
 }

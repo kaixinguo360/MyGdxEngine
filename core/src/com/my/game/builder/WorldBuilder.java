@@ -14,7 +14,6 @@ import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.my.game.LoadUtil;
-import com.my.game.MyInstance;
 import com.my.game.constraint.HingeConstraint;
 import com.my.game.script.ExitScript;
 import com.my.game.script.GUIScript;
@@ -49,12 +48,13 @@ public class WorldBuilder {
         environment.set(world.getAssetsManager().getAsset("commonEnvironment", Environment.class));
 
         // ----- Init Static Objects ----- //
-        MyInstance sky = new MyInstance(world.getAssetsManager(), "sky");
+        EntityBuilder entityBuilder = new EntityBuilder(world);
+        Entity sky = entityBuilder.createEntity("sky");
         sky.setName("sky");
         sky.getComponent(Render.class).includeEnv = false;
         world.getEntityManager().addEntity(sky);
         world.getSystemManager().getSystem(CameraSystem.class).addSkyBox(sky.getId());
-        MyInstance ground = new MyInstance(world.getAssetsManager(), "ground");
+        Entity ground = entityBuilder.createEntity("ground");
         ground.setName("ground");
         world.getEntityManager().addEntity(ground);
 

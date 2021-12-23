@@ -14,7 +14,6 @@ import com.badlogic.gdx.physics.bullet.collision.btConeShape;
 import com.badlogic.gdx.physics.bullet.collision.btCylinderShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.ArrayMap;
-import com.my.game.MyInstance;
 import com.my.game.constraint.ConnectConstraint;
 import com.my.game.constraint.HingeConstraint;
 import com.my.game.script.AircraftBombCollisionHandler;
@@ -23,9 +22,10 @@ import com.my.game.script.AircraftScript;
 import com.my.game.script.RemoveScript;
 import com.my.game.script.motion.Lift;
 import com.my.game.script.motion.LimitedForce;
-import com.my.utils.world.*;
+import com.my.utils.world.AssetsManager;
+import com.my.utils.world.Entity;
+import com.my.utils.world.Prefab;
 import com.my.utils.world.com.Collision;
-import com.my.utils.world.com.Constraint;
 import com.my.utils.world.com.ConstraintController;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.sys.PhysicsSystem;
@@ -64,66 +64,66 @@ public class AircraftBuilder {
 
     // ----- Variables ----- //
 
-    private final AssetsManager assetsManager;
-    private final EntityManager entityManager;
+    private final EntityBuilder entityBuilder;
 
-    public AircraftBuilder(World world) {
-        this.assetsManager = world.getAssetsManager();
-        this.entityManager = world.getEntityManager();
-    }
-
-    public AircraftBuilder(AssetsManager assetsManager, EntityManager entityManager) {
-        this.assetsManager = assetsManager;
-        this.entityManager = entityManager;
+    public AircraftBuilder(EntityBuilder entityBuilder) {
+        this.entityBuilder = entityBuilder;
     }
 
     // ----- Builder Methods ----- //
 
     public Entity createBomb(String name, Matrix4 transform, Entity base) {
-        MyInstance bomb = new MyInstance(assetsManager, "bomb", null, new Collision(BOMB_FLAG, ALL_FLAG));
-        addObject(
-                name, transform, bomb,
-                base == null ? null : new ConnectConstraint(base, 2000)
-        );
-        bomb.addComponent(new RemoveScript());
-        bomb.addComponent(new AircraftBombCollisionHandler());
-        return bomb;
+        Entity entity = entityBuilder.createEntity("bomb");
+        entity.addComponent(new Collision(BOMB_FLAG, ALL_FLAG));
+        entity.addComponent(new RemoveScript());
+        entity.addComponent(new AircraftBombCollisionHandler());
+        if (base != null) {
+            entity.addComponent(new ConnectConstraint(base, 2000));
+        }
+        return entityBuilder.addEntity(name, transform, entity);
     }
 
     private Entity createBody(String name, Matrix4 transform, Entity base) {
-        return addObject(
-                name, transform, new MyInstance(assetsManager, "body"),
-                base == null ? null : new ConnectConstraint(base, 2000)
-        );
+        Entity entity = entityBuilder.createEntity("body");
+        if (base != null) {
+            entity.addComponent(new ConnectConstraint(base, 2000));
+        }
+        return entityBuilder.addEntity(name, transform, entity);
     }
 
     private Entity createWing(String name, Matrix4 transform, Entity base) {
-        return addObject(
-                name, transform, new MyInstance(assetsManager, "wing", new Lift(new Vector3(0, 200, 0))),
-                base == null ? null : new ConnectConstraint(base, 500)
-        );
+        Entity entity = entityBuilder.createEntity("wing");
+        entity.addComponent(new Lift(new Vector3(0, 200, 0)));
+        if (base != null) {
+            entity.addComponent(new ConnectConstraint(base, 500));
+        }
+        return entityBuilder.addEntity(name, transform, entity);
     }
 
     private Entity createRotate(String name, Matrix4 transform, ConstraintController controller, Entity base) {
         Matrix4 relTransform = new Matrix4(base.getComponent(Position.class).getLocalTransform()).inv().mul(transform);
-        Entity entity = addObject(
-                name, transform, new MyInstance(assetsManager, "rotate"),
-                base == null ? null : new HingeConstraint(
-                        base,
-                        relTransform.rotate(Vector3.X, 90),
-                        new Matrix4().rotate(Vector3.X, 90),
-                        false)
-        );
+        Entity entity = entityBuilder.createEntity("rotate");
         entity.addComponent(controller);
-        return entity;
+        if (base != null) {
+            entity.addComponent(
+                    new HingeConstraint(
+                            base,
+                            relTransform.rotate(Vector3.X, 90),
+                            new Matrix4().rotate(Vector3.X, 90),
+                            false
+                    )
+            );
+        }
+        return entityBuilder.addEntity(name, transform, entity);
     }
 
     private Entity createEngine(String name, Matrix4 transform, float force, float maxVelocity, Entity base) {
-        return addObject(
-                name, transform,
-                new MyInstance(assetsManager, "engine", new LimitedForce(maxVelocity, new Vector3(0, force, 0), new Vector3())),
-                base == null ? null : new ConnectConstraint(base, 2000)
-        );
+        Entity entity = entityBuilder.createEntity("engine");
+        entity.addComponent(new LimitedForce(maxVelocity, new Vector3(0, force, 0), new Vector3()));
+        if (base != null) {
+            entity.addComponent(new ConnectConstraint(base, 2000));
+        }
+        return entityBuilder.addEntity(name, transform, entity);
     }
 
     public Entity createAircraft(String name, Matrix4 transform, float force, float maxVelocity) {
@@ -132,8 +132,8 @@ public class AircraftBuilder {
         Entity entity = new Entity();
         entity.setName(name);
         entity.addComponent(new Position(new Matrix4()));
-        entity.addComponent(new AircraftScript()).bombPrefab = assetsManager.getAsset("Bomb", Prefab.class);
-        entityManager.addEntity(entity);
+        entity.addComponent(new AircraftScript()).bombPrefab = entityBuilder.assetsManager.getAsset("Bomb", Prefab.class);
+        entityBuilder.entityManager.addEntity(entity);
 
         // Body
         Entity body = createBody("body", transform.cpy().translate(0, 0.5f, -3), null);
@@ -172,16 +172,6 @@ public class AircraftBuilder {
         wing_VL.setParent(entity);
         wing_VR.setParent(entity);
 
-        return entity;
-    }
-
-    // ----- Private ----- //
-
-    private Entity addObject(String name, Matrix4 transform, Entity entity, Constraint constraint) {
-        entity.setName(name);
-        entity.getComponent(Position.class).setLocalTransform(transform);
-        if (constraint != null) entity.addComponent(constraint);
-        entityManager.addEntity(entity);
         return entity;
     }
 }
