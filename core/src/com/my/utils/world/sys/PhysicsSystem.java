@@ -145,7 +145,7 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
     }
 
     // Get Instance Name From PickRay
-    public Entity pick(Camera cam, int X, int Y) {
+    public Entity pick(Camera cam, int X, int Y, float maxLength) {
         Ray ray = cam.getPickRay(X, Y);
 
         Vector3 rayFrom = Vector3Pool.obtain();
@@ -153,7 +153,7 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
         Vector3 tmpV = Vector3Pool.obtain();
 
         rayFrom.set(ray.origin);
-        rayTo.set(ray.origin).add(tmpV.set(ray.direction).scl(100)); // 50 meters max from the origin
+        rayTo.set(ray.origin).add(tmpV.set(ray.direction).scl(maxLength)); // 50 meters max from the origin
 
         // Because we reuse the ClosestRayResultCallback, we need reset it's values
         rayTestCB.setCollisionObject(null);
