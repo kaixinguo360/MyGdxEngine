@@ -32,6 +32,7 @@ public class GunBuilder {
         GunScript gunScript = entity.addComponent(new GunScript());
         gunScript.bulletPrefab = scene.getAsset("Bullet", Prefab.class);
         gunScript.bombPrefab = scene.getAsset("Bomb", Prefab.class);
+        gunScript.cutterPrefab = scene.getAsset("CutterBomb", Prefab.class);
         scene.addEntity(entity);
 
         Entity rotate_Y = scene.instantiatePrefab("Rotate", new HashMap<String, Object>() {{

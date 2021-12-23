@@ -25,6 +25,10 @@ public class GunScript extends EmitterScript implements ScriptSystem.OnStart, Sc
     @Config public Vector3 bombVelocity = new Vector3(0, 0, -100);
     private final static Vector3 bombOffset = new Vector3(0, 0, -5);
 
+    @Config public Prefab cutterPrefab;
+    @Config public Vector3 cutterVelocity = new Vector3(0, 0, -100);
+    private final static Vector3 cutterOffset = new Vector3(0, 0, -5);
+
     @Override
     public void start(Scene scene, Entity entity) {
         super.start(scene, entity);
@@ -73,6 +77,7 @@ public class GunScript extends EmitterScript implements ScriptSystem.OnStart, Sc
     public void keyDown(int keycode) {
         if (keycode == Input.Keys.SHIFT_LEFT) switchCameraMode();
         if (keycode == Input.Keys.K) fire(bombPrefab, bombVelocity, bombOffset, (float) Math.random());
+        if (keycode == Input.Keys.U) fire(cutterPrefab, cutterVelocity, cutterOffset, 0);
     }
 
     @Config

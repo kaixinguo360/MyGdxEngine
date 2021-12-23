@@ -59,10 +59,12 @@ public class EmitterScript extends ActivatableComponent implements ScriptSystem.
 
         Entity entity = scene.instantiatePrefab(prefab);
         entity.getComponent(Position.class).setLocalTransform(tmpM);
-        btRigidBody body = entity.getComponent(RigidBody.class).body;
 
-        body.setLinearVelocity(tmpV1);
-        body.setCcdMotionThreshold(1e-7f);
+        if (entity.contain(RigidBody.class)) {
+            btRigidBody body = entity.getComponent(RigidBody.class).body;
+            body.setLinearVelocity(tmpV1);
+            body.setCcdMotionThreshold(1e-7f);
+        }
 
         Vector3Pool.free(tmpV1);
         Vector3Pool.free(tmpV2);
