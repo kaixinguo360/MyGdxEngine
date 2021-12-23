@@ -42,11 +42,6 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
         CameraInner cameraInner = new CameraInner();
         cameraInner.entity = entity;
         cameraInner.camera = entity.getComponent(Camera.class);
-        cameraInner.perspectiveCamera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        cameraInner.perspectiveCamera.far = 2000;
-        cameraInner.perspectiveCamera.near = 0.1f;
-        cameraInner.perspectiveCamera.position.set(0, 0, 0);
-        cameraInner.perspectiveCamera.update();
         cameraInner.position = entity.getComponent(Position.class);
         this.cameraInners.add(cameraInner);
         updateCameras();
@@ -89,7 +84,7 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
         Matrix4 tmpM1 = Matrix4Pool.obtain();
 
         for (CameraInner cameraInner : cameraInners) {
-            setCamera(cameraInner.camera.followType, cameraInner.perspectiveCamera, cameraInner.position.getGlobalTransform(tmpM1));
+            setCamera(cameraInner.camera.followType, cameraInner.camera.perspectiveCamera, cameraInner.position.getGlobalTransform(tmpM1));
             Gdx.gl.glViewport(
                     (int) (width * cameraInner.camera.startX),
                     (int) (height * cameraInner.camera.startY),
@@ -101,10 +96,10 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
                     skyBox.entity = world.getEntityManager().findEntityById(skyBox.id);
                     skyBox.position = skyBox.entity.getComponent(Position.class);
                 }
-                skyBox.position.getLocalTransform().setToTranslation(cameraInner.perspectiveCamera.position);
+                skyBox.position.getLocalTransform().setToTranslation(cameraInner.camera.perspectiveCamera.position);
             }
             Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
-            renderSystem.render(cameraInner.perspectiveCamera, environment);
+            renderSystem.render(cameraInner.camera.perspectiveCamera, environment);
         }
 
         Matrix4Pool.free(tmpM1);
@@ -164,7 +159,6 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
         private Entity entity;
         private Camera camera;
         private Position position;
-        private PerspectiveCamera perspectiveCamera;
 
         @Override
         public int compareTo(CameraInner o) {

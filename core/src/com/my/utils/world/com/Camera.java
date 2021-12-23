@@ -1,14 +1,15 @@
 package com.my.utils.world.com;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.my.utils.world.Component;
 import com.my.utils.world.Config;
+import com.my.utils.world.Loadable;
 import com.my.utils.world.sys.CameraSystem;
-import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-@AllArgsConstructor
-public class Camera implements Component {
+public class Camera implements Component, Loadable.OnInit {
 
     @Config public float startX;
     @Config public float startY;
@@ -18,4 +19,25 @@ public class Camera implements Component {
 
     @Config public int layer;
     @Config public CameraSystem.FollowType followType;
+
+    public PerspectiveCamera perspectiveCamera;
+
+    public Camera(float startX, float startY, float endX, float endY, int layer, CameraSystem.FollowType followType) {
+        this.startX = startX;
+        this.startY = startY;
+        this.endX = endX;
+        this.endY = endY;
+        this.layer = layer;
+        this.followType = followType;
+        init();
+    }
+
+    @Override
+    public void init() {
+        this.perspectiveCamera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        this.perspectiveCamera.far = 2000;
+        this.perspectiveCamera.near = 0.1f;
+        this.perspectiveCamera.position.set(0, 0, 0);
+        this.perspectiveCamera.update();
+    }
 }
