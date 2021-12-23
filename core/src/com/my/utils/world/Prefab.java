@@ -36,7 +36,7 @@ public class Prefab implements Loadable {
             entityManager.addEntity(entity);
         }
 
-        Entity entity = world.getEntityManager().addAllEntities(entityManager, true);
+        Entity entity = world.getEntityManager().addAll(entityManager, true);
         entityManager.clear();
 
         return entity;

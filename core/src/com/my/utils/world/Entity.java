@@ -27,7 +27,6 @@ public class Entity extends Relation<Entity> implements Loadable, Loadable.OnIni
     @Config(elementType = Component.class)
     protected final List<Component> components = new LinkedList<>();
 
-    @Getter
     protected final Map<Class<?>, Component> cache1 = new LinkedHashMap<>();
     protected final Map<Class<?>, List<Component>> cache2 = new HashMap<>();
 
