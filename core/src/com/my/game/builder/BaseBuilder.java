@@ -11,17 +11,17 @@ import com.my.utils.world.com.Render;
 import com.my.utils.world.com.RigidBody;
 import com.my.utils.world.sys.RenderSystem;
 
-public class EntityBuilder {
+public class BaseBuilder {
 
-    public final AssetsManager assetsManager;
-    public final EntityManager entityManager;
+    protected final AssetsManager assetsManager;
+    protected final EntityManager entityManager;
 
-    public EntityBuilder(World world) {
+    public BaseBuilder(World world) {
         this.assetsManager = world.getAssetsManager();
         this.entityManager = world.getEntityManager();
     }
 
-    public EntityBuilder(AssetsManager assetsManager, EntityManager entityManager) {
+    public BaseBuilder(AssetsManager assetsManager, EntityManager entityManager) {
         this.assetsManager = assetsManager;
         this.entityManager = entityManager;
     }

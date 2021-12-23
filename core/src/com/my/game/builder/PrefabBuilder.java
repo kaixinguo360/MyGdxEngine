@@ -14,13 +14,12 @@ public class PrefabBuilder {
         // ----- Init Prefabs ----- //
 
         EntityManager tmpEntityManager = new EntityManager();
-        EntityBuilder entityBuilder = new EntityBuilder(assetsManager, tmpEntityManager);
-        AircraftBuilder aircraftBuilder = new AircraftBuilder(entityBuilder);
-        GunBuilder gunBuilder = new GunBuilder(entityBuilder);
-        ObjectBuilder objectBuilder = new ObjectBuilder(entityBuilder);
+        AircraftBuilder aircraftBuilder = new AircraftBuilder(assetsManager, tmpEntityManager);
+        GunBuilder gunBuilder = new GunBuilder(assetsManager, tmpEntityManager);
+        SceneBuilder sceneBuilder = new SceneBuilder(assetsManager, tmpEntityManager);
 
         assetsManager.addAsset("Runway", Prefab.class, Prefab.create(
-                objectBuilder.createRunway("Runway", new Matrix4(), null),
+                sceneBuilder.createRunway("Runway", new Matrix4(), null),
                 LoadUtil.loaderManager,
                 assetsManager,
                 systemManager,
@@ -28,7 +27,7 @@ public class PrefabBuilder {
         ));
 
         assetsManager.addAsset("Tower", Prefab.class, Prefab.create(
-                objectBuilder.createTower("Tower", new Matrix4(), 5),
+                sceneBuilder.createTower("Tower", new Matrix4(), 5),
                 LoadUtil.loaderManager,
                 assetsManager,
                 systemManager,

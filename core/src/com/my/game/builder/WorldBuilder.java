@@ -48,13 +48,13 @@ public class WorldBuilder {
         environment.set(world.getAssetsManager().getAsset("commonEnvironment", Environment.class));
 
         // ----- Init Static Objects ----- //
-        EntityBuilder entityBuilder = new EntityBuilder(world);
-        Entity sky = entityBuilder.createEntity("sky");
+        BaseBuilder baseBuilder = new BaseBuilder(world);
+        Entity sky = baseBuilder.createEntity("sky");
         sky.setName("sky");
         sky.getComponent(Render.class).includeEnv = false;
         world.getEntityManager().addEntity(sky);
         world.getSystemManager().getSystem(CameraSystem.class).addSkyBox(sky.getId());
-        Entity ground = entityBuilder.createEntity("ground");
+        Entity ground = baseBuilder.createEntity("ground");
         ground.setName("ground");
         world.getEntityManager().addEntity(ground);
 
@@ -123,7 +123,7 @@ public class WorldBuilder {
         SystemManager systemManager = world.getSystemManager();
         AircraftBuilder.initAssets(assetsManager);
         GunBuilder.initAssets(assetsManager);
-        ObjectBuilder.initAssets(assetsManager);
+        SceneBuilder.initAssets(assetsManager);
 
         // ----- Init Models ----- //
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;

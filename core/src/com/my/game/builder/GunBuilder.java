@@ -21,6 +21,7 @@ import com.my.game.script.GunScript;
 import com.my.game.script.RemoveScript;
 import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
+import com.my.utils.world.EntityManager;
 import com.my.utils.world.Prefab;
 import com.my.utils.world.com.Collision;
 import com.my.utils.world.com.ConstraintController;
@@ -28,7 +29,7 @@ import com.my.utils.world.com.Position;
 import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.RenderSystem;
 
-public class GunBuilder {
+public class GunBuilder extends BaseBuilder {
 
     public static void initAssets(AssetsManager assetsManager) {
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
@@ -48,45 +49,57 @@ public class GunBuilder {
         assetsManager.addAsset("gunRotate", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btCylinderShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
     }
 
-    // ----- Constants ----- //
-
     public final static short BOMB_FLAG = 1 << 8;
     public final static short GUN_FLAG = 1 << 9;
     public final static short ALL_FLAG = -1;
 
-    // ----- Variables ----- //
-
-    private final EntityBuilder entityBuilder;
-
-    public GunBuilder(EntityBuilder entityBuilder) {
-        this.entityBuilder = entityBuilder;
+    public GunBuilder(AssetsManager assetsManager, EntityManager entityManager) {
+        super(assetsManager, entityManager);
     }
 
-    // ----- Builder Methods ----- //
-
     public Entity createBullet(String name, Matrix4 transform, Entity base) {
-        Entity entity = entityBuilder.createEntity("bullet");
+        Entity entity = createEntity("bullet");
         entity.addComponent(new Collision(BOMB_FLAG, ALL_FLAG));
         entity.addComponent(new RemoveScript());
         entity.addComponent(new GunBulletCollisionHandler());
         if (base != null) {
             entity.addComponent(new ConnectConstraint(base, 2000));
         }
-        return entityBuilder.addEntity(name, transform, entity);
+        return addEntity(name, transform, entity);
+    }
+
+    public Entity createGun(String name, Entity base, Matrix4 transform) {
+
+        // Gun Entity
+        Entity entity = new Entity();
+        entity.setName(name);
+        entity.addComponent(new Position(new Matrix4()));
+        entity.addComponent(new GunScript()).bulletPrefab = assetsManager.getAsset("Bullet", Prefab.class);
+        entityManager.addEntity(entity);
+
+        Entity rotate_Y = createRotate("rotate_Y", transform.cpy().translate(0, 0.5f, 0), new GunController(), base);
+        Entity rotate_X = createRotate("rotate_X", transform.cpy().translate(0, 1.5f, 0).rotate(Vector3.Z, 90), new GunController(-90, 0), rotate_Y);
+        Entity barrel = createBarrel("barrel", transform.cpy().translate(0, 1.5f, -3), rotate_X);
+
+        rotate_Y.setParent(entity);
+        rotate_X.setParent(entity);
+        barrel.setParent(entity);
+
+        return entity;
     }
 
     private Entity createBarrel(String name, Matrix4 transform, Entity base) {
-        Entity entity = entityBuilder.createEntity("barrel");
+        Entity entity = createEntity("barrel");
         if (base != null) {
             entity.addComponent(new ConnectConstraint(base, 2000));
         }
-        return entityBuilder.addEntity(name, transform, entity);
+        return addEntity(name, transform, entity);
     }
 
     private Entity createRotate(String name, Matrix4 transform, ConstraintController controller, Entity base) {
         Matrix4 relTransform = (base == null) ? new Matrix4().inv().mul(transform) :
                 new Matrix4(base.getComponent(Position.class).getLocalTransform()).inv().mul(transform);
-        Entity entity = entityBuilder.createEntity("gunRotate");
+        Entity entity = createEntity("gunRotate");
         if (base != null) {
             entity.addComponent(
                     new HingeConstraint(
@@ -98,26 +111,6 @@ public class GunBuilder {
             );
         }
         entity.addComponent(controller);
-        return entityBuilder.addEntity(name, transform, entity);
-    }
-
-    public Entity createGun(String name, Entity base, Matrix4 transform) {
-
-        // Gun Entity
-        Entity entity = new Entity();
-        entity.setName(name);
-        entity.addComponent(new Position(new Matrix4()));
-        entity.addComponent(new GunScript()).bulletPrefab = entityBuilder.assetsManager.getAsset("Bullet", Prefab.class);
-        entityBuilder.entityManager.addEntity(entity);
-
-        Entity rotate_Y = createRotate("rotate_Y", transform.cpy().translate(0, 0.5f, 0), new GunController(), base);
-        Entity rotate_X = createRotate("rotate_X", transform.cpy().translate(0, 1.5f, 0).rotate(Vector3.Z, 90), new GunController(-90, 0), rotate_Y);
-        Entity barrel = createBarrel("barrel", transform.cpy().translate(0, 1.5f, -3), rotate_X);
-
-        rotate_Y.setParent(entity);
-        rotate_X.setParent(entity);
-        barrel.setParent(entity);
-
-        return entity;
+        return addEntity(name, transform, entity);
     }
 }
