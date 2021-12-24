@@ -9,10 +9,8 @@ import com.badlogic.gdx.physics.bullet.collision.*;
 import com.badlogic.gdx.physics.bullet.dynamics.*;
 import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
-import com.my.utils.world.BaseSystem;
-import com.my.utils.world.Entity;
-import com.my.utils.world.EntityListener;
 import com.my.utils.world.System;
+import com.my.utils.world.*;
 import com.my.utils.world.com.Collision;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.RigidBody;
@@ -33,7 +31,6 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
     public float fixedTimeStep = 1 / 60f;
 
     protected btDynamicsWorld dynamicsWorld;
-    protected ContactListener contactListener;
     protected DebugDrawer debugDrawer;
     protected ClosestRayResultCallback rayTestCB;
     protected final List<RigidBodyInner> rigidBodyInners = new ArrayList<>();
@@ -64,10 +61,6 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
         dynamicsWorld.setGravity(new Vector3(0, -10f, 0));
         addDisposable(dynamicsWorld);
 
-        // Create ContactListener
-        contactListener = new ContactListener();
-        addDisposable(contactListener);
-
         // Create debugDrawer
         debugDrawer = new DebugDrawer();
         debugDrawer.setDebugMode(btIDebugDraw.DebugDrawModes.DBG_MAX_DEBUG_DRAW_MODE);
@@ -77,6 +70,20 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
         // Create rayTestCB
         rayTestCB = new ClosestRayResultCallback(Vector3.Zero, Vector3.Z);
         addDisposable(rayTestCB);
+
+        // OnCollision Script
+        contactListener = new ContactListener();
+        addDisposable(contactListener);
+
+        // OnFixedUpdate Script
+        preTickListener = new PreTickListener(dynamicsWorld);
+        addDisposable(preTickListener);
+    }
+
+    @Override
+    public void afterAdded(World world) {
+        super.afterAdded(world);
+        world.getEntityManager().addFilter(onFixedUpdateFilter);
     }
 
     @Override
@@ -183,6 +190,7 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
     }
 
     // Add Explosion
+    private static final float MIN_FORCE = 10;
     public void addExplosion(Vector3 position, float force) {
         Vector3 tmpV1 = Vector3Pool.obtain();
         for (RigidBodyInner rigidBodyInner : rigidBodyInners) {
@@ -211,8 +219,6 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
 
     // ----- Private ----- //
 
-    private static final float MIN_FORCE = 10;
-
     private static class RigidBodyInner {
         private Entity entity;
         private RigidBody rigidBody;
@@ -232,6 +238,11 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
             if (transform != null) transform.set(worldTrans);
         }
     }
+
+    // ----- OnCollision Script ----- //
+
+    protected final ContactListener contactListener;
+
     private static class ContactListener extends com.badlogic.gdx.physics.bullet.collision.ContactListener {
         @Override
         public boolean onContactAdded(btCollisionObject colObj0, int partId0, int index0, boolean match0, btCollisionObject colObj1, int partId1, int index1, boolean match1) {
@@ -259,6 +270,31 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
 
     public interface OnCollision extends Script {
         void collision(Entity entity);
+    }
+
+    // ----- OnFixedUpdate Script ----- //
+
+    protected final EntityFilter onFixedUpdateFilter = entity -> entity.contain(OnFixedUpdate.class);
+    protected final PreTickListener preTickListener;
+
+    private class PreTickListener extends InternalTickCallback {
+
+        private PreTickListener(btDynamicsWorld dynamicsWorld) {
+            super(dynamicsWorld, true);
+        }
+
+        @Override
+        public void onInternalTick(btDynamicsWorld dynamicsWorld, float timeStep) {
+            for (Entity entity : world.getEntityManager().getEntitiesByFilter(onFixedUpdateFilter)) {
+                for (OnFixedUpdate script : entity.getComponents(OnFixedUpdate.class)) {
+                    script.fixedUpdate(world, dynamicsWorld, entity);
+                }
+            }
+        }
+    }
+
+    public interface OnFixedUpdate extends Script {
+        void fixedUpdate(World world, btDynamicsWorld dynamicsWorld, Entity entity);
     }
 
 }

@@ -1,14 +1,16 @@
 package com.my.utils.world.com;
 
+import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.my.utils.world.Entity;
 import com.my.utils.world.World;
+import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.ScriptSystem;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class Motion implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
+public abstract class Motion implements ScriptSystem.OnStart, PhysicsSystem.OnFixedUpdate {
 
     protected Entity entity;
     protected RigidBody rigidBody;
@@ -24,7 +26,7 @@ public abstract class Motion implements ScriptSystem.OnStart, ScriptSystem.OnUpd
     }
 
     @Override
-    public void update(World world, Entity entity) {
+    public void fixedUpdate(World world, btDynamicsWorld dynamicsWorld, Entity entity) {
         this.update();
     }
 
