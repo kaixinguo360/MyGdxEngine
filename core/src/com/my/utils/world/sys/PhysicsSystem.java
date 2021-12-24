@@ -26,6 +26,12 @@ import java.util.List;
 
 public class PhysicsSystem extends BaseSystem implements EntityListener, System.OnUpdate {
 
+    @Config
+    public int maxSubSteps = 5;
+
+    @Config
+    public float fixedTimeStep = 1 / 60f;
+
     protected btDynamicsWorld dynamicsWorld;
     protected ContactListener contactListener;
     protected DebugDrawer debugDrawer;
@@ -127,7 +133,7 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
 
     @Override
     public void update(float deltaTime) {
-        dynamicsWorld.stepSimulation(deltaTime);
+        dynamicsWorld.stepSimulation(deltaTime, maxSubSteps, fixedTimeStep);
     }
 
     // ----- Custom ----- //
