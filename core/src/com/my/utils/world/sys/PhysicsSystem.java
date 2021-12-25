@@ -9,6 +9,8 @@ import com.badlogic.gdx.physics.bullet.collision.*;
 import com.badlogic.gdx.physics.bullet.dynamics.*;
 import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Disposable;
 import com.my.utils.world.System;
 import com.my.utils.world.*;
 import com.my.utils.world.com.Collision;
@@ -18,11 +20,13 @@ import com.my.utils.world.com.Script;
 import com.my.utils.world.util.pool.Matrix4Pool;
 import com.my.utils.world.util.pool.Vector3Pool;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class PhysicsSystem extends BaseSystem implements EntityListener, System.OnUpdate {
+public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Disposable {
+
+    protected World world;
 
     @Config
     public int maxSubSteps = 5;
@@ -33,7 +37,6 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
     protected btDynamicsWorld dynamicsWorld;
     protected DebugDrawer debugDrawer;
     protected ClosestRayResultCallback rayTestCB;
-    protected final List<RigidBodyInner> rigidBodyInners = new ArrayList<>();
 
     public PhysicsSystem() {
 
@@ -82,60 +85,10 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
 
     @Override
     public void afterAdded(World world) {
-        super.afterAdded(world);
-        world.getEntityManager().addFilter(onFixedUpdateFilter);
-    }
-
-    @Override
-    public boolean isHandleable(Entity entity) {
-        return entity.contain(Position.class, RigidBody.class);
-    }
-
-    @Override
-    public void afterEntityAdded(Entity entity) {
-        RigidBodyInner rigidBodyInner = new RigidBodyInner();
-
-        rigidBodyInner.entity = entity;
-        rigidBodyInner.position = entity.getComponent(Position.class);
-        rigidBodyInner.rigidBody = entity.getComponent(RigidBody.class);
-
-        if (!rigidBodyInner.position.isDisableInherit()) {
-            Matrix4 tmpM = Matrix4Pool.obtain();
-            rigidBodyInner.position.getGlobalTransform(tmpM);
-            rigidBodyInner.position.setLocalTransform(tmpM);
-            rigidBodyInner.position.setDisableInherit(true);
-            Matrix4Pool.free(tmpM);
-        }
-
-        btRigidBody body = rigidBodyInner.rigidBody.body;
-        body.proceedToTransform(rigidBodyInner.position.getLocalTransform());
-        body.setMotionState(new MotionState(rigidBodyInner.position.getLocalTransform()));
-        body.userData = entity;
-
-        if (entity.contains(Collision.class)) {
-            Collision c = entity.getComponent(Collision.class);
-            body.setContactCallbackFlag(c.callbackFlag);
-            body.setContactCallbackFilter(c.callbackFilter);
-            body.setCollisionFlags(body.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
-        }
-
-        dynamicsWorld.addRigidBody(body, rigidBodyInner.rigidBody.group, rigidBodyInner.rigidBody.mask);
-
-        rigidBodyInners.add(rigidBodyInner);
-    }
-
-    @Override
-    public void afterEntityRemoved(Entity entity) {
-        Iterator<RigidBodyInner> it = rigidBodyInners.iterator();
-        while (it.hasNext()) {
-            RigidBodyInner rigidBodyInner = it.next();
-            if (rigidBodyInner.entity == entity) {
-                btRigidBody body = rigidBodyInner.rigidBody.body;
-                body.setMotionState(null);
-                dynamicsWorld.removeRigidBody(body);
-                it.remove();
-            }
-        }
+        this.world = world;
+        EntityManager entityManager = world.getEntityManager();
+        entityManager.addListener(rigidBodyListener, rigidBodyListener);
+        entityManager.addFilter(onFixedUpdateFilter);
     }
 
     @Override
@@ -193,14 +146,15 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
     private static final float MIN_FORCE = 10;
     public void addExplosion(Vector3 position, float force) {
         Vector3 tmpV1 = Vector3Pool.obtain();
-        for (RigidBodyInner rigidBodyInner : rigidBodyInners) {
-            rigidBodyInner.position.getLocalTransform().getTranslation(tmpV1);
+        for (Map.Entry<Entity, RigidBody> entry : rigidBodies.entrySet()) {
+            Entity entity = entry.getKey();
+            entity.getComponent(Position.class).getLocalTransform().getTranslation(tmpV1);
             tmpV1.sub(position);
             float len2 = tmpV1.len2();
             tmpV1.nor().scl(force * 1/len2);
             if (tmpV1.len() > MIN_FORCE) {
-                rigidBodyInner.rigidBody.body.activate();
-                rigidBodyInner.rigidBody.body.applyCentralImpulse(tmpV1);
+                entry.getValue().body.activate();
+                entry.getValue().body.applyCentralImpulse(tmpV1);
             }
         }
         Vector3Pool.free(tmpV1);
@@ -217,13 +171,65 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
         return new btRigidBody.btRigidBodyConstructionInfo(mass, null, shape, localInertia);
     }
 
-    // ----- Private ----- //
+    // ----- RigidBody ----- //
 
-    private static class RigidBodyInner {
-        private Entity entity;
-        private RigidBody rigidBody;
-        private Position position;
+    protected final RigidBodyListener rigidBodyListener = new RigidBodyListener();
+    protected final Map<Entity, RigidBody> rigidBodies = new HashMap<>();
+
+    private class RigidBodyListener implements EntityFilter, EntityListener {
+
+        @Override
+        public boolean filter(Entity entity) {
+            return entity.contain(RigidBody.class);
+        }
+
+        @Override
+        public void afterEntityAdded(Entity entity) {
+
+            // Get RigidBody
+            RigidBody rigidBody = entity.getComponent(RigidBody.class);
+            btRigidBody body = rigidBody.body;
+            body.userData = entity;
+
+            // Set Position
+            Position position = entity.getComponent(Position.class);
+            if (!position.isDisableInherit()) {
+                Matrix4 tmpM = Matrix4Pool.obtain();
+                position.getGlobalTransform(tmpM);
+                position.setLocalTransform(tmpM);
+                position.setDisableInherit(true);
+                Matrix4Pool.free(tmpM);
+            }
+            body.proceedToTransform(position.getLocalTransform());
+            body.setMotionState(new MotionState(position.getLocalTransform()));
+
+            // Set OnCollision Callback
+            if (entity.contain(Collision.class)) {
+                Collision c = entity.getComponent(Collision.class);
+                body.setContactCallbackFlag(c.callbackFlag);
+                body.setContactCallbackFilter(c.callbackFilter);
+                body.setCollisionFlags(body.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
+            }
+
+            // Add RigidBody to World
+            dynamicsWorld.addRigidBody(body, rigidBody.group, rigidBody.mask);
+
+            // Add RigidBody to List
+            PhysicsSystem.this.rigidBodies.put(entity, rigidBody);
+        }
+
+        @Override
+        public void afterEntityRemoved(Entity entity) {
+            RigidBody rigidBody = rigidBodies.get(entity);
+            if (rigidBody != null) {
+                btRigidBody body = rigidBody.body;
+                body.setMotionState(null);
+                dynamicsWorld.removeRigidBody(body);
+                rigidBodies.remove(entity);
+            }
+        }
     }
+
     private static class MotionState extends btMotionState {
         Matrix4 transform;
         MotionState(Matrix4 transform) {
@@ -295,6 +301,21 @@ public class PhysicsSystem extends BaseSystem implements EntityListener, System.
 
     public interface OnFixedUpdate extends Script {
         void fixedUpdate(World world, btDynamicsWorld dynamicsWorld, Entity entity);
+    }
+
+    // ----- Dispose ----- //
+
+    @Override
+    public void dispose() {
+        for(int i = disposables.size - 1; i >= 0; i--) {
+            Disposable disposable = disposables.get(i);
+            if(disposable != null)
+                disposable.dispose();
+        }
+    }
+    private final Array<Disposable> disposables = new Array<>();
+    protected void addDisposable(Disposable disposable) {
+        disposables.add(disposable);
     }
 
 }
