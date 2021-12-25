@@ -40,7 +40,17 @@ public class GunScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, K
     public Prefab bulletPrefab;
 
     @Config
-    public float bulletVelocity = 2000;
+    public Vector3 bulletVelocity = new Vector3(0, 0, -2000);
+
+    private final static Vector3 bulletOffset = new Vector3(0, 0, -5);
+
+    @Config(type = Config.Type.Asset)
+    public Prefab bombPrefab;
+
+    @Config
+    public Vector3 bombVelocity = new Vector3(0, 0, -100);
+
+    private final static Vector3 bombOffset = new Vector3(0, 0, -5);
 
     @Override
     public void start(World world, Entity entity) {
@@ -58,8 +68,17 @@ public class GunScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, K
 
     @Override
     public void update(World world, Entity entity) {
-        if (camera == null || disabled) return;
-        update();
+        if (camera != null && !disabled) {
+            float v = 0.025f;
+            if (gunController_Y != null && gunController_X != null) {
+                if (Gdx.input.isKeyPressed(Input.Keys.W)) rotate(0, -v);
+                if (Gdx.input.isKeyPressed(Input.Keys.S)) rotate(0, v);
+                if (Gdx.input.isKeyPressed(Input.Keys.A)) rotate(v, 0);
+                if (Gdx.input.isKeyPressed(Input.Keys.D)) rotate(-v, 0);
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.J)) fire(bulletPrefab, bulletVelocity, bulletOffset, (float) Math.random());
+            if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) explode();
+        }
     }
 
     @Override
@@ -67,38 +86,37 @@ public class GunScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, K
         if (camera == null) return;
         if (keycode == Input.Keys.TAB) changeCamera();
         if (keycode == Input.Keys.SHIFT_LEFT && !disabled) changeCameraFollowType();
+        if (camera != null && !disabled) {
+            if (keycode == Input.Keys.K) fire(bombPrefab, bombVelocity, bombOffset, (float) Math.random());
+        }
     }
 
     public void update() {
-        float v = 0.025f;
-        if (gunController_Y != null && gunController_X != null) {
-            if (Gdx.input.isKeyPressed(Input.Keys.W)) rotate(0, -v);
-            if (Gdx.input.isKeyPressed(Input.Keys.S)) rotate(0, v);
-            if (Gdx.input.isKeyPressed(Input.Keys.A)) rotate(v, 0);
-            if (Gdx.input.isKeyPressed(Input.Keys.D)) rotate(-v, 0);
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.J)) fire();
-        if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) explode();
     }
 
-    public void fire() {
-        Vector3 tmpV = Vector3Pool.obtain();
+    public void fire(Prefab prefab, Vector3 velocity, Vector3 position, float random) {
+        Vector3 tmpV1 = Vector3Pool.obtain();
+        Vector3 tmpV2 = Vector3Pool.obtain();
+        Vector3 tmpV3 = Vector3Pool.obtain();
         Matrix4 tmpM = Matrix4Pool.obtain();
         Quaternion tmpQ = QuaternionPool.obtain();
 
-        tmpM.set(getTransform()).translate(0, 0, -20 + (float) (Math.random() * 15)).rotate(Vector3.X, 90);
+        tmpV3.set(position).scl(random);
+        tmpM.set(getTransform()).translate(position).translate(tmpV3).rotate(Vector3.X, 90);
         getTransform().getRotation(tmpQ);
-        tmpV.set(getBody().getLinearVelocity());
-        tmpV.add(new Vector3(0, 0, -1).mul(tmpQ).scl(bulletVelocity));
+        tmpV1.set(getBody().getLinearVelocity());
+        tmpV1.add(tmpV2.set(velocity).mul(tmpQ));
 
-        Entity entity = bulletPrefab.newInstance(LoadUtil.loaderManager, world);
+        Entity entity = prefab.newInstance(LoadUtil.loaderManager, world);
         entity.getComponent(Position.class).setLocalTransform(tmpM);
         btRigidBody body = entity.getComponent(RigidBody.class).body;
 
-        body.setLinearVelocity(tmpV);
+        body.setLinearVelocity(tmpV1);
         body.setCcdMotionThreshold(1e-7f);
 
-        Vector3Pool.free(tmpV);
+        Vector3Pool.free(tmpV1);
+        Vector3Pool.free(tmpV2);
+        Vector3Pool.free(tmpV3);
         Matrix4Pool.free(tmpM);
         QuaternionPool.free(tmpQ);
     }

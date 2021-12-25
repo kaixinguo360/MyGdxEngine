@@ -17,6 +17,7 @@ public class PrefabBuilder {
         AircraftBuilder aircraftBuilder = new AircraftBuilder(assetsManager, tmpEntityManager);
         GunBuilder gunBuilder = new GunBuilder(assetsManager, tmpEntityManager);
         SceneBuilder sceneBuilder = new SceneBuilder(assetsManager, tmpEntityManager);
+        BulletBuilder bulletBuilder = new BulletBuilder(assetsManager, tmpEntityManager);
 
         assetsManager.addAsset("Runway", Prefab.class, Prefab.create(
                 sceneBuilder.createRunway("Runway", new Matrix4(), null),
@@ -34,8 +35,16 @@ public class PrefabBuilder {
                 tmpEntityManager
         ));
 
+        assetsManager.addAsset("Explosion", Prefab.class, Prefab.create(
+                bulletBuilder.createExplosion("Explosion", new Matrix4()),
+                LoadUtil.loaderManager,
+                assetsManager,
+                systemManager,
+                tmpEntityManager
+        ));
+
         assetsManager.addAsset("Bomb", Prefab.class, Prefab.create(
-                aircraftBuilder.createBomb("Bomb", new Matrix4(), null),
+                bulletBuilder.createBomb("Bomb", new Matrix4(), null),
                 LoadUtil.loaderManager,
                 assetsManager,
                 systemManager,
@@ -43,7 +52,7 @@ public class PrefabBuilder {
         ));
 
         assetsManager.addAsset("Bullet", Prefab.class, Prefab.create(
-                gunBuilder.createBullet("Bullet", new Matrix4(), null),
+                bulletBuilder.createBullet("Bullet", new Matrix4(), null),
                 LoadUtil.loaderManager,
                 assetsManager,
                 systemManager,

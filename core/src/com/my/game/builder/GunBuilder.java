@@ -8,20 +8,16 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
-import com.badlogic.gdx.physics.bullet.collision.btCapsuleShape;
 import com.badlogic.gdx.physics.bullet.collision.btCylinderShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.my.game.constraint.ConnectConstraint;
 import com.my.game.constraint.HingeConstraint;
-import com.my.game.script.GunBulletCollisionHandler;
 import com.my.game.script.GunController;
 import com.my.game.script.GunScript;
-import com.my.game.script.RemoveScript;
 import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
 import com.my.utils.world.EntityManager;
 import com.my.utils.world.Prefab;
-import com.my.utils.world.com.Collision;
 import com.my.utils.world.com.ConstraintController;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.sys.PhysicsSystem;
@@ -33,32 +29,15 @@ public class GunBuilder extends BaseBuilder {
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
         ModelBuilder mdBuilder = new ModelBuilder();
 
-        assetsManager.addAsset("bullet", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createCapsule(0.5f, 2, 8, new Material(ColorAttribute.createDiffuse(Color.YELLOW)), VertexAttributes.Usage.Position)));
         assetsManager.addAsset("barrel", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createBox(1, 1, 5, new Material(ColorAttribute.createDiffuse(Color.GREEN)), attributes)));
         assetsManager.addAsset("gunRotate", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createCylinder(1, 1, 1, 8, new Material(ColorAttribute.createDiffuse(Color.CYAN)), attributes)));
 
-        assetsManager.addAsset("bullet", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btCapsuleShape(0.5f, 1), 50f));
         assetsManager.addAsset("barrel", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btBoxShape(new Vector3(0.5f,0.5f,2.5f)), 5f));
         assetsManager.addAsset("gunRotate", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btCylinderShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
     }
 
-    public final static short BOMB_FLAG = 1 << 8;
-    public final static short GUN_FLAG = 1 << 9;
-    public final static short ALL_FLAG = -1;
-
     public GunBuilder(AssetsManager assetsManager, EntityManager entityManager) {
         super(assetsManager, entityManager);
-    }
-
-    public Entity createBullet(String name, Matrix4 transform, Entity base) {
-        Entity entity = createEntity("bullet");
-        entity.addComponent(new Collision(BOMB_FLAG, ALL_FLAG));
-        entity.addComponent(new RemoveScript());
-        entity.addComponent(new GunBulletCollisionHandler());
-        if (base != null) {
-            entity.addComponent(new ConnectConstraint(base, 2000));
-        }
-        return addEntity(name, transform, entity);
     }
 
     public Entity createGun(String name, Entity base, Matrix4 transform) {
@@ -67,7 +46,9 @@ public class GunBuilder extends BaseBuilder {
         Entity entity = new Entity();
         entity.setName(name);
         entity.addComponent(new Position(new Matrix4()));
-        entity.addComponent(new GunScript()).bulletPrefab = assetsManager.getAsset("Bullet", Prefab.class);
+        GunScript gunScript = entity.addComponent(new GunScript());
+        gunScript.bulletPrefab = assetsManager.getAsset("Bullet", Prefab.class);
+        gunScript.bombPrefab = assetsManager.getAsset("Bomb", Prefab.class);
         entityManager.addEntity(entity);
 
         Entity rotate_Y = createRotate("rotate_Y", transform.cpy().translate(0, 0.5f, 0), new GunController(), base);

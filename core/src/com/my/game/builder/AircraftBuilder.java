@@ -8,23 +8,19 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
-import com.badlogic.gdx.physics.bullet.collision.btCapsuleShape;
 import com.badlogic.gdx.physics.bullet.collision.btConeShape;
 import com.badlogic.gdx.physics.bullet.collision.btCylinderShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.my.game.constraint.ConnectConstraint;
 import com.my.game.constraint.HingeConstraint;
-import com.my.game.script.AircraftBombCollisionHandler;
 import com.my.game.script.AircraftController;
 import com.my.game.script.AircraftScript;
-import com.my.game.script.RemoveScript;
 import com.my.game.script.motion.Lift;
 import com.my.game.script.motion.LimitedForce;
 import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
 import com.my.utils.world.EntityManager;
 import com.my.utils.world.Prefab;
-import com.my.utils.world.com.Collision;
 import com.my.utils.world.com.ConstraintController;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.sys.PhysicsSystem;
@@ -36,36 +32,19 @@ public class AircraftBuilder extends BaseBuilder {
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
         ModelBuilder mdBuilder = new ModelBuilder();
 
-        assetsManager.addAsset("bomb", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createCapsule(0.5f, 2, 8, new Material(ColorAttribute.createDiffuse(Color.GRAY)), attributes)));
         assetsManager.addAsset("body", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createBox(1, 1, 5, new Material(ColorAttribute.createDiffuse(Color.GREEN)), attributes)));
         assetsManager.addAsset("wing", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createBox(2, 0.2f, 1, new Material(ColorAttribute.createDiffuse(Color.BLUE)), attributes)));
         assetsManager.addAsset("rotate", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createCylinder(1, 1, 1, 8, new Material(ColorAttribute.createDiffuse(Color.CYAN)), attributes)));
         assetsManager.addAsset("engine", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createCone(0.9f, 1, 0.9f, 18, new Material(ColorAttribute.createDiffuse(Color.YELLOW)), attributes)));
 
-        assetsManager.addAsset("bomb", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btCapsuleShape(0.5f, 1), 50f));
         assetsManager.addAsset("body", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btBoxShape(new Vector3(0.5f,0.5f,2.5f)), 50f));
         assetsManager.addAsset("wing", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btBoxShape(new Vector3(1f,0.1f,0.5f)), 25f));
         assetsManager.addAsset("rotate", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btCylinderShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
         assetsManager.addAsset("engine", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btConeShape(0.45f,1), 50));
     }
 
-    public final static short BOMB_FLAG = 1 << 8;
-    public final static short AIRCRAFT_FLAG = 1 << 9;
-    public final static short ALL_FLAG = -1;
-
     public AircraftBuilder(AssetsManager assetsManager, EntityManager entityManager) {
         super(assetsManager, entityManager);
-    }
-
-    public Entity createBomb(String name, Matrix4 transform, Entity base) {
-        Entity entity = createEntity("bomb");
-        entity.addComponent(new Collision(BOMB_FLAG, ALL_FLAG));
-        entity.addComponent(new RemoveScript());
-        entity.addComponent(new AircraftBombCollisionHandler());
-        if (base != null) {
-            entity.addComponent(new ConnectConstraint(base, 2000));
-        }
-        return addEntity(name, transform, entity);
     }
 
     public Entity createAircraft(String name, Matrix4 transform, float force, float maxVelocity) {
@@ -74,7 +53,9 @@ public class AircraftBuilder extends BaseBuilder {
         Entity entity = new Entity();
         entity.setName(name);
         entity.addComponent(new Position(new Matrix4()));
-        entity.addComponent(new AircraftScript()).bulletPrefab = assetsManager.getAsset("Bullet", Prefab.class);
+        AircraftScript aircraftScript = entity.addComponent(new AircraftScript());
+        aircraftScript.bulletPrefab = assetsManager.getAsset("Bullet", Prefab.class);
+        aircraftScript.bombPrefab = assetsManager.getAsset("Bomb", Prefab.class);
         entityManager.addEntity(entity);
 
         // Body

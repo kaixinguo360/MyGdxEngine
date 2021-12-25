@@ -9,7 +9,6 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
-import com.badlogic.gdx.physics.bullet.collision.btSphereShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.my.game.constraint.ConnectConstraint;
 import com.my.utils.world.AssetsManager;
@@ -31,7 +30,6 @@ public class SceneBuilder extends BaseBuilder {
 
         assetsManager.addAsset("box", btCollisionShape.class, new btBoxShape(new Vector3(0.5f,0.5f,0.5f)));
         assetsManager.addAsset("box1", btCollisionShape.class, new btBoxShape(new Vector3(1,0.5f,0.5f)));
-        assetsManager.addAsset("explosion", btCollisionShape.class, new btSphereShape(10));
 
         assetsManager.addAsset("box", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(assetsManager.getAsset("box", btCollisionShape.class), 50f));
         assetsManager.addAsset("box1", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(assetsManager.getAsset("box1", btCollisionShape.class), 50f));

@@ -123,6 +123,7 @@ public class WorldBuilder {
         AircraftBuilder.initAssets(assetsManager);
         GunBuilder.initAssets(assetsManager);
         SceneBuilder.initAssets(assetsManager);
+        BulletBuilder.initAssets(assetsManager);
 
         // ----- Init Models ----- //
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
