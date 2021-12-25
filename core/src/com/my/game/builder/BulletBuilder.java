@@ -26,9 +26,6 @@ import com.my.utils.world.sys.RenderSystem;
 
 public class BulletBuilder extends BaseBuilder {
 
-    public final static short BULLET_FLAG = 1 << 8;
-    public final static short ALL_FLAG = -1;
-
     public static void initAssets(AssetsManager assetsManager) {
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
         ModelBuilder mdBuilder = new ModelBuilder();
@@ -51,14 +48,14 @@ public class BulletBuilder extends BaseBuilder {
         entity.addComponent(new Position(new Matrix4(transform)));
         btCollisionShape shape = assetsManager.getAsset("explosion", btCollisionShape.class);
         entity.addComponent(new Collider(shape));
-        entity.addComponent(new Collision(1 << 9, -1));
+        entity.addComponent(new Collision(Collision.NORMAL_FLAG, Collision.ALL_FLAG));
         entity.addComponent(new ExplosionScript());
         return entity;
     }
 
     public Entity createBullet(String name, Matrix4 transform, Entity base) {
         Entity entity = createEntity("bullet");
-        entity.addComponent(new Collision(BULLET_FLAG, ALL_FLAG));
+        entity.addComponent(new Collision(Collision.NORMAL_FLAG, Collision.ALL_FLAG));
         entity.addComponent(new RemoveScript());
         if (base != null) {
             entity.addComponent(new ConnectConstraint(base, 2000));
@@ -68,7 +65,7 @@ public class BulletBuilder extends BaseBuilder {
 
     public Entity createBomb(String name, Matrix4 transform, Entity base) {
         Entity entity = createEntity("bomb");
-        entity.addComponent(new Collision(BULLET_FLAG, ALL_FLAG));
+        entity.addComponent(new Collision(Collision.NORMAL_FLAG, Collision.ALL_FLAG));
         entity.addComponent(new RemoveScript());
         entity.addComponent(new BombScript()).explosionPrefab = assetsManager.getAsset("Explosion", Prefab.class);
         if (base != null) {
