@@ -2,10 +2,14 @@ package com.my.game.script;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.my.utils.world.Config;
 import com.my.utils.world.Entity;
 import com.my.utils.world.World;
 import com.my.utils.world.sys.ScriptSystem;
@@ -15,18 +19,22 @@ import java.util.Map;
 
 public class GUIScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
 
+    @Config
+    public Entity targetEntity;
+
     public Stage stage;
     public Skin skin;
     private VerticalGroup group;
+    private ShapeRenderer shapeRenderer;
     private final Map<String, Actor> widgets = new HashMap<>();
 
-    private AircraftScript aircraftScript;
+    private EmitterScript emitterScript;
 
     @Override
     public void start(World world, Entity entity) {
 
-        Entity aircraftEntity = world.getEntityManager().findEntityByName("Aircraft-6");
-        aircraftScript = aircraftEntity.getComponent(AircraftScript.class);
+        emitterScript = targetEntity.getComponent(AircraftScript.class);
+        this.shapeRenderer = new ShapeRenderer();
 
         // Create Skin
         skin = new Skin(Gdx.files.internal("skin/neon-ui.json"));
@@ -58,9 +66,30 @@ public class GUIScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
 
     @Override
     public void update(World world, Entity entity) {
+        float width = Gdx.graphics.getWidth();
+        float height = Gdx.graphics.getHeight();
+
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+
+        // Reset ShapeRenderer
+        shapeRenderer.setProjectionMatrix(new Matrix4().scl(2f / Gdx.graphics.getWidth(), -2f / Gdx.graphics.getHeight(), 0).translate(-Gdx.graphics.getWidth() / 2f, -Gdx.graphics.getHeight() / 2, 0));
+        shapeRenderer.setTransformMatrix(new Matrix4());
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+        // Draw Square
+        shapeRenderer.setColor(1, 1, 1, 0.2f);
+        shapeRenderer.rectLine(width / 2 - 50, height / 2, width / 2 + 50, height / 2, 100);
+
+        // Draw Cross
+        shapeRenderer.setColor(0, 0, 0, 0.2f);
+        shapeRenderer.rectLine(width / 2 - 100, height / 2, width / 2 + 100, height / 2, 2);
+        shapeRenderer.rectLine(width / 2, height / 2 - 100, width / 2, height / 2 + 100, 2);
+        shapeRenderer.end();
+
+        // Update Stage
         getWidget("label", Label.class).setText(
-                "\nV = " + Math.floor(aircraftScript.getVelocity()) +
-                        "\nH = " + Math.floor(aircraftScript.getHeight()) + "\n");
+                "\nV = " + Math.floor(emitterScript.getVelocity()) +
+                        "\nH = " + Math.floor(emitterScript.getHeight()) + "\n");
         stage.act();
         stage.draw();
     }

@@ -110,7 +110,7 @@ public class WorldBuilder {
         // Init GUI
         Entity guiEntity = new Entity();
         guiEntity.setName("guiEntity");
-        guiEntity.addComponent(new GUIScript());
+        guiEntity.addComponent(new GUIScript()).targetEntity = world.getEntityManager().findEntityByName("Aircraft-6");;
         world.getEntityManager().addEntity(guiEntity);
 
         return world;
