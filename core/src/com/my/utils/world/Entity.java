@@ -41,7 +41,6 @@ public class Entity extends Relation<Entity> implements Loadable, Loadable.OnIni
         return component;
     }
     public <T extends Component> void removeComponent(Class<T> type) {
-        components.removeIf(type::isInstance);
         Iterator<Component> it = components.iterator();
         while (it.hasNext()) {
             Component component = it.next();
