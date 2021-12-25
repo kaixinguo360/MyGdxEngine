@@ -39,6 +39,9 @@ public class GunScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, K
     @Config(type = Config.Type.Asset)
     public Prefab bulletPrefab;
 
+    @Config
+    public float bulletVelocity = 2000;
+
     @Override
     public void start(World world, Entity entity) {
         this.world = world;
@@ -86,7 +89,7 @@ public class GunScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, K
         tmpM.set(getTransform()).translate(0, 0, -20 + (float) (Math.random() * 15)).rotate(Vector3.X, 90);
         getTransform().getRotation(tmpQ);
         tmpV.set(getBody().getLinearVelocity());
-        tmpV.add(new Vector3(0, 0, -1).mul(tmpQ).scl(2000));
+        tmpV.add(new Vector3(0, 0, -1).mul(tmpQ).scl(bulletVelocity));
 
         Entity entity = bulletPrefab.newInstance(LoadUtil.loaderManager, world);
         entity.getComponent(Position.class).setLocalTransform(tmpM);
@@ -94,7 +97,6 @@ public class GunScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, K
 
         body.setLinearVelocity(tmpV);
         body.setCcdMotionThreshold(1e-7f);
-        body.setCcdSweptSphereRadius(2);
 
         Vector3Pool.free(tmpV);
         Matrix4Pool.free(tmpM);

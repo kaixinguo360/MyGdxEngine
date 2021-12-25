@@ -42,7 +42,10 @@ public class AircraftScript implements ScriptSystem.OnStart, ScriptSystem.OnUpda
     public boolean disabled;
 
     @Config(type = Config.Type.Asset)
-    public Prefab bombPrefab;
+    public Prefab bulletPrefab;
+
+    @Config
+    public float bulletVelocity = 2000;
 
     @Override
     public void start(World world, Entity entity) {
@@ -112,15 +115,14 @@ public class AircraftScript implements ScriptSystem.OnStart, ScriptSystem.OnUpda
         tmpM.set(getTransform()).translate(0, 0, -20 + (float) (Math.random() * 15)).rotate(Vector3.X, 90);
         getTransform().getRotation(tmpQ);
         tmpV.set(getBody().getLinearVelocity());
-        tmpV.add(new Vector3(0, 0, -1).mul(tmpQ).scl(2000));
+        tmpV.add(new Vector3(0, 0, -1).mul(tmpQ).scl(bulletVelocity));
 
-        Entity entity = bombPrefab.newInstance(LoadUtil.loaderManager, world);
+        Entity entity = bulletPrefab.newInstance(LoadUtil.loaderManager, world);
         entity.getComponent(Position.class).setLocalTransform(tmpM);
         btRigidBody body = entity.getComponent(RigidBody.class).body;
 
         body.setLinearVelocity(tmpV);
         body.setCcdMotionThreshold(1e-7f);
-        body.setCcdSweptSphereRadius(2);
 
         Vector3Pool.free(tmpV);
         Matrix4Pool.free(tmpM);

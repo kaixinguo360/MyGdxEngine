@@ -3,14 +3,14 @@ package com.my.game.builder;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Material;
-import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
+import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
+import com.badlogic.gdx.physics.bullet.collision.btSphereShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
-import com.badlogic.gdx.utils.ArrayMap;
 import com.my.game.constraint.ConnectConstraint;
 import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
@@ -24,16 +24,17 @@ public class SceneBuilder extends BaseBuilder {
 
     public static void initAssets(AssetsManager assetsManager) {
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
-        ArrayMap<String, Model> models = new ArrayMap<>();
         ModelBuilder mdBuilder = new ModelBuilder();
-        models.put("box", mdBuilder.createBox(1, 1, 1, new Material(ColorAttribute.createDiffuse(Color.RED)), attributes));
-        models.put("box1", mdBuilder.createBox(2, 1, 1, new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)), attributes));
 
-        assetsManager.addAsset("box", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(models.get("box")));
-        assetsManager.addAsset("box1", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(models.get("box1")));
+        assetsManager.addAsset("box", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createBox(1, 1, 1, new Material(ColorAttribute.createDiffuse(Color.RED)), attributes)));
+        assetsManager.addAsset("box1", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createBox(2, 1, 1, new Material(ColorAttribute.createDiffuse(Color.LIGHT_GRAY)), attributes)));
 
-        assetsManager.addAsset("box", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btBoxShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
-        assetsManager.addAsset("box1", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btBoxShape(new Vector3(1,0.5f,0.5f)), 50f));
+        assetsManager.addAsset("box", btCollisionShape.class, new btBoxShape(new Vector3(0.5f,0.5f,0.5f)));
+        assetsManager.addAsset("box1", btCollisionShape.class, new btBoxShape(new Vector3(1,0.5f,0.5f)));
+        assetsManager.addAsset("explosion", btCollisionShape.class, new btSphereShape(10));
+
+        assetsManager.addAsset("box", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(assetsManager.getAsset("box", btCollisionShape.class), 50f));
+        assetsManager.addAsset("box1", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(assetsManager.getAsset("box1", btCollisionShape.class), 50f));
     }
 
     public SceneBuilder(AssetsManager assetsManager, EntityManager entityManager) {
@@ -49,8 +50,9 @@ public class SceneBuilder extends BaseBuilder {
     }
 
     public Entity createRunway(String name, Matrix4 transform, Entity base) {
-        Entity entity = createEntity("box");
+        Entity entity = new Entity();
         entity.setName(name);
+        entity.addComponent(new Position(new Matrix4()));
         entityManager.addEntity(entity);
         Matrix4 tmpM = Matrix4Pool.obtain();
         for (int i = 0; i < 100; i++) {

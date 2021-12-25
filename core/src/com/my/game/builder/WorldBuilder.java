@@ -12,7 +12,6 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
-import com.badlogic.gdx.utils.ArrayMap;
 import com.my.game.LoadUtil;
 import com.my.game.constraint.HingeConstraint;
 import com.my.game.script.ExitScript;
@@ -128,13 +127,10 @@ public class WorldBuilder {
         // ----- Init Models ----- //
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
         ModelBuilder mdBuilder = new ModelBuilder();
-        ArrayMap<String, Model> models = new ArrayMap<>();
-        models.put("sky", skyModel);
-        models.put("ground", mdBuilder.createBox(10000f, 0.01f, 20000f, new Material(ColorAttribute.createDiffuse(Color.WHITE)), attributes));
 
         // ----- Init Configs ----- //
-        assetsManager.addAsset("sky", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(models.get("sky")));
-        assetsManager.addAsset("ground", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(models.get("ground")));
+        assetsManager.addAsset("sky", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(skyModel));
+        assetsManager.addAsset("ground", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createBox(10000f, 0.01f, 20000f, new Material(ColorAttribute.createDiffuse(Color.WHITE)), attributes)));
 
         assetsManager.addAsset("ground", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btBoxShape(new Vector3(5000,0.005f,10000)), 0f));
 

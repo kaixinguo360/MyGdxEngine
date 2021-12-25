@@ -3,7 +3,6 @@ package com.my.game.builder;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Material;
-import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Matrix4;
@@ -13,7 +12,6 @@ import com.badlogic.gdx.physics.bullet.collision.btCapsuleShape;
 import com.badlogic.gdx.physics.bullet.collision.btConeShape;
 import com.badlogic.gdx.physics.bullet.collision.btCylinderShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
-import com.badlogic.gdx.utils.ArrayMap;
 import com.my.game.constraint.ConnectConstraint;
 import com.my.game.constraint.HingeConstraint;
 import com.my.game.script.AircraftBombCollisionHandler;
@@ -36,20 +34,13 @@ public class AircraftBuilder extends BaseBuilder {
 
     public static void initAssets(AssetsManager assetsManager) {
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
-        ArrayMap<String, Model> models = new ArrayMap<>();
         ModelBuilder mdBuilder = new ModelBuilder();
 
-        models.put("bomb", mdBuilder.createCapsule(0.5f, 2, 8, new Material(ColorAttribute.createDiffuse(Color.GRAY)), attributes));
-        models.put("body", mdBuilder.createBox(1, 1, 5, new Material(ColorAttribute.createDiffuse(Color.GREEN)), attributes));
-        models.put("wing", mdBuilder.createBox(2, 0.2f, 1, new Material(ColorAttribute.createDiffuse(Color.BLUE)), attributes));
-        models.put("rotate", mdBuilder.createCylinder(1, 1, 1, 8, new Material(ColorAttribute.createDiffuse(Color.CYAN)), attributes));
-        models.put("engine", mdBuilder.createCone(0.9f, 1, 0.9f, 18, new Material(ColorAttribute.createDiffuse(Color.YELLOW)), attributes));
-
-        assetsManager.addAsset("bomb", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(models.get("bomb")));
-        assetsManager.addAsset("body", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(models.get("body")));
-        assetsManager.addAsset("wing", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(models.get("wing")));
-        assetsManager.addAsset("rotate", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(models.get("rotate")));
-        assetsManager.addAsset("engine", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(models.get("engine")));
+        assetsManager.addAsset("bomb", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createCapsule(0.5f, 2, 8, new Material(ColorAttribute.createDiffuse(Color.GRAY)), attributes)));
+        assetsManager.addAsset("body", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createBox(1, 1, 5, new Material(ColorAttribute.createDiffuse(Color.GREEN)), attributes)));
+        assetsManager.addAsset("wing", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createBox(2, 0.2f, 1, new Material(ColorAttribute.createDiffuse(Color.BLUE)), attributes)));
+        assetsManager.addAsset("rotate", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createCylinder(1, 1, 1, 8, new Material(ColorAttribute.createDiffuse(Color.CYAN)), attributes)));
+        assetsManager.addAsset("engine", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createCone(0.9f, 1, 0.9f, 18, new Material(ColorAttribute.createDiffuse(Color.YELLOW)), attributes)));
 
         assetsManager.addAsset("bomb", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btCapsuleShape(0.5f, 1), 50f));
         assetsManager.addAsset("body", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btBoxShape(new Vector3(0.5f,0.5f,2.5f)), 50f));
@@ -83,7 +74,7 @@ public class AircraftBuilder extends BaseBuilder {
         Entity entity = new Entity();
         entity.setName(name);
         entity.addComponent(new Position(new Matrix4()));
-        entity.addComponent(new AircraftScript()).bombPrefab = assetsManager.getAsset("Bomb", Prefab.class);
+        entity.addComponent(new AircraftScript()).bulletPrefab = assetsManager.getAsset("Bullet", Prefab.class);
         entityManager.addEntity(entity);
 
         // Body
