@@ -14,13 +14,12 @@ import com.badlogic.gdx.utils.Disposable;
 import com.my.utils.world.System;
 import com.my.utils.world.*;
 import com.my.utils.world.com.Collision;
-import com.my.utils.world.com.Position;
-import com.my.utils.world.com.RigidBody;
-import com.my.utils.world.com.Script;
+import com.my.utils.world.com.*;
 import com.my.utils.world.util.pool.Matrix4Pool;
 import com.my.utils.world.util.pool.Vector3Pool;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -88,11 +87,21 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
         this.world = world;
         EntityManager entityManager = world.getEntityManager();
         entityManager.addListener(rigidBodyListener, rigidBodyListener);
+        entityManager.addListener(colliderListener, colliderListener);
         entityManager.addFilter(onFixedUpdateFilter);
     }
 
     @Override
     public void update(float deltaTime) {
+        // Set Position for Collider
+        Matrix4 tmpM = Matrix4Pool.obtain();
+        for (Map.Entry<Entity, Collider> entry : colliders.entrySet()) {
+            Entity entity = entry.getKey();
+            Collider collider = entry.getValue();
+            Position position = entity.getComponent(Position.class);
+            collider.collisionObject.setWorldTransform(position.getGlobalTransform(tmpM));
+        }
+        Matrix4Pool.free(tmpM);
         dynamicsWorld.stepSimulation(deltaTime, maxSubSteps, fixedTimeStep);
     }
 
@@ -169,6 +178,52 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
             localInertia.set(0, 0, 0);
         }
         return new btRigidBody.btRigidBodyConstructionInfo(mass, null, shape, localInertia);
+    }
+
+    // ----- Collider ----- //
+
+    protected final ColliderListener colliderListener = new ColliderListener();
+    protected final Map<Entity, Collider> colliders = new LinkedHashMap<>();
+
+    private class ColliderListener implements EntityFilter, EntityListener {
+
+        @Override
+        public boolean filter(Entity entity) {
+            return entity.contain(Collider.class);
+        }
+
+        @Override
+        public void afterEntityAdded(Entity entity) {
+
+            // Get CollisionObject
+            Collider collider = entity.getComponent(Collider.class);
+            btCollisionObject collisionObject = collider.collisionObject;
+            collisionObject.userData = entity;
+            collisionObject.setCollisionFlags(collisionObject.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_NO_CONTACT_RESPONSE);
+
+            // Set OnCollision Callback
+            if (entity.contain(Collision.class)) {
+                Collision c = entity.getComponent(Collision.class);
+                collisionObject.setContactCallbackFlag(c.callbackFlag);
+                collisionObject.setContactCallbackFilter(c.callbackFilter);
+                collisionObject.setCollisionFlags(collisionObject.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
+            }
+
+            // Add Collider to World
+            dynamicsWorld.addCollisionObject(collisionObject, collider.group, collider.mask);
+
+            // Add Collider to List
+            PhysicsSystem.this.colliders.put(entity, collider);
+        }
+
+        @Override
+        public void afterEntityRemoved(Entity entity) {
+            Collider collider = colliders.get(entity);
+            if (collider != null) {
+                dynamicsWorld.removeCollisionObject(collider.collisionObject);
+                colliders.remove(entity);
+            }
+        }
     }
 
     // ----- RigidBody ----- //
