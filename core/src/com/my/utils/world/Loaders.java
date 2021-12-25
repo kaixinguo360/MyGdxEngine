@@ -71,7 +71,7 @@ public class Loaders {
                 value = ((Number) value).floatValue();
             }
             return value;
-        } else if (annotation.type() == Config.Type.Asset) {
+        } else if (annotation.type() == Config.Type.Asset || Prefab.class.isAssignableFrom(elementType)) {
             String assetId = (String) value;
             return assetsManager.getAsset(assetId, elementType);
         } else if (annotation.type() == Config.Type.Entity || Entity.class.isAssignableFrom(elementType)) {
@@ -107,7 +107,7 @@ public class Loaders {
                 configList.add(getConfig(context, annotation.elementType(), annotation, value1));
             }
             return configList;
-        } else if (annotation.type() == Config.Type.Asset) {
+        } else if (annotation.type() == Config.Type.Asset || Prefab.class.isAssignableFrom(elementType)) {
             return assetsManager.getId(elementType, value);
         } else if (annotation.type() == Config.Type.Entity || Entity.class.isAssignableFrom(elementType)) {
             return ((Entity) value).getId();
