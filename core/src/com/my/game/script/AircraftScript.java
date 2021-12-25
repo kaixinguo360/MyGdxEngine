@@ -17,11 +17,11 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
     private AircraftController aircraftController_R;
     private AircraftController aircraftController_T;
 
-    @Config(type = Config.Type.Asset) public Prefab bulletPrefab;
+    @Config public Prefab bulletPrefab;
     @Config public Vector3 bulletVelocity = new Vector3(0, 0, -2000);
     private final static Vector3 bulletOffset = new Vector3(0, 0, -5);
 
-    @Config(type = Config.Type.Asset) public Prefab bombPrefab;
+    @Config public Prefab bombPrefab;
     @Config public Vector3 bombVelocity = new Vector3(0, -10, 0);
     private final static Vector3 bombOffset = new Vector3(0, -2, 0);
 

@@ -16,11 +16,11 @@ public class GunScript extends EmitterScript implements ScriptSystem.OnStart, Sc
     private GunController gunController_Y;
     private GunController gunController_X;
 
-    @Config(type = Config.Type.Asset) public Prefab bulletPrefab;
+    @Config public Prefab bulletPrefab;
     @Config public Vector3 bulletVelocity = new Vector3(0, 0, -2000);
     private final static Vector3 bulletOffset = new Vector3(0, 0, -5);
 
-    @Config(type = Config.Type.Asset) public Prefab bombPrefab;
+    @Config public Prefab bombPrefab;
     @Config public Vector3 bombVelocity = new Vector3(0, 0, -100);
     private final static Vector3 bombOffset = new Vector3(0, 0, -5);
 

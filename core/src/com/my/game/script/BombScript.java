@@ -17,7 +17,7 @@ public class BombScript extends CollisionHandler {
     private static final Vector3 tmpV1 = new Vector3();
     private static final Vector3 tmpV2 = new Vector3();
 
-    @Config(type = Config.Type.Asset)
+    @Config
     public Prefab explosionPrefab;
 
     @Config
