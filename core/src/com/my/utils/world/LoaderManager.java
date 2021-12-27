@@ -82,9 +82,13 @@ public class LoaderManager implements Context {
     }
 
     @Override
+    public boolean containsEnvironment(String id) {
+        return environment.containsKey(id);
+    }
+
+    @Override
     public <T> T setEnvironment(String id, T value) {
         if (id == null) throw new RuntimeException("Environment variable id can not be null");
-        if (value == null) throw new RuntimeException("Environment variable value can not be null");
         environment.put(id, value);
         return value;
     }
@@ -93,7 +97,9 @@ public class LoaderManager implements Context {
     public <T> T getEnvironment(String id, Class<T> type) {
         if (!environment.containsKey(id) || environment.get(id) == null)
             throw new RuntimeException("No such environment variable: " + id);
-        return type.cast(environment.get(id));
+        Object value = environment.get(id);
+        if (value == null) throw new RuntimeException("Environment variable return value can not be null: id=" + id + ", type=" + type);
+        return type.cast(value);
     }
 
     @Override
