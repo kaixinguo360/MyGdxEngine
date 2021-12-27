@@ -1,7 +1,7 @@
 package com.my.utils.world.loader;
 
 import com.badlogic.gdx.math.Vector3;
-import com.my.utils.world.LoadContext;
+import com.my.utils.world.Context;
 import com.my.utils.world.Loader;
 
 import java.util.ArrayList;
@@ -10,7 +10,7 @@ import java.util.List;
 public class Vector3Loader implements Loader {
 
     @Override
-    public <E, T> T load(E config, Class<T> type, LoadContext context) {
+    public <E, T> T load(E config, Class<T> type, Context context) {
         List<Number> values = (List<Number>) config;
         return (T) new Vector3(
                 values.get(0).floatValue(),
@@ -20,7 +20,7 @@ public class Vector3Loader implements Loader {
     }
 
     @Override
-    public <E, T> E getConfig(T obj, Class<E> configType, LoadContext context) {
+    public <E, T> E getConfig(T obj, Class<E> configType, Context context) {
         Vector3 vector3 = (Vector3) obj;
         return (E) new ArrayList<Number>() {{
             add(vector3.x);

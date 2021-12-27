@@ -8,11 +8,7 @@ import java.util.*;
 
 public class Loaders {
 
-    public static final String CONTEXT_ASSETS_MANAGER = "ASSETS_MANAGER";
-    public static final String CONTEXT_SYSTEM_MANAGER = "SYSTEM_MANAGER";
-    public static final String CONTEXT_ENTITY_MANAGER = "ENTITY_MANAGER";
-
-    public static void load(Loadable loadable, Map<String, Object> config, LoadContext context) {
+    public static void load(Loadable loadable, Map<String, Object> config, Context context) {
         try {
             for (Field field : getFields(loadable)) {
                 field.setAccessible(true);
@@ -36,7 +32,7 @@ public class Loaders {
         }
     }
 
-    public static Map<String, Object> getConfig(Loadable loadable, LoadContext context) {
+    public static Map<String, Object> getConfig(Loadable loadable, Context context) {
         Map<String, Object> map = new LinkedHashMap<>();
         try {
             for (Field field : getFields(loadable)) {
@@ -53,10 +49,10 @@ public class Loaders {
         return map;
     }
 
-    private static Object getObject(LoadContext context, Class<?> elementType, Config annotation, Object value) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
+    private static Object getObject(Context context, Class<?> elementType, Config annotation, Object value) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
 
-        EntityManager entityManager = context.getEnvironment(CONTEXT_ENTITY_MANAGER, EntityManager.class);
-        AssetsManager assetsManager = context.getEnvironment(CONTEXT_ASSETS_MANAGER, AssetsManager.class);
+        EntityManager entityManager = context.getEnvironment(EntityManager.CONTEXT_FIELD_NAME, EntityManager.class);
+        AssetsManager assetsManager = context.getEnvironment(AssetsManager.CONTEXT_FIELD_NAME, AssetsManager.class);
 
         if (value == null) {
             return null;
@@ -86,16 +82,16 @@ public class Loaders {
                 String typeName = (String) map.get("type");
                 Object configValue = map.get("config");
                 Class<?> type = Class.forName(typeName);
-                return context.getLoaderManager().load(configValue, type, context);
+                return context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).load(configValue, type, context);
             } else {
-                return context.getLoaderManager().load(value, elementType, context);
+                return context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).load(value, elementType, context);
             }
         }
     }
 
-    private static Object getConfig(LoadContext context, Class<?> elementType, Config annotation, Object value) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    private static Object getConfig(Context context, Class<?> elementType, Config annotation, Object value) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
 
-        AssetsManager assetsManager = context.getEnvironment(CONTEXT_ASSETS_MANAGER, AssetsManager.class);
+        AssetsManager assetsManager = context.getEnvironment(AssetsManager.CONTEXT_FIELD_NAME, AssetsManager.class);
 
         if (value == null) {
             return null;
@@ -117,7 +113,7 @@ public class Loaders {
         } else {
             try {
                 // Use LoaderManager <Object.class> to get config
-                return context.getLoaderManager().getConfig(value, Object.class, context);
+                return context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).getConfig(value, Object.class, context);
             } catch (RuntimeException e) {
                 if (!(e.getMessage().startsWith("No such loader") || e.getMessage().startsWith("Can not get config")))
                     throw e;
@@ -125,7 +121,7 @@ public class Loaders {
                 Class<?> type = value.getClass();
                 return new LinkedHashMap<String, Object>() {{
                     put("type", type.getName());
-                    put("config", context.getLoaderManager().getConfig(type.cast(value), Map.class, context));
+                    put("config", context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).getConfig(type.cast(value), Map.class, context));
                 }};
             }
         }

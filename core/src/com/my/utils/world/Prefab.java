@@ -25,11 +25,11 @@ public class Prefab implements Loadable {
     }
 
     public static Entity newInstance(Prefab prefab, LoaderManager loaderManager, World world) {
-        LoadContext context = loaderManager.newContext();
+        Context context = loaderManager.newContext();
 
-        context.setEnvironment(Loaders.CONTEXT_ASSETS_MANAGER, world.getAssetsManager());
-        context.setEnvironment(Loaders.CONTEXT_SYSTEM_MANAGER, world.getSystemManager());
-        context.setEnvironment(Loaders.CONTEXT_ENTITY_MANAGER, entityManager);
+        context.setEnvironment(AssetsManager.CONTEXT_FIELD_NAME, world.getAssetsManager());
+        context.setEnvironment(SystemManager.CONTEXT_FIELD_NAME, world.getSystemManager());
+        context.setEnvironment(EntityManager.CONTEXT_FIELD_NAME, entityManager);
 
         for (Map<String, Object> map : prefab.entityConfigs) {
             Entity entity = loaderManager.load(map, Entity.class, context);
@@ -47,11 +47,11 @@ public class Prefab implements Loadable {
     }
 
     public static Prefab create(Entity entity, LoaderManager loaderManager, AssetsManager assetsManager, SystemManager systemManager, EntityManager entityManager) {
-        LoadContext context = loaderManager.newContext();
+        Context context = loaderManager.newContext();
 
-        context.setEnvironment(Loaders.CONTEXT_ASSETS_MANAGER, assetsManager);
-        context.setEnvironment(Loaders.CONTEXT_SYSTEM_MANAGER, systemManager);
-        context.setEnvironment(Loaders.CONTEXT_ENTITY_MANAGER, entityManager);
+        context.setEnvironment(AssetsManager.CONTEXT_FIELD_NAME, assetsManager);
+        context.setEnvironment(SystemManager.CONTEXT_FIELD_NAME, systemManager);
+        context.setEnvironment(EntityManager.CONTEXT_FIELD_NAME, entityManager);
 
         List<Map<String, Object>> entityConfigs = new LinkedList<>();
         getConfig(entity, loaderManager, context, entityConfigs);
@@ -59,7 +59,7 @@ public class Prefab implements Loadable {
         return new Prefab(entityConfigs);
     }
 
-    private static void getConfig(Entity entity, LoaderManager loaderManager, LoadContext context, List<Map<String, Object>> entities) {
+    private static void getConfig(Entity entity, LoaderManager loaderManager, Context context, List<Map<String, Object>> entities) {
         entities.add(loaderManager.getConfig(entity, Map.class, context));
         for (Entity childEntity : entity.getChildren()) {
             getConfig(childEntity, loaderManager, context, entities);

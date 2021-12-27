@@ -1,7 +1,7 @@
 package com.my.utils.world.loader;
 
 import com.badlogic.gdx.math.Quaternion;
-import com.my.utils.world.LoadContext;
+import com.my.utils.world.Context;
 import com.my.utils.world.Loader;
 
 import java.util.ArrayList;
@@ -10,7 +10,7 @@ import java.util.List;
 public class QuaternionLoader implements Loader {
 
     @Override
-    public <E, T> T load(E config, Class<T> type, LoadContext context) {
+    public <E, T> T load(E config, Class<T> type, Context context) {
         List<Number> values = (List<Number>) config;
         return (T) new Quaternion(
                 values.get(0).floatValue(),
@@ -21,7 +21,7 @@ public class QuaternionLoader implements Loader {
     }
 
     @Override
-    public <E, T> E getConfig(T obj, Class<E> configType, LoadContext context) {
+    public <E, T> E getConfig(T obj, Class<E> configType, Context context) {
         Quaternion quaternion = (Quaternion) obj;
         return (E) new ArrayList<Number>() {{
             add(quaternion.x);

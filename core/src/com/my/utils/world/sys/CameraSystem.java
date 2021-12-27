@@ -53,7 +53,7 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
     }
 
     @Override
-    public void load(Map<String, Object> config, LoadContext context) {
+    public void load(Map<String, Object> config, Context context) {
         List<String> skyBoxes = (List<String>) config.get("skyBoxes");
         for (String skyBox : skyBoxes) {
             addSkyBox(skyBox);
@@ -61,7 +61,7 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
     }
 
     @Override
-    public Map<String, Object> getConfig(LoadContext context) {
+    public Map<String, Object> getConfig(Context context) {
         Map<String, Object> config = new LinkedHashMap<>();
         List<String> skyBoxes = new ArrayList<>();
         for (SkyBoxInner skyBoxInner : this.skyBoxInners) {

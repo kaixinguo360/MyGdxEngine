@@ -1,6 +1,6 @@
 package com.my.utils.world.loader;
 
-import com.my.utils.world.LoadContext;
+import com.my.utils.world.Context;
 import com.my.utils.world.Loadable;
 import com.my.utils.world.Loader;
 import com.my.utils.world.Loaders;
@@ -10,7 +10,7 @@ import java.util.Map;
 public class LoadableLoader implements Loader {
 
     @Override
-    public <E, T> T load(E configObj, Class<T> type, LoadContext context) {
+    public <E, T> T load(E configObj, Class<T> type, Context context) {
         Map<String, Object> config = (Map<String, Object>) configObj;
 
         Loadable loadable;
@@ -36,7 +36,7 @@ public class LoadableLoader implements Loader {
     }
 
     @Override
-    public <E, T> E getConfig(T loadable, Class<E> configType, LoadContext context) {
+    public <E, T> E getConfig(T loadable, Class<E> configType, Context context) {
         if (loadable instanceof Loadable.OnGetConfig) {
             return (E) ((Loadable.OnGetConfig) loadable).getConfig(context);
         } else {

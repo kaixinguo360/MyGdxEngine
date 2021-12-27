@@ -24,7 +24,7 @@ import java.util.Map;
 public interface Loadable {
 
     interface OnLoad {
-        void load(Map<String, Object> config, LoadContext context);
+        void load(Map<String, Object> config, Context context);
     }
 
     interface OnInit {
@@ -32,6 +32,6 @@ public interface Loadable {
     }
 
     interface OnGetConfig {
-        Map<String, Object> getConfig(LoadContext context);
+        Map<String, Object> getConfig(Context context);
     }
 }

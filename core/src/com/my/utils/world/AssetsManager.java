@@ -8,6 +8,8 @@ import java.util.Map;
 
 public class AssetsManager {
 
+    public static final String CONTEXT_FIELD_NAME = "ASSETS_MANAGER";
+
     @Getter
     private final Map<Class<?>, Map<String, Object>> allAssets = new LinkedHashMap<>();
 
