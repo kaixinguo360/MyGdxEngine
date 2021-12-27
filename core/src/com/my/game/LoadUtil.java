@@ -1,9 +1,8 @@
 package com.my.game;
 
-import com.my.game.builder.WorldBuilder;
+import com.my.utils.world.AssetsManager;
 import com.my.utils.world.LoaderManager;
 import com.my.utils.world.World;
-import com.my.utils.world.loader.WorldLoader;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
@@ -11,12 +10,9 @@ import java.util.Map;
 
 public class LoadUtil {
 
-    public static final LoaderManager loaderManager;
+    public static final LoaderManager loaderManager = new LoaderManager();
 
-    static {
-        loaderManager = new LoaderManager();
-        loaderManager.getLoader(WorldLoader.class).setBeforeLoadAssets(WorldBuilder::initAssets);
-    }
+    public static final AssetsManager assetsManager = new AssetsManager();
 
     public static void saveWorldToFile(World world, String path) {
         String yamlConfig = saveWorldToYaml(world);

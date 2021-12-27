@@ -2,14 +2,11 @@ package com.my.utils.world.loader;
 
 import com.my.utils.world.System;
 import com.my.utils.world.*;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 /**
  * Config Example:
@@ -35,49 +32,16 @@ import java.util.function.Consumer;
  */
 public class WorldLoader implements Loader {
 
-    @Getter
-    @Setter
-    Consumer<World> beforeLoadSystems;
-
-    @Getter
-    @Setter
-    Consumer<World> beforeLoadAssets;
-
-    @Getter
-    @Setter
-    Consumer<World> beforeLoadEntities;
-
     @Override
     public <E, T> T load(E config, Class<T> type, Context context) {
-        World world = new World();
+        AssetsManager assetsManager = context.getEnvironment(AssetsManager.CONTEXT_FIELD_NAME, AssetsManager.class);
+        World world = new World(assetsManager);
 
-        context.setEnvironment(AssetsManager.CONTEXT_FIELD_NAME, world.getAssetsManager());
-        context.setEnvironment(SystemManager.CONTEXT_FIELD_NAME, world.getSystemManager());
         context.setEnvironment(EntityManager.CONTEXT_FIELD_NAME, world.getEntityManager());
 
         try {
             Map<String, Object> map = (Map<String, Object>) config;
 
-            if (beforeLoadAssets != null) beforeLoadAssets.accept(world);
-            AssetsManager assetsManager = world.getAssetsManager();
-            List<Map<String, Object>> assets = (List<Map<String, Object>>) map.get("assets");
-            if (assets != null) {
-                for (Map<String, Object> asset : assets) {
-                    String assetId = (String) asset.get("id");
-                    Class<?> assetType = Class.forName((String) asset.get("type"));
-                    Object assetConfig = asset.get("config");
-                    boolean assetProvided = asset.containsKey("provided") && (Boolean) asset.get("provided");
-                    if (!assetProvided) {
-                        if (!assetsManager.hasAsset(assetId, assetType)) {
-                            assetsManager.addAsset(assetId, assetType, context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).load(assetConfig, assetType, context));
-                        } else {
-                            java.lang.System.out.println("Asset already loaded: " + assetId + " (" + assetType.getName() + ")");
-                        }
-                    }
-                }
-            }
-
-            if (beforeLoadSystems != null) beforeLoadSystems.accept(world);
             SystemManager systemManager = world.getSystemManager();
             List<Map<String, Object>> systems = (List<Map<String, Object>>) map.get("systems");
             if (systems != null) {
@@ -89,7 +53,6 @@ public class WorldLoader implements Loader {
             }
             world.start();
 
-            if (beforeLoadEntities != null) beforeLoadEntities.accept(world);
             EntityManager entityManager = world.getEntityManager();
             List<Map<String, Object>> entities = (List<Map<String, Object>>) map.get("entities");
             if (entities != null) {
@@ -112,7 +75,6 @@ public class WorldLoader implements Loader {
         Map<String, Object> map = new LinkedHashMap<>();
 
         context.setEnvironment(AssetsManager.CONTEXT_FIELD_NAME, world.getAssetsManager());
-        context.setEnvironment(SystemManager.CONTEXT_FIELD_NAME, world.getSystemManager());
         context.setEnvironment(EntityManager.CONTEXT_FIELD_NAME, world.getEntityManager());
 
         Map<String, Entity> entities = world.getEntityManager().getEntities();
@@ -138,26 +100,6 @@ public class WorldLoader implements Loader {
                 systemList.add(systemMap);
             }
             map.put("systems", systemList);
-        }
-
-        Map<Class<?>, Map<String, Object>> assets = world.getAssetsManager().getAllAssets();
-        if (assets.size() > 0) {
-            List<Map<String, Object>> assetList = new ArrayList<>();
-            for (Map.Entry<Class<?>, Map<String, Object>> entry : assets.entrySet()) {
-                Class<?> assetType = entry.getKey();
-                for (Map.Entry<String, Object> assetEntry : entry.getValue().entrySet()) {
-                    Map<String, Object> assetMap = new LinkedHashMap<>();
-                    assetMap.put("id", assetEntry.getKey());
-                    assetMap.put("type", assetType.getName());
-                    try {
-                        assetMap.put("config", context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).getConfig(assetEntry.getValue(), Map.class, context));
-                    } catch (RuntimeException e) {
-                        assetMap.put("provided", true);
-                    }
-                    assetList.add(assetMap);
-                }
-            }
-            map.put("assets", assetList);
         }
 
         return (E) map;

@@ -17,7 +17,10 @@ import com.my.game.constraint.HingeConstraint;
 import com.my.game.script.ExitScript;
 import com.my.game.script.GUIScript;
 import com.my.game.script.GunScript;
-import com.my.utils.world.*;
+import com.my.utils.world.AssetsManager;
+import com.my.utils.world.Entity;
+import com.my.utils.world.Prefab;
+import com.my.utils.world.World;
 import com.my.utils.world.com.Camera;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.Render;
@@ -27,8 +30,8 @@ public class WorldBuilder {
 
     public static Model skyModel;
 
-    public static World createWorld() {
-        World world = new World();
+    public static World createWorld(AssetsManager assetsManager) {
+        World world = new World(assetsManager);
 
         // Init System
         world.getSystemManager().addSystem(new CameraSystem());
@@ -40,9 +43,6 @@ public class WorldBuilder {
         world.getSystemManager().addSystem(new ConstraintSystem());
         world.start();
 
-        // Init Assets
-        initAssets(world);
-        PrefabBuilder.initAssets(world.getAssetsManager(), world.getSystemManager());
         Environment environment = world.getSystemManager().getSystem(EnvironmentSystem.class).getCommonEnvironment();
         environment.set(world.getAssetsManager().getAsset("commonEnvironment", Environment.class));
 
@@ -116,14 +116,16 @@ public class WorldBuilder {
         return world;
     }
 
-    public static void initAssets(World world) {
-
-        AssetsManager assetsManager = world.getAssetsManager();
-        SystemManager systemManager = world.getSystemManager();
+    public static void initAllAssets(AssetsManager assetsManager) {
         AircraftBuilder.initAssets(assetsManager);
         GunBuilder.initAssets(assetsManager);
         SceneBuilder.initAssets(assetsManager);
         BulletBuilder.initAssets(assetsManager);
+        WorldBuilder.initAssets(assetsManager);
+        PrefabBuilder.initAssets(assetsManager);
+    }
+
+    public static void initAssets(AssetsManager assetsManager) {
 
         // ----- Init Models ----- //
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
@@ -140,6 +142,6 @@ public class WorldBuilder {
         environment.set(new ColorAttribute(ColorAttribute.Fog, 0.8f, 0.8f, 0.8f, 1f));
         environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -0.2f, -0.8f, 1f));
         environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, 0.2f, 0.8f, -1f));
-        world.getAssetsManager().addAsset("commonEnvironment", Environment.class, environment);
+        assetsManager.addAsset("commonEnvironment", Environment.class, environment);
     }
 }

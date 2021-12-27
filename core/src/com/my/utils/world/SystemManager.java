@@ -10,8 +10,6 @@ import java.util.Map;
 
 public class SystemManager implements Disposable {
 
-    public static final String CONTEXT_FIELD_NAME = "SYSTEM_MANAGER";
-
     @Getter
     private final Map<Class<?>, System> systems = new LinkedHashMap<>();
     private final Map<Class<?>, List<System>> cache = new LinkedHashMap<>();

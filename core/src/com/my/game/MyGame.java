@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.my.game.builder.WorldBuilder;
 import com.my.utils.base.BaseGame;
+import com.my.utils.world.AssetsManager;
 import com.my.utils.world.World;
 import com.my.utils.world.sys.KeyInputSystem;
 
@@ -53,8 +54,14 @@ public class MyGame extends BaseGame {
             }
         };
 
+        // ----- Init AssetsManager ----- //
+        WorldBuilder.initAllAssets(LoadUtil.assetsManager);
+
+        // ----- Init LoaderManager ----- //
+        LoadUtil.loaderManager.setEnvironment(AssetsManager.CONTEXT_FIELD_NAME, LoadUtil.assetsManager);
+
         // ----- Create & Save World ----- //
-        world = WorldBuilder.createWorld();
+        world = WorldBuilder.createWorld(LoadUtil.assetsManager);
 //        addDisposable(world);
 //        LoadUtil.saveWorldToFile(world, "world.yml");
 //

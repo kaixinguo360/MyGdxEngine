@@ -11,7 +11,7 @@ public class World implements Disposable {
 
     @Getter
     @Setter
-    private AssetsManager assetsManager = new AssetsManager();
+    private AssetsManager assetsManager;
 
     @Getter
     private final SystemManager systemManager = new SystemManager(this);
@@ -21,6 +21,12 @@ public class World implements Disposable {
 
     @Getter
     private final Map<String, Object> environments = new HashMap<>();
+
+    public World() {}
+
+    public World(AssetsManager assetsManager) {
+        this.assetsManager = assetsManager;
+    }
 
     public void start() {
         entityManager.updateFilters();
