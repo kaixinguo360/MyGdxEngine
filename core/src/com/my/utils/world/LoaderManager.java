@@ -21,6 +21,7 @@ public class LoaderManager {
         loaders.add(new Matrix4Loader());
         loaders.add(new Vector3Loader());
         loaders.add(new QuaternionLoader());
+        loaders.add(new ColorLoader());
         loaders.add(new LoadableLoader());
     }
 
