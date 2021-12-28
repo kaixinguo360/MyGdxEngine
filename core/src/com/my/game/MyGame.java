@@ -45,13 +45,13 @@ public class MyGame extends BaseGame {
         // ----- Create Engine ----- //
         engine = new Engine();
 
-        // ----- Init Assets ----- //
+        // ----- Create & Save Assets ----- //
         SceneBuilder.initAllAssets(engine.getAssetsManager());
         PrefabBuilder.initAssets(engine);
-
-//        // ----- Dump Assets ----- //
 //        engine.dumpAssetsToFile("assets.yml");
-//        System.out.println("OK");
+//
+//        // ----- Load Assets ----- //
+//        engine.loadAssetsFromFile("assets.yml");
 
         // ----- Create & Save Scene ----- //
         scene = SceneBuilder.createScene(engine);
