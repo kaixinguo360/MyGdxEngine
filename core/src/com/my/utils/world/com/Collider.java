@@ -1,7 +1,6 @@
 package com.my.utils.world.com;
 
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
-import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.utils.Disposable;
 import com.my.utils.world.Component;
 import com.my.utils.world.Config;
@@ -17,7 +16,7 @@ public class Collider implements Component, Loadable.OnInit, Disposable {
     public final static short ALL_FLAG = -1;
 
     @Config(type = Config.Type.Asset)
-    public btCollisionShape shape;
+    public RigidBodyConfig rigidBodyConfig;
 
     @Config
     public int group = NORMAL_FLAG;
@@ -27,15 +26,15 @@ public class Collider implements Component, Loadable.OnInit, Disposable {
 
     public btCollisionObject collisionObject;
 
-    public Collider(btCollisionShape shape) {
-        this.shape = shape;
+    public Collider(RigidBodyConfig rigidBodyConfig) {
+        this.rigidBodyConfig = rigidBodyConfig;
         init();
     }
 
     @Override
     public void init() {
         this.collisionObject = new btCollisionObject();
-        this.collisionObject.setCollisionShape(shape);
+        this.collisionObject.setCollisionShape(rigidBodyConfig.shape);
     }
 
     @Override
