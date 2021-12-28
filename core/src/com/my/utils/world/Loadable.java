@@ -23,15 +23,15 @@ import java.util.Map;
  */
 public interface Loadable {
 
-    interface OnLoad {
+    interface OnLoad extends Loadable {
         void load(Map<String, Object> config, Context context);
     }
 
-    interface OnInit {
+    interface OnInit extends Loadable {
         void init();
     }
 
-    interface OnDump {
+    interface OnDump extends Loadable {
         Map<String, Object> dump(Context context);
     }
 }

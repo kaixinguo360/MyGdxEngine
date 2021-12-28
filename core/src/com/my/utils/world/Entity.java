@@ -6,7 +6,7 @@ import lombok.Setter;
 
 import java.util.*;
 
-public class Entity extends Relation<Entity> implements Loadable, Loadable.OnInit {
+public class Entity extends Relation<Entity> implements Loadable.OnInit {
 
     @Getter
     @Setter
