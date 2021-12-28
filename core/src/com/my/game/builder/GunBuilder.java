@@ -2,9 +2,6 @@ package com.my.game.builder;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
-import com.badlogic.gdx.graphics.g3d.Material;
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
@@ -12,6 +9,8 @@ import com.badlogic.gdx.physics.bullet.collision.btCylinderShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.my.game.constraint.ConnectConstraint;
 import com.my.game.constraint.HingeConstraint;
+import com.my.game.model.BoxModel;
+import com.my.game.model.CylinderModel;
 import com.my.game.script.GunController;
 import com.my.game.script.GunScript;
 import com.my.utils.world.AssetsManager;
@@ -20,17 +19,16 @@ import com.my.utils.world.EntityManager;
 import com.my.utils.world.Prefab;
 import com.my.utils.world.com.ConstraintController;
 import com.my.utils.world.com.Position;
+import com.my.utils.world.com.RenderModel;
 import com.my.utils.world.sys.PhysicsSystem;
-import com.my.utils.world.sys.RenderSystem;
 
 public class GunBuilder extends BaseBuilder {
 
     public static void initAssets(AssetsManager assetsManager) {
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
-        ModelBuilder mdBuilder = new ModelBuilder();
 
-        assetsManager.addAsset("barrel", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createBox(1, 1, 5, new Material(ColorAttribute.createDiffuse(Color.GREEN)), attributes)));
-        assetsManager.addAsset("gunRotate", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createCylinder(1, 1, 1, 8, new Material(ColorAttribute.createDiffuse(Color.CYAN)), attributes)));
+        assetsManager.addAsset("barrel", RenderModel.class, new BoxModel(1, 1, 5, Color.GREEN, attributes));
+        assetsManager.addAsset("gunRotate", RenderModel.class, new CylinderModel(1, 1, 1, 8, Color.CYAN, attributes));
 
         assetsManager.addAsset("barrel", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btBoxShape(new Vector3(0.5f,0.5f,2.5f)), 5f));
         assetsManager.addAsset("gunRotate", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btCylinderShape(new Vector3(0.5f,0.5f,0.5f)), 50f));

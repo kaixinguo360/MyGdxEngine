@@ -2,10 +2,8 @@ package com.my.utils.world.sys;
 
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g3d.Environment;
-import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.BoundingBox;
 import com.my.utils.world.BaseSystem;
 import com.my.utils.world.Entity;
 import com.my.utils.world.com.Position;
@@ -56,23 +54,4 @@ public class RenderSystem extends BaseSystem {
         return b;
     }
 
-    private static final BoundingBox boundingBox = new BoundingBox();
-
-    // ----- Inner Class ----- //
-
-    public static class RenderModel {
-
-        public Model model;
-        public final Vector3 center = new Vector3();
-        public final Vector3 dimensions = new Vector3();
-        public float radius;
-
-        public RenderModel(Model model) {
-            this.model = model;
-            model.calculateBoundingBox(boundingBox);
-            boundingBox.getCenter(center);
-            boundingBox.getDimensions(dimensions);
-            radius = dimensions.len() / 2f;
-        }
-    }
 }

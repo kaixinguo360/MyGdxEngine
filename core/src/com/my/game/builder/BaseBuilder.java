@@ -8,8 +8,8 @@ import com.my.utils.world.EntityManager;
 import com.my.utils.world.Scene;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.Render;
+import com.my.utils.world.com.RenderModel;
 import com.my.utils.world.com.RigidBody;
-import com.my.utils.world.sys.RenderSystem;
 
 public class BaseBuilder {
 
@@ -29,8 +29,8 @@ public class BaseBuilder {
     public Entity createEntity(String className) {
         Entity entity = new Entity();
         entity.addComponent(new Position(new Matrix4()));
-        if (assetsManager.hasAsset(className, RenderSystem.RenderModel.class)) {
-            RenderSystem.RenderModel renderModel = assetsManager.getAsset(className, RenderSystem.RenderModel.class);
+        if (assetsManager.hasAsset(className, RenderModel.class)) {
+            RenderModel renderModel = assetsManager.getAsset(className, RenderModel.class);
             entity.addComponent(new Render(renderModel));
         }
         if (assetsManager.hasAsset(className, btRigidBody.btRigidBodyConstructionInfo.class)) {

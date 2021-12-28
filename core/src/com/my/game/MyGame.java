@@ -2,7 +2,6 @@ package com.my.game;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.my.game.builder.PrefabBuilder;
 import com.my.game.builder.SceneBuilder;
@@ -19,20 +18,7 @@ public class MyGame extends BaseGame {
 
     @Override
     public void create() {
-        super.create();
-
-        // ----- Loading Assets ----- //
-        assetManager.load("obj/sky.g3db", Model.class);
-        waitLoad();
-    }
-
-    @Override
-    protected void doneLoading() {
-        System.out.println("doneLoading");
-
-        // ----- Create Models ----- //
-        SceneBuilder.skyModel = assetManager.get("obj/sky.g3db", Model.class);
-        SceneBuilder.skyModel.nodes.get(0).scale.scl(20);
+        System.out.println("created");
 
         // ----- Init Bullet ----- //
         Bullet.init();
@@ -59,11 +45,13 @@ public class MyGame extends BaseGame {
         // ----- Create Engine ----- //
         engine = new Engine();
 
-        // ----- Init AssetsManager ----- //
+        // ----- Init Assets ----- //
         SceneBuilder.initAllAssets(engine.getAssetsManager());
-
-        // ----- Init PrefabBuilder ----- //
         PrefabBuilder.initAssets(engine);
+
+//        // ----- Dump Assets ----- //
+//        engine.dumpAssetsToFile("assets.yml");
+//        System.out.println("OK");
 
         // ----- Create & Save Scene ----- //
         scene = SceneBuilder.createScene(engine);

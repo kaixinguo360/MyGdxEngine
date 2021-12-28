@@ -61,7 +61,7 @@ public abstract class BaseGame extends ApplicationAdapter {
     // -------------------- Customizable -------------------- //
 
     // Custom doneLoading Code
-    protected abstract void doneLoading();
+    protected void doneLoading() {}
 
     // Custom render Code
     protected abstract void myRender();

@@ -3,16 +3,16 @@ package com.my.game.builder;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Environment;
-import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
-import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.my.game.constraint.HingeConstraint;
+import com.my.game.model.BoxModel;
+import com.my.game.model.ExternalModel;
 import com.my.game.script.ExitScript;
 import com.my.game.script.GUIScript;
 import com.my.game.script.GunScript;
@@ -20,6 +20,7 @@ import com.my.utils.world.*;
 import com.my.utils.world.com.Camera;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.Render;
+import com.my.utils.world.com.RenderModel;
 import com.my.utils.world.sys.*;
 
 public class SceneBuilder {
@@ -124,11 +125,11 @@ public class SceneBuilder {
 
         // ----- Init Models ----- //
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
-        ModelBuilder mdBuilder = new ModelBuilder();
 
         // ----- Init Configs ----- //
-        assetsManager.addAsset("sky", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(skyModel));
-        assetsManager.addAsset("ground", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createBox(10000f, 0.01f, 20000f, new Material(ColorAttribute.createDiffuse(Color.WHITE)), attributes)));
+        assetsManager.addAsset("sky", RenderModel.class, new ExternalModel("obj/sky.g3db"));
+        assetsManager.getAsset("sky", RenderModel.class).model.nodes.get(0).scale.scl(20);
+        assetsManager.addAsset("ground", RenderModel.class, new BoxModel(10000f, 0.01f, 20000f, Color.WHITE, attributes));
 
         assetsManager.addAsset("ground", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btBoxShape(new Vector3(5000,0.005f,10000)), 0f));
 

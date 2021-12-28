@@ -2,15 +2,13 @@ package com.my.game.builder;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
-import com.badlogic.gdx.graphics.g3d.Material;
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.physics.bullet.collision.btCapsuleShape;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.physics.bullet.collision.btSphereShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.my.game.constraint.ConnectConstraint;
+import com.my.game.model.CapsuleModel;
 import com.my.game.script.BombScript;
 import com.my.game.script.ExplosionScript;
 import com.my.game.script.RemoveScript;
@@ -21,17 +19,16 @@ import com.my.utils.world.Prefab;
 import com.my.utils.world.com.Collider;
 import com.my.utils.world.com.Collision;
 import com.my.utils.world.com.Position;
+import com.my.utils.world.com.RenderModel;
 import com.my.utils.world.sys.PhysicsSystem;
-import com.my.utils.world.sys.RenderSystem;
 
 public class BulletBuilder extends BaseBuilder {
 
     public static void initAssets(AssetsManager assetsManager) {
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
-        ModelBuilder mdBuilder = new ModelBuilder();
 
-        assetsManager.addAsset("bullet", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createCapsule(0.5f, 2, 8, new Material(ColorAttribute.createDiffuse(Color.YELLOW)), VertexAttributes.Usage.Position)));
-        assetsManager.addAsset("bomb", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createCapsule(0.5f, 2, 8, new Material(ColorAttribute.createDiffuse(Color.GRAY)), attributes)));
+        assetsManager.addAsset("bullet", RenderModel.class, new CapsuleModel(0.5f, 2, 8, Color.YELLOW, VertexAttributes.Usage.Position));
+        assetsManager.addAsset("bomb", RenderModel.class, new CapsuleModel(0.5f, 2, 8, Color.GRAY, attributes));
         assetsManager.addAsset("explosion", btCollisionShape.class, new btSphereShape(30));
 
         assetsManager.addAsset("bullet", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btCapsuleShape(0.5f, 1), 50f));

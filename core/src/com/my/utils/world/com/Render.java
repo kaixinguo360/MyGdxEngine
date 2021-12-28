@@ -6,7 +6,6 @@ import com.badlogic.gdx.math.collision.BoundingBox;
 import com.my.utils.world.Component;
 import com.my.utils.world.Config;
 import com.my.utils.world.Loadable;
-import com.my.utils.world.sys.RenderSystem;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -15,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class Render implements Component, Loadable.OnInit {
 
     @Config(type = Config.Type.Asset)
-    public RenderSystem.RenderModel renderModel;
+    public RenderModel renderModel;
 
     @Config
     public boolean includeEnv = true;
@@ -25,14 +24,14 @@ public class Render implements Component, Loadable.OnInit {
     public final Vector3 dimensions = new Vector3();
     public float radius;
 
-    public Render(RenderSystem.RenderModel renderModel) {
+    public Render(RenderModel renderModel) {
         this.renderModel = renderModel;
         init();
     }
 
     public Render(ModelInstance modelInstance) {
         this.modelInstance = modelInstance;
-        updateBoundingBox();
+        calculateBoundingBox();
     }
 
     @Override
@@ -43,7 +42,7 @@ public class Render implements Component, Loadable.OnInit {
         this.radius = renderModel.radius;
     }
 
-    public void updateBoundingBox() {
+    public void calculateBoundingBox() {
         if (this.modelInstance == null) throw new RuntimeException("ModelInstance is null");
         this.modelInstance.model.calculateBoundingBox(boundingBox);
         boundingBox.getCenter(center);

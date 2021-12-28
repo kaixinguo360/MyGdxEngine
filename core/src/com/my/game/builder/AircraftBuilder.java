@@ -2,9 +2,6 @@ package com.my.game.builder;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
-import com.badlogic.gdx.graphics.g3d.Material;
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
@@ -13,6 +10,9 @@ import com.badlogic.gdx.physics.bullet.collision.btCylinderShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.my.game.constraint.ConnectConstraint;
 import com.my.game.constraint.HingeConstraint;
+import com.my.game.model.BoxModel;
+import com.my.game.model.ConeModel;
+import com.my.game.model.CylinderModel;
 import com.my.game.script.AircraftController;
 import com.my.game.script.AircraftScript;
 import com.my.game.script.motion.Lift;
@@ -23,19 +23,18 @@ import com.my.utils.world.EntityManager;
 import com.my.utils.world.Prefab;
 import com.my.utils.world.com.ConstraintController;
 import com.my.utils.world.com.Position;
+import com.my.utils.world.com.RenderModel;
 import com.my.utils.world.sys.PhysicsSystem;
-import com.my.utils.world.sys.RenderSystem;
 
 public class AircraftBuilder extends BaseBuilder {
 
     public static void initAssets(AssetsManager assetsManager) {
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
-        ModelBuilder mdBuilder = new ModelBuilder();
 
-        assetsManager.addAsset("body", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createBox(1, 1, 5, new Material(ColorAttribute.createDiffuse(Color.GREEN)), attributes)));
-        assetsManager.addAsset("wing", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createBox(2, 0.2f, 1, new Material(ColorAttribute.createDiffuse(Color.BLUE)), attributes)));
-        assetsManager.addAsset("rotate", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createCylinder(1, 1, 1, 8, new Material(ColorAttribute.createDiffuse(Color.CYAN)), attributes)));
-        assetsManager.addAsset("engine", RenderSystem.RenderModel.class, new RenderSystem.RenderModel(mdBuilder.createCone(0.9f, 1, 0.9f, 18, new Material(ColorAttribute.createDiffuse(Color.YELLOW)), attributes)));
+        assetsManager.addAsset("body", RenderModel.class, new BoxModel(1, 1, 5, Color.GREEN, attributes));
+        assetsManager.addAsset("wing", RenderModel.class, new BoxModel(2, 0.2f, 1, Color.BLUE, attributes));
+        assetsManager.addAsset("rotate", RenderModel.class, new CylinderModel(1, 1, 1, 8, Color.CYAN, attributes));
+        assetsManager.addAsset("engine", RenderModel.class, new ConeModel(0.9f, 1, 0.9f, 18, Color.YELLOW, attributes));
 
         assetsManager.addAsset("body", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btBoxShape(new Vector3(0.5f,0.5f,2.5f)), 50f));
         assetsManager.addAsset("wing", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btBoxShape(new Vector3(1f,0.1f,0.5f)), 25f));
