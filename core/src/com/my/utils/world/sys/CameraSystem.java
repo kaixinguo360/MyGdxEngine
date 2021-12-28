@@ -18,7 +18,7 @@ import com.my.utils.world.util.pool.Vector3Pool;
 import java.util.*;
 
 public class CameraSystem extends BaseSystem implements EntityListener, System.OnUpdate, System.OnStart,
-        Loadable.OnLoad, Loadable.OnGetConfig {
+        Loadable.OnLoad, Loadable.OnDump {
 
     private RenderSystem renderSystem;
     private EnvironmentSystem environmentSystem;
@@ -61,7 +61,7 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
     }
 
     @Override
-    public Map<String, Object> getConfig(Context context) {
+    public Map<String, Object> dump(Context context) {
         Map<String, Object> config = new LinkedHashMap<>();
         List<String> skyBoxes = new ArrayList<>();
         for (SkyBoxInner skyBoxInner : this.skyBoxInners) {

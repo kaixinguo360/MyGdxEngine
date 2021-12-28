@@ -20,7 +20,7 @@ public class Matrix4Loader implements Loader {
     }
 
     @Override
-    public <E, T> E getConfig(T obj, Class<E> configType, Context context) {
+    public <E, T> E dump(T obj, Class<E> configType, Context context) {
         Matrix4 transform = (Matrix4) obj;
         return (E) new ArrayList<Number>() {{
             for (float v : transform.val) {

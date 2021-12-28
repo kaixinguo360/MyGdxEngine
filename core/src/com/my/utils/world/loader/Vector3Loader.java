@@ -20,7 +20,7 @@ public class Vector3Loader implements Loader {
     }
 
     @Override
-    public <E, T> E getConfig(T obj, Class<E> configType, Context context) {
+    public <E, T> E dump(T obj, Class<E> configType, Context context) {
         Vector3 vector3 = (Vector3) obj;
         return (E) new ArrayList<Number>() {{
             add(vector3.x);

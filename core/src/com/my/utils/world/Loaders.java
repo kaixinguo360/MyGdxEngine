@@ -32,7 +32,7 @@ public class Loaders {
         }
     }
 
-    public static Map<String, Object> getConfig(Loadable loadable, Context context) {
+    public static Map<String, Object> dump(Loadable loadable, Context context) {
         Map<String, Object> map = new LinkedHashMap<>();
         try {
             for (Field field : getFields(loadable)) {
@@ -113,7 +113,7 @@ public class Loaders {
         } else {
             try {
                 // Use LoaderManager <Object.class> to get config
-                return context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).getConfig(value, Object.class, context);
+                return context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).dump(value, Object.class, context);
             } catch (RuntimeException e) {
                 if (!(e.getMessage().startsWith("No such loader") || e.getMessage().startsWith("Can not get config")))
                     throw e;
@@ -121,7 +121,7 @@ public class Loaders {
                 Class<?> type = value.getClass();
                 return new LinkedHashMap<String, Object>() {{
                     put("type", type.getName());
-                    put("config", context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).getConfig(type.cast(value), Map.class, context));
+                    put("config", context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).dump(type.cast(value), Map.class, context));
                 }};
             }
         }

@@ -49,19 +49,19 @@ public class LoaderManager implements Context {
         throw new RuntimeException("No such loader: " + config.getClass() + " -> " + type);
     }
 
-    public <E, T> E getConfig(T obj, Class<E> configType) {
-        return getConfig(obj, configType, new LinkedContext(this));
+    public <E, T> E dump(T obj, Class<E> configType) {
+        return dump(obj, configType, new LinkedContext(this));
     }
 
-    public <E, T> E getConfig(T obj, Class<E> configType, Context context) {
+    public <E, T> E dump(T obj, Class<E> configType, Context context) {
         String hash = configType + " -> " + obj.getClass();
         if (loaderCache.containsKey(hash)) {
-            return loaderCache.get(hash).getConfig(obj, configType, context);
+            return loaderCache.get(hash).dump(obj, configType, context);
         } else {
             for (Loader loader : loaders) {
                 if (loader.handleable(configType, obj.getClass())) {
                     loaderCache.put(hash, loader);
-                    return loader.getConfig(obj, configType, context);
+                    return loader.dump(obj, configType, context);
                 }
             }
         }

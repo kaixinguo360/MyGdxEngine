@@ -51,7 +51,7 @@ public class Prefab implements Loadable {
     }
 
     private static void getConfig(Entity entity, LoaderManager loaderManager, Context context, List<Map<String, Object>> entities) {
-        entities.add(loaderManager.getConfig(entity, Map.class, context));
+        entities.add(loaderManager.dump(entity, Map.class, context));
         for (Entity childEntity : entity.getChildren()) {
             getConfig(childEntity, loaderManager, context, entities);
         }

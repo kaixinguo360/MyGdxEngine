@@ -31,7 +31,7 @@ public interface Loadable {
         void init();
     }
 
-    interface OnGetConfig {
-        Map<String, Object> getConfig(Context context);
+    interface OnDump {
+        Map<String, Object> dump(Context context);
     }
 }

@@ -36,11 +36,11 @@ public class LoadableLoader implements Loader {
     }
 
     @Override
-    public <E, T> E getConfig(T loadable, Class<E> configType, Context context) {
-        if (loadable instanceof Loadable.OnGetConfig) {
-            return (E) ((Loadable.OnGetConfig) loadable).getConfig(context);
+    public <E, T> E dump(T loadable, Class<E> configType, Context context) {
+        if (loadable instanceof Loadable.OnDump) {
+            return (E) ((Loadable.OnDump) loadable).dump(context);
         } else {
-            return (E) Loaders.getConfig((Loadable) loadable, context);
+            return (E) Loaders.dump((Loadable) loadable, context);
         }
     }
 

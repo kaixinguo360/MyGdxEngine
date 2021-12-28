@@ -42,7 +42,7 @@ public class MyGame extends BaseGame {
                 if (keycode == Input.Keys.ENTER) {
 
                     // ----- Get Config ----- //
-                    String yamlConfig = LoadUtil.saveWorldToYaml(world);
+                    String yamlConfig = LoadUtil.dumpWorldToYaml(world);
                     System.out.println(yamlConfig);
 
                     // ----- Load World ----- //

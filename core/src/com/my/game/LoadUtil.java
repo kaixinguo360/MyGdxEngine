@@ -14,8 +14,8 @@ public class LoadUtil {
 
     public static final AssetsManager assetsManager = new AssetsManager();
 
-    public static void saveWorldToFile(World world, String path) {
-        String yamlConfig = saveWorldToYaml(world);
+    public static void dumpWorldToFile(World world, String path) {
+        String yamlConfig = dumpWorldToYaml(world);
         try {
             BufferedWriter out = new BufferedWriter(new FileWriter(path));
             out.write(yamlConfig);
@@ -43,19 +43,23 @@ public class LoadUtil {
         return loadWorldFromYaml(yamlConfig);
     }
 
-    public static World loadWorld(Map config) {
-        return loaderManager.load(config, World.class);
-    }
-
-    public static String saveWorldToYaml(World world) {
-        Map config = loaderManager.getConfig(world, Map.class);
+    public static String dumpWorldToYaml(World world) {
+        Map config = dumpWorld(world);
         Yaml yaml = new Yaml();
-        return yaml.dumpAsMap(config);
+        return yaml.dump(config);
     }
 
     public static World loadWorldFromYaml(String yamlConfig) {
         Yaml yaml = new Yaml();
         Map<String, Object> loadedConfig = yaml.loadAs(yamlConfig, Map.class);
         return loadWorld(loadedConfig);
+    }
+
+    public static Map dumpWorld(World world) {
+        return loaderManager.dump(world, Map.class);
+    }
+
+    public static World loadWorld(Map config) {
+        return loaderManager.load(config, World.class);
     }
 }

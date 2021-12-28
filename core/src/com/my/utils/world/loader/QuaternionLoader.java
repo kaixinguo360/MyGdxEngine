@@ -21,7 +21,7 @@ public class QuaternionLoader implements Loader {
     }
 
     @Override
-    public <E, T> E getConfig(T obj, Class<E> configType, Context context) {
+    public <E, T> E dump(T obj, Class<E> configType, Context context) {
         Quaternion quaternion = (Quaternion) obj;
         return (E) new ArrayList<Number>() {{
             add(quaternion.x);
