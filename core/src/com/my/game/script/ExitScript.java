@@ -2,9 +2,9 @@ package com.my.game.script;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.my.utils.world.Entity;
-import com.my.utils.world.Scene;
-import com.my.utils.world.sys.KeyInputSystem;
+import com.my.world.core.Entity;
+import com.my.world.core.Scene;
+import com.my.world.module.input.KeyInputSystem;
 
 public class ExitScript implements KeyInputSystem.OnKeyDown {
     @Override

@@ -3,18 +3,22 @@ package com.my.game.builder;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Matrix4;
-import com.my.game.constraint.ConnectConstraint;
-import com.my.game.model.CapsuleModel;
-import com.my.game.rigidbody.CapsuleConfig;
-import com.my.game.rigidbody.SphereConfig;
 import com.my.game.script.BombScript;
 import com.my.game.script.ExplosionScript;
 import com.my.game.script.RemoveScript;
-import com.my.utils.world.AssetsManager;
-import com.my.utils.world.Entity;
-import com.my.utils.world.EntityManager;
-import com.my.utils.world.Prefab;
-import com.my.utils.world.com.*;
+import com.my.world.core.AssetsManager;
+import com.my.world.core.Entity;
+import com.my.world.core.EntityManager;
+import com.my.world.core.Prefab;
+import com.my.world.module.common.Position;
+import com.my.world.module.physics.Collider;
+import com.my.world.module.physics.Collision;
+import com.my.world.module.physics.RigidBodyConfig;
+import com.my.world.module.physics.constraint.ConnectConstraint;
+import com.my.world.module.physics.rigidbody.CapsuleConfig;
+import com.my.world.module.physics.rigidbody.SphereConfig;
+import com.my.world.module.render.RenderModel;
+import com.my.world.module.render.model.CapsuleModel;
 
 public class BulletBuilder extends BaseBuilder {
 

@@ -3,13 +3,13 @@ package com.my.game.script;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector3;
-import com.my.utils.world.Config;
-import com.my.utils.world.Entity;
-import com.my.utils.world.Prefab;
-import com.my.utils.world.Scene;
-import com.my.utils.world.com.Camera;
-import com.my.utils.world.sys.KeyInputSystem;
-import com.my.utils.world.sys.ScriptSystem;
+import com.my.world.core.Config;
+import com.my.world.core.Entity;
+import com.my.world.core.Prefab;
+import com.my.world.core.Scene;
+import com.my.world.module.input.KeyInputSystem;
+import com.my.world.module.render.Camera;
+import com.my.world.module.script.ScriptSystem;
 
 public class GunScript extends EmitterScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, KeyInputSystem.OnKeyDown {
 

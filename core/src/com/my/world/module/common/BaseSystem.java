@@ -1,0 +1,44 @@
+package com.my.world.module.common;
+
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Disposable;
+import com.my.world.core.System;
+import com.my.world.core.*;
+
+import java.util.Collection;
+
+public abstract class BaseSystem implements System, Disposable, System.AfterAdded {
+
+    protected Scene scene;
+    private EntityFilter entityFilter;
+
+    @Override
+    public void afterAdded(Scene scene) {
+        this.scene = scene;
+        this.entityFilter = BaseSystem.this::isHandleable;
+        scene.getEntityManager().addFilter(entityFilter);
+        if (this instanceof EntityListener) {
+            scene.getEntityManager().addListener(entityFilter, (EntityListener) this);
+        }
+    }
+
+    // ----- Entities ----- //
+    protected Collection<Entity> getEntities() {
+        return scene.getEntityManager().getEntitiesByFilter(entityFilter);
+    }
+    protected abstract boolean isHandleable(Entity entity);
+
+    // ----- Dispose ----- //
+    @Override
+    public void dispose() {
+        for(int i = disposables.size - 1; i >= 0; i--) {
+            Disposable disposable = disposables.get(i);
+            if(disposable != null)
+                disposable.dispose();
+        }
+    }
+    private final Array<Disposable> disposables = new Array<>();
+    protected void addDisposable(Disposable disposable) {
+        disposables.add(disposable);
+    }
+}

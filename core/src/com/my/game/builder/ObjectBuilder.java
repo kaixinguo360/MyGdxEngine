@@ -4,16 +4,16 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.my.game.constraint.ConnectConstraint;
-import com.my.game.model.BoxModel;
-import com.my.game.rigidbody.BoxConfig;
-import com.my.utils.world.AssetsManager;
-import com.my.utils.world.Entity;
-import com.my.utils.world.EntityManager;
-import com.my.utils.world.com.Position;
-import com.my.utils.world.com.RenderModel;
-import com.my.utils.world.com.RigidBodyConfig;
-import com.my.utils.world.util.pool.Matrix4Pool;
+import com.my.world.core.AssetsManager;
+import com.my.world.core.Entity;
+import com.my.world.core.EntityManager;
+import com.my.world.core.util.pool.Matrix4Pool;
+import com.my.world.module.common.Position;
+import com.my.world.module.physics.RigidBodyConfig;
+import com.my.world.module.physics.constraint.ConnectConstraint;
+import com.my.world.module.physics.rigidbody.BoxConfig;
+import com.my.world.module.render.RenderModel;
+import com.my.world.module.render.model.BoxModel;
 
 public class ObjectBuilder extends BaseBuilder {
 

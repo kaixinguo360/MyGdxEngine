@@ -1,7 +1,7 @@
 package com.my.game.builder;
 
 import com.badlogic.gdx.math.Matrix4;
-import com.my.utils.world.*;
+import com.my.world.core.*;
 
 public class PrefabBuilder {
 

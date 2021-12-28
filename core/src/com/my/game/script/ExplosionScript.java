@@ -2,15 +2,15 @@ package com.my.game.script;
 
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.my.utils.world.Config;
-import com.my.utils.world.Entity;
-import com.my.utils.world.Scene;
-import com.my.utils.world.com.Position;
-import com.my.utils.world.com.RigidBody;
-import com.my.utils.world.sys.PhysicsSystem;
-import com.my.utils.world.sys.ScriptSystem;
-import com.my.utils.world.util.pool.Matrix4Pool;
-import com.my.utils.world.util.pool.Vector3Pool;
+import com.my.world.core.Config;
+import com.my.world.core.Entity;
+import com.my.world.core.Scene;
+import com.my.world.core.util.pool.Matrix4Pool;
+import com.my.world.core.util.pool.Vector3Pool;
+import com.my.world.module.common.Position;
+import com.my.world.module.physics.PhysicsSystem;
+import com.my.world.module.physics.RigidBody;
+import com.my.world.module.script.ScriptSystem;
 
 public class ExplosionScript implements ScriptSystem.OnStart, PhysicsSystem.OnCollision {
 

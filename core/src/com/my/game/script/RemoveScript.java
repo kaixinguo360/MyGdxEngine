@@ -1,10 +1,10 @@
 package com.my.game.script;
 
 import com.badlogic.gdx.math.Vector3;
-import com.my.utils.world.Entity;
-import com.my.utils.world.Scene;
-import com.my.utils.world.com.Position;
-import com.my.utils.world.sys.ScriptSystem;
+import com.my.world.core.Entity;
+import com.my.world.core.Scene;
+import com.my.world.module.common.Position;
+import com.my.world.module.script.ScriptSystem;
 
 public class RemoveScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
 

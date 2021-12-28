@@ -4,22 +4,22 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.my.game.constraint.ConnectConstraint;
-import com.my.game.constraint.HingeConstraint;
-import com.my.game.model.BoxModel;
-import com.my.game.model.CylinderModel;
-import com.my.game.rigidbody.BoxConfig;
-import com.my.game.rigidbody.CylinderConfig;
 import com.my.game.script.GunController;
 import com.my.game.script.GunScript;
-import com.my.utils.world.AssetsManager;
-import com.my.utils.world.Entity;
-import com.my.utils.world.EntityManager;
-import com.my.utils.world.Prefab;
-import com.my.utils.world.com.ConstraintController;
-import com.my.utils.world.com.Position;
-import com.my.utils.world.com.RenderModel;
-import com.my.utils.world.com.RigidBodyConfig;
+import com.my.world.core.AssetsManager;
+import com.my.world.core.Entity;
+import com.my.world.core.EntityManager;
+import com.my.world.core.Prefab;
+import com.my.world.module.common.Position;
+import com.my.world.module.physics.RigidBodyConfig;
+import com.my.world.module.physics.constraint.ConnectConstraint;
+import com.my.world.module.physics.constraint.HingeConstraint;
+import com.my.world.module.physics.rigidbody.BoxConfig;
+import com.my.world.module.physics.rigidbody.CylinderConfig;
+import com.my.world.module.physics.script.ConstraintController;
+import com.my.world.module.render.RenderModel;
+import com.my.world.module.render.model.BoxModel;
+import com.my.world.module.render.model.CylinderModel;
 
 public class GunBuilder extends BaseBuilder {
 

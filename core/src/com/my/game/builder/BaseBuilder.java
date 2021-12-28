@@ -1,11 +1,15 @@
 package com.my.game.builder;
 
 import com.badlogic.gdx.math.Matrix4;
-import com.my.utils.world.AssetsManager;
-import com.my.utils.world.Entity;
-import com.my.utils.world.EntityManager;
-import com.my.utils.world.Scene;
-import com.my.utils.world.com.*;
+import com.my.world.core.AssetsManager;
+import com.my.world.core.Entity;
+import com.my.world.core.EntityManager;
+import com.my.world.core.Scene;
+import com.my.world.module.common.Position;
+import com.my.world.module.physics.RigidBody;
+import com.my.world.module.physics.RigidBodyConfig;
+import com.my.world.module.render.Render;
+import com.my.world.module.render.RenderModel;
 
 public class BaseBuilder {
 

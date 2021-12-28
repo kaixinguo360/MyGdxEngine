@@ -2,12 +2,12 @@ package com.my.game.script;
 
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.my.utils.world.Config;
-import com.my.utils.world.Entity;
-import com.my.utils.world.Prefab;
-import com.my.utils.world.com.CollisionHandler;
-import com.my.utils.world.com.Position;
-import com.my.utils.world.com.RigidBody;
+import com.my.world.core.Config;
+import com.my.world.core.Entity;
+import com.my.world.core.Prefab;
+import com.my.world.module.common.Position;
+import com.my.world.module.physics.RigidBody;
+import com.my.world.module.physics.script.CollisionHandler;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor

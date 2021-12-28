@@ -9,10 +9,10 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.my.utils.world.Config;
-import com.my.utils.world.Entity;
-import com.my.utils.world.Scene;
-import com.my.utils.world.sys.ScriptSystem;
+import com.my.world.core.Config;
+import com.my.world.core.Entity;
+import com.my.world.core.Scene;
+import com.my.world.module.script.ScriptSystem;
 
 import java.util.HashMap;
 import java.util.Map;

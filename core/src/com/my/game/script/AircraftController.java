@@ -2,8 +2,8 @@ package com.my.game.script;
 
 import com.badlogic.gdx.physics.bullet.dynamics.btHingeConstraint;
 import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
-import com.my.utils.world.Config;
-import com.my.utils.world.com.ConstraintController;
+import com.my.world.core.Config;
+import com.my.world.module.physics.script.ConstraintController;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor

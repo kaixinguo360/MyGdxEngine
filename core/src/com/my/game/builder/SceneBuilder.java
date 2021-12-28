@@ -5,16 +5,21 @@ import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.my.game.constraint.HingeConstraint;
-import com.my.game.model.BoxModel;
-import com.my.game.model.ExternalModel;
-import com.my.game.rigidbody.BoxConfig;
 import com.my.game.script.ExitScript;
 import com.my.game.script.GUIScript;
 import com.my.game.script.GunScript;
-import com.my.utils.world.*;
-import com.my.utils.world.com.*;
-import com.my.utils.world.sys.*;
+import com.my.world.core.*;
+import com.my.world.module.common.Position;
+import com.my.world.module.input.KeyInputSystem;
+import com.my.world.module.physics.ConstraintSystem;
+import com.my.world.module.physics.PhysicsSystem;
+import com.my.world.module.physics.RigidBodyConfig;
+import com.my.world.module.physics.constraint.HingeConstraint;
+import com.my.world.module.physics.rigidbody.BoxConfig;
+import com.my.world.module.render.*;
+import com.my.world.module.render.model.BoxModel;
+import com.my.world.module.render.model.ExternalModel;
+import com.my.world.module.script.ScriptSystem;
 
 public class SceneBuilder {
 
