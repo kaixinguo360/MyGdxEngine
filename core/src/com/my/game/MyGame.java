@@ -58,7 +58,7 @@ public class MyGame extends BaseGame {
         SceneBuilder.initAllAssets(LoadUtil.assetsManager);
 
         // ----- Init LoaderManager ----- //
-        LoadUtil.loaderManager.getCommonContext().setEnvironment(AssetsManager.CONTEXT_FIELD_NAME, LoadUtil.assetsManager);
+        LoadUtil.loaderManager.getContext().setEnvironment(AssetsManager.CONTEXT_FIELD_NAME, LoadUtil.assetsManager);
 
         // ----- Create & Save Scene ----- //
         scene = SceneBuilder.createScene(LoadUtil.assetsManager);

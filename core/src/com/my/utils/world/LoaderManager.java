@@ -17,7 +17,7 @@ public class LoaderManager {
     private final Map<String, Loader> loaderCache = new HashMap<>();
 
     @Getter
-    protected final LinkedContext commonContext = new LinkedContext();
+    protected final Context context = new Context();
 
     public LoaderManager() {
         loaders.add(new SceneLoader());
@@ -25,7 +25,7 @@ public class LoaderManager {
         loaders.add(new Vector3Loader());
         loaders.add(new QuaternionLoader());
         loaders.add(new LoadableLoader());
-        this.commonContext.setEnvironment(CONTEXT_FIELD_NAME, this);
+        this.context.setEnvironment(CONTEXT_FIELD_NAME, this);
     }
 
     public <E, T> T load(E config, Class<T> type) {
@@ -79,6 +79,6 @@ public class LoaderManager {
     }
 
     public Context newContext() {
-        return this.commonContext.newContext();
+        return this.context.newContext();
     }
 }
