@@ -4,14 +4,16 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.physics.bullet.Bullet;
+import com.my.game.builder.PrefabBuilder;
 import com.my.game.builder.SceneBuilder;
 import com.my.utils.base.BaseGame;
-import com.my.utils.world.AssetsManager;
+import com.my.utils.world.Engine;
 import com.my.utils.world.Scene;
 import com.my.utils.world.sys.KeyInputSystem;
 
 public class MyGame extends BaseGame {
 
+    private Engine engine;
     private Scene scene;
     private InputAdapter inputAdapter;
 
@@ -42,11 +44,11 @@ public class MyGame extends BaseGame {
                 if (keycode == Input.Keys.ENTER) {
 
                     // ----- Get Config ----- //
-                    String yamlConfig = LoadUtil.dumpSceneToYaml(scene);
+                    String yamlConfig = engine.dumpSceneToYaml(scene);
                     System.out.println(yamlConfig);
 
                     // ----- Load Scene ----- //
-                    scene = LoadUtil.loadSceneFromYaml(yamlConfig);
+                    scene = engine.loadSceneFromYaml(yamlConfig);
                     addDisposable(scene);
                     scene.getSystemManager().getSystem(KeyInputSystem.class).getInputMultiplexer().addProcessor(inputAdapter);
                 }
@@ -54,19 +56,22 @@ public class MyGame extends BaseGame {
             }
         };
 
-        // ----- Init AssetsManager ----- //
-        SceneBuilder.initAllAssets(LoadUtil.assetsManager);
+        // ----- Create Engine ----- //
+        engine = new Engine();
 
-        // ----- Init LoaderManager ----- //
-        LoadUtil.loaderManager.getContext().setEnvironment(AssetsManager.CONTEXT_FIELD_NAME, LoadUtil.assetsManager);
+        // ----- Init AssetsManager ----- //
+        SceneBuilder.initAllAssets(engine.getAssetsManager());
+
+        // ----- Init PrefabBuilder ----- //
+        PrefabBuilder.initAssets(engine);
 
         // ----- Create & Save Scene ----- //
-        scene = SceneBuilder.createScene(LoadUtil.assetsManager);
+        scene = SceneBuilder.createScene(engine);
 //        addDisposable(scene);
-//        LoadUtil.dumpSceneToFile(scene, "scene.yml");
+//        engine.dumpSceneToFile(scene, "scene.yml");
 //
 //        // ----- Load Scene ----- //
-//        scene = LoadUtil.loadSceneFromFile("scene.yml");
+//        scene = engine.loadSceneFromFile("scene.yml");
 //        addDisposable(scene);
 
         scene.getSystemManager().getSystem(KeyInputSystem.class).getInputMultiplexer().addProcessor(inputAdapter);

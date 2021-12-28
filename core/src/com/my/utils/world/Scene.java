@@ -2,16 +2,16 @@ package com.my.utils.world;
 
 import com.badlogic.gdx.utils.Disposable;
 import lombok.Getter;
-import lombok.Setter;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class Scene implements Disposable {
 
+    public static final String CONTEXT_FIELD_NAME = "SCENE";
+
     @Getter
-    @Setter
-    private AssetsManager assetsManager;
+    private final Engine engine;
+
+    @Getter
+    private final Context context;
 
     @Getter
     private final SystemManager systemManager = new SystemManager(this);
@@ -19,13 +19,10 @@ public class Scene implements Disposable {
     @Getter
     private final EntityManager entityManager = new EntityManager();
 
-    @Getter
-    private final Map<String, Object> environments = new HashMap<>();
-
-    public Scene() {}
-
-    public Scene(AssetsManager assetsManager) {
-        this.assetsManager = assetsManager;
+    public Scene(Engine engine) {
+        this.engine = engine;
+        this.context = engine.newContext();
+        this.context.setEnvironment(EntityManager.CONTEXT_FIELD_NAME, entityManager);
     }
 
     public void start() {
@@ -42,6 +39,10 @@ public class Scene implements Disposable {
             system.update(deltaTime);
         }
         entityManager.getBatch().commit();
+    }
+
+    public Context newContext() {
+        return this.context.newContext();
     }
 
     @Override

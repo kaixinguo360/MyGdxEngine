@@ -2,7 +2,6 @@ package com.my.game.script;
 
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.my.game.LoadUtil;
 import com.my.utils.world.Config;
 import com.my.utils.world.Entity;
 import com.my.utils.world.Prefab;
@@ -29,7 +28,7 @@ public class BombScript extends CollisionHandler {
         if (checkVelocity(self, target)) {
             System.out.println("Bomb! " + self.getId() + " ==> " + target.getId());
             Matrix4 selfTransform = self.getComponent(Position.class).getLocalTransform();
-            Entity entity = explosionPrefab.newInstance(LoadUtil.loaderManager, scene);
+            Entity entity = explosionPrefab.newInstance(scene);
             entity.getComponent(Position.class).setLocalTransform(selfTransform);
             scene.getEntityManager().getBatch().removeEntity(self.getId());
         }

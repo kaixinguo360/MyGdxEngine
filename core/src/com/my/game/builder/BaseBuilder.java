@@ -17,7 +17,7 @@ public class BaseBuilder {
     protected final EntityManager entityManager;
 
     public BaseBuilder(Scene scene) {
-        this.assetsManager = scene.getAssetsManager();
+        this.assetsManager = scene.getEngine().getAssetsManager();
         this.entityManager = scene.getEntityManager();
     }
 

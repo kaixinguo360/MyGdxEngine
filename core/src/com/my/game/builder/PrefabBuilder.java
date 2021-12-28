@@ -1,15 +1,12 @@
 package com.my.game.builder;
 
 import com.badlogic.gdx.math.Matrix4;
-import com.my.game.LoadUtil;
-import com.my.utils.world.AssetsManager;
-import com.my.utils.world.Context;
-import com.my.utils.world.EntityManager;
-import com.my.utils.world.Prefab;
+import com.my.utils.world.*;
 
 public class PrefabBuilder {
 
-    public static void initAssets(AssetsManager assetsManager) {
+    public static void initAssets(Engine engine) {
+        AssetsManager assetsManager = engine.getAssetsManager();
 
         // ----- Init Prefabs ----- //
 
@@ -19,8 +16,7 @@ public class PrefabBuilder {
         ObjectBuilder objectBuilder = new ObjectBuilder(assetsManager, tmpEntityManager);
         BulletBuilder bulletBuilder = new BulletBuilder(assetsManager, tmpEntityManager);
 
-        Context context = LoadUtil.loaderManager.newContext();
-        context.setEnvironment(AssetsManager.CONTEXT_FIELD_NAME, assetsManager);
+        Context context = engine.newContext();
         context.setEnvironment(EntityManager.CONTEXT_FIELD_NAME, tmpEntityManager);
 
         assetsManager.addAsset("Runway", Prefab.class, Prefab.create(

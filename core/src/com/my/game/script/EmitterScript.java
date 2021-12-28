@@ -4,7 +4,6 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
-import com.my.game.LoadUtil;
 import com.my.utils.world.Config;
 import com.my.utils.world.Entity;
 import com.my.utils.world.Prefab;
@@ -52,7 +51,7 @@ public class EmitterScript implements ScriptSystem.OnStart {
         tmpV1.set(getMainBody().getLinearVelocity());
         tmpV1.add(tmpV2.set(velocity).mul(tmpQ));
 
-        Entity entity = prefab.newInstance(LoadUtil.loaderManager, scene);
+        Entity entity = prefab.newInstance(scene);
         entity.getComponent(Position.class).setLocalTransform(tmpM);
         btRigidBody body = entity.getComponent(RigidBody.class).body;
 

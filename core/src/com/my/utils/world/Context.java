@@ -14,8 +14,6 @@ public class Context {
 
     private final Map<String, Object> environment = new HashMap<>();
 
-    public Context() {}
-
     public Context(Context parent) {
         this.parent = parent;
     }

@@ -12,15 +12,11 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
-import com.my.game.LoadUtil;
 import com.my.game.constraint.HingeConstraint;
 import com.my.game.script.ExitScript;
 import com.my.game.script.GUIScript;
 import com.my.game.script.GunScript;
-import com.my.utils.world.AssetsManager;
-import com.my.utils.world.Entity;
-import com.my.utils.world.Prefab;
-import com.my.utils.world.Scene;
+import com.my.utils.world.*;
 import com.my.utils.world.com.Camera;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.Render;
@@ -30,8 +26,8 @@ public class SceneBuilder {
 
     public static Model skyModel;
 
-    public static Scene createScene(AssetsManager assetsManager) {
-        Scene scene = new Scene(assetsManager);
+    public static Scene createScene(Engine engine) {
+        Scene scene = new Scene(engine);
 
         // Init System
         scene.getSystemManager().addSystem(new CameraSystem());
@@ -44,7 +40,7 @@ public class SceneBuilder {
         scene.start();
 
         Environment environment = scene.getSystemManager().getSystem(EnvironmentSystem.class).getCommonEnvironment();
-        environment.set(scene.getAssetsManager().getAsset("commonEnvironment", Environment.class));
+        environment.set(engine.getAssetsManager().getAsset("commonEnvironment", Environment.class));
 
         // ----- Init Static Objects ----- //
         BaseBuilder baseBuilder = new BaseBuilder(scene);
@@ -59,36 +55,36 @@ public class SceneBuilder {
 
         // ----- Init Dynamic Objects ----- //
 
-        Prefab runway = scene.getAssetsManager().getAsset("Runway", Prefab.class);
-        runway.newInstance(LoadUtil.loaderManager, scene);
+        Prefab runway = engine.getAssetsManager().getAsset("Runway", Prefab.class);
+        runway.newInstance(scene);
 
-        Prefab tower = scene.getAssetsManager().getAsset("Tower", Prefab.class);
+        Prefab tower = engine.getAssetsManager().getAsset("Tower", Prefab.class);
         for (int i = 1; i < 5; i++) {
             for (int j = 0; j < i; j++) {
-                Entity entity = tower.newInstance(LoadUtil.loaderManager, scene);
+                Entity entity = tower.newInstance(scene);
                 entity.getComponent(Position.class).getLocalTransform().setToTranslation(-5, 5 * j, -200 * i);
             }
         }
 
-        Prefab aircraft = scene.getAssetsManager().getAsset("Aircraft", Prefab.class);
+        Prefab aircraft = engine.getAssetsManager().getAsset("Aircraft", Prefab.class);
         int aircraftNum = 0;
         for (int x = -20; x <= 20; x+=40) {
             for (int y = 0; y <= 0; y+=20) {
                 for (int z = -20; z <= 20; z+=20) {
-                    Entity entity = aircraft.newInstance(LoadUtil.loaderManager, scene);
+                    Entity entity = aircraft.newInstance(scene);
                     entity.setName("Aircraft-" + aircraftNum++);
                     entity.getComponent(Position.class).getLocalTransform().setToTranslation(x, y, z);
                 }
             }
         }
 
-        Entity aircraftEntity = aircraft.newInstance(LoadUtil.loaderManager, scene);
+        Entity aircraftEntity = aircraft.newInstance(scene);
         aircraftEntity.setName("Aircraft-6");
         aircraftEntity.getComponent(Position.class).getLocalTransform().translate(0, 0, 200);
         aircraftEntity.findChildByName("body").addComponent(new Camera(0, 0, 1, 1, 0, CameraSystem.FollowType.A));
 
-        Prefab gun = scene.getAssetsManager().getAsset("Gun", Prefab.class);
-        Entity gunEntity = gun.newInstance(LoadUtil.loaderManager, scene);
+        Prefab gun = engine.getAssetsManager().getAsset("Gun", Prefab.class);
+        Entity gunEntity = gun.newInstance(scene);
         gunEntity.setName("Gun-0");
         gunEntity.getComponent(Position.class).getLocalTransform().translate(0, 0.01f / 2, -20);
         gunEntity.getComponent(GunScript.class).disabled = true;
@@ -110,7 +106,7 @@ public class SceneBuilder {
         // Init GUI
         Entity guiEntity = new Entity();
         guiEntity.setName("guiEntity");
-        guiEntity.addComponent(new GUIScript()).targetEntity = scene.getEntityManager().findEntityByName("Aircraft-6");;
+        guiEntity.addComponent(new GUIScript()).targetEntity = scene.getEntityManager().findEntityByName("Aircraft-6");
         scene.getEntityManager().addEntity(guiEntity);
 
         return scene;
@@ -122,7 +118,6 @@ public class SceneBuilder {
         ObjectBuilder.initAssets(assetsManager);
         BulletBuilder.initAssets(assetsManager);
         SceneBuilder.initAssets(assetsManager);
-        PrefabBuilder.initAssets(assetsManager);
     }
 
     public static void initAssets(AssetsManager assetsManager) {

@@ -16,20 +16,12 @@ public class LoaderManager {
     protected final List<Loader> loaders = new ArrayList<>();
     private final Map<String, Loader> loaderCache = new HashMap<>();
 
-    @Getter
-    protected final Context context = new Context();
-
     public LoaderManager() {
         loaders.add(new SceneLoader());
         loaders.add(new Matrix4Loader());
         loaders.add(new Vector3Loader());
         loaders.add(new QuaternionLoader());
         loaders.add(new LoadableLoader());
-        this.context.setEnvironment(CONTEXT_FIELD_NAME, this);
-    }
-
-    public <E, T> T load(E config, Class<T> type) {
-        return load(config, type, newContext());
     }
 
     public <E, T> T load(E config, Class<T> type, Context context) {
@@ -48,10 +40,6 @@ public class LoaderManager {
             }
         }
         throw new RuntimeException("No such loader: " + config.getClass() + " -> " + type);
-    }
-
-    public <E, T> E dump(T obj, Class<E> configType) {
-        return dump(obj, configType, newContext());
     }
 
     public <E, T> E dump(T obj, Class<E> configType, Context context) {
@@ -76,9 +64,5 @@ public class LoaderManager {
             }
         }
         return null;
-    }
-
-    public Context newContext() {
-        return this.context.newContext();
     }
 }

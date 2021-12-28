@@ -20,14 +20,14 @@ public class Prefab implements Loadable {
     @Config(name = "entities", type = Config.Type.Primitive)
     private List<Map<String, Object>> entityConfigs;
 
-    public Entity newInstance(LoaderManager loaderManager, Scene scene) {
-        return newInstance(this, loaderManager, scene);
+    public Entity newInstance(Scene scene) {
+        return newInstance(this, scene);
     }
 
-    public static Entity newInstance(Prefab prefab, LoaderManager loaderManager, Scene scene) {
-        Context context = loaderManager.newContext();
+    public static Entity newInstance(Prefab prefab, Scene scene) {
+        LoaderManager loaderManager = scene.getEngine().getLoaderManager();
 
-        context.setEnvironment(AssetsManager.CONTEXT_FIELD_NAME, scene.getAssetsManager());
+        Context context = scene.newContext();
         context.setEnvironment(EntityManager.CONTEXT_FIELD_NAME, entityManager);
 
         for (Map<String, Object> map : prefab.entityConfigs) {
