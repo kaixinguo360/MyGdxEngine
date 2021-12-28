@@ -1,29 +1,32 @@
 package com.my.utils.world.sys;
 
 import com.badlogic.gdx.graphics.g3d.Environment;
-import com.my.utils.world.*;
+import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
+import com.my.utils.world.BaseSystem;
+import com.my.utils.world.Entity;
 import com.my.utils.world.com.Light;
 import lombok.Getter;
 
-import java.util.Map;
-
-public class EnvironmentSystem extends BaseSystem implements Loadable.OnLoad {
+public class EnvironmentSystem extends BaseSystem {
 
     @Getter
     private final Environment commonEnvironment = new Environment();
     private final Environment environment = new Environment();
 
-    @Override
-    public boolean isHandleable(Entity entity) {
-        return entity.contain(Light.class);
+    public EnvironmentSystem() {
+        // TODO: Better Common Environment Loader
+        Environment environment = new Environment();
+        environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
+        environment.set(new ColorAttribute(ColorAttribute.Fog, 0.8f, 0.8f, 0.8f, 1f));
+        environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -0.2f, -0.8f, 1f));
+        environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, 0.2f, 0.8f, -1f));
+        this.commonEnvironment.set(environment);
     }
 
     @Override
-    public void load(Map<String, Object> config, Context context) {
-        // TODO: Better Common Environment Loader
-        AssetsManager assetsManager = context.getEnvironment(AssetsManager.CONTEXT_FIELD_NAME, AssetsManager.class);
-        Environment commonEnvironment = assetsManager.getAsset("commonEnvironment", Environment.class);
-        this.commonEnvironment.set(commonEnvironment);
+    public boolean isHandleable(Entity entity) {
+        return entity.contain(Light.class);
     }
 
     // ----- Custom ----- //

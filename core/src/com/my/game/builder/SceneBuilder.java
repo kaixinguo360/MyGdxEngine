@@ -2,10 +2,7 @@ package com.my.game.builder;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
-import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.game.constraint.HingeConstraint;
@@ -35,9 +32,6 @@ public class SceneBuilder {
         scene.getSystemManager().addSystem(new KeyInputSystem());
         scene.getSystemManager().addSystem(new ConstraintSystem());
         scene.start();
-
-        Environment environment = scene.getSystemManager().getSystem(EnvironmentSystem.class).getCommonEnvironment();
-        environment.set(engine.getAssetsManager().getAsset("commonEnvironment", Environment.class));
 
         // ----- Init Static Objects ----- //
         BaseBuilder baseBuilder = new BaseBuilder(scene);
@@ -128,12 +122,5 @@ public class SceneBuilder {
         assetsManager.addAsset("ground", RenderModel.class, new BoxModel(10000f, 0.01f, 20000f, Color.WHITE, attributes));
 
         assetsManager.addAsset("ground", RigidBodyConfig.class, new BoxConfig(new Vector3(5000,0.005f,10000), 0f));
-
-        Environment environment = new Environment();
-        environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
-        environment.set(new ColorAttribute(ColorAttribute.Fog, 0.8f, 0.8f, 0.8f, 1f));
-        environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -0.2f, -0.8f, 1f));
-        environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, 0.2f, 0.8f, -1f));
-        assetsManager.addAsset("commonEnvironment", Environment.class, environment);
     }
 }
