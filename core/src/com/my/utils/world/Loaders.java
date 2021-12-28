@@ -50,10 +50,6 @@ public class Loaders {
     }
 
     private static Object getObject(Context context, Class<?> elementType, Config annotation, Object value) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
-
-        EntityManager entityManager = context.getEnvironment(EntityManager.CONTEXT_FIELD_NAME, EntityManager.class);
-        AssetsManager assetsManager = context.getEnvironment(AssetsManager.CONTEXT_FIELD_NAME, AssetsManager.class);
-
         if (value == null) {
             return null;
         } else if (List.class.isAssignableFrom(elementType)) {
@@ -69,9 +65,11 @@ public class Loaders {
             return value;
         } else if (annotation.type() == Config.Type.Asset || Prefab.class.isAssignableFrom(elementType)) {
             String assetId = (String) value;
+            AssetsManager assetsManager = context.getEnvironment(AssetsManager.CONTEXT_FIELD_NAME, AssetsManager.class);
             return assetsManager.getAsset(assetId, elementType);
         } else if (annotation.type() == Config.Type.Entity || Entity.class.isAssignableFrom(elementType)) {
             String entityId = (String) value;
+            EntityManager entityManager = context.getEnvironment(EntityManager.CONTEXT_FIELD_NAME, EntityManager.class);
             return entityManager.findEntityById(entityId);
         } else if (elementType.isEnum()) {
             Method valueOf = elementType.getMethod("valueOf", String.class);
@@ -90,9 +88,6 @@ public class Loaders {
     }
 
     private static Object getConfig(Context context, Class<?> elementType, Config annotation, Object value) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-
-        AssetsManager assetsManager = context.getEnvironment(AssetsManager.CONTEXT_FIELD_NAME, AssetsManager.class);
-
         if (value == null) {
             return null;
         } else if (annotation.type() == Config.Type.Primitive || elementType.isPrimitive() || elementType == String.class) {
@@ -104,6 +99,7 @@ public class Loaders {
             }
             return configList;
         } else if (annotation.type() == Config.Type.Asset || Prefab.class.isAssignableFrom(elementType)) {
+            AssetsManager assetsManager = context.getEnvironment(AssetsManager.CONTEXT_FIELD_NAME, AssetsManager.class);
             return assetsManager.getId(elementType, value);
         } else if (annotation.type() == Config.Type.Entity || Entity.class.isAssignableFrom(elementType)) {
             return ((Entity) value).getId();
