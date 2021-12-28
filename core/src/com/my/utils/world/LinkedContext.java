@@ -14,6 +14,8 @@ public class LinkedContext implements Context {
 
     private final Map<String, Object> environment = new HashMap<>();
 
+    public LinkedContext() {}
+
     public LinkedContext(Context parent) {
         this.parent = parent;
     }
@@ -53,5 +55,9 @@ public class LinkedContext implements Context {
     @Override
     public void clearEnvironments() {
         environment.clear();
+    }
+
+    public LinkedContext newContext() {
+        return new LinkedContext(this);
     }
 }

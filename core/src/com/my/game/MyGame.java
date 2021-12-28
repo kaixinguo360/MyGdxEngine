@@ -58,7 +58,7 @@ public class MyGame extends BaseGame {
         WorldBuilder.initAllAssets(LoadUtil.assetsManager);
 
         // ----- Init LoaderManager ----- //
-        LoadUtil.loaderManager.setEnvironment(AssetsManager.CONTEXT_FIELD_NAME, LoadUtil.assetsManager);
+        LoadUtil.loaderManager.getCommonContext().setEnvironment(AssetsManager.CONTEXT_FIELD_NAME, LoadUtil.assetsManager);
 
         // ----- Create & Save World ----- //
         world = WorldBuilder.createWorld(LoadUtil.assetsManager);

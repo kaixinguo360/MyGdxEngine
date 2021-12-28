@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class LoaderManager implements Context {
+public class LoaderManager {
 
     public static final String CONTEXT_FIELD_NAME = "LOADER_MANAGER";
 
@@ -16,7 +16,8 @@ public class LoaderManager implements Context {
     protected final List<Loader> loaders = new ArrayList<>();
     private final Map<String, Loader> loaderCache = new HashMap<>();
 
-    private final Map<String, Object> environment = new HashMap<>();
+    @Getter
+    protected final LinkedContext commonContext = new LinkedContext();
 
     public LoaderManager() {
         loaders.add(new WorldLoader());
@@ -24,11 +25,11 @@ public class LoaderManager implements Context {
         loaders.add(new Vector3Loader());
         loaders.add(new QuaternionLoader());
         loaders.add(new LoadableLoader());
-        this.setEnvironment(CONTEXT_FIELD_NAME, this);
+        this.commonContext.setEnvironment(CONTEXT_FIELD_NAME, this);
     }
 
     public <E, T> T load(E config, Class<T> type) {
-        return load(config, type, new LinkedContext(this));
+        return load(config, type, newContext());
     }
 
     public <E, T> T load(E config, Class<T> type, Context context) {
@@ -50,7 +51,7 @@ public class LoaderManager implements Context {
     }
 
     public <E, T> E dump(T obj, Class<E> configType) {
-        return dump(obj, configType, new LinkedContext(this));
+        return dump(obj, configType, newContext());
     }
 
     public <E, T> E dump(T obj, Class<E> configType, Context context) {
@@ -68,7 +69,7 @@ public class LoaderManager implements Context {
         throw new RuntimeException("No such loader to get config: " + configType + " -> " + obj.getClass());
     }
 
-    public <T extends Loader> T getLoader(Class<T> type) {
+    public <T extends Loader> T findLoader(Class<T> type) {
         for (Loader loader : loaders) {
             if (type.isInstance(loader)) {
                 return (T) loader;
@@ -78,32 +79,6 @@ public class LoaderManager implements Context {
     }
 
     public Context newContext() {
-        return new LinkedContext(this);
-    }
-
-    @Override
-    public boolean containsEnvironment(String id) {
-        return environment.containsKey(id);
-    }
-
-    @Override
-    public <T> T setEnvironment(String id, T value) {
-        if (id == null) throw new RuntimeException("Environment variable id can not be null");
-        environment.put(id, value);
-        return value;
-    }
-
-    @Override
-    public <T> T getEnvironment(String id, Class<T> type) {
-        if (!environment.containsKey(id) || environment.get(id) == null)
-            throw new RuntimeException("No such environment variable: " + id);
-        Object value = environment.get(id);
-        if (value == null) throw new RuntimeException("Environment variable return value can not be null: id=" + id + ", type=" + type);
-        return type.cast(value);
-    }
-
-    @Override
-    public void clearEnvironments() {
-        environment.clear();
+        return this.commonContext.newContext();
     }
 }
