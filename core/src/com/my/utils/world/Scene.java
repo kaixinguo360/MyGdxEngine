@@ -7,7 +7,7 @@ import lombok.Setter;
 import java.util.HashMap;
 import java.util.Map;
 
-public class World implements Disposable {
+public class Scene implements Disposable {
 
     @Getter
     @Setter
@@ -22,9 +22,9 @@ public class World implements Disposable {
     @Getter
     private final Map<String, Object> environments = new HashMap<>();
 
-    public World() {}
+    public Scene() {}
 
-    public World(AssetsManager assetsManager) {
+    public Scene(AssetsManager assetsManager) {
         this.assetsManager = assetsManager;
     }
 

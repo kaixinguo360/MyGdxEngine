@@ -32,9 +32,9 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
     }
 
     @Override
-    public void start(World world) {
-        renderSystem = world.getSystemManager().getSystem(RenderSystem.class);
-        environmentSystem = world.getSystemManager().getSystem(EnvironmentSystem.class);
+    public void start(Scene scene) {
+        renderSystem = scene.getSystemManager().getSystem(RenderSystem.class);
+        environmentSystem = scene.getSystemManager().getSystem(EnvironmentSystem.class);
     }
 
     @Override
@@ -93,7 +93,7 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
             );
             for (SkyBoxInner skyBox : skyBoxInners) {
                 if (skyBox.position == null) {
-                    skyBox.entity = world.getEntityManager().findEntityById(skyBox.id);
+                    skyBox.entity = scene.getEntityManager().findEntityById(skyBox.id);
                     skyBox.position = skyBox.entity.getComponent(Position.class);
                 }
                 skyBox.position.getLocalTransform().setToTranslation(cameraInner.camera.perspectiveCamera.position);

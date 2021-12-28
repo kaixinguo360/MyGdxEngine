@@ -5,7 +5,7 @@ import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
 import com.my.utils.world.EntityManager;
-import com.my.utils.world.World;
+import com.my.utils.world.Scene;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.Render;
 import com.my.utils.world.com.RigidBody;
@@ -16,9 +16,9 @@ public class BaseBuilder {
     protected final AssetsManager assetsManager;
     protected final EntityManager entityManager;
 
-    public BaseBuilder(World world) {
-        this.assetsManager = world.getAssetsManager();
-        this.entityManager = world.getEntityManager();
+    public BaseBuilder(Scene scene) {
+        this.assetsManager = scene.getAssetsManager();
+        this.entityManager = scene.getEntityManager();
     }
 
     public BaseBuilder(AssetsManager assetsManager, EntityManager entityManager) {

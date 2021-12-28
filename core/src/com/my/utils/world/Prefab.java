@@ -20,14 +20,14 @@ public class Prefab implements Loadable {
     @Config(name = "entities", type = Config.Type.Primitive)
     private List<Map<String, Object>> entityConfigs;
 
-    public Entity newInstance(LoaderManager loaderManager, World world) {
-        return newInstance(this, loaderManager, world);
+    public Entity newInstance(LoaderManager loaderManager, Scene scene) {
+        return newInstance(this, loaderManager, scene);
     }
 
-    public static Entity newInstance(Prefab prefab, LoaderManager loaderManager, World world) {
+    public static Entity newInstance(Prefab prefab, LoaderManager loaderManager, Scene scene) {
         Context context = loaderManager.newContext();
 
-        context.setEnvironment(AssetsManager.CONTEXT_FIELD_NAME, world.getAssetsManager());
+        context.setEnvironment(AssetsManager.CONTEXT_FIELD_NAME, scene.getAssetsManager());
         context.setEnvironment(EntityManager.CONTEXT_FIELD_NAME, entityManager);
 
         for (Map<String, Object> map : prefab.entityConfigs) {
@@ -35,7 +35,7 @@ public class Prefab implements Loadable {
             entityManager.addEntity(entity);
         }
 
-        Entity entity = world.getEntityManager().addAll(entityManager, true);
+        Entity entity = scene.getEntityManager().addAll(entityManager, true);
         entityManager.clear();
 
         return entity;

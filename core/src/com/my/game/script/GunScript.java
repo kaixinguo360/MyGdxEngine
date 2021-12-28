@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.my.utils.world.Config;
 import com.my.utils.world.Entity;
 import com.my.utils.world.Prefab;
-import com.my.utils.world.World;
+import com.my.utils.world.Scene;
 import com.my.utils.world.com.Camera;
 import com.my.utils.world.sys.KeyInputSystem;
 import com.my.utils.world.sys.ScriptSystem;
@@ -25,8 +25,8 @@ public class GunScript extends EmitterScript implements ScriptSystem.OnStart, Sc
     private final static Vector3 bombOffset = new Vector3(0, 0, -5);
 
     @Override
-    public void start(World world, Entity entity) {
-        super.start(world, entity);
+    public void start(Scene scene, Entity entity) {
+        super.start(scene, entity);
 
         main = entity.findChildByName("barrel");
         Entity rotate_Y = entity.findChildByName("rotate_Y");
@@ -40,7 +40,7 @@ public class GunScript extends EmitterScript implements ScriptSystem.OnStart, Sc
     }
 
     @Override
-    public void update(World world, Entity entity) {
+    public void update(Scene scene, Entity entity) {
         if (camera != null && !disabled) {
             float v = 0.025f;
             if (gunController_Y != null && gunController_X != null) {
@@ -67,7 +67,7 @@ public class GunScript extends EmitterScript implements ScriptSystem.OnStart, Sc
     }
 
     @Override
-    public void keyDown(World world, Entity entity, int keycode) {
+    public void keyDown(Scene scene, Entity entity, int keycode) {
         if (camera == null) return;
         if (keycode == Input.Keys.TAB) changeCamera();
         if (keycode == Input.Keys.SHIFT_LEFT && !disabled) changeCameraFollowType();

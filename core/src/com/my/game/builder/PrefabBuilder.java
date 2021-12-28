@@ -16,7 +16,7 @@ public class PrefabBuilder {
         EntityManager tmpEntityManager = new EntityManager();
         AircraftBuilder aircraftBuilder = new AircraftBuilder(assetsManager, tmpEntityManager);
         GunBuilder gunBuilder = new GunBuilder(assetsManager, tmpEntityManager);
-        SceneBuilder sceneBuilder = new SceneBuilder(assetsManager, tmpEntityManager);
+        ObjectBuilder objectBuilder = new ObjectBuilder(assetsManager, tmpEntityManager);
         BulletBuilder bulletBuilder = new BulletBuilder(assetsManager, tmpEntityManager);
 
         Context context = LoadUtil.loaderManager.newContext();
@@ -24,12 +24,12 @@ public class PrefabBuilder {
         context.setEnvironment(EntityManager.CONTEXT_FIELD_NAME, tmpEntityManager);
 
         assetsManager.addAsset("Runway", Prefab.class, Prefab.create(
-                sceneBuilder.createRunway("Runway", new Matrix4(), null),
+                objectBuilder.createRunway("Runway", new Matrix4(), null),
                 context
         ));
 
         assetsManager.addAsset("Tower", Prefab.class, Prefab.create(
-                sceneBuilder.createTower("Tower", new Matrix4(), 5),
+                objectBuilder.createTower("Tower", new Matrix4(), 5),
                 context
         ));
 

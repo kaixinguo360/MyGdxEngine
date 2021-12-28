@@ -14,10 +14,10 @@ public class SystemManager implements Disposable {
     private final Map<Class<?>, System> systems = new LinkedHashMap<>();
     private final Map<Class<?>, List<System>> cache = new LinkedHashMap<>();
 
-    private final World world;
+    private final Scene scene;
 
-    public SystemManager(World world) {
-        this.world = world;
+    public SystemManager(Scene scene) {
+        this.scene = scene;
     }
 
     public <T extends System> T addSystem(T system) {
@@ -25,14 +25,14 @@ public class SystemManager implements Disposable {
         if (systems.containsKey(type)) throw new RuntimeException("Duplicate System: " + type);
         systems.put(type, system);
         notifyChange();
-        if (system instanceof System.AfterAdded) ((System.AfterAdded) system).afterAdded(world);
+        if (system instanceof System.AfterAdded) ((System.AfterAdded) system).afterAdded(scene);
         return system;
     }
     public <T extends System> T removeSystem(Class<T> type) {
         if (!systems.containsKey(type)) throw new RuntimeException("No Such System: " + type);
         T removed = (T) systems.remove(type);
         notifyChange();
-        if (removed instanceof System.AfterRemoved) ((System.AfterRemoved) removed).afterRemoved(world);
+        if (removed instanceof System.AfterRemoved) ((System.AfterRemoved) removed).afterRemoved(scene);
         return removed;
     }
     public <T extends System> T getSystem(Class<T> type) {

@@ -14,7 +14,7 @@ public class ScriptSystem extends BaseSystem implements EntityListener, System.A
     @Override
     public void afterEntityAdded(Entity entity) {
         for (OnStart script : entity.getComponents(OnStart.class)) {
-            script.start(world, entity);
+            script.start(scene, entity);
         }
     }
 
@@ -27,16 +27,16 @@ public class ScriptSystem extends BaseSystem implements EntityListener, System.A
     public void update(float deltaTime) {
         for (Entity entity : getEntities()) {
             for (OnUpdate script : entity.getComponents(OnUpdate.class)) {
-                script.update(world, entity);
+                script.update(scene, entity);
             }
         }
     }
 
     public interface OnStart extends Script {
-        void start(World world, Entity entity);
+        void start(Scene scene, Entity entity);
     }
 
     public interface OnUpdate extends Script {
-        void update(World world, Entity entity);
+        void update(Scene scene, Entity entity);
     }
 }

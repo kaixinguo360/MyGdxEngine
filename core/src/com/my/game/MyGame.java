@@ -4,15 +4,15 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.physics.bullet.Bullet;
-import com.my.game.builder.WorldBuilder;
+import com.my.game.builder.SceneBuilder;
 import com.my.utils.base.BaseGame;
 import com.my.utils.world.AssetsManager;
-import com.my.utils.world.World;
+import com.my.utils.world.Scene;
 import com.my.utils.world.sys.KeyInputSystem;
 
 public class MyGame extends BaseGame {
 
-    private World world;
+    private Scene scene;
     private InputAdapter inputAdapter;
 
     @Override
@@ -29,8 +29,8 @@ public class MyGame extends BaseGame {
         System.out.println("doneLoading");
 
         // ----- Create Models ----- //
-        WorldBuilder.skyModel = assetManager.get("obj/sky.g3db", Model.class);
-        WorldBuilder.skyModel.nodes.get(0).scale.scl(20);
+        SceneBuilder.skyModel = assetManager.get("obj/sky.g3db", Model.class);
+        SceneBuilder.skyModel.nodes.get(0).scale.scl(20);
 
         // ----- Init Bullet ----- //
         Bullet.init();
@@ -42,38 +42,38 @@ public class MyGame extends BaseGame {
                 if (keycode == Input.Keys.ENTER) {
 
                     // ----- Get Config ----- //
-                    String yamlConfig = LoadUtil.dumpWorldToYaml(world);
+                    String yamlConfig = LoadUtil.dumpSceneToYaml(scene);
                     System.out.println(yamlConfig);
 
-                    // ----- Load World ----- //
-                    world = LoadUtil.loadWorldFromYaml(yamlConfig);
-                    addDisposable(world);
-                    world.getSystemManager().getSystem(KeyInputSystem.class).getInputMultiplexer().addProcessor(inputAdapter);
+                    // ----- Load Scene ----- //
+                    scene = LoadUtil.loadSceneFromYaml(yamlConfig);
+                    addDisposable(scene);
+                    scene.getSystemManager().getSystem(KeyInputSystem.class).getInputMultiplexer().addProcessor(inputAdapter);
                 }
                 return false;
             }
         };
 
         // ----- Init AssetsManager ----- //
-        WorldBuilder.initAllAssets(LoadUtil.assetsManager);
+        SceneBuilder.initAllAssets(LoadUtil.assetsManager);
 
         // ----- Init LoaderManager ----- //
         LoadUtil.loaderManager.getCommonContext().setEnvironment(AssetsManager.CONTEXT_FIELD_NAME, LoadUtil.assetsManager);
 
-        // ----- Create & Save World ----- //
-        world = WorldBuilder.createWorld(LoadUtil.assetsManager);
-//        addDisposable(world);
-//        LoadUtil.saveWorldToFile(world, "world.yml");
+        // ----- Create & Save Scene ----- //
+        scene = SceneBuilder.createScene(LoadUtil.assetsManager);
+//        addDisposable(scene);
+//        LoadUtil.dumpSceneToFile(scene, "scene.yml");
 //
-//        // ----- Load World ----- //
-//        world = LoadUtil.loadWorldFromFile("world.yml");
-//        addDisposable(world);
+//        // ----- Load Scene ----- //
+//        scene = LoadUtil.loadSceneFromFile("scene.yml");
+//        addDisposable(scene);
 
-        world.getSystemManager().getSystem(KeyInputSystem.class).getInputMultiplexer().addProcessor(inputAdapter);
+        scene.getSystemManager().getSystem(KeyInputSystem.class).getInputMultiplexer().addProcessor(inputAdapter);
     }
 
     @Override
     protected void myRender() {
-        world.update(1 / 60f);
+        scene.update(1 / 60f);
     }
 }

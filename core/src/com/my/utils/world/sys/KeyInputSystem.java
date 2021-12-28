@@ -5,8 +5,8 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.my.utils.world.BaseSystem;
 import com.my.utils.world.Entity;
+import com.my.utils.world.Scene;
 import com.my.utils.world.System;
-import com.my.utils.world.World;
 import com.my.utils.world.com.Script;
 import lombok.Getter;
 
@@ -22,7 +22,7 @@ public class KeyInputSystem extends BaseSystem implements System.OnStart {
             public boolean keyDown(int keycode) {
                 for (Entity entity : KeyInputSystem.this.getEntities()) {
                     for (OnKeyDown script : entity.getComponents(OnKeyDown.class)) {
-                        script.keyDown(world, entity, keycode);
+                        script.keyDown(scene, entity, keycode);
                     }
                 }
                 return false;
@@ -36,11 +36,11 @@ public class KeyInputSystem extends BaseSystem implements System.OnStart {
     }
 
     @Override
-    public void start(World world) {
+    public void start(Scene scene) {
         Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
     public interface OnKeyDown extends Script {
-        void keyDown(World world, Entity entity, int keycode);
+        void keyDown(Scene scene, Entity entity, int keycode);
     }
 }

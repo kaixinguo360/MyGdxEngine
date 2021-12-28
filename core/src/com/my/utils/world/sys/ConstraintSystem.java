@@ -20,8 +20,8 @@ public class ConstraintSystem extends BaseSystem implements EntityListener, Syst
     private btDynamicsWorld dynamicsWorld;
 
     @Override
-    public void start(World world) {
-        dynamicsWorld = world.getSystemManager().getSystem(PhysicsSystem.class).dynamicsWorld;
+    public void start(Scene scene) {
+        dynamicsWorld = scene.getSystemManager().getSystem(PhysicsSystem.class).dynamicsWorld;
     }
 
     @Override
@@ -48,7 +48,7 @@ public class ConstraintSystem extends BaseSystem implements EntityListener, Syst
 
     @Override
     public void afterEntityRemoved(Entity entity) {
-        btDynamicsWorld dynamicsWorld = world.getSystemManager().getSystem(PhysicsSystem.class).dynamicsWorld;
+        btDynamicsWorld dynamicsWorld = scene.getSystemManager().getSystem(PhysicsSystem.class).dynamicsWorld;
         Iterator<ConstraintInner> it = constraintInners.iterator();
         while (it.hasNext()) {
             ConstraintInner constraintInner = it.next();
@@ -65,7 +65,7 @@ public class ConstraintSystem extends BaseSystem implements EntityListener, Syst
 
     @Override
     public void dispose() {
-        btDynamicsWorld dynamicsWorld = world.getSystemManager().getSystem(PhysicsSystem.class).dynamicsWorld;
+        btDynamicsWorld dynamicsWorld = scene.getSystemManager().getSystem(PhysicsSystem.class).dynamicsWorld;
         Iterator<ConstraintInner> it = constraintInners.iterator();
         while (it.hasNext()) {
             ConstraintInner constraintInner = it.next();

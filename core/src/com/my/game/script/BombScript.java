@@ -29,9 +29,9 @@ public class BombScript extends CollisionHandler {
         if (checkVelocity(self, target)) {
             System.out.println("Bomb! " + self.getId() + " ==> " + target.getId());
             Matrix4 selfTransform = self.getComponent(Position.class).getLocalTransform();
-            Entity entity = explosionPrefab.newInstance(LoadUtil.loaderManager, world);
+            Entity entity = explosionPrefab.newInstance(LoadUtil.loaderManager, scene);
             entity.getComponent(Position.class).setLocalTransform(selfTransform);
-            world.getEntityManager().getBatch().removeEntity(self.getId());
+            scene.getEntityManager().getBatch().removeEntity(self.getId());
         }
     }
 

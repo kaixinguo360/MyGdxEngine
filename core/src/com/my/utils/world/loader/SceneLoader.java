@@ -30,19 +30,19 @@ import java.util.Map;
  *         config: ...
  * </pre>
  */
-public class WorldLoader implements Loader {
+public class SceneLoader implements Loader {
 
     @Override
     public <E, T> T load(E config, Class<T> type, Context context) {
         AssetsManager assetsManager = context.getEnvironment(AssetsManager.CONTEXT_FIELD_NAME, AssetsManager.class);
-        World world = new World(assetsManager);
+        Scene scene = new Scene(assetsManager);
 
-        context.setEnvironment(EntityManager.CONTEXT_FIELD_NAME, world.getEntityManager());
+        context.setEnvironment(EntityManager.CONTEXT_FIELD_NAME, scene.getEntityManager());
 
         try {
             Map<String, Object> map = (Map<String, Object>) config;
 
-            SystemManager systemManager = world.getSystemManager();
+            SystemManager systemManager = scene.getSystemManager();
             List<Map<String, Object>> systems = (List<Map<String, Object>>) map.get("systems");
             if (systems != null) {
                 for (Map<String, Object> system : systems) {
@@ -51,9 +51,9 @@ public class WorldLoader implements Loader {
                     systemManager.addSystem(context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).load(systemConfig, systemType, context));
                 }
             }
-            world.start();
+            scene.start();
 
-            EntityManager entityManager = world.getEntityManager();
+            EntityManager entityManager = scene.getEntityManager();
             List<Map<String, Object>> entities = (List<Map<String, Object>>) map.get("entities");
             if (entities != null) {
                 for (Map<String, Object> entity : entities) {
@@ -66,18 +66,18 @@ public class WorldLoader implements Loader {
             throw new RuntimeException("No such class error: " + e.getMessage(), e);
         }
 
-        return (T) world;
+        return (T) scene;
     }
 
     @Override
     public <E, T> E dump(T obj, Class<E> configType, Context context) {
-        World world = (World) obj;
+        Scene scene = (Scene) obj;
         Map<String, Object> map = new LinkedHashMap<>();
 
-        context.setEnvironment(AssetsManager.CONTEXT_FIELD_NAME, world.getAssetsManager());
-        context.setEnvironment(EntityManager.CONTEXT_FIELD_NAME, world.getEntityManager());
+        context.setEnvironment(AssetsManager.CONTEXT_FIELD_NAME, scene.getAssetsManager());
+        context.setEnvironment(EntityManager.CONTEXT_FIELD_NAME, scene.getEntityManager());
 
-        Map<String, Entity> entities = world.getEntityManager().getEntities();
+        Map<String, Entity> entities = scene.getEntityManager().getEntities();
         if (entities.size() > 0) {
             List<Map<String, Object>> entityList = new ArrayList<>();
             for (Map.Entry<String, Entity> entry : entities.entrySet()) {
@@ -90,7 +90,7 @@ public class WorldLoader implements Loader {
             map.put("entities", entityList);
         }
 
-        Map<Class<?>, System> systems = world.getSystemManager().getSystems();
+        Map<Class<?>, System> systems = scene.getSystemManager().getSystems();
         if (systems.size() > 0) {
             List<Map<String, Object>> systemList = new ArrayList<>();
             for (System system : systems.values()) {
@@ -107,6 +107,6 @@ public class WorldLoader implements Loader {
 
     @Override
     public <E, T> boolean handleable(Class<E> configType, Class<T> targetType) {
-        return (Map.class.isAssignableFrom(configType)) && (targetType == World.class);
+        return (Map.class.isAssignableFrom(configType)) && (targetType == Scene.class);
     }
 }

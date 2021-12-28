@@ -2,7 +2,7 @@ package com.my.utils.world.com;
 
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.my.utils.world.Entity;
-import com.my.utils.world.World;
+import com.my.utils.world.Scene;
 import com.my.utils.world.sys.PhysicsSystem;
 import com.my.utils.world.sys.ScriptSystem;
 import lombok.AllArgsConstructor;
@@ -17,7 +17,7 @@ public abstract class Motion implements ScriptSystem.OnStart, PhysicsSystem.OnFi
     protected Position position;
 
     @Override
-    public void start(World world, Entity entity) {
+    public void start(Scene scene, Entity entity) {
         if (!entity.contain(RigidBody.class)) throw new RuntimeException("Required component not found: RigidBody");
         if (!entity.contain(Position.class)) throw new RuntimeException("Required component not found: Position");
         this.entity = entity;
@@ -26,7 +26,7 @@ public abstract class Motion implements ScriptSystem.OnStart, PhysicsSystem.OnFi
     }
 
     @Override
-    public void fixedUpdate(World world, btDynamicsWorld dynamicsWorld, Entity entity) {
+    public void fixedUpdate(Scene scene, btDynamicsWorld dynamicsWorld, Entity entity) {
         this.update();
     }
 

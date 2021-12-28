@@ -3,15 +3,15 @@ package com.my.utils.world;
 public interface System extends Loadable {
 
     interface AfterAdded extends System {
-        void afterAdded(World world);
+        void afterAdded(Scene scene);
     }
 
     interface AfterRemoved extends System {
-        void afterRemoved(World world);
+        void afterRemoved(Scene scene);
     }
 
     interface OnStart extends System {
-        void start(World world);
+        void start(Scene scene);
     }
 
     interface OnUpdate extends System {

@@ -8,7 +8,7 @@ import com.my.game.LoadUtil;
 import com.my.utils.world.Config;
 import com.my.utils.world.Entity;
 import com.my.utils.world.Prefab;
-import com.my.utils.world.World;
+import com.my.utils.world.Scene;
 import com.my.utils.world.com.*;
 import com.my.utils.world.sys.CameraSystem;
 import com.my.utils.world.sys.PhysicsSystem;
@@ -25,7 +25,7 @@ public class EmitterScript implements ScriptSystem.OnStart {
     @Config
     public boolean disabled;
 
-    protected World world;
+    protected Scene scene;
     protected PhysicsSystem physicsSystem;
 
     protected Entity main;
@@ -34,9 +34,9 @@ public class EmitterScript implements ScriptSystem.OnStart {
     protected List<Entity> parts = new ArrayList<>();
 
     @Override
-    public void start(World world, Entity entity) {
-        this.world = world;
-        this.physicsSystem = world.getSystemManager().getSystem(PhysicsSystem.class);
+    public void start(Scene scene, Entity entity) {
+        this.scene = scene;
+        this.physicsSystem = scene.getSystemManager().getSystem(PhysicsSystem.class);
     }
 
     public void fire(Prefab prefab, Vector3 velocity, Vector3 position, float random) {
@@ -52,7 +52,7 @@ public class EmitterScript implements ScriptSystem.OnStart {
         tmpV1.set(getMainBody().getLinearVelocity());
         tmpV1.add(tmpV2.set(velocity).mul(tmpQ));
 
-        Entity entity = prefab.newInstance(LoadUtil.loaderManager, world);
+        Entity entity = prefab.newInstance(LoadUtil.loaderManager, scene);
         entity.getComponent(Position.class).setLocalTransform(tmpM);
         btRigidBody body = entity.getComponent(RigidBody.class).body;
 
@@ -104,7 +104,7 @@ public class EmitterScript implements ScriptSystem.OnStart {
             camera.endX = 0.3f;
             camera.endY = 1;
         }
-        world.getSystemManager().getSystem(CameraSystem.class).updateCameras();
+        scene.getSystemManager().getSystem(CameraSystem.class).updateCameras();
     }
 
     public void changeCameraFollowType() {

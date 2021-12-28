@@ -7,22 +7,22 @@ import java.util.Collection;
 
 public abstract class BaseSystem implements System, Disposable, System.AfterAdded {
 
-    protected World world;
+    protected Scene scene;
     private EntityFilter entityFilter;
 
     @Override
-    public void afterAdded(World world) {
-        this.world = world;
+    public void afterAdded(Scene scene) {
+        this.scene = scene;
         this.entityFilter = BaseSystem.this::isHandleable;
-        world.getEntityManager().addFilter(entityFilter);
+        scene.getEntityManager().addFilter(entityFilter);
         if (this instanceof EntityListener) {
-            world.getEntityManager().addListener(entityFilter, (EntityListener) this);
+            scene.getEntityManager().addListener(entityFilter, (EntityListener) this);
         }
     }
 
     // ----- Entities ----- //
     protected Collection<Entity> getEntities() {
-        return world.getEntityManager().getEntitiesByFilter(entityFilter);
+        return scene.getEntityManager().getEntitiesByFilter(entityFilter);
     }
     protected abstract boolean isHandleable(Entity entity);
 

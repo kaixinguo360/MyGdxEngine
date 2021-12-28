@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.my.utils.world.Config;
 import com.my.utils.world.Entity;
 import com.my.utils.world.Prefab;
-import com.my.utils.world.World;
+import com.my.utils.world.Scene;
 import com.my.utils.world.com.Camera;
 import com.my.utils.world.sys.KeyInputSystem;
 import com.my.utils.world.sys.ScriptSystem;
@@ -26,8 +26,8 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
     private final static Vector3 bombOffset = new Vector3(0, -2, 0);
 
     @Override
-    public void start(World world, Entity entity) {
-        super.start(world, entity);
+    public void start(Scene scene, Entity entity) {
+        super.start(scene, entity);
 
         main = entity.findChildByName("body");
         this.camera = main.getComponent(Camera.class);
@@ -57,7 +57,7 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
     }
 
     @Override
-    public void update(World world, Entity entity) {
+    public void update(Scene scene, Entity entity) {
         if (camera != null && !disabled) {
             float v1 = 1f;
             float v2 = 0.5f;
@@ -79,7 +79,7 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
     }
 
     @Override
-    public void keyDown(World world, Entity entity, int keycode) {
+    public void keyDown(Scene scene, Entity entity, int keycode) {
         if (camera == null) return;
         if (keycode == Input.Keys.TAB) changeCamera();
         if (keycode == Input.Keys.SHIFT_LEFT && !disabled) changeCameraFollowType();

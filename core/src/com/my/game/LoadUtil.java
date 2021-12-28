@@ -2,7 +2,7 @@ package com.my.game;
 
 import com.my.utils.world.AssetsManager;
 import com.my.utils.world.LoaderManager;
-import com.my.utils.world.World;
+import com.my.utils.world.Scene;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
@@ -14,8 +14,8 @@ public class LoadUtil {
 
     public static final AssetsManager assetsManager = new AssetsManager();
 
-    public static void dumpWorldToFile(World world, String path) {
-        String yamlConfig = dumpWorldToYaml(world);
+    public static void dumpSceneToFile(Scene scene, String path) {
+        String yamlConfig = dumpSceneToYaml(scene);
         try {
             BufferedWriter out = new BufferedWriter(new FileWriter(path));
             out.write(yamlConfig);
@@ -25,7 +25,7 @@ public class LoadUtil {
         }
     }
 
-    public static World loadWorldFromFile(String path) {
+    public static Scene loadSceneFromFile(String path) {
         String yamlConfig;
         try {
             BufferedReader in = new BufferedReader(new FileReader(path));
@@ -40,26 +40,26 @@ public class LoadUtil {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return loadWorldFromYaml(yamlConfig);
+        return loadSceneFromYaml(yamlConfig);
     }
 
-    public static String dumpWorldToYaml(World world) {
-        Map config = dumpWorld(world);
+    public static String dumpSceneToYaml(Scene scene) {
+        Map config = dumpScene(scene);
         Yaml yaml = new Yaml();
         return yaml.dump(config);
     }
 
-    public static World loadWorldFromYaml(String yamlConfig) {
+    public static Scene loadSceneFromYaml(String yamlConfig) {
         Yaml yaml = new Yaml();
         Map<String, Object> loadedConfig = yaml.loadAs(yamlConfig, Map.class);
-        return loadWorld(loadedConfig);
+        return loadScene(loadedConfig);
     }
 
-    public static Map dumpWorld(World world) {
-        return loaderManager.dump(world, Map.class);
+    public static Map dumpScene(Scene scene) {
+        return loaderManager.dump(scene, Map.class);
     }
 
-    public static World loadWorld(Map config) {
-        return loaderManager.load(config, World.class);
+    public static Scene loadScene(Map config) {
+        return loaderManager.load(config, Scene.class);
     }
 }

@@ -20,7 +20,7 @@ public class LoaderManager {
     protected final LinkedContext commonContext = new LinkedContext();
 
     public LoaderManager() {
-        loaders.add(new WorldLoader());
+        loaders.add(new SceneLoader());
         loaders.add(new Matrix4Loader());
         loaders.add(new Vector3Loader());
         loaders.add(new QuaternionLoader());

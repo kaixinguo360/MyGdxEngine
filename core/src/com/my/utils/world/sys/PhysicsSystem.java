@@ -25,7 +25,7 @@ import java.util.Map;
 
 public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Disposable {
 
-    protected World world;
+    protected Scene scene;
 
     @Config
     public int maxSubSteps = 5;
@@ -83,9 +83,9 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
     }
 
     @Override
-    public void afterAdded(World world) {
-        this.world = world;
-        EntityManager entityManager = world.getEntityManager();
+    public void afterAdded(Scene scene) {
+        this.scene = scene;
+        EntityManager entityManager = scene.getEntityManager();
         entityManager.addListener(rigidBodyListener, rigidBodyListener);
         entityManager.addListener(colliderListener, colliderListener);
         entityManager.addFilter(onFixedUpdateFilter);
@@ -346,16 +346,16 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
 
         @Override
         public void onInternalTick(btDynamicsWorld dynamicsWorld, float timeStep) {
-            for (Entity entity : world.getEntityManager().getEntitiesByFilter(onFixedUpdateFilter)) {
+            for (Entity entity : scene.getEntityManager().getEntitiesByFilter(onFixedUpdateFilter)) {
                 for (OnFixedUpdate script : entity.getComponents(OnFixedUpdate.class)) {
-                    script.fixedUpdate(world, dynamicsWorld, entity);
+                    script.fixedUpdate(scene, dynamicsWorld, entity);
                 }
             }
         }
     }
 
     public interface OnFixedUpdate extends Script {
-        void fixedUpdate(World world, btDynamicsWorld dynamicsWorld, Entity entity);
+        void fixedUpdate(Scene scene, btDynamicsWorld dynamicsWorld, Entity entity);
     }
 
     // ----- Dispose ----- //

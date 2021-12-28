@@ -11,7 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.my.utils.world.Config;
 import com.my.utils.world.Entity;
-import com.my.utils.world.World;
+import com.my.utils.world.Scene;
 import com.my.utils.world.sys.ScriptSystem;
 
 import java.util.HashMap;
@@ -31,7 +31,7 @@ public class GUIScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
     private EmitterScript emitterScript;
 
     @Override
-    public void start(World world, Entity entity) {
+    public void start(Scene scene, Entity entity) {
 
         emitterScript = targetEntity.getComponent(AircraftScript.class);
         this.shapeRenderer = new ShapeRenderer();
@@ -65,7 +65,7 @@ public class GUIScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
     }
 
     @Override
-    public void update(World world, Entity entity) {
+    public void update(Scene scene, Entity entity) {
         float width = Gdx.graphics.getWidth();
         float height = Gdx.graphics.getHeight();
 

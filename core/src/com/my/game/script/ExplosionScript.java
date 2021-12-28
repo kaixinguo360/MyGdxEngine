@@ -4,7 +4,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.utils.world.Config;
 import com.my.utils.world.Entity;
-import com.my.utils.world.World;
+import com.my.utils.world.Scene;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.RigidBody;
 import com.my.utils.world.sys.PhysicsSystem;
@@ -17,12 +17,12 @@ public class ExplosionScript implements ScriptSystem.OnStart, PhysicsSystem.OnCo
     @Config
     public float maxForce = 10000;
 
-    private World world;
+    private Scene scene;
     private Entity self;
 
     @Override
-    public void start(World world, Entity entity) {
-        this.world = world;
+    public void start(Scene scene, Entity entity) {
+        this.scene = scene;
         this.self = entity;
     }
 
@@ -50,6 +50,6 @@ public class ExplosionScript implements ScriptSystem.OnStart, PhysicsSystem.OnCo
             Matrix4Pool.free(tmpM);
         }
 
-        world.getEntityManager().getBatch().removeEntity(self.getId());
+        scene.getEntityManager().getBatch().removeEntity(self.getId());
     }
 }
