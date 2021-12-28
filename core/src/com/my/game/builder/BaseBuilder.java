@@ -1,15 +1,11 @@
 package com.my.game.builder;
 
 import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
 import com.my.utils.world.EntityManager;
 import com.my.utils.world.Scene;
-import com.my.utils.world.com.Position;
-import com.my.utils.world.com.Render;
-import com.my.utils.world.com.RenderModel;
-import com.my.utils.world.com.RigidBody;
+import com.my.utils.world.com.*;
 
 public class BaseBuilder {
 
@@ -33,8 +29,8 @@ public class BaseBuilder {
             RenderModel renderModel = assetsManager.getAsset(className, RenderModel.class);
             entity.addComponent(new Render(renderModel));
         }
-        if (assetsManager.hasAsset(className, btRigidBody.btRigidBodyConstructionInfo.class)) {
-            btRigidBody.btRigidBodyConstructionInfo rigidBodyConfig = assetsManager.getAsset(className, btRigidBody.btRigidBodyConstructionInfo.class);
+        if (assetsManager.hasAsset(className, RigidBodyConfig.class)) {
+            RigidBodyConfig rigidBodyConfig = assetsManager.getAsset(className, RigidBodyConfig.class);
             entity.addComponent(new RigidBody(rigidBodyConfig));
         }
         return entity;

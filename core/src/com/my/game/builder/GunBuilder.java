@@ -4,13 +4,12 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
-import com.badlogic.gdx.physics.bullet.collision.btCylinderShape;
-import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.my.game.constraint.ConnectConstraint;
 import com.my.game.constraint.HingeConstraint;
 import com.my.game.model.BoxModel;
 import com.my.game.model.CylinderModel;
+import com.my.game.rigidbody.BoxConfig;
+import com.my.game.rigidbody.CylinderConfig;
 import com.my.game.script.GunController;
 import com.my.game.script.GunScript;
 import com.my.utils.world.AssetsManager;
@@ -20,7 +19,7 @@ import com.my.utils.world.Prefab;
 import com.my.utils.world.com.ConstraintController;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.RenderModel;
-import com.my.utils.world.sys.PhysicsSystem;
+import com.my.utils.world.com.RigidBodyConfig;
 
 public class GunBuilder extends BaseBuilder {
 
@@ -30,8 +29,8 @@ public class GunBuilder extends BaseBuilder {
         assetsManager.addAsset("barrel", RenderModel.class, new BoxModel(1, 1, 5, Color.GREEN, attributes));
         assetsManager.addAsset("gunRotate", RenderModel.class, new CylinderModel(1, 1, 1, 8, Color.CYAN, attributes));
 
-        assetsManager.addAsset("barrel", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btBoxShape(new Vector3(0.5f,0.5f,2.5f)), 5f));
-        assetsManager.addAsset("gunRotate", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btCylinderShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
+        assetsManager.addAsset("barrel", RigidBodyConfig.class, new BoxConfig(new Vector3(0.5f,0.5f,2.5f), 5f));
+        assetsManager.addAsset("gunRotate", RigidBodyConfig.class, new CylinderConfig(new Vector3(0.5f,0.5f,0.5f), 50f));
     }
 
     public GunBuilder(AssetsManager assetsManager, EntityManager entityManager) {

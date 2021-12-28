@@ -4,17 +4,15 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
-import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
-import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.my.game.constraint.ConnectConstraint;
 import com.my.game.model.BoxModel;
+import com.my.game.rigidbody.BoxConfig;
 import com.my.utils.world.AssetsManager;
 import com.my.utils.world.Entity;
 import com.my.utils.world.EntityManager;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.RenderModel;
-import com.my.utils.world.sys.PhysicsSystem;
+import com.my.utils.world.com.RigidBodyConfig;
 import com.my.utils.world.util.pool.Matrix4Pool;
 
 public class ObjectBuilder extends BaseBuilder {
@@ -25,11 +23,8 @@ public class ObjectBuilder extends BaseBuilder {
         assetsManager.addAsset("box", RenderModel.class, new BoxModel(1, 1, 1, Color.RED, attributes));
         assetsManager.addAsset("box1", RenderModel.class, new BoxModel(2, 1, 1, Color.LIGHT_GRAY, attributes));
 
-        assetsManager.addAsset("box", btCollisionShape.class, new btBoxShape(new Vector3(0.5f,0.5f,0.5f)));
-        assetsManager.addAsset("box1", btCollisionShape.class, new btBoxShape(new Vector3(1,0.5f,0.5f)));
-
-        assetsManager.addAsset("box", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(assetsManager.getAsset("box", btCollisionShape.class), 50f));
-        assetsManager.addAsset("box1", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(assetsManager.getAsset("box1", btCollisionShape.class), 50f));
+        assetsManager.addAsset("box", RigidBodyConfig.class, new BoxConfig(new Vector3(0.5f,0.5f,0.5f), 50f));
+        assetsManager.addAsset("box1", RigidBodyConfig.class, new BoxConfig(new Vector3(1,0.5f,0.5f), 50f));
     }
 
     public ObjectBuilder(AssetsManager assetsManager, EntityManager entityManager) {

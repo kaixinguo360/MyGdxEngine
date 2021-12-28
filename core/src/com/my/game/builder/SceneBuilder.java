@@ -8,19 +8,15 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
-import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.my.game.constraint.HingeConstraint;
 import com.my.game.model.BoxModel;
 import com.my.game.model.ExternalModel;
+import com.my.game.rigidbody.BoxConfig;
 import com.my.game.script.ExitScript;
 import com.my.game.script.GUIScript;
 import com.my.game.script.GunScript;
 import com.my.utils.world.*;
-import com.my.utils.world.com.Camera;
-import com.my.utils.world.com.Position;
-import com.my.utils.world.com.Render;
-import com.my.utils.world.com.RenderModel;
+import com.my.utils.world.com.*;
 import com.my.utils.world.sys.*;
 
 public class SceneBuilder {
@@ -131,7 +127,7 @@ public class SceneBuilder {
         assetsManager.getAsset("sky", RenderModel.class).model.nodes.get(0).scale.scl(20);
         assetsManager.addAsset("ground", RenderModel.class, new BoxModel(10000f, 0.01f, 20000f, Color.WHITE, attributes));
 
-        assetsManager.addAsset("ground", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btBoxShape(new Vector3(5000,0.005f,10000)), 0f));
+        assetsManager.addAsset("ground", RigidBodyConfig.class, new BoxConfig(new Vector3(5000,0.005f,10000), 0f));
 
         Environment environment = new Environment();
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));

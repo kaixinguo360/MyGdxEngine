@@ -4,15 +4,14 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
-import com.badlogic.gdx.physics.bullet.collision.btConeShape;
-import com.badlogic.gdx.physics.bullet.collision.btCylinderShape;
-import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.my.game.constraint.ConnectConstraint;
 import com.my.game.constraint.HingeConstraint;
 import com.my.game.model.BoxModel;
 import com.my.game.model.ConeModel;
 import com.my.game.model.CylinderModel;
+import com.my.game.rigidbody.BoxConfig;
+import com.my.game.rigidbody.ConeConfig;
+import com.my.game.rigidbody.CylinderConfig;
 import com.my.game.script.AircraftController;
 import com.my.game.script.AircraftScript;
 import com.my.game.script.motion.Lift;
@@ -24,7 +23,7 @@ import com.my.utils.world.Prefab;
 import com.my.utils.world.com.ConstraintController;
 import com.my.utils.world.com.Position;
 import com.my.utils.world.com.RenderModel;
-import com.my.utils.world.sys.PhysicsSystem;
+import com.my.utils.world.com.RigidBodyConfig;
 
 public class AircraftBuilder extends BaseBuilder {
 
@@ -36,10 +35,10 @@ public class AircraftBuilder extends BaseBuilder {
         assetsManager.addAsset("rotate", RenderModel.class, new CylinderModel(1, 1, 1, 8, Color.CYAN, attributes));
         assetsManager.addAsset("engine", RenderModel.class, new ConeModel(0.9f, 1, 0.9f, 18, Color.YELLOW, attributes));
 
-        assetsManager.addAsset("body", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btBoxShape(new Vector3(0.5f,0.5f,2.5f)), 50f));
-        assetsManager.addAsset("wing", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btBoxShape(new Vector3(1f,0.1f,0.5f)), 25f));
-        assetsManager.addAsset("rotate", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btCylinderShape(new Vector3(0.5f,0.5f,0.5f)), 50f));
-        assetsManager.addAsset("engine", btRigidBody.btRigidBodyConstructionInfo.class, PhysicsSystem.getRigidBodyConfig(new btConeShape(0.45f,1), 50));
+        assetsManager.addAsset("body", RigidBodyConfig.class, new BoxConfig(new Vector3(0.5f,0.5f,2.5f), 50f));
+        assetsManager.addAsset("wing", RigidBodyConfig.class, new BoxConfig(new Vector3(1f,0.1f,0.5f), 25f));
+        assetsManager.addAsset("rotate", RigidBodyConfig.class, new CylinderConfig(new Vector3(0.5f,0.5f,0.5f), 50f));
+        assetsManager.addAsset("engine", RigidBodyConfig.class, new ConeConfig(0.45f,1, 50));
     }
 
     public AircraftBuilder(AssetsManager assetsManager, EntityManager entityManager) {
