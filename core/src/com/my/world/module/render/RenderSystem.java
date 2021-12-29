@@ -4,23 +4,28 @@ import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.math.Vector3;
+import com.my.world.core.Disposable;
 import com.my.world.core.Entity;
 import com.my.world.gdx.Vector3Pool;
 import com.my.world.module.common.BaseSystem;
 import com.my.world.module.common.Position;
 
-public class RenderSystem extends BaseSystem {
+public class RenderSystem extends BaseSystem implements Disposable {
 
     protected ModelBatch batch;
 
     public RenderSystem() {
         batch = new ModelBatch();
-        addDisposable(batch);
     }
 
     @Override
     public boolean isHandleable(Entity entity) {
         return entity.contain(Position.class, Render.class);
+    }
+
+    @Override
+    public void dispose() {
+        batch.dispose();
     }
 
     // ----- Custom ----- //
@@ -52,5 +57,4 @@ public class RenderSystem extends BaseSystem {
         Vector3Pool.free(tmp);
         return b;
     }
-
 }

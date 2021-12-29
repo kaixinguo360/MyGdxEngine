@@ -2,10 +2,8 @@ package com.my.world.module.physics;
 
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
-import com.my.world.core.Entity;
-import com.my.world.core.EntityListener;
-import com.my.world.core.Scene;
 import com.my.world.core.System;
+import com.my.world.core.*;
 import com.my.world.module.common.BaseSystem;
 
 import java.util.ArrayList;
@@ -15,7 +13,7 @@ import java.util.List;
 import static com.badlogic.gdx.physics.bullet.dynamics.btConstraintParams.BT_CONSTRAINT_CFM;
 import static com.badlogic.gdx.physics.bullet.dynamics.btConstraintParams.BT_CONSTRAINT_ERP;
 
-public class ConstraintSystem extends BaseSystem implements EntityListener, System.OnStart {
+public class ConstraintSystem extends BaseSystem implements EntityListener, System.OnStart, Disposable {
 
     private final List<ConstraintInner> constraintInners = new ArrayList<>();
     private btDynamicsWorld dynamicsWorld;
@@ -77,7 +75,6 @@ public class ConstraintSystem extends BaseSystem implements EntityListener, Syst
             }
             it.remove();
         }
-        super.dispose();
     }
 
     private static class ConstraintInner {

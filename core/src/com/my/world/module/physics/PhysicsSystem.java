@@ -9,10 +9,9 @@ import com.badlogic.gdx.physics.bullet.collision.*;
 import com.badlogic.gdx.physics.bullet.dynamics.*;
 import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Disposable;
 import com.my.world.core.System;
 import com.my.world.core.*;
+import com.my.world.gdx.DisposableManager;
 import com.my.world.gdx.Matrix4Pool;
 import com.my.world.gdx.Vector3Pool;
 import com.my.world.module.common.Position;
@@ -37,49 +36,51 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
     protected DebugDrawer debugDrawer;
     protected ClosestRayResultCallback rayTestCB;
 
+    protected final DisposableManager disposableManager = new DisposableManager();
+
     public PhysicsSystem() {
 
         // ----- Create DynamicsWorld ----- //
 
         // Create collisionConfig
         btCollisionConfiguration collisionConfig = new btDefaultCollisionConfiguration();
-        addDisposable(collisionConfig);
+        disposableManager.addDisposable(collisionConfig);
 
         // Create dispatcher
         btCollisionDispatcher dispatcher = new btCollisionDispatcher(collisionConfig);
         btGImpactCollisionAlgorithm.registerAlgorithm(dispatcher);
-        addDisposable(dispatcher);
+        disposableManager.addDisposable(dispatcher);
 
         // Create broadphase
         btDbvtBroadphase broadphase = new btDbvtBroadphase();
-        addDisposable(broadphase);
+        disposableManager.addDisposable(broadphase);
 
         // Create constraintSolver
         btConstraintSolver constraintSolver = new btSequentialImpulseConstraintSolver();
-        addDisposable(constraintSolver);
+        disposableManager.addDisposable(constraintSolver);
 
         // Create dynamicsWorld
         dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, constraintSolver, collisionConfig);
         dynamicsWorld.setGravity(new Vector3(0, -10f, 0));
-        addDisposable(dynamicsWorld);
+        disposableManager.addDisposable(dynamicsWorld);
 
         // Create debugDrawer
         debugDrawer = new DebugDrawer();
         debugDrawer.setDebugMode(btIDebugDraw.DebugDrawModes.DBG_MAX_DEBUG_DRAW_MODE);
         dynamicsWorld.setDebugDrawer(debugDrawer);
-        addDisposable(debugDrawer);
+        disposableManager.addDisposable(debugDrawer);
 
         // Create rayTestCB
         rayTestCB = new ClosestRayResultCallback(Vector3.Zero, Vector3.Z);
-        addDisposable(rayTestCB);
+        disposableManager.addDisposable(rayTestCB);
 
         // OnCollision Script
         contactListener = new ContactListener();
-        addDisposable(contactListener);
+        disposableManager.addDisposable(contactListener);
 
         // OnFixedUpdate Script
         preTickListener = new PreTickListener(dynamicsWorld);
-        addDisposable(preTickListener);
+        disposableManager.addDisposable(preTickListener);
     }
 
     @Override
@@ -103,6 +104,11 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
         }
         Matrix4Pool.free(tmpM);
         dynamicsWorld.stepSimulation(deltaTime, maxSubSteps, fixedTimeStep);
+    }
+
+    @Override
+    public void dispose() {
+        this.disposableManager.dispose();
     }
 
     // ----- Custom ----- //
@@ -356,21 +362,6 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
 
     public interface OnFixedUpdate extends Script {
         void fixedUpdate(Scene scene, btDynamicsWorld dynamicsWorld, Entity entity);
-    }
-
-    // ----- Dispose ----- //
-
-    @Override
-    public void dispose() {
-        for(int i = disposables.size - 1; i >= 0; i--) {
-            Disposable disposable = disposables.get(i);
-            if(disposable != null)
-                disposable.dispose();
-        }
-    }
-    private final Array<Disposable> disposables = new Array<>();
-    protected void addDisposable(Disposable disposable) {
-        disposables.add(disposable);
     }
 
 }

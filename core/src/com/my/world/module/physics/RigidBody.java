@@ -1,9 +1,9 @@
 package com.my.world.module.physics;
 
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
-import com.badlogic.gdx.utils.Disposable;
 import com.my.world.core.Component;
 import com.my.world.core.Config;
+import com.my.world.core.Disposable;
 import com.my.world.core.Loadable;
 import lombok.NoArgsConstructor;
 
