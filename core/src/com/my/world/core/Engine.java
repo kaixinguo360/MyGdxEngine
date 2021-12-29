@@ -14,13 +14,13 @@ public class Engine {
     public static final String CONTEXT_FIELD_NAME = "ENGINE";
 
     @Getter
-    private final AssetsManager assetsManager;
+    protected final AssetsManager assetsManager;
 
     @Getter
-    private final LoaderManager loaderManager;
+    protected final LoaderManager loaderManager;
 
     @Getter
-    private final Context context;
+    protected final Context context;
 
     public Engine() {
         assetsManager = new AssetsManager();
@@ -121,8 +121,8 @@ public class Engine {
         return loaderManager.dump(asset, Map.class, newContext());
     }
 
-    // ----- Private ----- //
-    private String readFile(String path) {
+    // ----- File Utils ----- //
+    protected String readFile(String path) {
         try {
             BufferedReader in = new BufferedReader(new FileReader(path));
             StringBuilder sb = new StringBuilder();
@@ -137,7 +137,7 @@ public class Engine {
             throw new RuntimeException(e);
         }
     }
-    private void writeFile(String content, String path) {
+    protected void writeFile(String content, String path) {
         try {
             BufferedWriter out = new BufferedWriter(new FileWriter(path));
             out.write(content);

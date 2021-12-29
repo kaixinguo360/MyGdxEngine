@@ -1,9 +1,5 @@
 package com.my.world.core;
 
-import com.my.world.gdx.ColorLoader;
-import com.my.world.gdx.Matrix4Loader;
-import com.my.world.gdx.QuaternionLoader;
-import com.my.world.gdx.Vector3Loader;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -18,15 +14,6 @@ public class LoaderManager {
     @Getter
     protected final List<Loader> loaders = new ArrayList<>();
     private final Map<String, Loader> loaderCache = new HashMap<>();
-
-    public LoaderManager() {
-        loaders.add(new SceneLoader());
-        loaders.add(new Matrix4Loader());
-        loaders.add(new Vector3Loader());
-        loaders.add(new QuaternionLoader());
-        loaders.add(new ColorLoader());
-        loaders.add(new LoadableLoader());
-    }
 
     public <E, T> T load(E config, Class<T> type, Context context) {
         if (config == null) {

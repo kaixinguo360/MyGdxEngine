@@ -19,7 +19,7 @@ public class LoadableLoader implements Loader {
         if (loadable instanceof Loadable.OnLoad) {
             ((Loadable.OnLoad) loadable).load(config, context);
         } else {
-            Loaders.load(loadable, config, context);
+            Loadable.load(loadable, config, context);
         }
 
         if (loadable instanceof Loadable.OnInit) {
@@ -35,7 +35,7 @@ public class LoadableLoader implements Loader {
         if (loadable instanceof Loadable.OnDump) {
             return (E) ((Loadable.OnDump) loadable).dump(context);
         } else {
-            return (E) Loaders.dump((Loadable) loadable, context);
+            return (E) Loadable.dump((Loadable) loadable, context);
         }
     }
 

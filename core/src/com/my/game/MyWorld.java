@@ -8,6 +8,7 @@ import com.my.game.builder.PrefabBuilder;
 import com.my.game.builder.SceneBuilder;
 import com.my.world.core.Engine;
 import com.my.world.core.Scene;
+import com.my.world.gdx.GdxEngine;
 import com.my.world.module.input.KeyInputSystem;
 
 public class MyWorld extends ApplicationAdapter {
@@ -42,7 +43,7 @@ public class MyWorld extends ApplicationAdapter {
         };
 
         // ----- Create Engine ----- //
-        engine = new Engine();
+        engine = new GdxEngine();
 
         // ----- Create & Save Assets ----- //
         SceneBuilder.initAllAssets(engine.getAssetsManager());
