@@ -1,4 +1,4 @@
-package com.my.world.core.loader;
+package com.my.world.gdx;
 
 import com.badlogic.gdx.math.Matrix4;
 import com.my.world.core.Context;

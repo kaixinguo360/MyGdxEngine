@@ -1,4 +1,4 @@
-package com.my.world.core.loader;
+package com.my.world.gdx;
 
 import com.badlogic.gdx.graphics.Color;
 import com.my.world.core.Context;

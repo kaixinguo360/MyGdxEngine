@@ -13,8 +13,8 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.my.world.core.System;
 import com.my.world.core.*;
-import com.my.world.core.util.pool.Matrix4Pool;
-import com.my.world.core.util.pool.Vector3Pool;
+import com.my.world.gdx.Matrix4Pool;
+import com.my.world.gdx.Vector3Pool;
 import com.my.world.module.common.Position;
 import com.my.world.module.common.Script;
 

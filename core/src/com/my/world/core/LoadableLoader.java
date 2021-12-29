@@ -1,9 +1,4 @@
-package com.my.world.core.loader;
-
-import com.my.world.core.Context;
-import com.my.world.core.Loadable;
-import com.my.world.core.Loader;
-import com.my.world.core.Loaders;
+package com.my.world.core;
 
 import java.util.Map;
 

@@ -1,6 +1,7 @@
-package com.my.world.core.util.pool;
+package com.my.world.gdx;
 
 import com.badlogic.gdx.math.Quaternion;
+import com.my.world.core.Pool;
 
 public class QuaternionPool {
 

@@ -7,7 +7,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.my.world.core.AssetsManager;
 import com.my.world.core.Entity;
 import com.my.world.core.EntityManager;
-import com.my.world.core.util.pool.Matrix4Pool;
+import com.my.world.gdx.Matrix4Pool;
 import com.my.world.module.common.Position;
 import com.my.world.module.physics.RigidBodyConfig;
 import com.my.world.module.physics.constraint.ConnectConstraint;

@@ -1,4 +1,4 @@
-package com.my.world.core.util.pool;
+package com.my.world.core;
 
 import java.util.LinkedList;
 import java.util.List;

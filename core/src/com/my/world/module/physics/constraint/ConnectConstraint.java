@@ -6,7 +6,7 @@ import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
 import com.my.world.core.Config;
 import com.my.world.core.Entity;
-import com.my.world.core.util.pool.Matrix4Pool;
+import com.my.world.gdx.Matrix4Pool;
 import com.my.world.module.physics.Constraint;
 import lombok.NoArgsConstructor;
 

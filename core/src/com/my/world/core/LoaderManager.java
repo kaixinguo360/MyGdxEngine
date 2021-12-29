@@ -1,6 +1,9 @@
 package com.my.world.core;
 
-import com.my.world.core.loader.*;
+import com.my.world.gdx.ColorLoader;
+import com.my.world.gdx.Matrix4Loader;
+import com.my.world.gdx.QuaternionLoader;
+import com.my.world.gdx.Vector3Loader;
 import lombok.Getter;
 
 import java.util.ArrayList;

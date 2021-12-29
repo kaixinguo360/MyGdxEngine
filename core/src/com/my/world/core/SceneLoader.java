@@ -1,7 +1,4 @@
-package com.my.world.core.loader;
-
-import com.my.world.core.System;
-import com.my.world.core.*;
+package com.my.world.core;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
