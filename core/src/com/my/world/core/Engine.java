@@ -2,7 +2,7 @@ package com.my.world.core;
 
 import lombok.Getter;
 
-public class Engine {
+public class Engine implements Disposable {
 
     public static final String CONTEXT_FIELD_NAME = "ENGINE";
 
@@ -38,4 +38,8 @@ public class Engine {
         return this.context.newContext();
     }
 
+    @Override
+    public void dispose() {
+        scenesManager.dispose();
+    }
 }

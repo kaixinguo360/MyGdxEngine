@@ -141,12 +141,19 @@ public class EntityManager implements Disposable {
 
     @Override
     public void dispose() {
-        for (Entity entity : entities.values()) {
-            if (entity instanceof Disposable) {
-                ((Disposable) entity).dispose();
-            }
+        List<Entity> entityList = new ArrayList<>(entities.values());
+        for (int i = entityList.size() - 1; i >= 0; i--) {
+            removeEntity(entityList.get(i).getId());
         }
-        entities.clear();
+        updateFilters();
+
+        Disposable.disposeAll(entityList);
+        Disposable.disposeAll(entities);
+
+        filters.clear();
+        listeners.clear();
+        batch.toAdd.clear();
+        batch.toRemove.clear();
     }
 
     public class Batch {

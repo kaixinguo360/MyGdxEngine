@@ -77,6 +77,6 @@ public class MyWorld extends ApplicationAdapter {
 
     @Override
     public void dispose() {
-        scene.dispose();
+        engine.dispose();
     }
 }

@@ -35,6 +35,7 @@ public class ScenesManager implements Disposable {
         if (!scenes.containsKey(name)) throw new RuntimeException("No Such Scene: " + name);
         Scene scene = scenes.remove(name);
         if (this.activatedScene == scene) this.activatedScene = null;
+        scene.dispose();
     }
     public Scene getScene(String name) {
         if (!scenes.containsKey(name)) throw new RuntimeException("No Such Scene: " + name);
@@ -76,9 +77,6 @@ public class ScenesManager implements Disposable {
 
     @Override
     public void dispose() {
-        for (Scene scene : scenes.values()) {
-            scene.dispose();
-        }
-        scenes.clear();
+        Disposable.disposeAll(scenes);
     }
 }

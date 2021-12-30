@@ -69,7 +69,9 @@ public class ConstraintSystem extends BaseSystem implements EntityListener, Syst
         while (it.hasNext()) {
             ConstraintInner constraintInner = it.next();
             if (constraintInner.constraint.btConstraint != null) {
-                dynamicsWorld.removeConstraint(constraintInner.constraint.btConstraint);
+                if (!dynamicsWorld.isDisposed()) {
+                    dynamicsWorld.removeConstraint(constraintInner.constraint.btConstraint);
+                }
                 constraintInner.constraint.btConstraint.dispose();
                 constraintInner.constraint.btConstraint = null;
             }

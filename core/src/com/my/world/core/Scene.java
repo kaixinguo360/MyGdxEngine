@@ -48,7 +48,7 @@ public class Scene implements Disposable {
 
     @Override
     public void dispose() {
-        systemManager.dispose();
         entityManager.dispose();
+        systemManager.dispose();
     }
 }

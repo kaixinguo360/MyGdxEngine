@@ -60,11 +60,7 @@ public class SystemManager implements Disposable {
 
     @Override
     public void dispose() {
-        for (System system : systems.values()) {
-            if (system instanceof Disposable) {
-                ((Disposable) system).dispose();
-            }
-        }
-        systems.clear();
+        Disposable.disposeAll(systems);
+        cache.clear();
     }
 }

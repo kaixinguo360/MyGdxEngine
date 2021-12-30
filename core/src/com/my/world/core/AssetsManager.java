@@ -5,7 +5,7 @@ import org.yaml.snakeyaml.Yaml;
 
 import java.util.*;
 
-public class AssetsManager {
+public class AssetsManager implements Disposable {
 
     public static final String CONTEXT_FIELD_NAME = "ASSETS_MANAGER";
 
@@ -118,5 +118,14 @@ public class AssetsManager {
     }
     public Map<String, Object> dumpAsset(Object asset) {
         return engine.getLoaderManager().dump(asset, Map.class, engine.newContext());
+    }
+
+    @Override
+    public void dispose() {
+        for (Map.Entry<Class<?>, Map<String, Object>> entry : allAssets.entrySet()) {
+            Disposable.disposeAll(entry.getValue());
+        }
+        allAssets.clear();
+        cache.clear();
     }
 }

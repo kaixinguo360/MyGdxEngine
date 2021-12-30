@@ -6,7 +6,7 @@ import lombok.Setter;
 
 import java.util.*;
 
-public class Entity extends Relation<Entity> implements Loadable.OnInit {
+public class Entity extends Relation<Entity> implements Loadable.OnInit, Disposable {
 
     @Getter
     @Setter
@@ -116,5 +116,15 @@ public class Entity extends Relation<Entity> implements Loadable.OnInit {
         handled = false;
         cache1.clear();
         cache2.clear();
+    }
+
+    @Override
+    public void dispose() {
+        Disposable.disposeAll(components);
+        cache1.clear();
+        cache2.clear();
+        id = null;
+        name = null;
+        handled = false;
     }
 }
