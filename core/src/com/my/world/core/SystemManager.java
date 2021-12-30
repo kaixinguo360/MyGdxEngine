@@ -15,7 +15,7 @@ public class SystemManager implements Disposable {
 
     private final Scene scene;
 
-    public SystemManager(Scene scene) {
+    SystemManager(Scene scene) {
         this.scene = scene;
     }
 

@@ -32,12 +32,14 @@ public class SceneLoader implements Loader {
     @Override
     public <E, T> T load(E config, Class<T> type, Context context) {
         Engine engine = context.getEnvironment(Engine.CONTEXT_FIELD_NAME, Engine.class);
-        Scene scene = new Scene(engine);
-
-        context.setEnvironment(EntityManager.CONTEXT_FIELD_NAME, scene.getEntityManager());
+        Scene scene;
 
         try {
             Map<String, Object> map = (Map<String, Object>) config;
+
+            String name = (String) map.get("name");
+            scene = new Scene(engine, name);
+            context.setEnvironment(EntityManager.CONTEXT_FIELD_NAME, scene.getEntityManager());
 
             SystemManager systemManager = scene.getSystemManager();
             List<Map<String, Object>> systems = (List<Map<String, Object>>) map.get("systems");
@@ -70,6 +72,8 @@ public class SceneLoader implements Loader {
     public <E, T> E dump(T obj, Class<E> configType, Context context) {
         Scene scene = (Scene) obj;
         Map<String, Object> map = new LinkedHashMap<>();
+
+        map.put("name", scene.getName());
 
         Map<String, Entity> entities = scene.getEntityManager().getEntities();
         if (entities.size() > 0) {

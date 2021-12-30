@@ -2,7 +2,6 @@ package com.my.game.builder;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
-import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.game.script.ExitScript;
@@ -23,10 +22,8 @@ import com.my.world.module.script.ScriptSystem;
 
 public class SceneBuilder {
 
-    public static Model skyModel;
-
     public static Scene createScene(Engine engine) {
-        Scene scene = new Scene(engine);
+        Scene scene = engine.getScenesManager().newScene("default");
 
         // Init System
         scene.getSystemManager().addSystem(new CameraSystem());

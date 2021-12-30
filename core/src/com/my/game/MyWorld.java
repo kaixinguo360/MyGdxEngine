@@ -8,6 +8,7 @@ import com.my.game.builder.PrefabBuilder;
 import com.my.game.builder.SceneBuilder;
 import com.my.world.core.Engine;
 import com.my.world.core.Scene;
+import com.my.world.core.ScenesManager;
 import com.my.world.gdx.GdxEngine;
 import com.my.world.module.input.KeyInputSystem;
 
@@ -29,13 +30,16 @@ public class MyWorld extends ApplicationAdapter {
             @Override
             public boolean keyDown(int keycode) {
                 if (keycode == Input.Keys.ENTER) {
+                    ScenesManager scenesManager = engine.getScenesManager();
 
                     // ----- Get Config ----- //
-                    String yamlConfig = engine.dumpSceneToYaml(scene);
+                    String yamlConfig = scenesManager.dumpSceneToYaml(scene);
                     System.out.println(yamlConfig);
 
                     // ----- Load Scene ----- //
-                    scene = engine.loadSceneFromYaml(yamlConfig);
+                    scenesManager.removeScene("default");
+                    scene = scenesManager.loadSceneFromYaml(yamlConfig);
+                    engine.getScenesManager().setActivatedScene("default");
                     scene.getSystemManager().getSystem(KeyInputSystem.class).getInputMultiplexer().addProcessor(inputAdapter);
                 }
                 return false;
@@ -55,6 +59,7 @@ public class MyWorld extends ApplicationAdapter {
 
         // ----- Create & Save Scene ----- //
         scene = SceneBuilder.createScene(engine);
+        engine.getScenesManager().setActivatedScene(scene.getName());
 //        addDisposable(scene);
 //        engine.dumpSceneToFile(scene, "scene.yml");
 //
@@ -67,7 +72,7 @@ public class MyWorld extends ApplicationAdapter {
 
     @Override
     public void render() {
-        scene.update(1 / 60f);
+        engine.update(1 / 60f);
     }
 
     @Override

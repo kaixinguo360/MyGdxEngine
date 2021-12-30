@@ -4,7 +4,8 @@ import lombok.Getter;
 
 public class Scene implements Disposable {
 
-    public static final String CONTEXT_FIELD_NAME = "SCENE";
+    @Getter
+    private final String name;
 
     @Getter
     private final Engine engine;
@@ -18,7 +19,8 @@ public class Scene implements Disposable {
     @Getter
     private final EntityManager entityManager = new EntityManager();
 
-    public Scene(Engine engine) {
+    Scene(Engine engine, String name) {
+        this.name = name;
         this.engine = engine;
         this.context = engine.newContext();
         this.context.setEnvironment(EntityManager.CONTEXT_FIELD_NAME, entityManager);

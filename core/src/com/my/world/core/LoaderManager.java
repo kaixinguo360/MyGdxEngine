@@ -2,6 +2,7 @@ package com.my.world.core;
 
 import lombok.Getter;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,9 +12,15 @@ public class LoaderManager {
 
     public static final String CONTEXT_FIELD_NAME = "LOADER_MANAGER";
 
+    private final Engine engine;
+
     @Getter
     protected final List<Loader> loaders = new ArrayList<>();
     private final Map<String, Loader> loaderCache = new HashMap<>();
+
+    LoaderManager(Engine engine) {
+        this.engine = engine;
+    }
 
     public <E, T> T load(E config, Class<T> type, Context context) {
         if (config == null) {
@@ -55,5 +62,33 @@ public class LoaderManager {
             }
         }
         return null;
+    }
+
+    // ----- File Utils ----- //
+
+    public static String readFile(String path) {
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(path));
+            StringBuilder sb = new StringBuilder();
+            String str;
+            String ls = java.lang.System.getProperty("line.separator");
+            while ((str = in.readLine()) != null) {
+                sb.append(str);
+                sb.append(ls);
+            }
+            return sb.toString();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void writeFile(String content, String path) {
+        try {
+            BufferedWriter out = new BufferedWriter(new FileWriter(path));
+            out.write(content);
+            out.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
