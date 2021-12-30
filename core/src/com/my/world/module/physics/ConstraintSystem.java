@@ -24,6 +24,16 @@ public class ConstraintSystem extends BaseSystem implements EntityListener, Syst
     }
 
     @Override
+    public void dispose() {
+        for (ConstraintInner constraintInner : constraintInners) {
+            constraintInner.constraint = null;
+            constraintInner.entity = null;
+        }
+        constraintInners.clear();
+        dynamicsWorld = null;
+    }
+
+    @Override
     public boolean isHandleable(Entity entity) {
         return entity.contains(Constraint.class);
     }
@@ -59,23 +69,6 @@ public class ConstraintSystem extends BaseSystem implements EntityListener, Syst
                 }
                 it.remove();
             }
-        }
-    }
-
-    @Override
-    public void dispose() {
-        btDynamicsWorld dynamicsWorld = scene.getSystemManager().getSystem(PhysicsSystem.class).dynamicsWorld;
-        Iterator<ConstraintInner> it = constraintInners.iterator();
-        while (it.hasNext()) {
-            ConstraintInner constraintInner = it.next();
-            if (constraintInner.constraint.btConstraint != null) {
-                if (!dynamicsWorld.isDisposed()) {
-                    dynamicsWorld.removeConstraint(constraintInner.constraint.btConstraint);
-                }
-                constraintInner.constraint.btConstraint.dispose();
-                constraintInner.constraint.btConstraint = null;
-            }
-            it.remove();
         }
     }
 

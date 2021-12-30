@@ -28,6 +28,12 @@ public class EnvironmentSystem extends BaseSystem {
         return entity.contain(Light.class);
     }
 
+    @Override
+    public void dispose() {
+        commonEnvironment.clear();
+        environment.clear();
+    }
+
     // ----- Custom ----- //
 
     public Environment getEnvironment() {

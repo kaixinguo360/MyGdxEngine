@@ -40,6 +40,12 @@ public class KeyInputSystem extends BaseSystem implements System.OnStart {
         Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
+    @Override
+    public void dispose() {
+        Gdx.input.setInputProcessor(null);
+        super.dispose();
+    }
+
     public interface OnKeyDown extends Script {
         void keyDown(Scene scene, Entity entity, int keycode);
     }

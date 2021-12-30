@@ -38,6 +38,24 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
     }
 
     @Override
+    public void dispose() {
+        renderSystem = null;
+        environmentSystem = null;
+        for (CameraInner cameraInner : cameraInners) {
+            cameraInner.camera = null;
+            cameraInner.entity = null;
+            cameraInner.position = null;
+        }
+        cameraInners.clear();
+        for (SkyBoxInner skyBoxInner : skyBoxInners) {
+            skyBoxInner.id = null;
+            skyBoxInner.entity = null;
+            skyBoxInner.position = null;
+        }
+        skyBoxInners.clear();
+    }
+
+    @Override
     public void afterEntityAdded(Entity entity) {
         CameraInner cameraInner = new CameraInner();
         cameraInner.entity = entity;

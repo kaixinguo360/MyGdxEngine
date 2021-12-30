@@ -18,5 +18,6 @@ public class DisposableManager implements com.my.world.core.Disposable {
             if(disposable != null)
                 disposable.dispose();
         }
+        disposables.clear();
     }
 }

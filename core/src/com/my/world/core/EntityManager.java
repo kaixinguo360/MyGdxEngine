@@ -150,8 +150,12 @@ public class EntityManager implements Disposable {
         Disposable.disposeAll(entityList);
         Disposable.disposeAll(entities);
 
+        for (Set<Entity> entitySet : filters.values()) {
+            entitySet.clear();
+        }
         filters.clear();
         listeners.clear();
+
         batch.toAdd.clear();
         batch.toRemove.clear();
     }

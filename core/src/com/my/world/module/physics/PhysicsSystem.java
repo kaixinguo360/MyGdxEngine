@@ -109,6 +109,12 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
     @Override
     public void dispose() {
         this.disposableManager.dispose();
+        dynamicsWorld = null;
+        debugDrawer = null;
+        rayTestCB = null;
+        scene = null;
+        maxSubSteps = 5;
+        fixedTimeStep = 1 / 60f;
     }
 
     // ----- Custom ----- //

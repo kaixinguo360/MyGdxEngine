@@ -12,11 +12,7 @@ import com.my.world.module.common.Position;
 
 public class RenderSystem extends BaseSystem implements Disposable {
 
-    protected ModelBatch batch;
-
-    public RenderSystem() {
-        batch = new ModelBatch();
-    }
+    protected final ModelBatch batch  = new ModelBatch();
 
     @Override
     public boolean isHandleable(Entity entity) {
