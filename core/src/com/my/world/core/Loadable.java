@@ -25,7 +25,7 @@ import java.util.*;
  *          config: ...
  * </pre>
  */
-public interface Loadable {
+public interface Loadable extends Disposable {
 
     interface OnLoad extends Loadable {
         void load(Map<String, Object> config, Context context);
@@ -167,5 +167,51 @@ public interface Loadable {
             tmpType = tmpType.getSuperclass();
         }
         return fields;
+    }
+
+    @Override
+    default void dispose() {
+        try {
+            for (Field field : getFields(this)) {
+                field.setAccessible(true);
+                Class<?> type = field.getType();
+                Config annotation = field.getAnnotation(Config.class);
+                if (annotation.type() == Config.Type.Primitive || type.isPrimitive()) {
+                    // Primitive Field
+                    if (Modifier.isFinal(field.getModifiers())) throw new RuntimeException("Can not dispose a final field: " + field);
+                    if (type == byte.class || type == char.class || type == short.class || type == int.class || type == long.class
+                            || type == float.class || type == double.class) {
+                        field.set(this, 0);
+                    } else if (type == boolean.class) {
+                        field.set(this, false);
+                    }
+                } else if (type == String.class || annotation.type() == Config.Type.Asset || annotation.type() == Config.Type.Entity
+                        || Entity.class.isAssignableFrom(type) || Prefab.class.isAssignableFrom(type)) {
+                    // Don't need to dispose
+                    if (Modifier.isFinal(field.getModifiers())) throw new RuntimeException("Can not dispose a final field: " + field);
+                    field.set(this, null);
+                } else {
+                    // Need to dispose
+                    Object obj = field.get(this);
+                    if (obj == null) continue;
+                    if (obj instanceof List) {
+                        Disposable.disposeAll((List<?>) obj);
+                        if (!Modifier.isFinal(field.getModifiers())) field.set(this, null);
+                    } else if (obj instanceof Collection) {
+                        Disposable.disposeAll((Collection<?>) obj);
+                        if (!Modifier.isFinal(field.getModifiers())) field.set(this, null);
+                    } else if (obj instanceof Map) {
+                        Disposable.disposeAll((Map<?, ?>) obj);
+                        if (!Modifier.isFinal(field.getModifiers())) field.set(this, null);
+                    } else {
+                        if (Modifier.isFinal(field.getModifiers())) throw new RuntimeException("Can not dispose a final field: " + field);
+                        Disposable.dispose(obj);
+                        field.set(this, null);
+                    }
+                }
+            }
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException("Dispose Resource(" + this.getClass() + ") error: " + e.getMessage(), e);
+        }
     }
 }
