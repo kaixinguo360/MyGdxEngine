@@ -13,7 +13,7 @@ public class Engine implements Disposable {
     protected final LoaderManager loaderManager;
 
     @Getter
-    protected final ScenesManager scenesManager;
+    protected final SceneManager sceneManager;
 
     @Getter
     protected final Context context;
@@ -21,17 +21,11 @@ public class Engine implements Disposable {
     public Engine() {
         assetsManager = new AssetsManager(this);
         loaderManager = new LoaderManager(this);
-        scenesManager = new ScenesManager(this);
+        sceneManager = new SceneManager(this);
         context = new Context(null);
         context.setEnvironment(AssetsManager.CONTEXT_FIELD_NAME, assetsManager);
         context.setEnvironment(LoaderManager.CONTEXT_FIELD_NAME, loaderManager);
         context.setEnvironment(Engine.CONTEXT_FIELD_NAME, this);
-    }
-
-    public void update(float deltaTime) {
-        Scene activatedScene = scenesManager.getActivatedScene();
-        if (activatedScene == null) throw new RuntimeException("No Activated Scene");
-        activatedScene.update(deltaTime);
     }
 
     public Context newContext() {
@@ -40,6 +34,6 @@ public class Engine implements Disposable {
 
     @Override
     public void dispose() {
-        scenesManager.dispose();
+        sceneManager.dispose();
     }
 }

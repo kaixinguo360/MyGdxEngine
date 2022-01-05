@@ -1,8 +1,18 @@
 package com.my.world.core;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 
 public class Scene implements Disposable {
+
+    @Getter
+    @Setter(AccessLevel.PROTECTED)
+    private String id;
+
+    @Getter
+    @Setter(AccessLevel.PROTECTED)
+    private Status status = Status.Created;
 
     @Getter
     private final String name;
@@ -27,11 +37,9 @@ public class Scene implements Disposable {
     }
 
     public void start() {
-        entityManager.updateFilters();
         for (System.OnStart system : systemManager.getSystems(System.OnStart.class)) {
             system.start(this);
         }
-        entityManager.getBatch().commit();
     }
 
     public void update(float deltaTime) {
@@ -50,5 +58,9 @@ public class Scene implements Disposable {
     public void dispose() {
         entityManager.dispose();
         systemManager.dispose();
+    }
+
+    public enum Status {
+        Created, Running, Deleted, Disposed
     }
 }

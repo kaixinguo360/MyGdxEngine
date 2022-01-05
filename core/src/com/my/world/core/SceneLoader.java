@@ -50,7 +50,6 @@ public class SceneLoader implements Loader {
                     systemManager.addSystem(context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).load(systemConfig, systemType, context));
                 }
             }
-            scene.start();
 
             EntityManager entityManager = scene.getEntityManager();
             List<Map<String, Object>> entities = (List<Map<String, Object>>) map.get("entities");

@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.my.game.script.ExitScript;
 import com.my.game.script.GUIScript;
 import com.my.game.script.GunScript;
+import com.my.game.script.ReloadScript;
 import com.my.world.core.*;
 import com.my.world.module.common.Position;
 import com.my.world.module.input.KeyInputSystem;
@@ -23,7 +24,7 @@ import com.my.world.module.script.ScriptSystem;
 public class SceneBuilder {
 
     public static Scene createScene(Engine engine) {
-        Scene scene = engine.getScenesManager().newScene("default");
+        Scene scene = engine.getSceneManager().newScene("default");
 
         // Init System
         scene.getSystemManager().addSystem(new CameraSystem());
@@ -33,7 +34,6 @@ public class SceneBuilder {
         scene.getSystemManager().addSystem(new EnvironmentSystem());
         scene.getSystemManager().addSystem(new KeyInputSystem());
         scene.getSystemManager().addSystem(new ConstraintSystem());
-        scene.start();
 
         // ----- Init Static Objects ----- //
         BaseBuilder baseBuilder = new BaseBuilder(scene);
@@ -95,6 +95,11 @@ public class SceneBuilder {
         exitScriptEntity.setName("exitScriptEntity");
         exitScriptEntity.addComponent(new ExitScript());
         scene.getEntityManager().addEntity(exitScriptEntity);
+
+        Entity reloadScriptEntity = new Entity();
+        reloadScriptEntity.setName("reloadScriptEntity");
+        reloadScriptEntity.addComponent(new ReloadScript());
+        scene.getEntityManager().addEntity(reloadScriptEntity);
 
         // Init GUI
         Entity guiEntity = new Entity();

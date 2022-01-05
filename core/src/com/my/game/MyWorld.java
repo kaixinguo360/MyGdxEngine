@@ -1,22 +1,18 @@
 package com.my.game;
 
 import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.my.game.builder.PrefabBuilder;
 import com.my.game.builder.SceneBuilder;
 import com.my.world.core.Engine;
 import com.my.world.core.Scene;
-import com.my.world.core.ScenesManager;
+import com.my.world.core.SceneManager;
 import com.my.world.gdx.GdxEngine;
-import com.my.world.module.input.KeyInputSystem;
 
 public class MyWorld extends ApplicationAdapter {
 
     private Engine engine;
-    private Scene scene;
-    private InputAdapter inputAdapter;
+    private SceneManager sceneManager;
 
     @Override
     public void create() {
@@ -25,54 +21,31 @@ public class MyWorld extends ApplicationAdapter {
         // ----- Init Bullet ----- //
         Bullet.init();
 
-        // ----- Init InputAdapter ----- //
-        inputAdapter = new InputAdapter() {
-            @Override
-            public boolean keyDown(int keycode) {
-                if (keycode == Input.Keys.ENTER) {
-                    ScenesManager scenesManager = engine.getScenesManager();
-
-                    // ----- Get Config ----- //
-                    String yamlConfig = scenesManager.dumpSceneToYaml(scene);
-                    System.out.println(yamlConfig);
-
-                    // ----- Load Scene ----- //
-                    scenesManager.removeScene("default");
-                    scene = scenesManager.loadSceneFromYaml(yamlConfig);
-                    engine.getScenesManager().setActivatedScene("default");
-                    scene.getSystemManager().getSystem(KeyInputSystem.class).getInputMultiplexer().addProcessor(inputAdapter);
-                }
-                return false;
-            }
-        };
-
         // ----- Create Engine ----- //
         engine = new GdxEngine();
+        sceneManager = engine.getSceneManager();
 
         // ----- Create & Save Assets ----- //
         SceneBuilder.initAllAssets(engine.getAssetsManager());
         PrefabBuilder.initAssets(engine);
-//        engine.dumpAssetsToFile("assets.yml");
+//        engine.getAssetsManager().dumpAssetsToFile("assets.yml");
 //
 //        // ----- Load Assets ----- //
-//        engine.loadAssetsFromFile("assets.yml");
+//        engine.getAssetsManager().loadAssetsFromFile("assets.yml");
 
         // ----- Create & Save Scene ----- //
-        scene = SceneBuilder.createScene(engine);
-        engine.getScenesManager().setActivatedScene(scene.getName());
-//        addDisposable(scene);
-//        engine.dumpSceneToFile(scene, "scene.yml");
+        Scene scene = SceneBuilder.createScene(engine);
+//        engine.getSceneManager().dumpSceneToFile(scene, "scene.yml");
 //
 //        // ----- Load Scene ----- //
-//        scene = engine.loadSceneFromFile("scene.yml");
-//        addDisposable(scene);
+//        engine.getSceneManager().removeScene(scene.getId());
+//        engine.getSceneManager().loadSceneFromFile("scene.yml");
 
-        scene.getSystemManager().getSystem(KeyInputSystem.class).getInputMultiplexer().addProcessor(inputAdapter);
     }
 
     @Override
     public void render() {
-        engine.update(1 / 60f);
+        sceneManager.update(1 / 60f);
     }
 
     @Override
