@@ -110,7 +110,7 @@ public interface Loadable extends Disposable {
                 Map<String, Object> map = (Map<String, Object>) value;
                 String typeName = (String) map.get("type");
                 Object configValue = map.get("config");
-                Class<?> type = Class.forName(typeName);
+                Class<?> type = context.getEnvironment(Engine.CONTEXT_FIELD_NAME, Engine.class).getJarManager().loadClass(typeName);
                 return context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).load(configValue, type, context);
             } else {
                 return context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).load(value, elementType, context);

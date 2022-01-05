@@ -45,7 +45,7 @@ public class SceneLoader implements Loader {
             List<Map<String, Object>> systems = (List<Map<String, Object>>) map.get("systems");
             if (systems != null) {
                 for (Map<String, Object> system : systems) {
-                    Class<? extends System> systemType = (Class<? extends System>) Class.forName((String) system.get("type"));
+                    Class<? extends System> systemType = (Class<? extends System>) engine.getJarManager().loadClass((String) system.get("type"));
                     Object systemConfig = system.get("config");
                     systemManager.addSystem(context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).load(systemConfig, systemType, context));
                 }
@@ -55,7 +55,7 @@ public class SceneLoader implements Loader {
             List<Map<String, Object>> entities = (List<Map<String, Object>>) map.get("entities");
             if (entities != null) {
                 for (Map<String, Object> entity : entities) {
-                    Class<? extends Entity> entityType = (Class<? extends Entity>) Class.forName((String) entity.get("type"));
+                    Class<? extends Entity> entityType = (Class<? extends Entity>) engine.getJarManager().loadClass((String) entity.get("type"));
                     Object entityConfig = entity.get("config");
                     entityManager.addEntity(context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).load(entityConfig, entityType, context));
                 }

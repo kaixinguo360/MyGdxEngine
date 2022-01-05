@@ -76,13 +76,13 @@ public class AssetsManager implements Disposable {
     public void loadAsset(Map<String, Object> config) {
         try {
             String assetTypeName = (String) config.get("type");
-            Class<?> assetType = Class.forName(assetTypeName);
+            Class<?> assetType = engine.getJarManager().loadClass(assetTypeName);
             Object assetConfig = config.get("config");
             String assetId = (String) config.get("id");
             Object asset;
             if (config.containsKey("instanceType")) {
                 String instanceTypeName = (String) config.get("instanceType");
-                Class<?> instanceType = Class.forName(instanceTypeName);
+                Class<?> instanceType = engine.getJarManager().loadClass(instanceTypeName);
                 asset = engine.getLoaderManager().load(assetConfig, instanceType, engine.newContext());
             } else {
                 asset = engine.getLoaderManager().load(assetConfig, assetType, engine.newContext());
