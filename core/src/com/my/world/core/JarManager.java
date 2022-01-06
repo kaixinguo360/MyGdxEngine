@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -20,10 +21,12 @@ public class JarManager extends ClassLoader {
     public static final String CONFIG_INIT_METHOD = "initMethod";
     public static final String DEFAULT_INIT_METHOD = "init";
 
-    private final Yaml yaml = new Yaml();
-
     @Getter
     protected final Map<String, ClassLoader> classLoaders = new LinkedHashMap<>();
+
+    protected final Map<String, Class<?>> cache = new HashMap<>();
+
+    protected final Yaml yaml = new Yaml();
 
     JarManager() {
         this.addClassLoader("default", Thread.currentThread().getContextClassLoader());
@@ -66,10 +69,14 @@ public class JarManager extends ClassLoader {
 
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
+        Class<?> cachedClass = cache.get(name);
+        if (cachedClass != null) return cachedClass;
+
         for (ClassLoader classLoader : classLoaders.values()) {
             try {
                 Class<?> type = classLoader.loadClass(name);
                 if (type != null) {
+                    cache.put(name, type);
                     return type;
                 }
             } catch (ClassNotFoundException ignored) {}
