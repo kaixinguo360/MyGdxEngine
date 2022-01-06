@@ -13,9 +13,9 @@ import com.my.world.module.common.Position;
 import com.my.world.module.input.KeyInputSystem;
 import com.my.world.module.physics.ConstraintSystem;
 import com.my.world.module.physics.PhysicsSystem;
-import com.my.world.module.physics.RigidBodyConfig;
+import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.constraint.HingeConstraint;
-import com.my.world.module.physics.rigidbody.BoxConfig;
+import com.my.world.module.physics.rigidbody.BoxBody;
 import com.my.world.module.render.*;
 import com.my.world.module.render.model.Box;
 import com.my.world.module.render.model.ExternalModel;
@@ -128,6 +128,6 @@ public class SceneBuilder {
         assetsManager.getAsset("sky", ModelRender.class).model.nodes.get(0).scale.scl(20);
         assetsManager.addAsset("ground", ModelRender.class, new Box(10000f, 0.01f, 20000f, Color.WHITE, attributes));
 
-        assetsManager.addAsset("ground", RigidBodyConfig.class, new BoxConfig(new Vector3(5000,0.005f,10000), 0f));
+        assetsManager.addAsset("ground", TemplateRigidBody.class, new BoxBody(new Vector3(5000,0.005f,10000), 0f));
     }
 }

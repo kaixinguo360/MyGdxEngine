@@ -11,14 +11,14 @@ import com.my.world.core.Entity;
 import com.my.world.core.EntityManager;
 import com.my.world.core.Prefab;
 import com.my.world.module.common.Position;
-import com.my.world.module.physics.RigidBodyConfig;
+import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.constraint.ConnectConstraint;
 import com.my.world.module.physics.constraint.HingeConstraint;
 import com.my.world.module.physics.motion.Lift;
 import com.my.world.module.physics.motion.LimitedForce;
-import com.my.world.module.physics.rigidbody.BoxConfig;
-import com.my.world.module.physics.rigidbody.ConeConfig;
-import com.my.world.module.physics.rigidbody.CylinderConfig;
+import com.my.world.module.physics.rigidbody.BoxBody;
+import com.my.world.module.physics.rigidbody.ConeBody;
+import com.my.world.module.physics.rigidbody.CylinderBody;
 import com.my.world.module.physics.script.ConstraintController;
 import com.my.world.module.render.ModelRender;
 import com.my.world.module.render.model.Box;
@@ -35,10 +35,10 @@ public class AircraftBuilder extends BaseBuilder {
         assetsManager.addAsset("rotate", ModelRender.class, new Cylinder(1, 1, 1, 8, Color.CYAN, attributes));
         assetsManager.addAsset("engine", ModelRender.class, new Cone(0.9f, 1, 0.9f, 18, Color.YELLOW, attributes));
 
-        assetsManager.addAsset("body", RigidBodyConfig.class, new BoxConfig(new Vector3(0.5f,0.5f,2.5f), 50f));
-        assetsManager.addAsset("wing", RigidBodyConfig.class, new BoxConfig(new Vector3(1f,0.1f,0.5f), 25f));
-        assetsManager.addAsset("rotate", RigidBodyConfig.class, new CylinderConfig(new Vector3(0.5f,0.5f,0.5f), 50f));
-        assetsManager.addAsset("engine", RigidBodyConfig.class, new ConeConfig(0.45f,1, 50));
+        assetsManager.addAsset("body", TemplateRigidBody.class, new BoxBody(new Vector3(0.5f,0.5f,2.5f), 50f));
+        assetsManager.addAsset("wing", TemplateRigidBody.class, new BoxBody(new Vector3(1f,0.1f,0.5f), 25f));
+        assetsManager.addAsset("rotate", TemplateRigidBody.class, new CylinderBody(new Vector3(0.5f,0.5f,0.5f), 50f));
+        assetsManager.addAsset("engine", TemplateRigidBody.class, new ConeBody(0.45f,1, 50));
     }
 
     public AircraftBuilder(AssetsManager assetsManager, EntityManager entityManager) {

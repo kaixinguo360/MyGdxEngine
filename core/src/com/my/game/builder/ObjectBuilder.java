@@ -9,9 +9,9 @@ import com.my.world.core.Entity;
 import com.my.world.core.EntityManager;
 import com.my.world.gdx.Matrix4Pool;
 import com.my.world.module.common.Position;
-import com.my.world.module.physics.RigidBodyConfig;
+import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.constraint.ConnectConstraint;
-import com.my.world.module.physics.rigidbody.BoxConfig;
+import com.my.world.module.physics.rigidbody.BoxBody;
 import com.my.world.module.render.ModelRender;
 import com.my.world.module.render.model.Box;
 
@@ -23,8 +23,8 @@ public class ObjectBuilder extends BaseBuilder {
         assetsManager.addAsset("box", ModelRender.class, new Box(1, 1, 1, Color.RED, attributes));
         assetsManager.addAsset("box1", ModelRender.class, new Box(2, 1, 1, Color.LIGHT_GRAY, attributes));
 
-        assetsManager.addAsset("box", RigidBodyConfig.class, new BoxConfig(new Vector3(0.5f,0.5f,0.5f), 50f));
-        assetsManager.addAsset("box1", RigidBodyConfig.class, new BoxConfig(new Vector3(1,0.5f,0.5f), 50f));
+        assetsManager.addAsset("box", TemplateRigidBody.class, new BoxBody(new Vector3(0.5f,0.5f,0.5f), 50f));
+        assetsManager.addAsset("box1", TemplateRigidBody.class, new BoxBody(new Vector3(1,0.5f,0.5f), 50f));
     }
 
     public ObjectBuilder(AssetsManager assetsManager, EntityManager entityManager) {

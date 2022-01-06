@@ -4,15 +4,15 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.my.world.core.Config;
 import com.my.world.core.Loadable;
-import com.my.world.module.physics.RigidBodyConfig;
+import com.my.world.module.physics.TemplateRigidBody;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class BoxConfig extends RigidBodyConfig implements Loadable.OnInit {
+public class BoxBody extends TemplateRigidBody implements Loadable.OnInit {
 
     @Config private Vector3 boxHalfExtents;
 
-    public BoxConfig(Vector3 boxHalfExtents, float mass) {
+    public BoxBody(Vector3 boxHalfExtents, float mass) {
         this.boxHalfExtents = boxHalfExtents;
         this.mass = mass;
         init();
@@ -21,6 +21,6 @@ public class BoxConfig extends RigidBodyConfig implements Loadable.OnInit {
     @Override
     public void init() {
         shape = new btBoxShape(boxHalfExtents);
-        generateRigidBodyConfig();
+        super.init();
     }
 }

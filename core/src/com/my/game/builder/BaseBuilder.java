@@ -6,8 +6,8 @@ import com.my.world.core.Entity;
 import com.my.world.core.EntityManager;
 import com.my.world.core.Scene;
 import com.my.world.module.common.Position;
-import com.my.world.module.physics.RigidBody;
-import com.my.world.module.physics.RigidBodyConfig;
+import com.my.world.module.physics.PresetTemplateRigidBody;
+import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.render.ModelRender;
 import com.my.world.module.render.PresetModelRender;
 
@@ -33,9 +33,9 @@ public class BaseBuilder {
             ModelRender modelRender = assetsManager.getAsset(className, ModelRender.class);
             entity.addComponent(new PresetModelRender(modelRender));
         }
-        if (assetsManager.hasAsset(className, RigidBodyConfig.class)) {
-            RigidBodyConfig rigidBodyConfig = assetsManager.getAsset(className, RigidBodyConfig.class);
-            entity.addComponent(new RigidBody(rigidBodyConfig));
+        if (assetsManager.hasAsset(className, TemplateRigidBody.class)) {
+            TemplateRigidBody templateRigidBody = assetsManager.getAsset(className, TemplateRigidBody.class);
+            entity.addComponent(new PresetTemplateRigidBody(templateRigidBody));
         }
         return entity;
     }

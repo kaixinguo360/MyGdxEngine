@@ -11,11 +11,11 @@ import com.my.world.core.Entity;
 import com.my.world.core.EntityManager;
 import com.my.world.core.Prefab;
 import com.my.world.module.common.Position;
-import com.my.world.module.physics.RigidBodyConfig;
+import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.constraint.ConnectConstraint;
 import com.my.world.module.physics.constraint.HingeConstraint;
-import com.my.world.module.physics.rigidbody.BoxConfig;
-import com.my.world.module.physics.rigidbody.CylinderConfig;
+import com.my.world.module.physics.rigidbody.BoxBody;
+import com.my.world.module.physics.rigidbody.CylinderBody;
 import com.my.world.module.physics.script.ConstraintController;
 import com.my.world.module.render.ModelRender;
 import com.my.world.module.render.model.Box;
@@ -29,8 +29,8 @@ public class GunBuilder extends BaseBuilder {
         assetsManager.addAsset("barrel", ModelRender.class, new Box(1, 1, 5, Color.GREEN, attributes));
         assetsManager.addAsset("gunRotate", ModelRender.class, new Cylinder(1, 1, 1, 8, Color.CYAN, attributes));
 
-        assetsManager.addAsset("barrel", RigidBodyConfig.class, new BoxConfig(new Vector3(0.5f,0.5f,2.5f), 5f));
-        assetsManager.addAsset("gunRotate", RigidBodyConfig.class, new CylinderConfig(new Vector3(0.5f,0.5f,0.5f), 50f));
+        assetsManager.addAsset("barrel", TemplateRigidBody.class, new BoxBody(new Vector3(0.5f,0.5f,2.5f), 5f));
+        assetsManager.addAsset("gunRotate", TemplateRigidBody.class, new CylinderBody(new Vector3(0.5f,0.5f,0.5f), 50f));
     }
 
     public GunBuilder(AssetsManager assetsManager, EntityManager entityManager) {

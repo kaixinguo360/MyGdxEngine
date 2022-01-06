@@ -16,7 +16,7 @@ public class Collider implements Component, Loadable.OnInit, Disposable {
     public final static short ALL_FLAG = -1;
 
     @Config(type = Config.Type.Asset)
-    public RigidBodyConfig rigidBodyConfig;
+    public TemplateRigidBody templateRigidBody;
 
     @Config
     public int group = NORMAL_FLAG;
@@ -26,15 +26,15 @@ public class Collider implements Component, Loadable.OnInit, Disposable {
 
     public btCollisionObject collisionObject;
 
-    public Collider(RigidBodyConfig rigidBodyConfig) {
-        this.rigidBodyConfig = rigidBodyConfig;
+    public Collider(TemplateRigidBody templateRigidBody) {
+        this.templateRigidBody = templateRigidBody;
         init();
     }
 
     @Override
     public void init() {
         this.collisionObject = new btCollisionObject();
-        this.collisionObject.setCollisionShape(rigidBodyConfig.shape);
+        this.collisionObject.setCollisionShape(templateRigidBody.shape);
     }
 
     @Override

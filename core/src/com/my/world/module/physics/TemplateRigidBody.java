@@ -4,23 +4,25 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.my.world.core.Config;
+import com.my.world.core.Loadable;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class RigidBodyConfig {
+public class TemplateRigidBody extends RigidBody implements Loadable.OnInit {
 
     private static final Vector3 localInertia = new Vector3();
-
-    public btCollisionShape shape;
 
     @Config
     public float mass;
 
+    public btCollisionShape shape;
+
     public btRigidBody.btRigidBodyConstructionInfo constructionInfo;
 
-    public RigidBodyConfig(btCollisionShape shape, float mass) {
+    public TemplateRigidBody(btCollisionShape shape, float mass) {
         this.shape = shape;
         this.mass = mass;
+        init();
     }
 
     public void generateRigidBodyConfig() {
@@ -30,5 +32,18 @@ public class RigidBodyConfig {
             localInertia.set(0, 0, 0);
         }
         this.constructionInfo = new btRigidBody.btRigidBodyConstructionInfo(mass, null, shape, localInertia);
+    }
+
+    @Override
+    public void init() {
+        generateRigidBodyConfig();
+        this.body = new btRigidBody(constructionInfo);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        constructionInfo.dispose();
+        shape.dispose();
     }
 }

@@ -13,10 +13,10 @@ import com.my.world.core.Prefab;
 import com.my.world.module.common.Position;
 import com.my.world.module.physics.Collider;
 import com.my.world.module.physics.Collision;
-import com.my.world.module.physics.RigidBodyConfig;
+import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.constraint.ConnectConstraint;
-import com.my.world.module.physics.rigidbody.CapsuleConfig;
-import com.my.world.module.physics.rigidbody.SphereConfig;
+import com.my.world.module.physics.rigidbody.CapsuleBody;
+import com.my.world.module.physics.rigidbody.SphereBody;
 import com.my.world.module.render.ModelRender;
 import com.my.world.module.render.model.Capsule;
 
@@ -28,9 +28,9 @@ public class BulletBuilder extends BaseBuilder {
         assetsManager.addAsset("bullet", ModelRender.class, new Capsule(0.5f, 2, 8, Color.YELLOW, VertexAttributes.Usage.Position));
         assetsManager.addAsset("bomb", ModelRender.class, new Capsule(0.5f, 2, 8, Color.GRAY, attributes));
 
-        assetsManager.addAsset("bullet", RigidBodyConfig.class, new CapsuleConfig(0.5f, 1, 50f));
-        assetsManager.addAsset("bomb", RigidBodyConfig.class, new CapsuleConfig(0.5f, 1, 50f));
-        assetsManager.addAsset("explosion", RigidBodyConfig.class, new SphereConfig(30, 50f));
+        assetsManager.addAsset("bullet", TemplateRigidBody.class, new CapsuleBody(0.5f, 1, 50f));
+        assetsManager.addAsset("bomb", TemplateRigidBody.class, new CapsuleBody(0.5f, 1, 50f));
+        assetsManager.addAsset("explosion", TemplateRigidBody.class, new SphereBody(30, 50f));
     }
 
     public BulletBuilder(AssetsManager assetsManager, EntityManager entityManager) {
@@ -41,8 +41,8 @@ public class BulletBuilder extends BaseBuilder {
         Entity entity = new Entity();
         entity.setName(name);
         entity.addComponent(new Position(new Matrix4(transform)));
-        RigidBodyConfig rigidBodyConfig = assetsManager.getAsset("explosion", RigidBodyConfig.class);
-        entity.addComponent(new Collider(rigidBodyConfig));
+        TemplateRigidBody templateRigidBody = assetsManager.getAsset("explosion", TemplateRigidBody.class);
+        entity.addComponent(new Collider(templateRigidBody));
         entity.addComponent(new Collision(Collision.NORMAL_FLAG, Collision.ALL_FLAG));
         entity.addComponent(new ExplosionScript());
         return entity;
