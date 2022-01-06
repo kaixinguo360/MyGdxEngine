@@ -4,10 +4,11 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.my.world.core.Config;
+import com.my.world.module.render.ModelRender;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class CylinderModel extends BaseModel {
+public class Cylinder extends ModelRender {
 
     @Config private float width;
     @Config private float height;
@@ -16,7 +17,7 @@ public class CylinderModel extends BaseModel {
     @Config private Color color;
     @Config private long attributes;
 
-    public CylinderModel(float width, float height, float depth, int divisions, Color color, long attributes) {
+    public Cylinder(float width, float height, float depth, int divisions, Color color, long attributes) {
         this.width = width;
         this.height = height;
         this.depth = depth;
@@ -29,6 +30,6 @@ public class CylinderModel extends BaseModel {
     @Override
     public void init() {
         model = mdBuilder.createCylinder(width, height, depth, divisions, new Material(ColorAttribute.createDiffuse(color)), attributes);
-        calculateBoundingBox();
+        super.init();
     }
 }

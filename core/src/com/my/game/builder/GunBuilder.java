@@ -17,17 +17,17 @@ import com.my.world.module.physics.constraint.HingeConstraint;
 import com.my.world.module.physics.rigidbody.BoxConfig;
 import com.my.world.module.physics.rigidbody.CylinderConfig;
 import com.my.world.module.physics.script.ConstraintController;
-import com.my.world.module.render.RenderModel;
-import com.my.world.module.render.model.BoxModel;
-import com.my.world.module.render.model.CylinderModel;
+import com.my.world.module.render.ModelRender;
+import com.my.world.module.render.model.Box;
+import com.my.world.module.render.model.Cylinder;
 
 public class GunBuilder extends BaseBuilder {
 
     public static void initAssets(AssetsManager assetsManager) {
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
 
-        assetsManager.addAsset("barrel", RenderModel.class, new BoxModel(1, 1, 5, Color.GREEN, attributes));
-        assetsManager.addAsset("gunRotate", RenderModel.class, new CylinderModel(1, 1, 1, 8, Color.CYAN, attributes));
+        assetsManager.addAsset("barrel", ModelRender.class, new Box(1, 1, 5, Color.GREEN, attributes));
+        assetsManager.addAsset("gunRotate", ModelRender.class, new Cylinder(1, 1, 1, 8, Color.CYAN, attributes));
 
         assetsManager.addAsset("barrel", RigidBodyConfig.class, new BoxConfig(new Vector3(0.5f,0.5f,2.5f), 5f));
         assetsManager.addAsset("gunRotate", RigidBodyConfig.class, new CylinderConfig(new Vector3(0.5f,0.5f,0.5f), 50f));

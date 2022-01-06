@@ -17,16 +17,16 @@ import com.my.world.module.physics.RigidBodyConfig;
 import com.my.world.module.physics.constraint.ConnectConstraint;
 import com.my.world.module.physics.rigidbody.CapsuleConfig;
 import com.my.world.module.physics.rigidbody.SphereConfig;
-import com.my.world.module.render.RenderModel;
-import com.my.world.module.render.model.CapsuleModel;
+import com.my.world.module.render.ModelRender;
+import com.my.world.module.render.model.Capsule;
 
 public class BulletBuilder extends BaseBuilder {
 
     public static void initAssets(AssetsManager assetsManager) {
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
 
-        assetsManager.addAsset("bullet", RenderModel.class, new CapsuleModel(0.5f, 2, 8, Color.YELLOW, VertexAttributes.Usage.Position));
-        assetsManager.addAsset("bomb", RenderModel.class, new CapsuleModel(0.5f, 2, 8, Color.GRAY, attributes));
+        assetsManager.addAsset("bullet", ModelRender.class, new Capsule(0.5f, 2, 8, Color.YELLOW, VertexAttributes.Usage.Position));
+        assetsManager.addAsset("bomb", ModelRender.class, new Capsule(0.5f, 2, 8, Color.GRAY, attributes));
 
         assetsManager.addAsset("bullet", RigidBodyConfig.class, new CapsuleConfig(0.5f, 1, 50f));
         assetsManager.addAsset("bomb", RigidBodyConfig.class, new CapsuleConfig(0.5f, 1, 50f));

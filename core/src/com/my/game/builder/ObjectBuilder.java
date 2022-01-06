@@ -12,16 +12,16 @@ import com.my.world.module.common.Position;
 import com.my.world.module.physics.RigidBodyConfig;
 import com.my.world.module.physics.constraint.ConnectConstraint;
 import com.my.world.module.physics.rigidbody.BoxConfig;
-import com.my.world.module.render.RenderModel;
-import com.my.world.module.render.model.BoxModel;
+import com.my.world.module.render.ModelRender;
+import com.my.world.module.render.model.Box;
 
 public class ObjectBuilder extends BaseBuilder {
 
     public static void initAssets(AssetsManager assetsManager) {
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
 
-        assetsManager.addAsset("box", RenderModel.class, new BoxModel(1, 1, 1, Color.RED, attributes));
-        assetsManager.addAsset("box1", RenderModel.class, new BoxModel(2, 1, 1, Color.LIGHT_GRAY, attributes));
+        assetsManager.addAsset("box", ModelRender.class, new Box(1, 1, 1, Color.RED, attributes));
+        assetsManager.addAsset("box1", ModelRender.class, new Box(2, 1, 1, Color.LIGHT_GRAY, attributes));
 
         assetsManager.addAsset("box", RigidBodyConfig.class, new BoxConfig(new Vector3(0.5f,0.5f,0.5f), 50f));
         assetsManager.addAsset("box1", RigidBodyConfig.class, new BoxConfig(new Vector3(1,0.5f,0.5f), 50f));

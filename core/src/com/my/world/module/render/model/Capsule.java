@@ -4,22 +4,21 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.my.world.core.Config;
+import com.my.world.module.render.ModelRender;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class ConeModel extends BaseModel {
+public class Capsule extends ModelRender {
 
-    @Config private float width;
+    @Config private float radius;
     @Config private float height;
-    @Config private float depth;
     @Config private int divisions;
     @Config private Color color;
     @Config private long attributes;
 
-    public ConeModel(float width, float height, float depth, int divisions, Color color, long attributes) {
-        this.width = width;
+    public Capsule(float radius, float height, int divisions, Color color, long attributes) {
+        this.radius = radius;
         this.height = height;
-        this.depth = depth;
         this.divisions = divisions;
         this.color = color;
         this.attributes = attributes;
@@ -28,7 +27,7 @@ public class ConeModel extends BaseModel {
 
     @Override
     public void init() {
-        model = mdBuilder.createCone(width, height, depth, divisions, new Material(ColorAttribute.createDiffuse(color)), attributes);
-        calculateBoundingBox();
+        model = mdBuilder.createCapsule(radius, height, divisions, new Material(ColorAttribute.createDiffuse(color)), attributes);
+        super.init();
     }
 }

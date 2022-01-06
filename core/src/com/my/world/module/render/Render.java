@@ -5,16 +5,10 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.my.world.core.Component;
 import com.my.world.core.Config;
-import com.my.world.core.Loadable;
-import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-@AllArgsConstructor
-public class Render implements Component, Loadable.OnInit {
-
-    @Config(type = Config.Type.Asset)
-    public RenderModel renderModel;
+public class Render implements Component {
 
     @Config
     public boolean includeEnv = true;
@@ -24,22 +18,9 @@ public class Render implements Component, Loadable.OnInit {
     public final Vector3 dimensions = new Vector3();
     public float radius;
 
-    public Render(RenderModel renderModel) {
-        this.renderModel = renderModel;
-        init();
-    }
-
     public Render(ModelInstance modelInstance) {
         this.modelInstance = modelInstance;
         calculateBoundingBox();
-    }
-
-    @Override
-    public void init() {
-        this.modelInstance = new ModelInstance(renderModel.model);
-        this.center.set(renderModel.center);
-        this.dimensions.set(renderModel.dimensions);
-        this.radius = renderModel.radius;
     }
 
     public void calculateBoundingBox() {

@@ -4,21 +4,22 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.my.world.core.Config;
+import com.my.world.module.render.ModelRender;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class CapsuleModel extends BaseModel {
+public class Box extends ModelRender {
 
-    @Config private float radius;
+    @Config private float width;
     @Config private float height;
-    @Config private int divisions;
+    @Config private float depth;
     @Config private Color color;
     @Config private long attributes;
 
-    public CapsuleModel(float radius, float height, int divisions, Color color, long attributes) {
-        this.radius = radius;
+    public Box(float width, float height, float depth, Color color, long attributes) {
+        this.width = width;
         this.height = height;
-        this.divisions = divisions;
+        this.depth = depth;
         this.color = color;
         this.attributes = attributes;
         init();
@@ -26,7 +27,7 @@ public class CapsuleModel extends BaseModel {
 
     @Override
     public void init() {
-        model = mdBuilder.createCapsule(radius, height, divisions, new Material(ColorAttribute.createDiffuse(color)), attributes);
-        calculateBoundingBox();
+        model = mdBuilder.createBox(width, height, depth, new Material(ColorAttribute.createDiffuse(color)), attributes);
+        super.init();
     }
 }

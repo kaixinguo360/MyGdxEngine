@@ -17,7 +17,7 @@ import com.my.world.module.physics.RigidBodyConfig;
 import com.my.world.module.physics.constraint.HingeConstraint;
 import com.my.world.module.physics.rigidbody.BoxConfig;
 import com.my.world.module.render.*;
-import com.my.world.module.render.model.BoxModel;
+import com.my.world.module.render.model.Box;
 import com.my.world.module.render.model.ExternalModel;
 import com.my.world.module.script.ScriptSystem;
 
@@ -124,9 +124,9 @@ public class SceneBuilder {
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
 
         // ----- Init Configs ----- //
-        assetsManager.addAsset("sky", RenderModel.class, new ExternalModel("obj/sky.g3db"));
-        assetsManager.getAsset("sky", RenderModel.class).model.nodes.get(0).scale.scl(20);
-        assetsManager.addAsset("ground", RenderModel.class, new BoxModel(10000f, 0.01f, 20000f, Color.WHITE, attributes));
+        assetsManager.addAsset("sky", ModelRender.class, new ExternalModel("obj/sky.g3db"));
+        assetsManager.getAsset("sky", ModelRender.class).model.nodes.get(0).scale.scl(20);
+        assetsManager.addAsset("ground", ModelRender.class, new Box(10000f, 0.01f, 20000f, Color.WHITE, attributes));
 
         assetsManager.addAsset("ground", RigidBodyConfig.class, new BoxConfig(new Vector3(5000,0.005f,10000), 0f));
     }

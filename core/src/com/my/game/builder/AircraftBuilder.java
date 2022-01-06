@@ -20,20 +20,20 @@ import com.my.world.module.physics.rigidbody.BoxConfig;
 import com.my.world.module.physics.rigidbody.ConeConfig;
 import com.my.world.module.physics.rigidbody.CylinderConfig;
 import com.my.world.module.physics.script.ConstraintController;
-import com.my.world.module.render.RenderModel;
-import com.my.world.module.render.model.BoxModel;
-import com.my.world.module.render.model.ConeModel;
-import com.my.world.module.render.model.CylinderModel;
+import com.my.world.module.render.ModelRender;
+import com.my.world.module.render.model.Box;
+import com.my.world.module.render.model.Cone;
+import com.my.world.module.render.model.Cylinder;
 
 public class AircraftBuilder extends BaseBuilder {
 
     public static void initAssets(AssetsManager assetsManager) {
         long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
 
-        assetsManager.addAsset("body", RenderModel.class, new BoxModel(1, 1, 5, Color.GREEN, attributes));
-        assetsManager.addAsset("wing", RenderModel.class, new BoxModel(2, 0.2f, 1, Color.BLUE, attributes));
-        assetsManager.addAsset("rotate", RenderModel.class, new CylinderModel(1, 1, 1, 8, Color.CYAN, attributes));
-        assetsManager.addAsset("engine", RenderModel.class, new ConeModel(0.9f, 1, 0.9f, 18, Color.YELLOW, attributes));
+        assetsManager.addAsset("body", ModelRender.class, new Box(1, 1, 5, Color.GREEN, attributes));
+        assetsManager.addAsset("wing", ModelRender.class, new Box(2, 0.2f, 1, Color.BLUE, attributes));
+        assetsManager.addAsset("rotate", ModelRender.class, new Cylinder(1, 1, 1, 8, Color.CYAN, attributes));
+        assetsManager.addAsset("engine", ModelRender.class, new Cone(0.9f, 1, 0.9f, 18, Color.YELLOW, attributes));
 
         assetsManager.addAsset("body", RigidBodyConfig.class, new BoxConfig(new Vector3(0.5f,0.5f,2.5f), 50f));
         assetsManager.addAsset("wing", RigidBodyConfig.class, new BoxConfig(new Vector3(1f,0.1f,0.5f), 25f));

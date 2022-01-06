@@ -8,8 +8,8 @@ import com.my.world.core.Scene;
 import com.my.world.module.common.Position;
 import com.my.world.module.physics.RigidBody;
 import com.my.world.module.physics.RigidBodyConfig;
-import com.my.world.module.render.Render;
-import com.my.world.module.render.RenderModel;
+import com.my.world.module.render.ModelRender;
+import com.my.world.module.render.PresetModelRender;
 
 public class BaseBuilder {
 
@@ -29,9 +29,9 @@ public class BaseBuilder {
     public Entity createEntity(String className) {
         Entity entity = new Entity();
         entity.addComponent(new Position(new Matrix4()));
-        if (assetsManager.hasAsset(className, RenderModel.class)) {
-            RenderModel renderModel = assetsManager.getAsset(className, RenderModel.class);
-            entity.addComponent(new Render(renderModel));
+        if (assetsManager.hasAsset(className, ModelRender.class)) {
+            ModelRender modelRender = assetsManager.getAsset(className, ModelRender.class);
+            entity.addComponent(new PresetModelRender(modelRender));
         }
         if (assetsManager.hasAsset(className, RigidBodyConfig.class)) {
             RigidBodyConfig rigidBodyConfig = assetsManager.getAsset(className, RigidBodyConfig.class);
