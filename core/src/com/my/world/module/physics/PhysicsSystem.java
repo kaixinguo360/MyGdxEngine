@@ -96,11 +96,11 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
     public void update(float deltaTime) {
         // Set Position for Collider
         Matrix4 tmpM = Matrix4Pool.obtain();
-        for (Map.Entry<Entity, Collider> entry : colliders.entrySet()) {
+        for (Map.Entry<Entity, RigidBody> entry : colliders.entrySet()) {
             Entity entity = entry.getKey();
-            Collider collider = entry.getValue();
+            RigidBody collider = entry.getValue();
             Position position = entity.getComponent(Position.class);
-            collider.collisionObject.setWorldTransform(position.getGlobalTransform(tmpM));
+            collider.body.setWorldTransform(position.getGlobalTransform(tmpM));
         }
         Matrix4Pool.free(tmpM);
         dynamicsWorld.stepSimulation(deltaTime, maxSubSteps, fixedTimeStep);
@@ -195,21 +195,21 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
     // ----- Collider ----- //
 
     protected final ColliderListener colliderListener = new ColliderListener();
-    protected final Map<Entity, Collider> colliders = new LinkedHashMap<>();
+    protected final Map<Entity, RigidBody> colliders = new LinkedHashMap<>();
 
     private class ColliderListener implements EntityFilter, EntityListener {
 
         @Override
         public boolean filter(Entity entity) {
-            return entity.contain(Collider.class);
+            return entity.contain(RigidBody.class) && entity.getComponent(RigidBody.class).isTrigger;
         }
 
         @Override
         public void afterEntityAdded(Entity entity) {
 
             // Get CollisionObject
-            Collider collider = entity.getComponent(Collider.class);
-            btCollisionObject collisionObject = collider.collisionObject;
+            RigidBody collider = entity.getComponent(RigidBody.class);
+            btCollisionObject collisionObject = collider.body;
             collisionObject.userData = entity;
             collisionObject.setCollisionFlags(collisionObject.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_NO_CONTACT_RESPONSE);
 
@@ -230,9 +230,9 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
 
         @Override
         public void afterEntityRemoved(Entity entity) {
-            Collider collider = colliders.get(entity);
+            RigidBody collider = colliders.get(entity);
             if (collider != null) {
-                dynamicsWorld.removeCollisionObject(collider.collisionObject);
+                dynamicsWorld.removeCollisionObject(collider.body);
                 colliders.remove(entity);
             }
         }
@@ -247,7 +247,7 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
 
         @Override
         public boolean filter(Entity entity) {
-            return entity.contain(RigidBody.class);
+            return entity.contain(RigidBody.class) && !entity.getComponent(RigidBody.class).isTrigger;
         }
 
         @Override
@@ -324,16 +324,20 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
                 Entity entity1 = (Entity) colObj1.userData;
                 if (match0) {
 //                    System.out.println(entity0.getId() + " =>" + entity1.getId());
-                    List<OnCollision> scripts = entity0.getComponents(OnCollision.class);
-                    for (OnCollision script : scripts) {
-                        script.collision(entity1);
+                    if (!entity1.getComponent(RigidBody.class).isTrigger) {
+                        List<OnCollision> scripts = entity0.getComponents(OnCollision.class);
+                        for (OnCollision script : scripts) {
+                            script.collision(entity1);
+                        }
                     }
                 }
                 if (match1) {
 //                    System.out.println(entity1.getId() + " <= " + entity0.getId());
-                    List<OnCollision> scripts = entity1.getComponents(OnCollision.class);
-                    for (OnCollision script : scripts) {
-                        script.collision(entity0);
+                    if (!entity0.getComponent(RigidBody.class).isTrigger) {
+                        List<OnCollision> scripts = entity1.getComponents(OnCollision.class);
+                        for (OnCollision script : scripts) {
+                            script.collision(entity0);
+                        }
                     }
                 }
             }

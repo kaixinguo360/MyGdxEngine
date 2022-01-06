@@ -12,6 +12,11 @@ public class SphereBody extends TemplateRigidBody implements Loadable.OnInit {
     @Config private float radius;
 
     public SphereBody(float radius, float mass) {
+        this(radius, mass, false);
+    }
+
+    public SphereBody(float radius, float mass, boolean isTrigger) {
+        super(isTrigger);
         this.radius = radius;
         this.mass = mass;
         init();

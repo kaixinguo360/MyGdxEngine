@@ -20,9 +20,17 @@ public class RigidBody implements Component, Disposable {
     @Config
     public int mask = ALL_FLAG;
 
+    @Config
+    public boolean isTrigger;
+
     public btRigidBody body;
 
+    protected RigidBody(boolean isTrigger) {
+        this.isTrigger = isTrigger;
+    }
+
     public RigidBody(btRigidBody body) {
+        this(false);
         this.body = body;
     }
 

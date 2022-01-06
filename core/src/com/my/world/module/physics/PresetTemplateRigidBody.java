@@ -12,6 +12,11 @@ public class PresetTemplateRigidBody extends RigidBody implements Loadable.OnIni
     public TemplateRigidBody templateRigidBody;
 
     public PresetTemplateRigidBody(TemplateRigidBody templateRigidBody) {
+        this(templateRigidBody, false);
+    }
+
+    public PresetTemplateRigidBody(TemplateRigidBody templateRigidBody, boolean isTrigger) {
+        super(isTrigger);
         this.templateRigidBody = templateRigidBody;
         init();
     }

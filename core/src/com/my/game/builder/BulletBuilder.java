@@ -11,8 +11,8 @@ import com.my.world.core.Entity;
 import com.my.world.core.EntityManager;
 import com.my.world.core.Prefab;
 import com.my.world.module.common.Position;
-import com.my.world.module.physics.Collider;
 import com.my.world.module.physics.Collision;
+import com.my.world.module.physics.PresetTemplateRigidBody;
 import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.constraint.ConnectConstraint;
 import com.my.world.module.physics.rigidbody.CapsuleBody;
@@ -42,7 +42,7 @@ public class BulletBuilder extends BaseBuilder {
         entity.setName(name);
         entity.addComponent(new Position(new Matrix4(transform)));
         TemplateRigidBody templateRigidBody = assetsManager.getAsset("explosion", TemplateRigidBody.class);
-        entity.addComponent(new Collider(templateRigidBody));
+        entity.addComponent(new PresetTemplateRigidBody(templateRigidBody, true));
         entity.addComponent(new Collision(Collision.NORMAL_FLAG, Collision.ALL_FLAG));
         entity.addComponent(new ExplosionScript());
         return entity;

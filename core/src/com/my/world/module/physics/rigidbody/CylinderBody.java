@@ -13,6 +13,11 @@ public class CylinderBody extends TemplateRigidBody implements Loadable.OnInit {
     @Config private Vector3 halfExtents;
 
     public CylinderBody(Vector3 halfExtents, float mass) {
+        this(halfExtents, mass, false);
+    }
+
+    public CylinderBody(Vector3 halfExtents, float mass, boolean isTrigger) {
+        super(isTrigger);
         this.halfExtents = halfExtents;
         this.mass = mass;
         init();

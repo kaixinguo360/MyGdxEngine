@@ -13,6 +13,11 @@ public class ConeBody extends TemplateRigidBody implements Loadable.OnInit {
     @Config private float height;
 
     public ConeBody(float radius, float height, float mass) {
+        this(radius, height, mass, false);
+    }
+
+    public ConeBody(float radius, float height, float mass, boolean isTrigger) {
+        super(isTrigger);
         this.radius = radius;
         this.height = height;
         this.mass = mass;

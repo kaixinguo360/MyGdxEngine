@@ -13,6 +13,12 @@ public class BoxBody extends TemplateRigidBody implements Loadable.OnInit {
     @Config private Vector3 boxHalfExtents;
 
     public BoxBody(Vector3 boxHalfExtents, float mass) {
+        this(boxHalfExtents, mass, false);
+    }
+
+    public BoxBody(Vector3 boxHalfExtents, float mass, boolean isTrigger) {
+        super(isTrigger);
+        this.isTrigger = isTrigger;
         this.boxHalfExtents = boxHalfExtents;
         this.mass = mass;
         init();

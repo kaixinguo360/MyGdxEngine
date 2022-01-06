@@ -19,19 +19,19 @@ public class TemplateRigidBody extends RigidBody implements Loadable.OnInit {
 
     public btRigidBody.btRigidBodyConstructionInfo constructionInfo;
 
+    protected TemplateRigidBody(boolean isTrigger) {
+        super(isTrigger);
+    }
+
     public TemplateRigidBody(btCollisionShape shape, float mass) {
+        this(shape, mass, false);
+    }
+
+    public TemplateRigidBody(btCollisionShape shape, float mass, boolean isTrigger) {
+        super(isTrigger);
         this.shape = shape;
         this.mass = mass;
         init();
-    }
-
-    public void generateRigidBodyConfig() {
-        if (mass > 0f) {
-            shape.calculateLocalInertia(mass, localInertia);
-        } else {
-            localInertia.set(0, 0, 0);
-        }
-        this.constructionInfo = new btRigidBody.btRigidBodyConstructionInfo(mass, null, shape, localInertia);
     }
 
     @Override
@@ -45,5 +45,14 @@ public class TemplateRigidBody extends RigidBody implements Loadable.OnInit {
         super.dispose();
         constructionInfo.dispose();
         shape.dispose();
+    }
+
+    protected void generateRigidBodyConfig() {
+        if (mass > 0f) {
+            shape.calculateLocalInertia(mass, localInertia);
+        } else {
+            localInertia.set(0, 0, 0);
+        }
+        this.constructionInfo = new btRigidBody.btRigidBodyConstructionInfo(mass, null, shape, localInertia);
     }
 }
