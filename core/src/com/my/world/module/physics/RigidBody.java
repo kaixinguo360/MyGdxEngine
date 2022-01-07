@@ -29,8 +29,8 @@ public class RigidBody implements Component, Disposable {
         this.isTrigger = isTrigger;
     }
 
-    public RigidBody(btRigidBody body) {
-        this(false);
+    public RigidBody(btRigidBody body, boolean isTrigger) {
+        this(isTrigger);
         this.body = body;
     }
 

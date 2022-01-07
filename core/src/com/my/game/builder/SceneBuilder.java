@@ -10,30 +10,20 @@ import com.my.game.script.GunScript;
 import com.my.game.script.ReloadScript;
 import com.my.world.core.*;
 import com.my.world.module.common.Position;
-import com.my.world.module.input.KeyInputSystem;
-import com.my.world.module.physics.ConstraintSystem;
-import com.my.world.module.physics.PhysicsSystem;
 import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.constraint.HingeConstraint;
 import com.my.world.module.physics.rigidbody.BoxBody;
-import com.my.world.module.render.*;
+import com.my.world.module.render.Camera;
+import com.my.world.module.render.CameraSystem;
+import com.my.world.module.render.ModelRender;
+import com.my.world.module.render.Render;
 import com.my.world.module.render.model.Box;
 import com.my.world.module.render.model.ExternalModel;
-import com.my.world.module.script.ScriptSystem;
 
 public class SceneBuilder {
 
-    public static Scene createScene(Engine engine) {
-        Scene scene = engine.getSceneManager().newScene("default");
-
-        // Init System
-        scene.getSystemManager().addSystem(new CameraSystem());
-        scene.getSystemManager().addSystem(new RenderSystem());
-        scene.getSystemManager().addSystem(new PhysicsSystem());
-        scene.getSystemManager().addSystem(new ScriptSystem());
-        scene.getSystemManager().addSystem(new EnvironmentSystem());
-        scene.getSystemManager().addSystem(new KeyInputSystem());
-        scene.getSystemManager().addSystem(new ConstraintSystem());
+    public static void initScene(Scene scene) {
+        Engine engine = scene.getEngine();
 
         // ----- Init Static Objects ----- //
         BaseBuilder baseBuilder = new BaseBuilder(scene);
@@ -106,8 +96,6 @@ public class SceneBuilder {
         guiEntity.setName("guiEntity");
         guiEntity.addComponent(new GUIScript()).targetEntity = scene.getEntityManager().findEntityByName("Aircraft-6");
         scene.getEntityManager().addEntity(guiEntity);
-
-        return scene;
     }
 
     public static void initAllAssets(AssetsManager assetsManager) {
