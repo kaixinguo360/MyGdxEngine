@@ -5,6 +5,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class Scene implements Disposable {
@@ -55,6 +58,25 @@ public class Scene implements Disposable {
 
     public Context newContext() {
         return this.context.newContext();
+    }
+
+    // ----- Prefab ----- //
+    public Prefab dumpToPrefab() {
+        LoaderManager loaderManager = getEngine().getLoaderManager();
+
+        List<Map<String, Object>> entityConfigs = new LinkedList<>();
+        for (Entity entity : entityManager.getEntities().values()) {
+            entityConfigs.add(loaderManager.dump(entity, Map.class, context));
+        }
+        entityManager.clearEntity();
+
+        return new Prefab(entityConfigs);
+    }
+    public Entity instantiatePrefab(Prefab prefab) {
+        return Prefab.newInstance(this, prefab.getEntityConfigs());
+    }
+    public Entity instantiatePrefab(Prefab prefab, Map<String, Object> configs) {
+        return Prefab.newInstance(this, prefab.getEntityConfigs(), configs);
     }
 
     @Override

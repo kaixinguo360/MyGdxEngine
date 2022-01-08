@@ -55,7 +55,7 @@ public class EmitterScript implements ScriptSystem.OnStart {
         tmpV1.set(getMainBody().getLinearVelocity());
         tmpV1.add(tmpV2.set(velocity).mul(tmpQ));
 
-        Entity entity = prefab.newInstance(scene);
+        Entity entity = scene.instantiatePrefab(prefab);
         entity.getComponent(Position.class).setLocalTransform(tmpM);
         btRigidBody body = entity.getComponent(RigidBody.class).body;
 

@@ -3,57 +3,41 @@ package com.my.game.builder;
 import com.badlogic.gdx.math.Matrix4;
 import com.my.world.core.*;
 
-import java.util.function.Function;
-
 public class PrefabBuilder {
 
     public static void initAssets(Engine engine) {
         AssetsManager assetsManager = engine.getAssetsManager();
+        Scene scene = engine.getSceneManager().newScene("prefab");
+        EntityManager entityManager = scene.getEntityManager();
 
         // ----- Init Prefabs ----- //
 
-        EntityManager tmpEntityManager = new EntityManager();
-        AircraftBuilder aircraftBuilder = new AircraftBuilder(assetsManager, tmpEntityManager);
-        GunBuilder gunBuilder = new GunBuilder(assetsManager, tmpEntityManager);
-        ObjectBuilder objectBuilder = new ObjectBuilder(assetsManager, tmpEntityManager);
-        BulletBuilder bulletBuilder = new BulletBuilder(assetsManager, tmpEntityManager);
+        AircraftBuilder aircraftBuilder = new AircraftBuilder(assetsManager, entityManager);
+        GunBuilder gunBuilder = new GunBuilder(assetsManager, entityManager);
+        ObjectBuilder objectBuilder = new ObjectBuilder(assetsManager, entityManager);
+        BulletBuilder bulletBuilder = new BulletBuilder(assetsManager, entityManager);
 
-        Context context = engine.newContext();
-        context.setEnvironment(EntityManager.CONTEXT_ENTITY_PROVIDER, (Function<String, Entity>) tmpEntityManager::findEntityById);
+        objectBuilder.createRunway("Runway", new Matrix4(), null);
+        assetsManager.addAsset("Runway", Prefab.class, scene.dumpToPrefab());
 
-        assetsManager.addAsset("Runway", Prefab.class, Prefab.create(
-                objectBuilder.createRunway("Runway", new Matrix4(), null),
-                context
-        ));
+        objectBuilder.createTower("Tower", new Matrix4(), 5);
+        assetsManager.addAsset("Tower", Prefab.class, scene.dumpToPrefab());
 
-        assetsManager.addAsset("Tower", Prefab.class, Prefab.create(
-                objectBuilder.createTower("Tower", new Matrix4(), 5),
-                context
-        ));
+        bulletBuilder.createExplosion("Explosion", new Matrix4());
+        assetsManager.addAsset("Explosion", Prefab.class, scene.dumpToPrefab());
 
-        assetsManager.addAsset("Explosion", Prefab.class, Prefab.create(
-                bulletBuilder.createExplosion("Explosion", new Matrix4()),
-                context
-        ));
+        bulletBuilder.createBomb("Bomb", new Matrix4(), null);
+        assetsManager.addAsset("Bomb", Prefab.class, scene.dumpToPrefab());
 
-        assetsManager.addAsset("Bomb", Prefab.class, Prefab.create(
-                bulletBuilder.createBomb("Bomb", new Matrix4(), null),
-                context
-        ));
+        bulletBuilder.createBullet("Bullet", new Matrix4(), null);
+        assetsManager.addAsset("Bullet", Prefab.class, scene.dumpToPrefab());
 
-        assetsManager.addAsset("Bullet", Prefab.class, Prefab.create(
-                bulletBuilder.createBullet("Bullet", new Matrix4(), null),
-                context
-        ));
+        aircraftBuilder.createAircraft("Aircraft", new Matrix4(), 4000, 40);
+        assetsManager.addAsset("Aircraft", Prefab.class, scene.dumpToPrefab());
 
-        assetsManager.addAsset("Aircraft", Prefab.class, Prefab.create(
-                aircraftBuilder.createAircraft("Aircraft", new Matrix4(), 4000, 40),
-                context
-        ));
+        gunBuilder.createGun("Gun", null, new Matrix4());
+        assetsManager.addAsset("Gun", Prefab.class, scene.dumpToPrefab());
 
-        assetsManager.addAsset("Gun", Prefab.class, Prefab.create(
-                gunBuilder.createGun("Gun", null, new Matrix4()),
-                context
-        ));
+        engine.getSceneManager().removeScene(scene.getId());
     }
 }

@@ -38,9 +38,18 @@ public class SceneManager implements Disposable {
     public void removeScene(String id) {
         if (!scenes.containsKey(id)) throw new RuntimeException("No Such Scene: id=" + id);
         Scene scene = scenes.get(id);
-        if (scene.getStatus() != Scene.Status.Running && scene.getStatus() != Scene.Status.Deleted)
-            throw new RuntimeException("Illegal Status(" + scene.getStatus() + ") of the Scene: id=" + scene.getId());
-        scene.setStatus(Scene.Status.Deleted);
+        switch (scene.getStatus()) {
+            case Created:
+                scenes.remove(id);
+                break;
+            case Running:
+                scene.setStatus(Scene.Status.Deleted);
+                break;
+            case Deleted:
+                break;
+            case Disposed:
+                throw new RuntimeException("Illegal Status(" + scene.getStatus() + ") of the Scene: id=" + scene.getId());
+        }
     }
     public Scene findSceneById(String id) {
         if (!scenes.containsKey(id)) throw new RuntimeException("No Such Scene: id=" + id);

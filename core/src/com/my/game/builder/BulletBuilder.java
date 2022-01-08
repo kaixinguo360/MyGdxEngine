@@ -45,7 +45,7 @@ public class BulletBuilder extends BaseBuilder {
         entity.addComponent(new PresetTemplateRigidBody(templateRigidBody, true));
         entity.addComponent(new Collision(Collision.NORMAL_FLAG, Collision.ALL_FLAG));
         entity.addComponent(new ExplosionScript());
-        return entity;
+        return addEntity(name, transform, entity);
     }
 
     public Entity createBullet(String name, Matrix4 transform, Entity base) {

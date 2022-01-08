@@ -101,55 +101,9 @@ public class EntityManager implements Disposable {
         listeners.remove(entityFilter);
     }
 
-    // ---- Batch ---- //
-    public Entity addAll(EntityManager entityManager, boolean resetId) {
-        Entity returnEntity = null;
-        for (Entity entity : entityManager.getEntities().values()) {
-            if (resetId) entity.setId(null);
-            this.addEntity(entity);
-            if (returnEntity == null) returnEntity = entity;
-        }
-        return returnEntity;
-    }
-    public <T extends Entity> T addAll(T entity, boolean resetId) {
-        if (resetId) entity.setId(null);
-        addEntity(entity);
-        if (!entity.getChildren().isEmpty()) {
-            for (Entity child : entity.getChildren()) {
-                addAll(child, resetId);
-            }
-        }
-        return entity;
-    }
-    public Entity removeAll(String id) {
-        if (!entities.containsKey(id)) throw new RuntimeException("No Such Entity: id=" + id);
-        Entity entity = entities.get(id);
-        if (!entity.getChildren().isEmpty()) {
-            for (Entity child : entity.getChildren()) {
-                removeAll(child.getId());
-            }
-        }
-        removeEntity(id);
-        return entity;
-    }
-    public void clear() {
-        this.entities.clear();
-        this.filters.clear();
-        this.listeners.clear();
-        this.batch.toAdd.clear();
-        this.batch.toRemove.clear();
-    }
-
     @Override
     public void dispose() {
-        List<Entity> entityList = new ArrayList<>(entities.values());
-        for (int i = entityList.size() - 1; i >= 0; i--) {
-            removeEntity(entityList.get(i).getId());
-        }
-        updateFilters();
-
-        Disposable.disposeAll(entityList);
-        Disposable.disposeAll(entities);
+        clearEntity();
 
         for (Set<Entity> entitySet : filters.values()) {
             entitySet.clear();
@@ -159,6 +113,15 @@ public class EntityManager implements Disposable {
 
         batch.toAdd.clear();
         batch.toRemove.clear();
+    }
+    public void clearEntity() {
+        List<Entity> entityList = new ArrayList<>(entities.values());
+        for (int i = entityList.size() - 1; i >= 0; i--) {
+            removeEntity(entityList.get(i).getId());
+        }
+
+        Disposable.disposeAll(entityList);
+        Disposable.disposeAll(entities);
     }
 
     public class Batch {

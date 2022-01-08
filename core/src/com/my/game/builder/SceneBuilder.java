@@ -39,12 +39,12 @@ public class SceneBuilder {
         // ----- Init Dynamic Objects ----- //
 
         Prefab runway = engine.getAssetsManager().getAsset("Runway", Prefab.class);
-        runway.newInstance(scene);
+        scene.instantiatePrefab(runway);
 
         Prefab tower = engine.getAssetsManager().getAsset("Tower", Prefab.class);
         for (int i = 1; i < 5; i++) {
             for (int j = 0; j < i; j++) {
-                Entity entity = tower.newInstance(scene);
+                Entity entity = scene.instantiatePrefab(tower);
                 entity.getComponent(Position.class).getLocalTransform().setToTranslation(-5, 5 * j, -200 * i);
             }
         }
@@ -54,20 +54,20 @@ public class SceneBuilder {
         for (int x = -20; x <= 20; x+=40) {
             for (int y = 0; y <= 0; y+=20) {
                 for (int z = -20; z <= 20; z+=20) {
-                    Entity entity = aircraft.newInstance(scene);
+                    Entity entity = scene.instantiatePrefab(aircraft);
                     entity.setName("Aircraft-" + aircraftNum++);
                     entity.getComponent(Position.class).getLocalTransform().setToTranslation(x, y, z);
                 }
             }
         }
 
-        Entity aircraftEntity = aircraft.newInstance(scene);
+        Entity aircraftEntity = scene.instantiatePrefab(aircraft);
         aircraftEntity.setName("Aircraft-6");
         aircraftEntity.getComponent(Position.class).getLocalTransform().translate(0, 0, 200);
         aircraftEntity.findChildByName("body").addComponent(new Camera(0, 0, 1, 1, 0, CameraSystem.FollowType.A));
 
         Prefab gun = engine.getAssetsManager().getAsset("Gun", Prefab.class);
-        Entity gunEntity = gun.newInstance(scene);
+        Entity gunEntity = scene.instantiatePrefab(gun);
         gunEntity.setName("Gun-0");
         gunEntity.getComponent(Position.class).getLocalTransform().translate(0, 0.01f / 2, -20);
         gunEntity.getComponent(GunScript.class).disabled = true;
