@@ -25,12 +25,12 @@ public class EntityManager implements Disposable {
     public <T extends Entity> T addEntity(T entity) {
         if (entity.getId() == null) entity.setId(entity.getName() + "_" + UUID.randomUUID());
         String id = entity.getId();
-        if (entities.containsKey(id)) throw new RuntimeException("Duplicate Entity: id=" + id);
+        if (entities.containsKey(id)) throw new EntityManagerException("Duplicate Entity: id=" + id);
         entities.put(id, entity);
         return entity;
     }
     public Entity removeEntity(String id) {
-        if (!entities.containsKey(id)) throw new RuntimeException("No Such Entity: id=" + id);
+        if (!entities.containsKey(id)) throw new EntityManagerException("No Such Entity: id=" + id);
         Entity removed = entities.remove(id);
         for (Map.Entry<EntityFilter, Set<Entity>> entry : filters.entrySet()) {
             EntityFilter filter = entry.getKey();
@@ -40,31 +40,31 @@ public class EntityManager implements Disposable {
         return removed;
     }
     public Entity findEntityById(String id) {
-        if (!entities.containsKey(id)) throw new RuntimeException("No Such Entity: id=" + id);
+        if (!entities.containsKey(id)) throw new EntityManagerException("No Such Entity: id=" + id);
         return entities.get(id);
     }
     public Entity findEntityByName(String name) {
-        if (name == null) throw new RuntimeException("Name of entity can not be null");
+        if (name == null) throw new EntityManagerException("Name of entity can not be null");
         for (Entity entity : entities.values()) {
             if (name.equals(entity.getName())) {
                 return entity;
             }
         }
-        throw new RuntimeException("No Such Entity: name=" + name);
+        throw new EntityManagerException("No Such Entity: name=" + name);
     }
 
     // ---- Filter ---- //
     public void addFilter(EntityFilter entityFilter) {
-        if (filters.containsKey(entityFilter)) throw new RuntimeException("Duplicate Entity Filter: " + entityFilter);
+        if (filters.containsKey(entityFilter)) throw new EntityManagerException("Duplicate Entity Filter: " + entityFilter);
         filters.put(entityFilter, new HashSet<>());
     }
     public void removeFilter(EntityFilter entityFilter) {
-        if (!filters.containsKey(entityFilter)) throw new RuntimeException("No Such Entity Filter: " + entityFilter);
+        if (!filters.containsKey(entityFilter)) throw new EntityManagerException("No Such Entity Filter: " + entityFilter);
         filters.get(entityFilter).clear();
         filters.remove(entityFilter);
     }
     public Collection<Entity> getEntitiesByFilter(EntityFilter entityFilter) {
-        if (!filters.containsKey(entityFilter)) throw new RuntimeException("No Such Entity Filter: " + entityFilter);
+        if (!filters.containsKey(entityFilter)) throw new EntityManagerException("No Such Entity Filter: " + entityFilter);
         return filters.get(entityFilter);
     }
     public void updateFilters() {
@@ -92,12 +92,12 @@ public class EntityManager implements Disposable {
 
     // ---- Listener ---- //
     public void addListener(EntityFilter entityFilter, EntityListener entityListener) {
-        if (listeners.containsKey(entityFilter)) throw new RuntimeException("Duplicate Entity Listener Of This Filter: " + entityFilter);
+        if (listeners.containsKey(entityFilter)) throw new EntityManagerException("Duplicate Entity Listener Of This Filter: " + entityFilter);
         if (!filters.containsKey(entityFilter)) addFilter(entityFilter);
         listeners.put(entityFilter, entityListener);
     }
     public void removeListener(EntityFilter entityFilter, EntityListener entityListener) {
-        if (!listeners.containsKey(entityFilter)) throw new RuntimeException("No Such Entity Listener Of This Filter: " + entityFilter);
+        if (!listeners.containsKey(entityFilter)) throw new EntityManagerException("No Such Entity Listener Of This Filter: " + entityFilter);
         listeners.remove(entityFilter);
     }
 
@@ -133,12 +133,12 @@ public class EntityManager implements Disposable {
 
         public <T extends Entity> T addEntity(T entity) {
             String id = entity.getId();
-            if (entities.containsKey(id)) throw new RuntimeException("Duplicate Entity: id=" + id);
+            if (entities.containsKey(id)) throw new EntityManagerException("Duplicate Entity: id=" + id);
             toAdd.add(entity);
             return entity;
         }
         public Entity removeEntity(String id) {
-            if (!entities.containsKey(id)) throw new RuntimeException("No Such Entity: id=" + id);
+            if (!entities.containsKey(id)) throw new EntityManagerException("No Such Entity: id=" + id);
             toRemove.add(id);
             return entities.get(id);
         }
@@ -154,7 +154,7 @@ public class EntityManager implements Disposable {
             return entity;
         }
         public Entity removeAll(String id) {
-            if (!entities.containsKey(id)) throw new RuntimeException("No Such Entity: id=" + id);
+            if (!entities.containsKey(id)) throw new EntityManagerException("No Such Entity: id=" + id);
             Entity entity = entities.get(id);
             if (!entity.getChildren().isEmpty()) {
                 for (Entity child : entity.getChildren()) {
@@ -178,6 +178,12 @@ public class EntityManager implements Disposable {
                 }
                 toRemove.clear();
             }
+        }
+    }
+    
+    public static class EntityManagerException extends RuntimeException {
+        private EntityManagerException(String message) {
+            super(message);
         }
     }
 

@@ -44,7 +44,13 @@ public class Prefab implements Loadable {
         String prefix = UUID.randomUUID() + "_";
 
         Context context = scene.newContext();
-        context.setEnvironment(EntityManager.CONTEXT_ENTITY_PROVIDER, (Function<String, Entity>) id -> entityManager.findEntityById(prefix + id));
+        context.setEnvironment(EntityManager.CONTEXT_ENTITY_PROVIDER, (Function<String, Entity>) id -> {
+            try {
+                return entityManager.findEntityById(prefix + id);
+            } catch (EntityManager.EntityManagerException e) {
+                return entityManager.findEntityById(id);
+            }
+        });
 
         Entity firstEntity = null;
         for (Map<String, Object> map : entityConfigs) {
