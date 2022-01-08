@@ -3,7 +3,7 @@ package com.my.world.gdx;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 
-public class DisposableManager implements com.my.world.core.Disposable {
+public class DisposableManager implements com.my.world.core.util.Disposable {
 
     private final Array<Disposable> disposables = new Array<>();
 

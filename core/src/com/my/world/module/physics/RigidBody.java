@@ -3,7 +3,7 @@ package com.my.world.module.physics;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.my.world.core.Component;
 import com.my.world.core.Config;
-import com.my.world.core.Disposable;
+import com.my.world.core.util.Disposable;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor

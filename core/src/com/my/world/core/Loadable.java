@@ -1,5 +1,7 @@
 package com.my.world.core;
 
+import com.my.world.core.util.Disposable;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

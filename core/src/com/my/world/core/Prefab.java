@@ -1,5 +1,7 @@
 package com.my.world.core;
 
+import com.my.world.core.util.Disposable;
+import com.my.world.core.util.OverlayMap;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

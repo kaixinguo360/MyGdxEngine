@@ -2,8 +2,11 @@ package com.my.world.module.physics;
 
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
+import com.my.world.core.Entity;
+import com.my.world.core.EntityListener;
+import com.my.world.core.Scene;
 import com.my.world.core.System;
-import com.my.world.core.*;
+import com.my.world.core.util.Disposable;
 import com.my.world.module.common.BaseSystem;
 
 import java.util.ArrayList;

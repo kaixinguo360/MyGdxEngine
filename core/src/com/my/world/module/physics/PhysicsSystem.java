@@ -11,6 +11,7 @@ import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
 import com.my.world.core.System;
 import com.my.world.core.*;
+import com.my.world.core.util.Disposable;
 import com.my.world.gdx.DisposableManager;
 import com.my.world.gdx.Matrix4Pool;
 import com.my.world.gdx.Vector3Pool;

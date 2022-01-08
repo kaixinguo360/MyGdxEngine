@@ -1,5 +1,6 @@
 package com.my.world.core;
 
+import com.my.world.core.util.Disposable;
 import lombok.Getter;
 
 public class Engine implements Disposable {

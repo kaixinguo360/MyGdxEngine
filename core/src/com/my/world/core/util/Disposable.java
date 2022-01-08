@@ -1,4 +1,4 @@
-package com.my.world.core;
+package com.my.world.core.util;
 
 import java.util.Collection;
 import java.util.List;

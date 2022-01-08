@@ -1,7 +1,7 @@
 package com.my.world.gdx;
 
 import com.badlogic.gdx.math.Vector3;
-import com.my.world.core.Pool;
+import com.my.world.core.util.Pool;
 
 public class Vector3Pool {
 

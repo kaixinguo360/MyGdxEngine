@@ -1,4 +1,4 @@
-package com.my.world.core;
+package com.my.world.core.util;
 
 import java.util.LinkedList;
 import java.util.List;
