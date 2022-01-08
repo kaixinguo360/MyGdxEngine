@@ -1,4 +1,4 @@
-package com.my.game.script;
+package com.my.demo.script;
 
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;

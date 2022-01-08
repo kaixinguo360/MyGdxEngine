@@ -1,11 +1,11 @@
-package com.my.game.builder;
+package com.my.demo.builder;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.my.game.script.GunController;
-import com.my.game.script.GunScript;
+import com.my.demo.script.GunController;
+import com.my.demo.script.GunScript;
 import com.my.world.core.AssetsManager;
 import com.my.world.core.Entity;
 import com.my.world.core.Prefab;

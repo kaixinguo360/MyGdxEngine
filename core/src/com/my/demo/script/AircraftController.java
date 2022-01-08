@@ -1,4 +1,4 @@
-package com.my.game.script;
+package com.my.demo.script;
 
 import com.badlogic.gdx.physics.bullet.dynamics.btHingeConstraint;
 import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;

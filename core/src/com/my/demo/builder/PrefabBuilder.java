@@ -1,4 +1,4 @@
-package com.my.game.builder;
+package com.my.demo.builder;
 
 import com.my.world.core.Engine;
 import com.my.world.core.Prefab;

@@ -1,13 +1,13 @@
-package com.my.game.builder;
+package com.my.demo.builder;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.my.game.script.ExitScript;
-import com.my.game.script.GUIScript;
-import com.my.game.script.GunScript;
-import com.my.game.script.ReloadScript;
+import com.my.demo.script.ExitScript;
+import com.my.demo.script.GUIScript;
+import com.my.demo.script.GunScript;
+import com.my.demo.script.ReloadScript;
 import com.my.world.core.*;
 import com.my.world.module.common.Position;
 import com.my.world.module.physics.TemplateRigidBody;

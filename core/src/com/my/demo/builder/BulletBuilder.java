@@ -1,11 +1,11 @@
-package com.my.game.builder;
+package com.my.demo.builder;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Matrix4;
-import com.my.game.script.BombScript;
-import com.my.game.script.ExplosionScript;
-import com.my.game.script.RemoveScript;
+import com.my.demo.script.BombScript;
+import com.my.demo.script.ExplosionScript;
+import com.my.demo.script.RemoveScript;
 import com.my.world.core.AssetsManager;
 import com.my.world.core.Entity;
 import com.my.world.core.Prefab;

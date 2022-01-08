@@ -1,4 +1,4 @@
-package com.my.game.builder;
+package com.my.demo.builder;
 
 import com.badlogic.gdx.math.Matrix4;
 import com.my.world.core.AssetsManager;

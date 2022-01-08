@@ -1,6 +1,6 @@
-package com.my.game;
+package com.my.demo;
 
-import com.my.game.builder.SceneBuilder;
+import com.my.demo.builder.SceneBuilder;
 import com.my.world.core.Scene;
 import com.my.world.gdx.GdxApplication;
 

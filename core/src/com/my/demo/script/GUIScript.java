@@ -1,4 +1,4 @@
-package com.my.game.script;
+package com.my.demo.script;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
