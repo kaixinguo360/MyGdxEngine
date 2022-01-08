@@ -29,16 +29,19 @@ public class Prefab implements Loadable {
         return newInstance(scene, this.entityConfigs, configs);
     }
 
+    private static final List<Map<String, Object>> tmpEntityConfigs = new ArrayList<>();
     public static Entity newInstance(Scene scene, List<Map<String, Object>> entityConfigs, Map<String, Object> overlayConfigs) {
         if (overlayConfigs == null) {
             return newInstance(scene, entityConfigs);
         } else {
-            List<Map<String, Object>> tmpEntityConfigs = new ArrayList<>();
+            tmpEntityConfigs.clear();
             for (Map<String, Object> entityConfig : entityConfigs) {
                 String name = (String) entityConfig.get("name");
-                tmpEntityConfigs.add(new OverlayMap<>(entityConfig, overlayConfigs, name));
+                tmpEntityConfigs.add(OverlayMap.obtain(entityConfig, overlayConfigs, name));
             }
-            return newInstance(scene, tmpEntityConfigs);
+            Entity entity = newInstance(scene, tmpEntityConfigs);
+            Disposable.disposeAll(tmpEntityConfigs);
+            return entity;
         }
     }
 

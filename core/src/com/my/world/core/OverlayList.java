@@ -1,30 +1,36 @@
 package com.my.world.core;
 
-import lombok.Getter;
-
 import java.util.*;
 
-import static com.my.world.core.OverlayMap.mergeValue;
+public class OverlayList<E> implements List<E>, Disposable {
 
-public class OverlayList<E> implements List<E> {
+    protected String root;
+    protected List<E> base;
+    protected Map<String, Object> overlay;
 
-    @Getter
-    protected final String root;
+    protected boolean disposed = false;
+    protected final List<Disposable> linkedObject = new ArrayList<>();
 
-    @Getter
-    protected final List<E> base;
+    private OverlayList() {}
 
-    @Getter
-    protected final Map<String, Object> overlay;
-
-    public OverlayList(List<E> base, Map<String, Object> overlay) {
-        this(base, overlay, "");
-    }
-
-    public OverlayList(List<E> base, Map<String, Object> overlay, String root) {
+    protected void init(List<E> base, Map<String, Object> overlay, String root) {
+        this.disposed = false;
+        this.linkedObject.clear();
         this.base = base;
         this.overlay = overlay;
         this.root = root;
+    }
+
+    @Override
+    public void dispose() {
+        if (!disposed) {
+            this.disposed = true;
+            Disposable.disposeAll(linkedObject);
+            this.base = null;
+            this.overlay = null;
+            this.root = null;
+            pool.free(this);
+        }
     }
 
     @Override
@@ -209,5 +215,30 @@ public class OverlayList<E> implements List<E> {
         public void add(E e) {
             throw new UnsupportedOperationException();
         }
+    }
+
+    public Object mergeValue(Object originalValue, Map<String, Object> overlay, String hash) {
+        if (overlay.containsKey(hash)) {
+            return overlay.get(hash);
+        } else {
+            if (originalValue instanceof Map) {
+                OverlayMap instance = OverlayMap.obtain((Map) originalValue, overlay, hash);
+                this.linkedObject.add(instance);
+                return instance;
+            } else if (originalValue instanceof List){
+                OverlayList instance = OverlayList.obtain((List) originalValue, overlay, hash);
+                this.linkedObject.add(instance);
+                return instance;
+            } else {
+                return originalValue;
+            }
+        }
+    }
+
+    private static final Pool<OverlayList> pool = new Pool<>(OverlayList::new);
+    public static <E> OverlayList<E> obtain(List<E> base, Map<String, Object> overlay, String root) {
+        OverlayList<E> obj = (OverlayList<E>) pool.obtain();
+        obj.init(base, overlay, root);
+        return obj;
     }
 }

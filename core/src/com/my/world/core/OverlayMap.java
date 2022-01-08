@@ -1,28 +1,34 @@
 package com.my.world.core;
 
-import lombok.Getter;
-
 import java.util.*;
 
-public class OverlayMap<K, V> implements Map<K, V> {
+public class OverlayMap<K, V> implements Map<K, V>, Disposable {
 
-    @Getter
-    protected final String root;
+    protected String root;
+    protected Map<K, V> base;
+    protected Map<String, Object> overlay;
 
-    @Getter
-    protected final Map<K, V> base;
+    protected boolean disposed = false;
+    protected final List<Disposable> linkedObject = new ArrayList<>();
 
-    @Getter
-    protected final Map<String, Object> overlay;
+    private OverlayMap() {}
 
-    public OverlayMap(Map<K, V> base, Map<String, Object> overlay) {
-        this(base, overlay, "");
-    }
-
-    public OverlayMap(Map<K, V> base, Map<String, Object> overlay, String root) {
+    protected void init(Map<K, V> base, Map<String, Object> overlay, String root) {
         this.base = base;
         this.overlay = overlay;
         this.root = root;
+        this.linkedObject.clear();
+    }
+
+    @Override
+    public void dispose() {
+        if (!disposed) {
+            this.base = null;
+            this.overlay = null;
+            this.root = null;
+            Disposable.disposeAll(linkedObject);
+            pool.free(this);
+        }
     }
 
     @Override
@@ -126,17 +132,28 @@ public class OverlayMap<K, V> implements Map<K, V> {
         }
     }
 
-    public static Object mergeValue(Object originalValue, Map<String, Object> overlay, String hash) {
+    public Object mergeValue(Object originalValue, Map<String, Object> overlay, String hash) {
         if (overlay.containsKey(hash)) {
             return overlay.get(hash);
         } else {
             if (originalValue instanceof Map) {
-                return new OverlayMap((Map) originalValue, overlay, hash);
+                OverlayMap instance = OverlayMap.obtain((Map) originalValue, overlay, hash);
+                this.linkedObject.add(instance);
+                return instance;
             } else if (originalValue instanceof List){
-                return new OverlayList((List) originalValue, overlay, hash);
+                OverlayList instance = OverlayList.obtain((List) originalValue, overlay, hash);
+                this.linkedObject.add(instance);
+                return instance;
             } else {
                 return originalValue;
             }
         }
+    }
+
+    private static final Pool<OverlayMap> pool = new Pool<>(OverlayMap::new);
+    public static <K, V> OverlayMap<K, V> obtain(Map<K, V> base, Map<String, Object> overlay, String root) {
+        OverlayMap<K, V> obj = (OverlayMap<K, V>) pool.obtain();
+        obj.init(base, overlay, root);
+        return obj;
     }
 }
