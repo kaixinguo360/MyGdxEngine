@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -21,16 +22,33 @@ public class Prefab implements Loadable {
     private List<Map<String, Object>> entityConfigs;
 
     public Entity newInstance(Scene scene) {
-        return newInstance(this, scene);
+        return newInstance(scene, this.entityConfigs);
     }
 
-    public static Entity newInstance(Prefab prefab, Scene scene) {
+    public Entity newInstance(Scene scene, Map<String, Object> configs) {
+        return newInstance(scene, this.entityConfigs, configs);
+    }
+
+    public static Entity newInstance(Scene scene, List<Map<String, Object>> entityConfigs, Map<String, Object> overlayConfigs) {
+        if (overlayConfigs == null) {
+            return newInstance(scene, entityConfigs);
+        } else {
+            List<Map<String, Object>> tmpEntityConfigs = new ArrayList<>();
+            for (Map<String, Object> entityConfig : entityConfigs) {
+                String name = (String) entityConfig.get("name");
+                tmpEntityConfigs.add(new OverlayMap<>(entityConfig, overlayConfigs, name));
+            }
+            return newInstance(scene, tmpEntityConfigs);
+        }
+    }
+
+    public static Entity newInstance(Scene scene, List<Map<String, Object>> entityConfigs) {
         LoaderManager loaderManager = scene.getEngine().getLoaderManager();
 
         Context context = scene.newContext();
         context.setEnvironment(EntityManager.CONTEXT_FIELD_NAME, entityManager);
 
-        for (Map<String, Object> map : prefab.entityConfigs) {
+        for (Map<String, Object> map : entityConfigs) {
             Entity entity = loaderManager.load(map, Entity.class, context);
             entityManager.addEntity(entity);
         }
