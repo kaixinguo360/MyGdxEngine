@@ -49,9 +49,18 @@ public interface Loadable extends Disposable {
                 Config annotation = field.getAnnotation(Config.class);
                 String name = annotation.name();
                 if ("".equals(name)) name = field.getName();
-                Object obj = getObject(context, field.getType(), annotation, config.get(name));
+
+                Class<?> fieldType = field.getType();
+                Object fieldConfig = config.get(name);
+                Object obj;
+                if (!List.class.isAssignableFrom(fieldType) && fieldType.isInstance(fieldConfig)) {
+                    obj = fieldConfig;
+                } else {
+                    obj = getObject(context, fieldType, annotation, fieldConfig);
+                }
+
                 if (Modifier.isFinal(field.getModifiers())) {
-                    if (!(field.get(loadable) != null && List.class.isAssignableFrom(field.getType()) && obj instanceof Collection)) {
+                    if (!(field.get(loadable) != null && List.class.isAssignableFrom(fieldType) && obj instanceof Collection)) {
                         throw new RuntimeException("Can not set a final field: " + field);
                     }
                     List<Object> fieldList = (List<Object>) field.get(loadable);
@@ -89,7 +98,12 @@ public interface Loadable extends Disposable {
         } else if (List.class.isAssignableFrom(elementType)) {
             List<Object> objList = new ArrayList<>();
             for (Object value1 : (List<Object>) value) {
-                objList.add(getObject(context, annotation.elementType(), annotation, value1));
+                Class<?> listElementType = annotation.elementType();
+                if (!List.class.isAssignableFrom(listElementType) && listElementType.isInstance(value1)) {
+                    objList.add(value1);
+                } else {
+                    objList.add(getObject(context, listElementType, annotation, value1));
+                }
             }
             return objList;
         } else if (annotation.type() == Config.Type.Primitive || elementType.isPrimitive() || elementType == String.class) {
