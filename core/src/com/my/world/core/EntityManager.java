@@ -7,7 +7,7 @@ import java.util.*;
 
 public class EntityManager implements Disposable {
 
-    public static final String CONTEXT_FIELD_NAME = "ENTITY_MANAGER";
+    public static final String CONTEXT_ENTITY_PROVIDER = "ENTITY_PROVIDER";
 
     @Getter
     private final Map<String, Entity> entities = new LinkedHashMap<>();
@@ -23,7 +23,7 @@ public class EntityManager implements Disposable {
 
     // ---- Entity ---- //
     public <T extends Entity> T addEntity(T entity) {
-        if (entity.getId() == null) entity.setId(entity.getName() + UUID.randomUUID());
+        if (entity.getId() == null) entity.setId(entity.getName() + "_" + UUID.randomUUID());
         String id = entity.getId();
         if (entities.containsKey(id)) throw new RuntimeException("Duplicate Entity: id=" + id);
         entities.put(id, entity);

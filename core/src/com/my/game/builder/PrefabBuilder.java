@@ -3,6 +3,8 @@ package com.my.game.builder;
 import com.badlogic.gdx.math.Matrix4;
 import com.my.world.core.*;
 
+import java.util.function.Function;
+
 public class PrefabBuilder {
 
     public static void initAssets(Engine engine) {
@@ -17,7 +19,7 @@ public class PrefabBuilder {
         BulletBuilder bulletBuilder = new BulletBuilder(assetsManager, tmpEntityManager);
 
         Context context = engine.newContext();
-        context.setEnvironment(EntityManager.CONTEXT_FIELD_NAME, tmpEntityManager);
+        context.setEnvironment(EntityManager.CONTEXT_ENTITY_PROVIDER, (Function<String, Entity>) tmpEntityManager::findEntityById);
 
         assetsManager.addAsset("Runway", Prefab.class, Prefab.create(
                 objectBuilder.createRunway("Runway", new Matrix4(), null),

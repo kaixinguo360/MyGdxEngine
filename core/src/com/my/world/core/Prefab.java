@@ -7,16 +7,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 
 @NoArgsConstructor
 @AllArgsConstructor
 public class Prefab implements Loadable {
-
-    private static final EntityManager entityManager = new EntityManager();
 
     @Getter
     @Setter
@@ -49,19 +45,21 @@ public class Prefab implements Loadable {
 
     public static Entity newInstance(Scene scene, List<Map<String, Object>> entityConfigs) {
         LoaderManager loaderManager = scene.getEngine().getLoaderManager();
+        EntityManager entityManager = scene.getEntityManager();
+        String prefix = UUID.randomUUID() + "_";
 
         Context context = scene.newContext();
-        context.setEnvironment(EntityManager.CONTEXT_FIELD_NAME, entityManager);
+        context.setEnvironment(EntityManager.CONTEXT_ENTITY_PROVIDER, (Function<String, Entity>) id -> entityManager.findEntityById(prefix + id));
 
+        Entity firstEntity = null;
         for (Map<String, Object> map : entityConfigs) {
             Entity entity = loaderManager.load(map, Entity.class, context);
+            if (entity.getId() != null) entity.setId(prefix + entity.getId());
+            if (firstEntity == null) firstEntity = entity;
             entityManager.addEntity(entity);
         }
 
-        Entity entity = scene.getEntityManager().addAll(entityManager, true);
-        entityManager.clear();
-
-        return entity;
+        return firstEntity;
     }
 
     public static Prefab create(Entity entity, Context context) {

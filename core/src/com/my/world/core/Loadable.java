@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * Config Example:
@@ -102,8 +103,8 @@ public interface Loadable extends Disposable {
             return assetsManager.getAsset(assetId, elementType);
         } else if (annotation.type() == Config.Type.Entity || Entity.class.isAssignableFrom(elementType)) {
             String entityId = (String) value;
-            EntityManager entityManager = context.getEnvironment(EntityManager.CONTEXT_FIELD_NAME, EntityManager.class);
-            return entityManager.findEntityById(entityId);
+            Function<String, Entity> entityFinder = context.getEnvironment(EntityManager.CONTEXT_ENTITY_PROVIDER, Function.class);
+            return entityFinder.apply(entityId);
         } else if (elementType.isEnum()) {
             Method valueOf = elementType.getMethod("valueOf", String.class);
             return valueOf.invoke(null, value);

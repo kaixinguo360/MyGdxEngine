@@ -5,6 +5,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.function.Function;
+
 public class Scene implements Disposable {
 
     @Getter
@@ -34,7 +36,7 @@ public class Scene implements Disposable {
         this.name = name;
         this.engine = engine;
         this.context = engine.newContext();
-        this.context.setEnvironment(EntityManager.CONTEXT_FIELD_NAME, entityManager);
+        this.context.setEnvironment(EntityManager.CONTEXT_ENTITY_PROVIDER, (Function<String, Entity>) entityManager::findEntityById);
     }
 
     public void start() {

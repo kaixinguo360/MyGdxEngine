@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Config Example:
@@ -39,7 +40,7 @@ public class SceneLoader implements Loader {
 
             String name = (String) map.get("name");
             scene = new Scene(engine, name);
-            context.setEnvironment(EntityManager.CONTEXT_FIELD_NAME, scene.getEntityManager());
+            context.setEnvironment(EntityManager.CONTEXT_ENTITY_PROVIDER, (Function<String, Entity>) scene.getEntityManager()::findEntityById);
 
             SystemManager systemManager = scene.getSystemManager();
             List<Map<String, Object>> systems = (List<Map<String, Object>>) map.get("systems");
