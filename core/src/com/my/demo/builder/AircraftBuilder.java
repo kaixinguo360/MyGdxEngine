@@ -11,8 +11,8 @@ import com.my.world.core.Prefab;
 import com.my.world.core.Scene;
 import com.my.world.module.common.Position;
 import com.my.world.module.physics.constraint.ConnectConstraint;
+import com.my.world.module.physics.motion.Force;
 import com.my.world.module.physics.motion.Lift;
-import com.my.world.module.physics.motion.LimitedForce;
 import com.my.world.module.physics.rigidbody.BoxBody;
 import com.my.world.module.physics.rigidbody.ConeBody;
 import com.my.world.module.render.model.Box;
@@ -145,6 +145,7 @@ public class AircraftBuilder extends BaseBuilder {
         entity.addComponent(new Position(new Matrix4()));
         entity.addComponent(new Box(1, 1, 5, Color.GREEN, attributes));
         entity.addComponent(new BoxBody(new Vector3(0.5f,0.5f,2.5f), 50f));
+        entity.addComponent(new Lift(new Vector3(0, 0, 50)));
 
         addEntity(scene, entity);
         return "Body";
@@ -164,7 +165,6 @@ public class AircraftBuilder extends BaseBuilder {
     }
 
     private static final float force = 4000;
-    private static final float maxVelocity = 40;
     private static String createEngine(Scene scene) {
         Entity entity = new Entity();
         entity.setName("Engine");
@@ -172,7 +172,7 @@ public class AircraftBuilder extends BaseBuilder {
         entity.addComponent(new Cone(0.9f, 1, 0.9f, 18, Color.YELLOW, attributes));
         entity.addComponent(new ConeBody(0.45f,1, 50));
         entity.addComponent(new ConnectConstraint(tmpEntity(scene), 2000));
-        entity.addComponent(new LimitedForce(maxVelocity, new Vector3(0, force, 0), new Vector3()));
+        entity.addComponent(new Force(new Vector3(0, force, 0), new Vector3()));
 
         addEntity(scene, entity);
         return "Engine";
