@@ -66,6 +66,8 @@ public class Scene implements Disposable {
 
         List<Map<String, Object>> entityConfigs = new LinkedList<>();
         for (Entity entity : entityManager.getEntities().values()) {
+            String name = entity.getName();
+            if ("tmp".equalsIgnoreCase(name)) continue;
             entityConfigs.add(loaderManager.dump(entity, Map.class, context));
         }
         entityManager.clearEntity();
@@ -77,6 +79,22 @@ public class Scene implements Disposable {
     }
     public Entity instantiatePrefab(Prefab prefab, Map<String, Object> configs) {
         return Prefab.newInstance(this, prefab.getEntityConfigs(), configs);
+    }
+    public Entity instantiatePrefab(String prefabName) {
+        Prefab prefab = engine.getAssetsManager().getAsset(prefabName, Prefab.class);
+        return instantiatePrefab(prefab);
+    }
+    public Entity instantiatePrefab(String prefabName, Map<String, Object> configs) {
+        Prefab prefab = engine.getAssetsManager().getAsset(prefabName, Prefab.class);
+        return Prefab.newInstance(this, prefab.getEntityConfigs(), configs);
+    }
+
+    // ----- Load & Dump ----- //
+    public <E, T> T load(E config, Class<T> type) {
+        return engine.getLoaderManager().load(config, type, newContext());
+    }
+    public <E, T> E dump(T obj, Class<E> configType) {
+        return engine.getLoaderManager().dump(obj, configType, newContext());
     }
 
     @Override
