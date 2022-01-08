@@ -16,6 +16,8 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
     private AircraftController aircraftController_L;
     private AircraftController aircraftController_R;
     private AircraftController aircraftController_T;
+    private AircraftController aircraftController_VL;
+    private AircraftController aircraftController_VR;
 
     @Config public Prefab bulletPrefab;
     @Config public Vector3 bulletVelocity = new Vector3(0, 0, -2000);
@@ -35,16 +37,18 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
         Entity rotate_L = entity.findChildByName("rotate_L");
         Entity rotate_R = entity.findChildByName("rotate_R");
         Entity rotate_T = entity.findChildByName("rotate_T");
+        Entity wing_VL = entity.findChildByName("wing_VL");
+        Entity wing_VR = entity.findChildByName("wing_VR");
         parts.add(rotate_L);
         parts.add(rotate_R);
         parts.add(rotate_T);
+        parts.add(wing_VL);
+        parts.add(wing_VR);
         parts.add(entity.findChildByName("engine"));
         parts.add(entity.findChildByName("wing_L1"));
         parts.add(entity.findChildByName("wing_L2"));
         parts.add(entity.findChildByName("wing_R1"));
         parts.add(entity.findChildByName("wing_R2"));
-        parts.add(entity.findChildByName("wing_TL"));
-        parts.add(entity.findChildByName("wing_TR"));
         parts.add(entity.findChildByName("wing_VL"));
         parts.add(entity.findChildByName("wing_VR"));
 
@@ -54,6 +58,10 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
             aircraftController_R = rotate_R.getComponent(AircraftController.class);
         if (rotate_T.contains(AircraftController.class))
             aircraftController_T = rotate_T.getComponent(AircraftController.class);
+        if (wing_VL.contains(AircraftController.class))
+            aircraftController_VL = wing_VL.getComponent(AircraftController.class);
+        if (wing_VR.contains(AircraftController.class))
+            aircraftController_VR = wing_VR.getComponent(AircraftController.class);
     }
 
     @Override
@@ -72,6 +80,8 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
                     aircraftController_L.rotate(-v2);
                     aircraftController_R.rotate(v2);
                 }
+                if (Gdx.input.isKeyPressed(Input.Keys.Q)) aircraftController_VL.rotate(v1);
+                if (Gdx.input.isKeyPressed(Input.Keys.E)) aircraftController_VR.rotate(-v1);
             }
             if (Gdx.input.isKeyPressed(Input.Keys.J)) fire(bulletPrefab, bulletVelocity, bulletOffset, (float) Math.random());
             if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) explode();

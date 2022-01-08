@@ -11,6 +11,7 @@ import com.my.world.core.Prefab;
 import com.my.world.core.Scene;
 import com.my.world.module.common.Position;
 import com.my.world.module.physics.constraint.ConnectConstraint;
+import com.my.world.module.physics.constraint.HingeConstraint;
 import com.my.world.module.physics.force.ConstantForce;
 import com.my.world.module.physics.force.DragForce;
 import com.my.world.module.physics.rigidbody.BoxBody;
@@ -122,19 +123,34 @@ public class AircraftBuilder extends BaseBuilder {
             put("Wing.name", "wing_TR");
         }});
 
+
         // Vertical Tail
+        Matrix4 transform_VL = new Matrix4().translate(-0.6f, 1f, -1).rotate(Vector3.Z, 90);
         Entity wing_VL = scene.instantiatePrefab("Wing", new HashMap<String, Object>() {{
-            put("Wing.components[0].config.localTransform", new Matrix4().translate(-0.6f, 1f, -1).rotate(Vector3.Z, 90));
-            put("Wing.components[3].config.base", body);
+            put("Wing.components[0].config.localTransform", transform_VL);
+            put("Wing.components[3]", new HingeConstraint(
+                    body,
+                    new Matrix4(body.getComponent(Position.class).getLocalTransform()).inv().mul(transform_VL).translate(0, -0.1f, -0.5f).rotate(Vector3.Y, 90),
+                    new Matrix4().translate(0, -0.1f, -0.5f).rotate(Vector3.Y, 90),
+                    false
+            ));
             put("Wing.parent", entity);
             put("Wing.name", "wing_VL");
         }});
+        wing_VL.addComponent(new AircraftController(0, 0.2f, 1f));
+        Matrix4 transform_VR = new Matrix4().translate(0.6f, 1f, -1).rotate(Vector3.Z, 90);
         Entity wing_VR = scene.instantiatePrefab("Wing", new HashMap<String, Object>() {{
-            put("Wing.components[0].config.localTransform", new Matrix4().translate(0.6f, 1f, -1).rotate(Vector3.Z, 90));
-            put("Wing.components[3].config.base", body);
+            put("Wing.components[0].config.localTransform", transform_VR);
+            put("Wing.components[3]", new HingeConstraint(
+                    body,
+                    new Matrix4(body.getComponent(Position.class).getLocalTransform()).inv().mul(transform_VR).translate(0, 0.1f, -0.5f).rotate(Vector3.Y, 90),
+                    new Matrix4().translate(0, 0.1f, -0.5f).rotate(Vector3.Y, 90),
+                    false
+            ));
             put("Wing.parent", entity);
             put("Wing.name", "wing_VR");
         }});
+        wing_VR.addComponent(new AircraftController(-0.2f, 0, 1f));
 
         return "Aircraft";
     }
