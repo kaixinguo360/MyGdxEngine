@@ -3,7 +3,6 @@ package com.my.game.builder;
 import com.badlogic.gdx.math.Matrix4;
 import com.my.world.core.AssetsManager;
 import com.my.world.core.Entity;
-import com.my.world.core.EntityManager;
 import com.my.world.core.Scene;
 import com.my.world.module.common.Position;
 import com.my.world.module.physics.PresetTemplateRigidBody;
@@ -13,21 +12,9 @@ import com.my.world.module.render.PresetModelRender;
 
 public class BaseBuilder {
 
-    protected final AssetsManager assetsManager;
-    protected final EntityManager entityManager;
-
-    public BaseBuilder(Scene scene) {
-        this.assetsManager = scene.getEngine().getAssetsManager();
-        this.entityManager = scene.getEntityManager();
-    }
-
-    public BaseBuilder(AssetsManager assetsManager, EntityManager entityManager) {
-        this.assetsManager = assetsManager;
-        this.entityManager = entityManager;
-    }
-
-    public Entity createEntity(String className) {
+    public static Entity createEntity(Scene scene, String className) {
         Entity entity = new Entity();
+        AssetsManager assetsManager = scene.getEngine().getAssetsManager();
         entity.addComponent(new Position(new Matrix4()));
         if (assetsManager.hasAsset(className, ModelRender.class)) {
             ModelRender modelRender = assetsManager.getAsset(className, ModelRender.class);
@@ -40,10 +27,18 @@ public class BaseBuilder {
         return entity;
     }
 
-    public Entity addEntity(String name, Matrix4 transform, Entity entity) {
+    public static Entity addEntity(Scene scene, String name, Matrix4 transform, Entity entity) {
         entity.setName(name);
         entity.getComponent(Position.class).setLocalTransform(transform);
-        entityManager.addEntity(entity);
+        scene.getEntityManager().addEntity(entity);
         return entity;
+    }
+
+    public static Entity addEntity(Scene scene, Entity entity) {
+        return scene.getEntityManager().addEntity(entity);
+    }
+
+    public static <T> T getAsset(Scene scene, String id, Class<T> type) {
+        return scene.getEngine().getAssetsManager().getAsset(id, type);
     }
 }

@@ -26,13 +26,12 @@ public class SceneBuilder {
         Engine engine = scene.getEngine();
 
         // ----- Init Static Objects ----- //
-        BaseBuilder baseBuilder = new BaseBuilder(scene);
-        Entity sky = baseBuilder.createEntity("sky");
+        Entity sky = BaseBuilder.createEntity(scene, "sky");
         sky.setName("sky");
         sky.getComponent(Render.class).includeEnv = false;
         scene.getEntityManager().addEntity(sky);
         scene.getSystemManager().getSystem(CameraSystem.class).addSkyBox(sky.getId());
-        Entity ground = baseBuilder.createEntity("ground");
+        Entity ground = BaseBuilder.createEntity(scene, "ground");
         ground.setName("ground");
         scene.getEntityManager().addEntity(ground);
 
@@ -98,12 +97,14 @@ public class SceneBuilder {
         scene.getEntityManager().addEntity(guiEntity);
     }
 
-    public static void initAllAssets(AssetsManager assetsManager) {
+    public static void init(Engine engine) {
+        AssetsManager assetsManager = engine.getAssetsManager();
         AircraftBuilder.initAssets(assetsManager);
         GunBuilder.initAssets(assetsManager);
         ObjectBuilder.initAssets(assetsManager);
         BulletBuilder.initAssets(assetsManager);
         SceneBuilder.initAssets(assetsManager);
+        PrefabBuilder.initAssets(engine);
     }
 
     public static void initAssets(AssetsManager assetsManager) {

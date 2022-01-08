@@ -8,8 +8,8 @@ import com.my.game.script.GunController;
 import com.my.game.script.GunScript;
 import com.my.world.core.AssetsManager;
 import com.my.world.core.Entity;
-import com.my.world.core.EntityManager;
 import com.my.world.core.Prefab;
+import com.my.world.core.Scene;
 import com.my.world.module.common.Position;
 import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.constraint.ConnectConstraint;
@@ -33,44 +33,40 @@ public class GunBuilder extends BaseBuilder {
         assetsManager.addAsset("gunRotate", TemplateRigidBody.class, new CylinderBody(new Vector3(0.5f,0.5f,0.5f), 50f));
     }
 
-    public GunBuilder(AssetsManager assetsManager, EntityManager entityManager) {
-        super(assetsManager, entityManager);
-    }
-
-    public Entity createGun(String name, Entity base, Matrix4 transform) {
+    public static String createGun(Scene scene) {
 
         // Gun Entity
         Entity entity = new Entity();
-        entity.setName(name);
+        entity.setName("Gun");
         entity.addComponent(new Position(new Matrix4()));
         GunScript gunScript = entity.addComponent(new GunScript());
-        gunScript.bulletPrefab = assetsManager.getAsset("Bullet", Prefab.class);
-        gunScript.bombPrefab = assetsManager.getAsset("Bomb", Prefab.class);
-        entityManager.addEntity(entity);
+        gunScript.bulletPrefab = getAsset(scene, "Bullet", Prefab.class);
+        gunScript.bombPrefab = getAsset(scene, "Bomb", Prefab.class);
+        addEntity(scene, entity);
 
-        Entity rotate_Y = createRotate("rotate_Y", transform.cpy().translate(0, 0.5f, 0), new GunController(), base);
-        Entity rotate_X = createRotate("rotate_X", transform.cpy().translate(0, 1.5f, 0).rotate(Vector3.Z, 90), new GunController(-90, 0), rotate_Y);
-        Entity barrel = createBarrel("barrel", transform.cpy().translate(0, 1.5f, -3), rotate_X);
+        Entity rotate_Y = createRotate(scene, "rotate_Y", new Matrix4().translate(0, 0.5f, 0), new GunController(), null);
+        Entity rotate_X = createRotate(scene, "rotate_X", new Matrix4().translate(0, 1.5f, 0).rotate(Vector3.Z, 90), new GunController(-90, 0), rotate_Y);
+        Entity barrel = createBarrel(scene, "barrel", new Matrix4().translate(0, 1.5f, -3), rotate_X);
 
         rotate_Y.setParent(entity);
         rotate_X.setParent(entity);
         barrel.setParent(entity);
 
-        return entity;
+        return "Gun";
     }
 
-    private Entity createBarrel(String name, Matrix4 transform, Entity base) {
-        Entity entity = createEntity("barrel");
+    private static Entity createBarrel(Scene scene, String name, Matrix4 transform, Entity base) {
+        Entity entity = createEntity(scene, "barrel");
         if (base != null) {
             entity.addComponent(new ConnectConstraint(base, 2000));
         }
-        return addEntity(name, transform, entity);
+        return addEntity(scene, name, transform, entity);
     }
 
-    private Entity createRotate(String name, Matrix4 transform, ConstraintController controller, Entity base) {
+    private static Entity createRotate(Scene scene, String name, Matrix4 transform, ConstraintController controller, Entity base) {
         Matrix4 relTransform = (base == null) ? new Matrix4().inv().mul(transform) :
                 new Matrix4(base.getComponent(Position.class).getLocalTransform()).inv().mul(transform);
-        Entity entity = createEntity("gunRotate");
+        Entity entity = createEntity(scene, "gunRotate");
         if (base != null) {
             entity.addComponent(
                     new HingeConstraint(
@@ -82,6 +78,6 @@ public class GunBuilder extends BaseBuilder {
             );
         }
         entity.addComponent(controller);
-        return addEntity(name, transform, entity);
+        return addEntity(scene, name, transform, entity);
     }
 }

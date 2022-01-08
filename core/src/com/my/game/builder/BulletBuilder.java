@@ -8,13 +8,12 @@ import com.my.game.script.ExplosionScript;
 import com.my.game.script.RemoveScript;
 import com.my.world.core.AssetsManager;
 import com.my.world.core.Entity;
-import com.my.world.core.EntityManager;
 import com.my.world.core.Prefab;
+import com.my.world.core.Scene;
 import com.my.world.module.common.Position;
 import com.my.world.module.physics.Collision;
 import com.my.world.module.physics.PresetTemplateRigidBody;
 import com.my.world.module.physics.TemplateRigidBody;
-import com.my.world.module.physics.constraint.ConnectConstraint;
 import com.my.world.module.physics.rigidbody.CapsuleBody;
 import com.my.world.module.physics.rigidbody.SphereBody;
 import com.my.world.module.render.ModelRender;
@@ -33,39 +32,32 @@ public class BulletBuilder extends BaseBuilder {
         assetsManager.addAsset("explosion", TemplateRigidBody.class, new SphereBody(30, 50f));
     }
 
-    public BulletBuilder(AssetsManager assetsManager, EntityManager entityManager) {
-        super(assetsManager, entityManager);
-    }
-
-    public Entity createExplosion(String name, Matrix4 transform) {
+    public static String createExplosion(Scene scene) {
         Entity entity = new Entity();
-        entity.setName(name);
-        entity.addComponent(new Position(new Matrix4(transform)));
-        TemplateRigidBody templateRigidBody = assetsManager.getAsset("explosion", TemplateRigidBody.class);
+        entity.setName("Explosion");
+        entity.addComponent(new Position(new Matrix4()));
+        TemplateRigidBody templateRigidBody = getAsset(scene, "explosion", TemplateRigidBody.class);
         entity.addComponent(new PresetTemplateRigidBody(templateRigidBody, true));
         entity.addComponent(new Collision(Collision.NORMAL_FLAG, Collision.ALL_FLAG));
         entity.addComponent(new ExplosionScript());
-        return addEntity(name, transform, entity);
+        addEntity(scene, "Explosion", new Matrix4(), entity);
+        return "Explosion";
     }
 
-    public Entity createBullet(String name, Matrix4 transform, Entity base) {
-        Entity entity = createEntity("bullet");
+    public static String createBullet(Scene scene) {
+        Entity entity = createEntity(scene, "bullet");
         entity.addComponent(new Collision(Collision.NORMAL_FLAG, Collision.ALL_FLAG));
         entity.addComponent(new RemoveScript());
-        if (base != null) {
-            entity.addComponent(new ConnectConstraint(base, 2000));
-        }
-        return addEntity(name, transform, entity);
+        addEntity(scene, "Bullet", new Matrix4(), entity);
+        return "Bullet";
     }
 
-    public Entity createBomb(String name, Matrix4 transform, Entity base) {
-        Entity entity = createEntity("bomb");
+    public static String createBomb(Scene scene) {
+        Entity entity = createEntity(scene, "bomb");
         entity.addComponent(new Collision(Collision.NORMAL_FLAG, Collision.ALL_FLAG));
         entity.addComponent(new RemoveScript());
-        entity.addComponent(new BombScript()).explosionPrefab = assetsManager.getAsset("Explosion", Prefab.class);
-        if (base != null) {
-            entity.addComponent(new ConnectConstraint(base, 2000));
-        }
-        return addEntity(name, transform, entity);
+        entity.addComponent(new BombScript()).explosionPrefab = getAsset(scene, "Explosion", Prefab.class);
+        addEntity(scene, "Bomb", new Matrix4(), entity);
+        return "Bomb";
     }
 }

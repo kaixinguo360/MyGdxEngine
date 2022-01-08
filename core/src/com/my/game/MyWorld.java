@@ -1,6 +1,5 @@
 package com.my.game;
 
-import com.my.game.builder.PrefabBuilder;
 import com.my.game.builder.SceneBuilder;
 import com.my.world.core.Scene;
 import com.my.world.gdx.GdxApplication;
@@ -23,9 +22,7 @@ public class MyWorld extends GdxApplication {
     }
 
     private void createAssets() {
-        SceneBuilder.initAllAssets(engine.getAssetsManager());
-        PrefabBuilder.initAssets(engine);
-
+        SceneBuilder.init(engine);
     }
     private void saveAssets() {
         engine.getAssetsManager().dumpAssetsToFile("assets.yml");
