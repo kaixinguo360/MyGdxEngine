@@ -1,5 +1,6 @@
 package com.my.demo.builder;
 
+import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Matrix4;
 import com.my.world.core.AssetsManager;
 import com.my.world.core.Entity;
@@ -11,6 +12,8 @@ import com.my.world.module.render.ModelRender;
 import com.my.world.module.render.PresetModelRender;
 
 public class BaseBuilder {
+
+    public static final long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
 
     public static Entity createEntity(Scene scene, String className) {
         Entity entity = new Entity();
@@ -27,14 +30,13 @@ public class BaseBuilder {
         return entity;
     }
 
-    public static Entity addEntity(Scene scene, String name, Matrix4 transform, Entity entity) {
-        entity.setName(name);
-        entity.getComponent(Position.class).setLocalTransform(transform);
-        scene.getEntityManager().addEntity(entity);
-        return entity;
+    public static Entity addEntity(Scene scene, Entity entity) {
+        return scene.getEntityManager().addEntity(entity);
     }
 
-    public static Entity addEntity(Scene scene, Entity entity) {
+    public static Entity tmpEntity(Scene scene) {
+        Entity entity = new Entity();
+        entity.setName("tmp");
         return scene.getEntityManager().addEntity(entity);
     }
 

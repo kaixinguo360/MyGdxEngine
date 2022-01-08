@@ -1,24 +1,22 @@
 package com.my.demo.builder;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.demo.script.ExitScript;
 import com.my.demo.script.GUIScript;
 import com.my.demo.script.GunScript;
 import com.my.demo.script.ReloadScript;
-import com.my.world.core.*;
+import com.my.world.core.Engine;
+import com.my.world.core.Entity;
+import com.my.world.core.Prefab;
+import com.my.world.core.Scene;
 import com.my.world.module.common.Position;
-import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.constraint.HingeConstraint;
-import com.my.world.module.physics.rigidbody.BoxBody;
 import com.my.world.module.render.Camera;
 import com.my.world.module.render.CameraSystem;
-import com.my.world.module.render.ModelRender;
 import com.my.world.module.render.Render;
-import com.my.world.module.render.model.Box;
-import com.my.world.module.render.model.ExternalModel;
+
+import java.util.function.Function;
 
 public class SceneBuilder {
 
@@ -98,25 +96,19 @@ public class SceneBuilder {
     }
 
     public static void init(Engine engine) {
-        AssetsManager assetsManager = engine.getAssetsManager();
-        AircraftBuilder.initAssets(assetsManager);
-        GunBuilder.initAssets(assetsManager);
-        ObjectBuilder.initAssets(assetsManager);
-        BulletBuilder.initAssets(assetsManager);
-        SceneBuilder.initAssets(assetsManager);
-        PrefabBuilder.initAssets(engine);
+        Scene scene = engine.getSceneManager().newScene("prefab");
+
+        ObjectBuilder.initAssets(engine, scene);
+        BulletBuilder.initAssets(engine, scene);
+        GunBuilder.initAssets(engine, scene);
+        AircraftBuilder.initAssets(engine, scene);
+
+        engine.getSceneManager().removeScene(scene.getId());
     }
 
-    public static void initAssets(AssetsManager assetsManager) {
-
-        // ----- Init Models ----- //
-        long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
-
-        // ----- Init Configs ----- //
-        assetsManager.addAsset("sky", ModelRender.class, new ExternalModel("obj/sky.g3db"));
-        assetsManager.getAsset("sky", ModelRender.class).model.nodes.get(0).scale.scl(20);
-        assetsManager.addAsset("ground", ModelRender.class, new Box(10000f, 0.01f, 20000f, Color.WHITE, attributes));
-
-        assetsManager.addAsset("ground", TemplateRigidBody.class, new BoxBody(new Vector3(5000,0.005f,10000), 0f));
+    public static void createPrefab(Scene scene, Function<Scene, String> function) {
+        String name = function.apply(scene);
+        Prefab prefab = scene.dumpToPrefab();
+        scene.getEngine().getAssetsManager().addAsset(name, Prefab.class, prefab);
     }
 }
