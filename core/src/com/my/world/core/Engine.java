@@ -26,7 +26,7 @@ public class Engine implements Disposable {
         assetsManager = new AssetsManager(this);
         loaderManager = new LoaderManager(this);
         sceneManager = new SceneManager(this);
-        jarManager = new JarManager();
+        jarManager = new JarManager(this);
         context = new Context(null);
         context.setEnvironment(AssetsManager.CONTEXT_FIELD_NAME, assetsManager);
         context.setEnvironment(LoaderManager.CONTEXT_FIELD_NAME, loaderManager);

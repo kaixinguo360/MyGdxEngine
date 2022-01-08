@@ -28,14 +28,17 @@ public class JarManager extends ClassLoader {
 
     protected final Yaml yaml = new Yaml();
 
-    JarManager() {
+    protected final Engine engine;
+
+    JarManager(Engine engine) {
+        this.engine = engine;
         this.addClassLoader("default", Thread.currentThread().getContextClassLoader());
     }
 
     public void loadJar(String path) {
         try {
             URL url = new URL(path);
-            URLClassLoader classLoader = new URLClassLoader(new URL[] { url }, null);
+            URLClassLoader classLoader = new URLClassLoader(new URL[] { url });
             addClassLoader(path, classLoader);
             initClassLoader(classLoader);
         } catch (MalformedURLException e) {
@@ -60,8 +63,8 @@ public class JarManager extends ClassLoader {
 
         try {
             Class<?> initClass = classLoader.loadClass(initClassName);
-            Method initMethod = initClass.getMethod(initMethodName);
-            initMethod.invoke(null);
+            Method initMethod = initClass.getMethod(initMethodName, Engine.class);
+            initMethod.invoke(null, engine);
         } catch (ClassNotFoundException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException("Error!", e);
         }
