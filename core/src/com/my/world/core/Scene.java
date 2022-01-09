@@ -97,6 +97,24 @@ public class Scene implements Disposable {
         return engine.getLoaderManager().dump(obj, configType, newContext());
     }
 
+    // ----- Util Method ----- //
+    public Entity addEntity(Entity entity) {
+        return entityManager.addEntity(entity);
+    }
+    public Entity tmpEntity() {
+        Entity entity = new Entity();
+        entity.setName("tmp");
+        return entityManager.addEntity(entity);
+    }
+    public <T> T getAsset(String id, Class<T> type) {
+        return engine.getAssetsManager().getAsset(id, type);
+    }
+    public void createPrefab(Function<Scene, String> function) {
+        String name = function.apply(this);
+        Prefab prefab = dumpToPrefab();
+        engine.getAssetsManager().addAsset(name, Prefab.class, prefab);
+    }
+
     @Override
     public void dispose() {
         entityManager.dispose();
