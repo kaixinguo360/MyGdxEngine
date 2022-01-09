@@ -1,5 +1,6 @@
 package com.my.demo.builder;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.demo.script.ExitScript;
@@ -15,6 +16,7 @@ import com.my.world.module.physics.constraint.HingeConstraint;
 import com.my.world.module.render.Camera;
 import com.my.world.module.render.CameraSystem;
 import com.my.world.module.render.Render;
+import com.my.world.module.render.light.DirectionalLight;
 
 import java.util.function.Function;
 
@@ -22,6 +24,11 @@ public class SceneBuilder {
 
     public static void initScene(Scene scene) {
         Engine engine = scene.getEngine();
+
+        Entity lightEntity = new Entity();
+        lightEntity.addComponent(new DirectionalLight(new Color(0.8f, 0.8f, 0.8f, 1f), new Vector3(-0.2f, -0.8f, 1f)));
+        lightEntity.addComponent(new DirectionalLight(new Color(0.8f, 0.8f, 0.8f, 1f), new Vector3(0.2f, 0.8f, -1f)));
+        scene.getEntityManager().addEntity(lightEntity);
 
         // ----- Init Static Objects ----- //
         Entity sky = BaseBuilder.createEntity(scene, "sky");
