@@ -1,4 +1,4 @@
-package com.my.world.module.physics.motion;
+package com.my.world.module.physics.force;
 
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.my.world.core.Entity;
@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class Motion implements ScriptSystem.OnStart, PhysicsSystem.OnFixedUpdate {
+public abstract class Force implements ScriptSystem.OnStart, PhysicsSystem.OnFixedUpdate {
 
     protected Entity entity;
     protected RigidBody rigidBody;
