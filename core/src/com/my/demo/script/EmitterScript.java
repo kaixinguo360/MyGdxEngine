@@ -50,7 +50,7 @@ public class EmitterScript implements ScriptSystem.OnStart {
         Quaternion tmpQ = QuaternionPool.obtain();
 
         tmpV3.set(position).scl(random);
-        tmpM.set(getTransform()).translate(position).translate(tmpV3).rotate(Vector3.X, 90);
+        tmpM.set(getTransform()).translate(position).translate(tmpV3).rotate(Vector3.X, -90);
         getTransform().getRotation(tmpQ);
         tmpV1.set(getMainBody().getLinearVelocity());
         tmpV1.add(tmpV2.set(velocity).mul(tmpQ));

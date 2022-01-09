@@ -3,6 +3,7 @@ package com.my.demo.builder;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector3;
 import com.my.demo.script.BombScript;
 import com.my.demo.script.ExplosionScript;
 import com.my.demo.script.RemoveScript;
@@ -11,6 +12,7 @@ import com.my.world.module.common.Position;
 import com.my.world.module.physics.Collision;
 import com.my.world.module.physics.PresetTemplateRigidBody;
 import com.my.world.module.physics.TemplateRigidBody;
+import com.my.world.module.physics.force.DragForce;
 import com.my.world.module.physics.rigidbody.CapsuleBody;
 import com.my.world.module.physics.rigidbody.SphereBody;
 import com.my.world.module.render.ModelRender;
@@ -60,6 +62,8 @@ public class BulletBuilder extends BaseBuilder {
         entity.addComponent(new Collision(Collision.NORMAL_FLAG, Collision.ALL_FLAG));
         entity.addComponent(new RemoveScript());
         entity.addComponent(new BombScript()).explosionPrefab = getAsset(scene, "Explosion", Prefab.class);
+        entity.addComponent(new DragForce(new Vector3(0, 0, 0.05f), new Vector3(0, -1, 0), false));
+        entity.addComponent(new DragForce(new Vector3(0.05f, 0, 0), new Vector3(0, -1, 0), false));
         addEntity(scene, entity);
         return "Bomb";
     }
