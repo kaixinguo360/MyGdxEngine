@@ -1,6 +1,7 @@
 package com.my.demo.builder;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.demo.script.ExitScript;
@@ -9,22 +10,25 @@ import com.my.demo.script.GunScript;
 import com.my.demo.script.ReloadScript;
 import com.my.world.core.Engine;
 import com.my.world.core.Entity;
-import com.my.world.core.Prefab;
 import com.my.world.core.Scene;
 import com.my.world.module.common.Position;
+import com.my.world.module.physics.PresetTemplateRigidBody;
+import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.constraint.HingeConstraint;
 import com.my.world.module.render.Camera;
 import com.my.world.module.render.CameraSystem;
-import com.my.world.module.render.Render;
+import com.my.world.module.render.ModelRender;
+import com.my.world.module.render.PresetModelRender;
 import com.my.world.module.render.attribute.ColorAttribute;
 import com.my.world.module.render.light.DirectionalLight;
 
-import java.util.function.Function;
-
 public class SceneBuilder {
 
+    public static final long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
+
     public static void initScene(Scene scene) {
-        Engine engine = scene.getEngine();
+
+        // ----- Init Environments ----- //
 
         Entity lightEntity = new Entity();
         lightEntity.addComponent(new ColorAttribute(com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute.AmbientLight, new Color(0.4f, 0.4f, 0.4f, 1f)));
@@ -34,47 +38,49 @@ public class SceneBuilder {
         scene.getEntityManager().addEntity(lightEntity);
 
         // ----- Init Static Objects ----- //
-        Entity sky = BaseBuilder.createEntity(scene, "sky");
+
+        Entity sky = new Entity();
         sky.setName("sky");
-        sky.getComponent(Render.class).includeEnv = false;
-        scene.getEntityManager().addEntity(sky);
+        sky.addComponent(new Position(new Matrix4()));
+        sky.addComponent(new PresetModelRender(scene.getAsset("sky", ModelRender.class))).includeEnv = false;
+        scene.addEntity(sky);
         scene.getSystemManager().getSystem(CameraSystem.class).addSkyBox(sky.getId());
-        Entity ground = BaseBuilder.createEntity(scene, "ground");
+
+        Entity ground = new Entity();
         ground.setName("ground");
-        scene.getEntityManager().addEntity(ground);
+        ground.addComponent(new Position(new Matrix4()));
+        ground.addComponent(new PresetModelRender(scene.getAsset("ground", ModelRender.class)));
+        ground.addComponent(new PresetTemplateRigidBody(scene.getAsset("ground", TemplateRigidBody.class)));
+        scene.addEntity(ground);
 
         // ----- Init Dynamic Objects ----- //
 
-        Prefab runway = engine.getAssetsManager().getAsset("Runway", Prefab.class);
-        scene.instantiatePrefab(runway);
+        scene.instantiatePrefab("Runway");
 
-        Prefab tower = engine.getAssetsManager().getAsset("Tower", Prefab.class);
         for (int i = 1; i < 5; i++) {
             for (int j = 0; j < i; j++) {
-                Entity entity = scene.instantiatePrefab(tower);
+                Entity entity = scene.instantiatePrefab("Tower");
                 entity.getComponent(Position.class).getLocalTransform().setToTranslation(-5, 5 * j, -200 * i);
             }
         }
 
-        Prefab aircraft = engine.getAssetsManager().getAsset("Aircraft", Prefab.class);
         int aircraftNum = 0;
         for (int x = -20; x <= 20; x+=40) {
             for (int y = 0; y <= 0; y+=20) {
                 for (int z = -20; z <= 20; z+=20) {
-                    Entity entity = scene.instantiatePrefab(aircraft);
+                    Entity entity = scene.instantiatePrefab("Aircraft");
                     entity.setName("Aircraft-" + aircraftNum++);
                     entity.getComponent(Position.class).getLocalTransform().setToTranslation(x, y, z);
                 }
             }
         }
 
-        Entity aircraftEntity = scene.instantiatePrefab(aircraft);
+        Entity aircraftEntity = scene.instantiatePrefab("Aircraft");
         aircraftEntity.setName("Aircraft-6");
         aircraftEntity.getComponent(Position.class).getLocalTransform().translate(0, 0, 200);
         aircraftEntity.findChildByName("body").addComponent(new Camera(0, 0, 1, 1, 0, CameraSystem.FollowType.A));
 
-        Prefab gun = engine.getAssetsManager().getAsset("Gun", Prefab.class);
-        Entity gunEntity = scene.instantiatePrefab(gun);
+        Entity gunEntity = scene.instantiatePrefab("Gun");
         gunEntity.setName("Gun-0");
         gunEntity.getComponent(Position.class).getLocalTransform().translate(0, 0.01f / 2, -20);
         gunEntity.getComponent(GunScript.class).disabled = true;
@@ -88,21 +94,22 @@ public class SceneBuilder {
         ));
         gunEntity.findChildByName("barrel").addComponent(new Camera(0, 0.7f, 0.3f, 1, 1, CameraSystem.FollowType.A));
 
+        // ----- Init Scripts ----- //
+
         Entity exitScriptEntity = new Entity();
         exitScriptEntity.setName("exitScriptEntity");
         exitScriptEntity.addComponent(new ExitScript());
-        scene.getEntityManager().addEntity(exitScriptEntity);
+        scene.addEntity(exitScriptEntity);
 
         Entity reloadScriptEntity = new Entity();
         reloadScriptEntity.setName("reloadScriptEntity");
         reloadScriptEntity.addComponent(new ReloadScript());
-        scene.getEntityManager().addEntity(reloadScriptEntity);
+        scene.addEntity(reloadScriptEntity);
 
-        // Init GUI
         Entity guiEntity = new Entity();
         guiEntity.setName("guiEntity");
         guiEntity.addComponent(new GUIScript()).targetEntity = scene.getEntityManager().findEntityByName("Aircraft-6");
-        scene.getEntityManager().addEntity(guiEntity);
+        scene.addEntity(guiEntity);
     }
 
     public static void init(Engine engine) {
@@ -114,11 +121,5 @@ public class SceneBuilder {
         AircraftBuilder.initAssets(engine, scene);
 
         engine.getSceneManager().removeScene(scene.getId());
-    }
-
-    public static void createPrefab(Scene scene, Function<Scene, String> function) {
-        String name = function.apply(scene);
-        Prefab prefab = scene.dumpToPrefab();
-        scene.getEngine().getAssetsManager().addAsset(name, Prefab.class, prefab);
     }
 }

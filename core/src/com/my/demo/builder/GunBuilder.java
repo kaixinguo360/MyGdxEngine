@@ -15,11 +15,13 @@ import com.my.world.module.render.model.Box;
 
 import java.util.HashMap;
 
-public class GunBuilder extends BaseBuilder {
+import static com.my.demo.builder.SceneBuilder.attributes;
+
+public class GunBuilder {
 
     public static void initAssets(Engine engine, Scene scene) {
-        SceneBuilder.createPrefab(scene, GunBuilder::createBarrel);
-        SceneBuilder.createPrefab(scene, GunBuilder::createGun);
+        scene.createPrefab(GunBuilder::createBarrel);
+        scene.createPrefab(GunBuilder::createGun);
     }
 
     public static String createGun(Scene scene) {
@@ -28,9 +30,9 @@ public class GunBuilder extends BaseBuilder {
         entity.setName("Gun");
         entity.addComponent(new Position(new Matrix4()));
         GunScript gunScript = entity.addComponent(new GunScript());
-        gunScript.bulletPrefab = getAsset(scene, "Bullet", Prefab.class);
-        gunScript.bombPrefab = getAsset(scene, "Bomb", Prefab.class);
-        addEntity(scene, entity);
+        gunScript.bulletPrefab = scene.getAsset("Bullet", Prefab.class);
+        gunScript.bombPrefab = scene.getAsset("Bomb", Prefab.class);
+        scene.addEntity(entity);
 
         Entity rotate_Y = scene.instantiatePrefab("Rotate", new HashMap<String, Object>() {{
             put("Rotate.components[0].config.localTransform", new Matrix4().translate(0, 0.5f, 0));
@@ -65,9 +67,9 @@ public class GunBuilder extends BaseBuilder {
         entity.addComponent(new Position(new Matrix4()));
         entity.addComponent(new Box(1, 1, 5, Color.GREEN, attributes));
         entity.addComponent(new BoxBody(new Vector3(0.5f,0.5f,2.5f), 5f));
-        entity.addComponent(new ConnectConstraint(tmpEntity(scene), 2000));
+        entity.addComponent(new ConnectConstraint(scene.tmpEntity(), 2000));
 
-        addEntity(scene, entity);
+        scene.addEntity(entity);
         return "Barrel";
     }
 }

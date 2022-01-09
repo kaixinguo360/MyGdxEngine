@@ -10,18 +10,22 @@ import com.my.world.core.Entity;
 import com.my.world.core.Scene;
 import com.my.world.gdx.Matrix4Pool;
 import com.my.world.module.common.Position;
+import com.my.world.module.physics.PresetTemplateRigidBody;
 import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.constraint.HingeConstraint;
 import com.my.world.module.physics.rigidbody.BoxBody;
 import com.my.world.module.physics.rigidbody.CylinderBody;
 import com.my.world.module.render.ModelRender;
+import com.my.world.module.render.PresetModelRender;
 import com.my.world.module.render.model.Box;
 import com.my.world.module.render.model.Cylinder;
 import com.my.world.module.render.model.ExternalModel;
 
 import java.util.HashMap;
 
-public class ObjectBuilder extends BaseBuilder {
+import static com.my.demo.builder.SceneBuilder.attributes;
+
+public class ObjectBuilder {
 
     public static void initAssets(Engine engine, Scene scene) {
         AssetsManager assetsManager = engine.getAssetsManager();
@@ -36,18 +40,18 @@ public class ObjectBuilder extends BaseBuilder {
         assetsManager.addAsset("brick", TemplateRigidBody.class, new BoxBody(new Vector3(1,0.5f,0.5f), 50f));
         assetsManager.addAsset("ground", TemplateRigidBody.class, new BoxBody(new Vector3(5000,0.005f,10000), 0f));
 
-        SceneBuilder.createPrefab(scene, ObjectBuilder::createBox);
-        SceneBuilder.createPrefab(scene, ObjectBuilder::createRunway);
-        SceneBuilder.createPrefab(scene, ObjectBuilder::createWall);
-        SceneBuilder.createPrefab(scene, ObjectBuilder::createTower);
-        SceneBuilder.createPrefab(scene, ObjectBuilder::createRotate);
+        scene.createPrefab(ObjectBuilder::createBox);
+        scene.createPrefab(ObjectBuilder::createRunway);
+        scene.createPrefab(ObjectBuilder::createWall);
+        scene.createPrefab(ObjectBuilder::createTower);
+        scene.createPrefab(ObjectBuilder::createRotate);
     }
 
     public static String createRunway(Scene scene) {
         Entity entity = new Entity();
         entity.setName("Runway");
         entity.addComponent(new Position(new Matrix4()));
-        addEntity(scene, entity);
+        scene.addEntity(entity);
         for (int i = 0; i < 100; i++) {
             int finalI = i;
             scene.instantiatePrefab("Box", new HashMap<String, Object>() {{
@@ -66,7 +70,7 @@ public class ObjectBuilder extends BaseBuilder {
         Entity entity = new Entity();
         entity.setName("Tower");
         entity.addComponent(new Position(new Matrix4()));
-        addEntity(scene, entity);
+        scene.addEntity(entity);
         scene.instantiatePrefab("Wall", new HashMap<String, Object>() {{
             put("Wall.components[0].config.localTransform", new Matrix4());
             put("Wall.parent", entity);
@@ -95,16 +99,18 @@ public class ObjectBuilder extends BaseBuilder {
         Entity entity = new Entity();
         entity.setName("Wall");
         entity.addComponent(new Position(new Matrix4()));
-        addEntity(scene, entity);
+        scene.addEntity(entity);
         Matrix4 tmpM = Matrix4Pool.obtain();
         for (int i = 0; i < height; i++) {
             float tmp = 0.5f + (i % 2);
             for (int j = 0; j < 10; j+=2) {
-                Entity entity1 = createEntity(scene, "brick");
+                Entity entity1 = new Entity();
                 entity1.setName("Brick");
                 entity1.setParent(entity);
-                entity1.getComponent(Position.class).getLocalTransform().setToTranslation(tmp + j, 0.5f + i, 0);
-                addEntity(scene, entity1);
+                entity1.addComponent(new Position(new Matrix4().setToTranslation(tmp + j, 0.5f + i, 0)));
+                entity1.addComponent(new PresetModelRender(scene.getAsset("brick", ModelRender.class)));
+                entity1.addComponent(new PresetTemplateRigidBody(scene.getAsset("brick", TemplateRigidBody.class)));
+                scene.addEntity(entity1);
             }
         }
         Matrix4Pool.free(tmpM);
@@ -112,9 +118,12 @@ public class ObjectBuilder extends BaseBuilder {
     }
 
     public static String createBox(Scene scene) {
-        Entity entity = createEntity(scene, "box");
+        Entity entity = new Entity();
         entity.setName("Box");
-        addEntity(scene, entity);
+        entity.addComponent(new Position(new Matrix4()));
+        entity.addComponent(new PresetModelRender(scene.getAsset("box", ModelRender.class)));
+        entity.addComponent(new PresetTemplateRigidBody(scene.getAsset("box", TemplateRigidBody.class)));
+        scene.addEntity(entity);
         return "Box";
     }
 
@@ -126,7 +135,7 @@ public class ObjectBuilder extends BaseBuilder {
         entity.addComponent(new CylinderBody(new Vector3(0.5f,0.5f,0.5f), 50f));
         entity.addComponent(
                 new HingeConstraint(
-                        tmpEntity(scene),
+                        scene.tmpEntity(),
                         new Matrix4().rotate(Vector3.X, 90),
                         new Matrix4().rotate(Vector3.X, 90),
                         false
@@ -134,7 +143,7 @@ public class ObjectBuilder extends BaseBuilder {
         );
         entity.addComponent(new GunController());
 
-        addEntity(scene, entity);
+        scene.addEntity(entity);
         return "Rotate";
     }
 }

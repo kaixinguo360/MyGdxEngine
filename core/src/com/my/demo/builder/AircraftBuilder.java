@@ -21,13 +21,15 @@ import com.my.world.module.render.model.Cone;
 
 import java.util.HashMap;
 
-public class AircraftBuilder extends BaseBuilder {
+import static com.my.demo.builder.SceneBuilder.attributes;
+
+public class AircraftBuilder {
 
     public static void initAssets(Engine engine, Scene scene) {
-        SceneBuilder.createPrefab(scene, AircraftBuilder::createBody);
-        SceneBuilder.createPrefab(scene, AircraftBuilder::createWing);
-        SceneBuilder.createPrefab(scene, AircraftBuilder::createEngine);
-        SceneBuilder.createPrefab(scene, AircraftBuilder::createAircraft);
+        scene.createPrefab(AircraftBuilder::createBody);
+        scene.createPrefab(AircraftBuilder::createWing);
+        scene.createPrefab(AircraftBuilder::createEngine);
+        scene.createPrefab(AircraftBuilder::createAircraft);
     }
 
     public static String createAircraft(Scene scene) {
@@ -37,9 +39,9 @@ public class AircraftBuilder extends BaseBuilder {
         entity.setName("Aircraft");
         entity.addComponent(new Position(new Matrix4()));
         AircraftScript aircraftScript = entity.addComponent(new AircraftScript());
-        aircraftScript.bulletPrefab = getAsset(scene, "Bullet", Prefab.class);
-        aircraftScript.bombPrefab = getAsset(scene, "Bomb", Prefab.class);
-        addEntity(scene, entity);
+        aircraftScript.bulletPrefab = scene.getAsset("Bullet", Prefab.class);
+        aircraftScript.bombPrefab = scene.getAsset("Bomb", Prefab.class);
+        scene.addEntity(entity);
 
         // Body
         Entity body = scene.instantiatePrefab("Body", new HashMap<String, Object>() {{
@@ -155,7 +157,7 @@ public class AircraftBuilder extends BaseBuilder {
         return "Aircraft";
     }
 
-    private static String createBody(Scene scene) {
+    public static String createBody(Scene scene) {
         Entity entity = new Entity();
         entity.setName("Body");
         entity.addComponent(new Position(new Matrix4()));
@@ -163,34 +165,34 @@ public class AircraftBuilder extends BaseBuilder {
         entity.addComponent(new BoxBody(new Vector3(0.5f,0.5f,2.5f), 50f));
         entity.addComponent(new DragForce(new Vector3(0, 0, 1.2f), new Vector3(), false));
 
-        addEntity(scene, entity);
+        scene.addEntity(entity);
         return "Body";
     }
 
-    private static String createWing(Scene scene) {
+    public static String createWing(Scene scene) {
         Entity entity = new Entity();
         entity.setName("Wing");
         entity.addComponent(new Position(new Matrix4()));
         entity.addComponent(new Box(2, 0.2f, 1, Color.BLUE, attributes));
         entity.addComponent(new BoxBody(new Vector3(1f,0.1f,0.5f), 25f));
-        entity.addComponent(new ConnectConstraint(tmpEntity(scene), 500));
+        entity.addComponent(new ConnectConstraint(scene.tmpEntity(), 500));
         entity.addComponent(new DragForce(new Vector3(0, 30, 0), new Vector3(), false));
 
-        addEntity(scene, entity);
+        scene.addEntity(entity);
         return "Wing";
     }
 
-    private static final float force = 4000;
-    private static String createEngine(Scene scene) {
+    public static final float force = 4000;
+    public static String createEngine(Scene scene) {
         Entity entity = new Entity();
         entity.setName("Engine");
         entity.addComponent(new Position(new Matrix4()));
         entity.addComponent(new Cone(0.9f, 1, 0.9f, 18, Color.YELLOW, attributes));
         entity.addComponent(new ConeBody(0.45f,1, 50));
-        entity.addComponent(new ConnectConstraint(tmpEntity(scene), 2000));
+        entity.addComponent(new ConnectConstraint(scene.tmpEntity(), 2000));
         entity.addComponent(new ConstantForce(new Vector3(0, force, 0), new Vector3(), false));
 
-        addEntity(scene, entity);
+        scene.addEntity(entity);
         return "Engine";
     }
 }
