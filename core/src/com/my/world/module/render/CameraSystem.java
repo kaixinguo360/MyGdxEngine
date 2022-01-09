@@ -57,11 +57,14 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
 
     @Override
     public void afterEntityAdded(Entity entity) {
-        CameraInner cameraInner = new CameraInner();
-        cameraInner.entity = entity;
-        cameraInner.camera = entity.getComponent(Camera.class);
-        cameraInner.position = entity.getComponent(Position.class);
-        this.cameraInners.add(cameraInner);
+        Position position = entity.getComponent(Position.class);
+        for (Camera camera : entity.getComponents(Camera.class)) {
+            CameraInner cameraInner = new CameraInner();
+            cameraInner.entity = entity;
+            cameraInner.camera = camera;
+            cameraInner.position = position;
+            this.cameraInners.add(cameraInner);
+        }
         updateCameras();
     }
 
