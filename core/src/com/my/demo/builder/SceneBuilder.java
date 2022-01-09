@@ -16,6 +16,7 @@ import com.my.world.module.physics.constraint.HingeConstraint;
 import com.my.world.module.render.Camera;
 import com.my.world.module.render.CameraSystem;
 import com.my.world.module.render.Render;
+import com.my.world.module.render.attribute.ColorAttribute;
 import com.my.world.module.render.light.DirectionalLight;
 
 import java.util.function.Function;
@@ -26,6 +27,8 @@ public class SceneBuilder {
         Engine engine = scene.getEngine();
 
         Entity lightEntity = new Entity();
+        lightEntity.addComponent(new ColorAttribute(com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute.AmbientLight, new Color(0.4f, 0.4f, 0.4f, 1f)));
+        lightEntity.addComponent(new ColorAttribute(com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute.Fog, new Color(0.8f, 0.8f, 0.8f, 1f)));
         lightEntity.addComponent(new DirectionalLight(new Color(0.8f, 0.8f, 0.8f, 1f), new Vector3(-0.2f, -0.8f, 1f)));
         lightEntity.addComponent(new DirectionalLight(new Color(0.8f, 0.8f, 0.8f, 1f), new Vector3(0.2f, 0.8f, -1f)));
         scene.getEntityManager().addEntity(lightEntity);
