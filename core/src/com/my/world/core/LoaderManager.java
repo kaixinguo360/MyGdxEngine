@@ -17,6 +17,7 @@ public class LoaderManager {
     @Getter
     protected final List<Loader> loaders = new ArrayList<>();
     private final Map<String, Loader> loaderCache = new HashMap<>();
+    private final Map<String, Loader.Setter> setterCache = new HashMap<>();
 
     LoaderManager(Engine engine) {
         this.engine = engine;
@@ -55,10 +56,44 @@ public class LoaderManager {
         throw new RuntimeException("No such loader to get config: " + configType + " -> " + obj.getClass());
     }
 
+    public void set(Object source, Object target) {
+        Class<?> sourceType = source.getClass();
+        Class<?> targetType = target.getClass();
+        String hash = sourceType + " -> " + targetType;
+        if (setterCache.containsKey(hash)) {
+            setterCache.get(hash).set(source, target);
+            return;
+        } else {
+            for (Loader loader : loaders) {
+                if (loader instanceof Loader.Setter) {
+                    Loader.Setter setter = (Loader.Setter) loader;
+                    if (setter.setterHandleable(sourceType, targetType)) {
+                        setterCache.put(hash, setter);
+                        setter.set(source, target);
+                        return;
+                    }
+                }
+            }
+        }
+        throw new RuntimeException("No such setter: " + source + " -> " + target);
+    }
+
     public <T extends Loader> T findLoader(Class<T> type) {
         for (Loader loader : loaders) {
             if (type.isInstance(loader)) {
                 return (T) loader;
+            }
+        }
+        return null;
+    }
+
+    public <T extends Loader.Setter> T findSetter(Class<T> type) {
+        for (Loader loader : loaders) {
+            if (loader instanceof Loader.Setter) {
+                Loader.Setter setter = (Loader.Setter) loader;
+                if (type.isInstance(setter)) {
+                    return (T) setter;
+                }
             }
         }
         return null;

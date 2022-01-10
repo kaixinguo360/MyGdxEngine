@@ -1,8 +1,9 @@
 package com.my.world.core;
 
+import java.util.Collection;
 import java.util.Map;
 
-public class LoadableLoader implements Loader {
+public class LoadableLoader implements Loader, Loader.Setter {
 
     @Override
     public <E, T> T load(E configObj, Class<T> type, Context context) {
@@ -44,4 +45,16 @@ public class LoadableLoader implements Loader {
         return Map.class.isAssignableFrom(configType) && Loadable.class.isAssignableFrom(targetType);
     }
 
+    @Override
+    public void set(Object sourceObj, Object targetObj) {
+        Collection source = (Collection) sourceObj;
+        Collection target = (Collection) targetObj;
+        target.clear();
+        target.addAll(source);
+    }
+
+    @Override
+    public boolean setterHandleable(Class<?> sourceType, Class<?> targetType) {
+        return Collection.class.isAssignableFrom(sourceType) && Collection.class.isAssignableFrom(targetType);
+    }
 }

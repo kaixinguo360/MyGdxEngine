@@ -53,6 +53,7 @@ public interface Loadable extends Disposable {
 
                 if (annotation.fields().length == 0) {
                     Object fieldConfig = config.get(name);
+
                     Object obj;
                     if (!List.class.isAssignableFrom(fieldType) && fieldType.isInstance(fieldConfig)) {
                         obj = fieldConfig;
@@ -61,19 +62,16 @@ public interface Loadable extends Disposable {
                     }
 
                     if (Modifier.isFinal(field.getModifiers())) {
-                        if (!(field.get(loadable) != null && List.class.isAssignableFrom(fieldType) && obj instanceof Collection)) {
-                            throw new RuntimeException("Can not set a final field: " + field);
-                        }
-                        List<Object> fieldList = (List<Object>) field.get(loadable);
-                        fieldList.clear();
-                        fieldList.addAll((Collection<?>) obj);
+                        Object fieldObject = field.get(loadable);
+                        if (fieldObject == null) throw new RuntimeException("Can not set a final field: " + field);
+                        context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).set(obj, fieldObject);
                     } else {
                         field.set(loadable, obj);
                     }
                 } else {
-                    Object subFieldObject = field.get(loadable);
+                    Object fieldObject = field.get(loadable);
 
-                    if (subFieldObject == null) {
+                    if (fieldObject == null) {
                         throw new RuntimeException("Can not set a null field: " + field);
                     }
 
@@ -89,7 +87,13 @@ public interface Loadable extends Disposable {
                             obj = getObject(context, subFieldType, annotation, subFieldConfig);
                         }
 
-                        subField.set(subFieldObject, obj);
+                        if (Modifier.isFinal(subField.getModifiers())) {
+                            Object subFieldObject = subField.get(fieldObject);
+                            if (subFieldObject == null) throw new RuntimeException("Can not set a final field: " + field);
+                            context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).set(obj, subFieldObject);
+                        } else {
+                            subField.set(fieldObject, obj);
+                        }
                     }
                 }
             }
@@ -111,9 +115,9 @@ public interface Loadable extends Disposable {
                     Object obj = getConfig(context, field.getType(), annotation, field.get(loadable));
                     map.put(name, obj);
                 } else {
-                    Object subFieldObject = field.get(loadable);
+                    Object fieldObject = field.get(loadable);
 
-                    if (subFieldObject == null) {
+                    if (fieldObject == null) {
                         throw new RuntimeException("Can not dump a null field: " + field);
                     }
 
@@ -121,7 +125,7 @@ public interface Loadable extends Disposable {
                     for (String subFieldName : annotation.fields()) {
                         Field subField = fieldType.getField(subFieldName);
 
-                        Object obj = getConfig(context, subField.getType(), annotation, subField.get(subFieldObject));
+                        Object obj = getConfig(context, subField.getType(), annotation, subField.get(fieldObject));
                         map.put(name + "." + subFieldName, obj);
                     }
                 }
@@ -261,9 +265,8 @@ public interface Loadable extends Disposable {
                         Disposable.disposeAll((Map<?, ?>) obj);
                         if (!Modifier.isFinal(field.getModifiers())) field.set(this, null);
                     } else {
-                        if (Modifier.isFinal(field.getModifiers())) throw new RuntimeException("Can not dispose a final field: " + field);
                         Disposable.dispose(obj);
-                        field.set(this, null);
+                        if (Modifier.isFinal(field.getModifiers())) field.set(this, null);
                     }
                 }
             }
