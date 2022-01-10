@@ -19,8 +19,8 @@ public class Camera implements Component, Loadable {
     @Config public int layer;
     @Config public CameraSystem.FollowType followType;
 
-    @Config(name = "camera", fields = { "far", "near" })
-    public PerspectiveCamera perspectiveCamera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+    @Config(name = "camera", fields = { "far", "near", "up", "direction", "fieldOfView", "viewportWidth", "viewportHeight" })
+    public final PerspectiveCamera perspectiveCamera = new PerspectiveCamera();
 
     public Camera(float startX, float startY, float endX, float endY, int layer, CameraSystem.FollowType followType) {
         this.startX = startX;
@@ -32,5 +32,8 @@ public class Camera implements Component, Loadable {
         this.perspectiveCamera.far = 2000;
         this.perspectiveCamera.near = 0.1f;
         this.perspectiveCamera.position.set(0, 0, 0);
+        this.perspectiveCamera.fieldOfView = 67;
+        this.perspectiveCamera.viewportWidth = Gdx.graphics.getWidth();
+        this.perspectiveCamera.viewportHeight = Gdx.graphics.getHeight();
     }
 }
