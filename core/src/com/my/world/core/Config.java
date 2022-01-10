@@ -13,6 +13,8 @@ public @interface Config {
 
     Class<?> elementType() default Object.class;
 
+    String[] fields() default {};
+
     enum Type {
         Primitive, Asset, Entity, Loadable
     }

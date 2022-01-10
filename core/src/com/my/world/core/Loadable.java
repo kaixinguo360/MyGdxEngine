@@ -49,28 +49,51 @@ public interface Loadable extends Disposable {
                 Config annotation = field.getAnnotation(Config.class);
                 String name = annotation.name();
                 if ("".equals(name)) name = field.getName();
-
                 Class<?> fieldType = field.getType();
-                Object fieldConfig = config.get(name);
-                Object obj;
-                if (!List.class.isAssignableFrom(fieldType) && fieldType.isInstance(fieldConfig)) {
-                    obj = fieldConfig;
-                } else {
-                    obj = getObject(context, fieldType, annotation, fieldConfig);
-                }
 
-                if (Modifier.isFinal(field.getModifiers())) {
-                    if (!(field.get(loadable) != null && List.class.isAssignableFrom(fieldType) && obj instanceof Collection)) {
-                        throw new RuntimeException("Can not set a final field: " + field);
+                if (annotation.fields().length == 0) {
+                    Object fieldConfig = config.get(name);
+                    Object obj;
+                    if (!List.class.isAssignableFrom(fieldType) && fieldType.isInstance(fieldConfig)) {
+                        obj = fieldConfig;
+                    } else {
+                        obj = getObject(context, fieldType, annotation, fieldConfig);
                     }
-                    List<Object> fieldList = (List<Object>) field.get(loadable);
-                    fieldList.clear();
-                    fieldList.addAll((Collection<?>) obj);
+
+                    if (Modifier.isFinal(field.getModifiers())) {
+                        if (!(field.get(loadable) != null && List.class.isAssignableFrom(fieldType) && obj instanceof Collection)) {
+                            throw new RuntimeException("Can not set a final field: " + field);
+                        }
+                        List<Object> fieldList = (List<Object>) field.get(loadable);
+                        fieldList.clear();
+                        fieldList.addAll((Collection<?>) obj);
+                    } else {
+                        field.set(loadable, obj);
+                    }
                 } else {
-                    field.set(loadable, obj);
+                    Object subFieldObject = field.get(loadable);
+
+                    if (subFieldObject == null) {
+                        throw new RuntimeException("Can not set a null field: " + field);
+                    }
+
+                    for (String subFieldName : annotation.fields()) {
+                        Field subField = fieldType.getField(subFieldName);
+                        Class<?> subFieldType = subField.getType();
+                        Object subFieldConfig = config.get(name + "." + subFieldName);
+
+                        Object obj;
+                        if (!List.class.isAssignableFrom(subFieldType) && subFieldType.isInstance(subFieldConfig)) {
+                            obj = subFieldConfig;
+                        } else {
+                            obj = getObject(context, subFieldType, annotation, subFieldConfig);
+                        }
+
+                        subField.set(subFieldObject, obj);
+                    }
                 }
             }
-        } catch (IllegalAccessException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException e) {
+        } catch (IllegalAccessException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException | NoSuchFieldException e) {
             throw new RuntimeException("Load Loadable Resource(" + loadable.getClass() + ") error: " + e.getMessage(), e);
         }
     }
@@ -83,10 +106,27 @@ public interface Loadable extends Disposable {
                 Config annotation = field.getAnnotation(Config.class);
                 String name = annotation.name();
                 if ("".equals(name)) name = field.getName();
-                Object obj = getConfig(context, field.getType(), annotation, field.get(loadable));
-                map.put(name, obj);
+
+                if (annotation.fields().length == 0) {
+                    Object obj = getConfig(context, field.getType(), annotation, field.get(loadable));
+                    map.put(name, obj);
+                } else {
+                    Object subFieldObject = field.get(loadable);
+
+                    if (subFieldObject == null) {
+                        throw new RuntimeException("Can not dump a null field: " + field);
+                    }
+
+                    Class<?> fieldType = field.getType();
+                    for (String subFieldName : annotation.fields()) {
+                        Field subField = fieldType.getField(subFieldName);
+
+                        Object obj = getConfig(context, subField.getType(), annotation, subField.get(subFieldObject));
+                        map.put(name + "." + subFieldName, obj);
+                    }
+                }
             }
-        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException | NoSuchFieldException e) {
             throw new RuntimeException("Get config from Loadable Resource(" + loadable.getClass() + ") error: " + e.getMessage(), e);
         }
         return map;

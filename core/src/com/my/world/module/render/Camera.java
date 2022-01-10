@@ -8,7 +8,7 @@ import com.my.world.core.Loadable;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class Camera implements Component, Loadable.OnInit {
+public class Camera implements Component, Loadable {
 
     @Config public float startX;
     @Config public float startY;
@@ -19,7 +19,8 @@ public class Camera implements Component, Loadable.OnInit {
     @Config public int layer;
     @Config public CameraSystem.FollowType followType;
 
-    public PerspectiveCamera perspectiveCamera;
+    @Config(name = "camera", fields = { "far", "near" })
+    public PerspectiveCamera perspectiveCamera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
     public Camera(float startX, float startY, float endX, float endY, int layer, CameraSystem.FollowType followType) {
         this.startX = startX;
@@ -28,15 +29,8 @@ public class Camera implements Component, Loadable.OnInit {
         this.endY = endY;
         this.layer = layer;
         this.followType = followType;
-        init();
-    }
-
-    @Override
-    public void init() {
-        this.perspectiveCamera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         this.perspectiveCamera.far = 2000;
         this.perspectiveCamera.near = 0.1f;
         this.perspectiveCamera.position.set(0, 0, 0);
-        this.perspectiveCamera.update();
     }
 }
