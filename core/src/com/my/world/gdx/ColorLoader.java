@@ -7,7 +7,7 @@ import com.my.world.core.Loader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ColorLoader implements Loader {
+public class ColorLoader implements Loader, Loader.Setter {
 
     @Override
     public <E, T> T load(E config, Class<T> type, Context context) {
@@ -34,5 +34,17 @@ public class ColorLoader implements Loader {
     @Override
     public <E, T> boolean handleable(Class<E> configType, Class<T> targetType) {
         return (configType == Object.class || List.class.isAssignableFrom(configType)) && targetType == Color.class;
+    }
+
+    @Override
+    public void set(Object sourceObj, Object targetObj) {
+        Color source = (Color) sourceObj;
+        Color target = (Color) targetObj;
+        target.set(source);
+    }
+
+    @Override
+    public boolean setterHandleable(Class<?> sourceType, Class<?> targetType) {
+        return Color.class.isAssignableFrom(sourceType) && Color.class.isAssignableFrom(targetType);
     }
 }

@@ -7,7 +7,7 @@ import com.my.world.core.Loader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class QuaternionLoader implements Loader {
+public class QuaternionLoader implements Loader, Loader.Setter {
 
     @Override
     public <E, T> T load(E config, Class<T> type, Context context) {
@@ -34,5 +34,17 @@ public class QuaternionLoader implements Loader {
     @Override
     public <E, T> boolean handleable(Class<E> configType, Class<T> targetType) {
         return (configType == Object.class || List.class.isAssignableFrom(configType)) && targetType == Quaternion.class;
+    }
+
+    @Override
+    public void set(Object sourceObj, Object targetObj) {
+        Quaternion source = (Quaternion) sourceObj;
+        Quaternion target = (Quaternion) targetObj;
+        target.set(source);
+    }
+
+    @Override
+    public boolean setterHandleable(Class<?> sourceType, Class<?> targetType) {
+        return Quaternion.class.isAssignableFrom(sourceType) && Quaternion.class.isAssignableFrom(targetType);
     }
 }

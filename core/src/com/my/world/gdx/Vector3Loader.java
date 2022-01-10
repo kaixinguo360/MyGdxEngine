@@ -7,7 +7,7 @@ import com.my.world.core.Loader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Vector3Loader implements Loader {
+public class Vector3Loader implements Loader, Loader.Setter {
 
     @Override
     public <E, T> T load(E config, Class<T> type, Context context) {
@@ -32,5 +32,17 @@ public class Vector3Loader implements Loader {
     @Override
     public <E, T> boolean handleable(Class<E> configType, Class<T> targetType) {
         return (configType == Object.class || List.class.isAssignableFrom(configType)) && targetType == Vector3.class;
+    }
+
+    @Override
+    public void set(Object sourceObj, Object targetObj) {
+        Vector3 source = (Vector3) sourceObj;
+        Vector3 target = (Vector3) targetObj;
+        target.set(source);
+    }
+
+    @Override
+    public boolean setterHandleable(Class<?> sourceType, Class<?> targetType) {
+        return Vector3.class.isAssignableFrom(sourceType) && Vector3.class.isAssignableFrom(targetType);
     }
 }
