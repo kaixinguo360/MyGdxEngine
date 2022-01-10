@@ -13,7 +13,6 @@ import com.my.world.core.System;
 import com.my.world.core.*;
 import com.my.world.core.util.Disposable;
 import com.my.world.gdx.DisposableManager;
-import com.my.world.gdx.Matrix4Pool;
 import com.my.world.gdx.Vector3Pool;
 import com.my.world.module.common.Position;
 import com.my.world.module.common.Script;
@@ -96,14 +95,12 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
     @Override
     public void update(float deltaTime) {
         // Set Position for Collider
-        Matrix4 tmpM = Matrix4Pool.obtain();
         for (Map.Entry<Entity, RigidBody> entry : colliders.entrySet()) {
             Entity entity = entry.getKey();
             RigidBody collider = entry.getValue();
             Position position = entity.getComponent(Position.class);
-            collider.body.setWorldTransform(position.getGlobalTransform(tmpM));
+            collider.body.setWorldTransform(position.getGlobalTransform());
         }
-        Matrix4Pool.free(tmpM);
         dynamicsWorld.stepSimulation(deltaTime, maxSubSteps, fixedTimeStep);
     }
 
@@ -170,7 +167,7 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
         Vector3 tmpV1 = Vector3Pool.obtain();
         for (Map.Entry<Entity, RigidBody> entry : rigidBodies.entrySet()) {
             Entity entity = entry.getKey();
-            entity.getComponent(Position.class).getLocalTransform().getTranslation(tmpV1);
+            entity.getComponent(Position.class).getGlobalTransform().getTranslation(tmpV1);
             tmpV1.sub(position);
             float len2 = tmpV1.len2();
             tmpV1.nor().scl(force * 1/len2);
@@ -262,11 +259,8 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
             // Set Position
             Position position = entity.getComponent(Position.class);
             if (!position.isDisableInherit()) {
-                Matrix4 tmpM = Matrix4Pool.obtain();
-                position.getGlobalTransform(tmpM);
-                position.setLocalTransform(tmpM);
+                position.setLocalTransform(position.getGlobalTransform());
                 position.setDisableInherit(true);
-                Matrix4Pool.free(tmpM);
             }
             body.proceedToTransform(position.getLocalTransform());
             body.setMotionState(new MotionState(position.getLocalTransform()));

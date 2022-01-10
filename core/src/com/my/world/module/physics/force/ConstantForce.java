@@ -24,7 +24,7 @@ public class ConstantForce extends Force {
 
     @Override
     public void update() {
-        Matrix4 transform = position.getLocalTransform();
+        Matrix4 transform = position.getGlobalTransform();
         Vector3 force = TMP_1.set(this.force); if (!global) force.rot(transform);
         Vector3 rel_pos = TMP_2.set(this.rel_pos).rot(transform);
         rigidBody.body.applyForce(force, rel_pos);

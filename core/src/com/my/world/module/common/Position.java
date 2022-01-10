@@ -30,7 +30,16 @@ public class Position extends BaseComponent {
         localTransform.set(transform);
     }
 
-    public Matrix4 getGlobalTransform(Matrix4 transform) {
+    private static final Matrix4 tmpM = new Matrix4();
+    public Matrix4 getGlobalTransform() {
+        if (disableInherit || entity.getParent() == null) {
+            return localTransform;
+        } else {
+            return getGlobalTransform(tmpM);
+        }
+    }
+
+    private Matrix4 getGlobalTransform(Matrix4 transform) {
         if (entity == null) throw new RuntimeException("This position component not attached to any entity: " + this);
         if (disableInherit || entity.getParent() == null) {
             transform.set(localTransform);

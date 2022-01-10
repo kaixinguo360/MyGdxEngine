@@ -31,7 +31,7 @@ public class RenderSystem extends BaseSystem implements Disposable {
         for (Entity entity : getEntities()) {
             Position position = entity.getComponent(Position.class);
             for (Render render : entity.getComponents(Render.class)) {
-                position.getGlobalTransform(render.modelInstance.transform);
+                render.modelInstance.transform.set(position.getGlobalTransform());
 
                 if (isVisible(cam, position, render)) {
                     if (environment != null && render.includeEnv)
@@ -47,11 +47,11 @@ public class RenderSystem extends BaseSystem implements Disposable {
     // ----- Private ----- //
 
     private boolean isVisible(PerspectiveCamera cam, Position position, Render render) {
-        Vector3 tmp = Vector3Pool.obtain();
-        position.getLocalTransform().getTranslation(tmp);
-        tmp.add(render.center);
-        boolean b = cam.frustum.sphereInFrustum(tmp, render.radius);
-        Vector3Pool.free(tmp);
+        Vector3 tmpV = Vector3Pool.obtain();
+        position.getGlobalTransform().getTranslation(tmpV);
+        tmpV.add(render.center);
+        boolean b = cam.frustum.sphereInFrustum(tmpV, render.radius);
+        Vector3Pool.free(tmpV);
         return b;
     }
 }

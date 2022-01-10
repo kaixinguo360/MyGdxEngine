@@ -105,7 +105,7 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
         Matrix4 tmpM1 = Matrix4Pool.obtain();
 
         for (CameraInner cameraInner : cameraInners) {
-            setCamera(cameraInner.camera.followType, cameraInner.camera.perspectiveCamera, cameraInner.position.getGlobalTransform(tmpM1));
+            setCamera(cameraInner.camera.followType, cameraInner.camera.perspectiveCamera, cameraInner.position.getGlobalTransform());
             Gdx.gl.glViewport(
                     (int) (width * cameraInner.camera.startX),
                     (int) (height * cameraInner.camera.startY),

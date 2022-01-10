@@ -61,7 +61,7 @@ public class AircraftBuilder {
         Entity rotate_L = scene.instantiatePrefab("Rotate", new HashMap<String, Object>() {{
             put("Rotate.components[0].config.localTransform", transform_L);
             put("Rotate.components[3].config.base", body);
-            put("Rotate.components[3].config.frameInA", new Matrix4(body.getComponent(Position.class).getLocalTransform()).inv().mul(transform_L).rotate(Vector3.X, 90));
+            put("Rotate.components[3].config.frameInA", new Matrix4(body.getComponent(Position.class).getGlobalTransform()).inv().mul(transform_L).rotate(Vector3.X, 90));
             put("Rotate.components[4]", new AircraftController(-0.15f, 0.2f, 0.5f));
             put("Rotate.parent", entity);
             put("Rotate.name", "rotate_L");
@@ -84,7 +84,7 @@ public class AircraftBuilder {
         Entity rotate_R = scene.instantiatePrefab("Rotate", new HashMap<String, Object>() {{
             put("Rotate.components[0].config.localTransform", transform_R);
             put("Rotate.components[3].config.base", body);
-            put("Rotate.components[3].config.frameInA", new Matrix4(body.getComponent(Position.class).getLocalTransform()).inv().mul(transform_R).rotate(Vector3.X, 90));
+            put("Rotate.components[3].config.frameInA", new Matrix4(body.getComponent(Position.class).getGlobalTransform()).inv().mul(transform_R).rotate(Vector3.X, 90));
             put("Rotate.components[4]", new AircraftController(-0.15f, 0.2f, 0.5f));
             put("Rotate.parent", entity);
             put("Rotate.name", "rotate_R");
@@ -107,7 +107,7 @@ public class AircraftBuilder {
         Entity rotate_T = scene.instantiatePrefab("Rotate", new HashMap<String, Object>() {{
             put("Rotate.components[0].config.localTransform", transform_T);
             put("Rotate.components[3].config.base", body);
-            put("Rotate.components[3].config.frameInA", new Matrix4(body.getComponent(Position.class).getLocalTransform()).inv().mul(transform_T).rotate(Vector3.X, 90));
+            put("Rotate.components[3].config.frameInA", new Matrix4(body.getComponent(Position.class).getGlobalTransform()).inv().mul(transform_T).rotate(Vector3.X, 90));
             put("Rotate.components[4]", new AircraftController(-0.2f, 0.2f, 1f));
             put("Rotate.parent", entity);
             put("Rotate.name", "rotate_T");
@@ -132,7 +132,7 @@ public class AircraftBuilder {
             put("Wing.components[0].config.localTransform", transform_VL);
             put("Wing.components[3]", new HingeConstraint(
                     body,
-                    new Matrix4(body.getComponent(Position.class).getLocalTransform()).inv().mul(transform_VL).translate(0, -0.1f, -0.5f).rotate(Vector3.Y, 90),
+                    new Matrix4(body.getComponent(Position.class).getGlobalTransform()).inv().mul(transform_VL).translate(0, -0.1f, -0.5f).rotate(Vector3.Y, 90),
                     new Matrix4().translate(0, -0.1f, -0.5f).rotate(Vector3.Y, 90),
                     false
             ));
@@ -145,7 +145,7 @@ public class AircraftBuilder {
             put("Wing.components[0].config.localTransform", transform_VR);
             put("Wing.components[3]", new HingeConstraint(
                     body,
-                    new Matrix4(body.getComponent(Position.class).getLocalTransform()).inv().mul(transform_VR).translate(0, 0.1f, -0.5f).rotate(Vector3.Y, 90),
+                    new Matrix4(body.getComponent(Position.class).getGlobalTransform()).inv().mul(transform_VR).translate(0, 0.1f, -0.5f).rotate(Vector3.Y, 90),
                     new Matrix4().translate(0, 0.1f, -0.5f).rotate(Vector3.Y, 90),
                     false
             ));

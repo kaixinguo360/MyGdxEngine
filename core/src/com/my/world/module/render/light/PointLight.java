@@ -27,7 +27,7 @@ public class PointLight extends Light {
     public BaseLight getLight() {
         Vector3 vector3 = Vector3Pool.obtain();
         Matrix4 transform = Matrix4Pool.obtain();
-        position.getGlobalTransform(transform);
+        transform.set(position.getGlobalTransform());
         transform.translate(this.rel_pos).getTranslation(vector3);
         light.setPosition(vector3);
         Vector3Pool.free(vector3);

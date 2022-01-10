@@ -86,7 +86,7 @@ public class SceneBuilder {
         gunEntity.getComponent(GunScript.class).disabled = true;
         Entity rotateY = gunEntity.findChildByName("rotate_Y");
         Matrix4 rotateYTransform = new Matrix4().translate(0, 0, -20).translate(0, 0.5f + 0.01f / 2, 0);
-        Matrix4 groundTransform = ground.getComponent(Position.class).getLocalTransform().cpy();
+        Matrix4 groundTransform = ground.getComponent(Position.class).getGlobalTransform().cpy();
         rotateY.addComponent(new HingeConstraint(ground,
                 groundTransform.inv().mul(rotateYTransform).rotate(Vector3.X, 90),
                 new Matrix4().rotate(Vector3.X, 90),

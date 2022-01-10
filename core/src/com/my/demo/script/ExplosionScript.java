@@ -1,11 +1,9 @@
 package com.my.demo.script;
 
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.world.core.Config;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
-import com.my.world.gdx.Matrix4Pool;
 import com.my.world.gdx.Vector3Pool;
 import com.my.world.module.common.Position;
 import com.my.world.module.physics.PhysicsSystem;
@@ -32,10 +30,9 @@ public class ExplosionScript implements ScriptSystem.OnStart, PhysicsSystem.OnCo
         if (entity.contain(RigidBody.class)) {
             Vector3 tmpV1 = Vector3Pool.obtain();
             Vector3 tmpV2 = Vector3Pool.obtain();
-            Matrix4 tmpM = Matrix4Pool.obtain();
 
-            self.getComponent(Position.class).getGlobalTransform(tmpM).getTranslation(tmpV1);
-            entity.getComponent(Position.class).getLocalTransform().getTranslation(tmpV2);
+            self.getComponent(Position.class).getGlobalTransform().getTranslation(tmpV1);
+            entity.getComponent(Position.class).getGlobalTransform().getTranslation(tmpV2);
 
             tmpV2.sub(tmpV1);
             float len2 = tmpV2.len2();
@@ -47,7 +44,6 @@ public class ExplosionScript implements ScriptSystem.OnStart, PhysicsSystem.OnCo
 
             Vector3Pool.free(tmpV1);
             Vector3Pool.free(tmpV2);
-            Matrix4Pool.free(tmpM);
         }
 
         scene.getEntityManager().getBatch().removeEntity(self.getId());

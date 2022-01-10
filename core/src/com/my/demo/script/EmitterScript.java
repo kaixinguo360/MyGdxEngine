@@ -85,7 +85,7 @@ public class EmitterScript implements ScriptSystem.OnStart {
     }
 
     public Matrix4 getTransform() {
-        return main.getComponent(Position.class).getLocalTransform();
+        return main.getComponent(Position.class).getGlobalTransform();
     }
 
     public btRigidBody getMainBody() {
