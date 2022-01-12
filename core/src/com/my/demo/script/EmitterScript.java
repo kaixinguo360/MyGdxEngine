@@ -18,6 +18,7 @@ import com.my.world.module.physics.RigidBody;
 import com.my.world.module.physics.script.ConstraintController;
 import com.my.world.module.render.Camera;
 import com.my.world.module.render.CameraSystem;
+import com.my.world.module.render.script.EnhancedThirdPersonCameraController;
 import com.my.world.module.script.ScriptSystem;
 
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ public class EmitterScript implements ScriptSystem.OnStart {
 
     protected Entity main;
     protected Camera camera;
+    protected EnhancedThirdPersonCameraController cameraController;
 
     protected List<Entity> parts = new ArrayList<>();
 
@@ -110,13 +112,23 @@ public class EmitterScript implements ScriptSystem.OnStart {
         scene.getSystemManager().getSystem(CameraSystem.class).updateCameras();
     }
 
+    private int mode = 0;
     public void changeCameraFollowType() {
-        switch (camera.followType) {
-            case A:
-                camera.followType = CameraSystem.FollowType.B;
+        switch (mode) {
+            case 0:
+                mode = 1;
+                cameraController.distanceTarget = 0;
+                cameraController.flushStatus();
                 break;
-            case B:
-                camera.followType = CameraSystem.FollowType.A;
+            case 1:
+                mode = 2;
+                cameraController.distanceTarget = 20;
+                cameraController.flushStatus();
+                break;
+            case 2:
+                mode = 0;
+                cameraController.distanceTarget = 50;
+                cameraController.flushStatus();
                 break;
         }
     }

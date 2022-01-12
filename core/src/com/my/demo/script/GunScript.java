@@ -9,6 +9,7 @@ import com.my.world.core.Prefab;
 import com.my.world.core.Scene;
 import com.my.world.module.input.InputSystem;
 import com.my.world.module.render.Camera;
+import com.my.world.module.render.script.EnhancedThirdPersonCameraController;
 import com.my.world.module.script.ScriptSystem;
 
 public class GunScript extends EmitterScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, InputSystem.OnKeyDown {
@@ -37,6 +38,11 @@ public class GunScript extends EmitterScript implements ScriptSystem.OnStart, Sc
         this.camera = main.getComponent(Camera.class);
         if (rotate_Y.contains(GunController.class)) gunController_Y = rotate_Y.getComponent(GunController.class);
         if (rotate_X.contains(GunController.class)) gunController_X = rotate_X.getComponent(GunController.class);
+        Entity cameraEntity = entity.findChildByName("camera");
+        if (cameraEntity != null) {
+            camera = cameraEntity.getComponent(Camera.class);
+            cameraController = cameraEntity.getComponent(EnhancedThirdPersonCameraController.class);
+        }
     }
 
     @Override

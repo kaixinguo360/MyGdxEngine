@@ -9,6 +9,7 @@ import com.my.world.core.Prefab;
 import com.my.world.core.Scene;
 import com.my.world.module.input.InputSystem;
 import com.my.world.module.render.Camera;
+import com.my.world.module.render.script.EnhancedThirdPersonCameraController;
 import com.my.world.module.script.ScriptSystem;
 
 public class AircraftScript extends EmitterScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, InputSystem.OnKeyDown {
@@ -32,7 +33,6 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
         super.start(scene, entity);
 
         main = entity.findChildByName("body");
-        this.camera = main.getComponent(Camera.class);
 
         Entity rotate_L = entity.findChildByName("rotate_L");
         Entity rotate_R = entity.findChildByName("rotate_R");
@@ -62,6 +62,11 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
             aircraftController_VL = wing_VL.getComponent(AircraftController.class);
         if (wing_VR.contains(AircraftController.class))
             aircraftController_VR = wing_VR.getComponent(AircraftController.class);
+        Entity cameraEntity = entity.findChildByName("camera");
+        if (cameraEntity != null) {
+            camera = cameraEntity.getComponent(Camera.class);
+            cameraController = cameraEntity.getComponent(EnhancedThirdPersonCameraController.class);
+        }
     }
 
     @Override

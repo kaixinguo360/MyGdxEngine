@@ -15,12 +15,13 @@ import com.my.world.module.common.Position;
 import com.my.world.module.physics.PresetTemplateRigidBody;
 import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.constraint.HingeConstraint;
-import com.my.world.module.render.Camera;
 import com.my.world.module.render.CameraSystem;
 import com.my.world.module.render.ModelRender;
 import com.my.world.module.render.PresetModelRender;
 import com.my.world.module.render.attribute.ColorAttribute;
 import com.my.world.module.render.light.DirectionalLight;
+
+import java.util.HashMap;
 
 public class SceneBuilder {
 
@@ -78,7 +79,11 @@ public class SceneBuilder {
         Entity aircraftEntity = scene.instantiatePrefab("Aircraft");
         aircraftEntity.setName("Aircraft-6");
         aircraftEntity.getComponent(Position.class).getLocalTransform().translate(0, 0, 200);
-        aircraftEntity.findChildByName("body").addComponent(new Camera(0, 0, 1, 1, 0, CameraSystem.FollowType.A));
+//        aircraftEntity.findChildByName("body").addComponent(new Camera(0, 0, 1, 1, 0, CameraSystem.FollowType.A));
+        scene.instantiatePrefab("Camera", new HashMap<String, Object>() {{
+            put("Camera.parent", aircraftEntity.findChildByName("body"));
+            put("Camera.name", "camera");
+        }});
 
         Entity gunEntity = scene.instantiatePrefab("Gun");
         gunEntity.setName("Gun-0");
@@ -92,7 +97,16 @@ public class SceneBuilder {
                 new Matrix4().rotate(Vector3.X, 90),
                 false
         ));
-        gunEntity.findChildByName("barrel").addComponent(new Camera(0, 0.7f, 0.3f, 1, 1, CameraSystem.FollowType.A));
+//        gunEntity.findChildByName("barrel").addComponent(new Camera(0, 0.7f, 0.3f, 1, 1, CameraSystem.FollowType.A));
+        scene.instantiatePrefab("Camera", new HashMap<String, Object>() {{
+            put("Camera.components[2].config.startX", 0);
+            put("Camera.components[2].config.startY", 0.7f);
+            put("Camera.components[2].config.endX", 0.3f);
+            put("Camera.components[2].config.endY", 1);
+            put("Camera.components[2].config.layer", 1);
+            put("Camera.parent", gunEntity.findChildByName("barrel"));
+            put("Camera.name", "camera");
+        }});
 
         // ----- Init Scripts ----- //
 

@@ -15,11 +15,14 @@ import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.constraint.HingeConstraint;
 import com.my.world.module.physics.rigidbody.BoxBody;
 import com.my.world.module.physics.rigidbody.CylinderBody;
+import com.my.world.module.render.Camera;
+import com.my.world.module.render.CameraSystem;
 import com.my.world.module.render.ModelRender;
 import com.my.world.module.render.PresetModelRender;
 import com.my.world.module.render.model.Box;
 import com.my.world.module.render.model.Cylinder;
 import com.my.world.module.render.model.ExternalModel;
+import com.my.world.module.render.script.EnhancedThirdPersonCameraController;
 
 import java.util.HashMap;
 
@@ -45,6 +48,7 @@ public class ObjectBuilder {
         scene.createPrefab(ObjectBuilder::createWall);
         scene.createPrefab(ObjectBuilder::createTower);
         scene.createPrefab(ObjectBuilder::createRotate);
+        scene.createPrefab(ObjectBuilder::createCamera);
     }
 
     public static String createRunway(Scene scene) {
@@ -145,5 +149,19 @@ public class ObjectBuilder {
 
         scene.addEntity(entity);
         return "Rotate";
+    }
+
+    public static String createCamera(Scene scene) {
+        Entity entity = new Entity();
+        entity.setName("Camera");
+        entity.addComponent(new Position(new Matrix4()));
+        entity.addComponent(new Box(1, 1, 1, Color.YELLOW, attributes));
+        entity.addComponent(new Camera(0, 0, 1, 1, 0, CameraSystem.FollowType.A));
+        EnhancedThirdPersonCameraController cameraController = entity.addComponent(new EnhancedThirdPersonCameraController());
+        cameraController.distanceTarget = 0;
+        cameraController.waitTime = 10;
+
+        scene.addEntity(entity);
+        return "Camera";
     }
 }
