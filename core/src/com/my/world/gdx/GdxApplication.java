@@ -6,7 +6,7 @@ import com.my.world.core.Engine;
 import com.my.world.core.Scene;
 import com.my.world.core.SceneManager;
 import com.my.world.core.SystemManager;
-import com.my.world.module.input.KeyInputSystem;
+import com.my.world.module.input.InputSystem;
 import com.my.world.module.physics.ConstraintSystem;
 import com.my.world.module.physics.PhysicsSystem;
 import com.my.world.module.render.CameraSystem;
@@ -44,7 +44,7 @@ public class GdxApplication extends ApplicationAdapter {
         systemManager.addSystem(new PhysicsSystem());
         systemManager.addSystem(new ScriptSystem());
         systemManager.addSystem(new EnvironmentSystem());
-        systemManager.addSystem(new KeyInputSystem());
+        systemManager.addSystem(new InputSystem());
         systemManager.addSystem(new ConstraintSystem());
         return scene;
     }

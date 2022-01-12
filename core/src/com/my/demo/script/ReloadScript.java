@@ -5,12 +5,20 @@ import com.my.world.core.Engine;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
 import com.my.world.core.SceneManager;
-import com.my.world.module.input.KeyInputSystem;
+import com.my.world.module.input.InputSystem;
+import com.my.world.module.script.ScriptSystem;
 
-public class ReloadScript implements KeyInputSystem.OnKeyDown {
+public class ReloadScript implements ScriptSystem.OnStart, InputSystem.OnKeyDown {
+
+    private Scene scene;
 
     @Override
-    public void keyDown(Scene scene, Entity entity, int keycode) {
+    public void start(Scene scene, Entity entity) {
+        this.scene = scene;
+    }
+
+    @Override
+    public void keyDown(int keycode) {
         if (keycode == Input.Keys.ENTER) {
             Engine engine = scene.getEngine();
             SceneManager sceneManager = engine.getSceneManager();

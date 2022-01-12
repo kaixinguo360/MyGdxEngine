@@ -7,11 +7,11 @@ import com.my.world.core.Config;
 import com.my.world.core.Entity;
 import com.my.world.core.Prefab;
 import com.my.world.core.Scene;
-import com.my.world.module.input.KeyInputSystem;
+import com.my.world.module.input.InputSystem;
 import com.my.world.module.render.Camera;
 import com.my.world.module.script.ScriptSystem;
 
-public class AircraftScript extends EmitterScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, KeyInputSystem.OnKeyDown {
+public class AircraftScript extends EmitterScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, InputSystem.OnKeyDown {
 
     private AircraftController aircraftController_L;
     private AircraftController aircraftController_R;
@@ -89,7 +89,7 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
     }
 
     @Override
-    public void keyDown(Scene scene, Entity entity, int keycode) {
+    public void keyDown(int keycode) {
         if (camera == null) return;
         if (keycode == Input.Keys.TAB) changeCamera();
         if (keycode == Input.Keys.SHIFT_LEFT && !disabled) changeCameraFollowType();

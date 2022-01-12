@@ -2,13 +2,11 @@ package com.my.demo.script;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.my.world.core.Entity;
-import com.my.world.core.Scene;
-import com.my.world.module.input.KeyInputSystem;
+import com.my.world.module.input.InputSystem;
 
-public class ExitScript implements KeyInputSystem.OnKeyDown {
+public class ExitScript implements InputSystem.OnKeyDown {
     @Override
-    public void keyDown(Scene scene, Entity entity, int keycode) {
+    public void keyDown(int keycode) {
         if (keycode == Input.Keys.ESCAPE) Gdx.app.exit();
     }
 }
