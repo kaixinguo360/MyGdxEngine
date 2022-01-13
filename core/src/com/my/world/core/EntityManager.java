@@ -69,12 +69,12 @@ public class EntityManager implements Disposable {
     }
     public void updateFilters() {
         for (Entity entity : entities.values()) {
-            if (!entity.isHandled()) {
-                entity.setHandled(true);
+            if (entity.isChanged()) {
+                entity.setChanged(false);
                 for (Map.Entry<EntityFilter, Set<Entity>> entry : filters.entrySet()) {
                     EntityFilter filter = entry.getKey();
                     Set<Entity> entities = entry.getValue();
-                    if (filter.filter(entity)) {
+                    if (entity.isActiveInHierarchy() && filter.filter(entity)) {
                         if (!entities.contains(entity)) {
                             entities.add(entity);
                             if (listeners.containsKey(filter)) listeners.get(filter).afterEntityAdded(entity);

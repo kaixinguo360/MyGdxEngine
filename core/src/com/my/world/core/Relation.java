@@ -1,11 +1,17 @@
 package com.my.world.core;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.LinkedList;
 import java.util.List;
 
 public abstract class Relation<T extends Relation> {
+
+    @Getter(AccessLevel.PACKAGE)
+    @Setter(AccessLevel.PACKAGE)
+    protected boolean changed = true;
 
     @Getter
     @Config(type = Config.Type.Entity)
@@ -17,11 +23,13 @@ public abstract class Relation<T extends Relation> {
     public void addChild(T node) {
         children.add(node);
         node.parent = this;
+        node.changed = true;
     }
 
     public void removeChild(T node) {
         children.remove(node);
         node.parent = null;
+        node.changed = true;
     }
 
     public void clearParent() {

@@ -1,13 +1,12 @@
 package com.my.world.core;
 
 import com.my.world.core.util.Disposable;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.*;
 
-public class Entity extends Relation<Entity> implements Loadable.OnInit, Disposable {
+public class Entity extends ActivatableRelation<Entity> implements Loadable.OnInit, Disposable {
 
     @Getter
     @Setter
@@ -18,10 +17,6 @@ public class Entity extends Relation<Entity> implements Loadable.OnInit, Disposa
     @Setter
     @Config
     private String name;
-
-    @Getter(AccessLevel.PACKAGE)
-    @Setter(AccessLevel.PACKAGE)
-    private boolean handled;
 
     // ----- Components ----- //
     @Getter
@@ -114,7 +109,7 @@ public class Entity extends Relation<Entity> implements Loadable.OnInit, Disposa
     }
 
     private void notifyChange() {
-        handled = false;
+        changed = true;
         cache1.clear();
         cache2.clear();
     }
@@ -126,6 +121,6 @@ public class Entity extends Relation<Entity> implements Loadable.OnInit, Disposa
         cache2.clear();
         id = null;
         name = null;
-        handled = false;
+        changed = true;
     }
 }
