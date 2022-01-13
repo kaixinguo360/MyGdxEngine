@@ -6,7 +6,6 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.demo.script.ExitScript;
 import com.my.demo.script.GUIScript;
-import com.my.demo.script.GunScript;
 import com.my.demo.script.ReloadScript;
 import com.my.world.core.Engine;
 import com.my.world.core.Entity;
@@ -88,7 +87,6 @@ public class SceneBuilder {
         Entity gunEntity = scene.instantiatePrefab("Gun");
         gunEntity.setName("Gun-0");
         gunEntity.getComponent(Position.class).getLocalTransform().translate(0, 0.01f / 2, -20);
-        gunEntity.getComponent(GunScript.class).disabled = true;
         Entity rotateY = gunEntity.findChildByName("rotate_Y");
         Matrix4 rotateYTransform = new Matrix4().translate(0, 0, -20).translate(0, 0.5f + 0.01f / 2, 0);
         Matrix4 groundTransform = ground.getComponent(Position.class).getGlobalTransform().cpy();
@@ -99,11 +97,7 @@ public class SceneBuilder {
         ));
 //        gunEntity.findChildByName("barrel").addComponent(new Camera(0, 0.7f, 0.3f, 1, 1, CameraSystem.FollowType.A));
         scene.instantiatePrefab("Camera", new HashMap<String, Object>() {{
-            put("Camera.components[2].config.startX", 0);
-            put("Camera.components[2].config.startY", 0.7f);
-            put("Camera.components[2].config.endX", 0.3f);
-            put("Camera.components[2].config.endY", 1);
-            put("Camera.components[2].config.layer", 1);
+            put("Camera.components[2].config.active", false);
             put("Camera.parent", gunEntity.findChildByName("barrel"));
             put("Camera.name", "camera");
         }});

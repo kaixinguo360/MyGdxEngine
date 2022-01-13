@@ -35,7 +35,6 @@ public class GunScript extends EmitterScript implements ScriptSystem.OnStart, Sc
         parts.add(rotate_X);
         parts.add(rotate_Y);
 
-        this.camera = main.getComponent(Camera.class);
         if (rotate_Y.contains(GunController.class)) gunController_Y = rotate_Y.getComponent(GunController.class);
         if (rotate_X.contains(GunController.class)) gunController_X = rotate_X.getComponent(GunController.class);
         Entity cameraEntity = entity.findChildByName("camera");
@@ -47,7 +46,7 @@ public class GunScript extends EmitterScript implements ScriptSystem.OnStart, Sc
 
     @Override
     public void update(Scene scene, Entity entity) {
-        if (camera != null && !disabled) {
+        if (camera != null && camera.isActive()) {
             float v = 0.025f;
             if (gunController_Y != null && gunController_X != null) {
                 if (Gdx.input.isKeyPressed(Input.Keys.W)) {
@@ -75,10 +74,31 @@ public class GunScript extends EmitterScript implements ScriptSystem.OnStart, Sc
     @Override
     public void keyDown(int keycode) {
         if (camera == null) return;
-        if (keycode == Input.Keys.TAB) changeCamera();
-        if (keycode == Input.Keys.SHIFT_LEFT && !disabled) changeCameraFollowType();
-        if (camera != null && !disabled) {
+        if (keycode == Input.Keys.TAB) toggleCamera();
+        if (keycode == Input.Keys.SHIFT_LEFT && camera.isActive()) switchCameraMode();
+        if (camera.isActive()) {
             if (keycode == Input.Keys.K) fire(bombPrefab, bombVelocity, bombOffset, (float) Math.random());
+        }
+    }
+
+    @Config
+    private int cameraMode = 0;
+    public void switchCameraMode() {
+        switch (cameraMode) {
+            case 0:
+                cameraMode = 1;
+                cameraController.translateTarget.set(0, 0, 0.001f);
+                cameraController.localPitchTarget = 0;
+                cameraController.centerTarget.set(0, 0, 0);
+                cameraController.flushStatus();
+                break;
+            case 1:
+                cameraMode = 0;
+                cameraController.translateTarget.set(2, 0, 10);
+                cameraController.localPitchTarget = 0;
+                cameraController.centerTarget.set(0, 2, 0);
+                cameraController.flushStatus();
+                break;
         }
     }
 }

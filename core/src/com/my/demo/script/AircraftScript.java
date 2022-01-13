@@ -71,7 +71,7 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
 
     @Override
     public void update(Scene scene, Entity entity) {
-        if (camera != null && !disabled) {
+        if (camera != null && camera.isActive()) {
             float v1 = 1f;
             float v2 = 0.5f;
             if (aircraftController_L != null && aircraftController_R != null) {
@@ -96,10 +96,45 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
     @Override
     public void keyDown(int keycode) {
         if (camera == null) return;
-        if (keycode == Input.Keys.TAB) changeCamera();
-        if (keycode == Input.Keys.SHIFT_LEFT && !disabled) changeCameraFollowType();
-        if (camera != null && !disabled) {
+        if (keycode == Input.Keys.TAB) toggleCamera();
+        if (keycode == Input.Keys.SHIFT_LEFT && camera.isActive()) switchCameraMode();
+        if (camera.isActive()) {
             if (keycode == Input.Keys.K) fire(bombPrefab, bombVelocity, AircraftScript.bombOffset, (float) Math.random());
+        }
+    }
+
+    @Config
+    private int cameraMode = 0;
+    public void switchCameraMode() {
+        switch (cameraMode) {
+            case 0:
+                cameraMode = 1;
+                cameraController.translateTarget.set(0, 0, 0.001f);
+                cameraController.localPitchTarget = 0;
+                cameraController.centerTarget.set(0, 0, 0);
+                cameraController.flushStatus();
+                break;
+            case 1:
+                cameraMode = 2;
+                cameraController.translateTarget.set(0, 0, 20);
+                cameraController.localPitchTarget = 0;
+                cameraController.centerTarget.set(0, 5, 0);
+                cameraController.flushStatus();
+                break;
+            case 2:
+                cameraMode = 3;
+                cameraController.translateTarget.set(0, 0, 50);
+                cameraController.localPitchTarget = 0;
+                cameraController.centerTarget.set(0, -20, 0);
+                cameraController.flushStatus();
+                break;
+            case 3:
+                cameraMode = 0;
+                cameraController.translateTarget.set(0, 0, 20);
+                cameraController.localPitchTarget = 0;
+                cameraController.centerTarget.set(0, 5, 0);
+                cameraController.flushStatus();
+                break;
         }
     }
 

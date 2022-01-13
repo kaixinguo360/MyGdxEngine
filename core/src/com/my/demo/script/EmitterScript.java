@@ -4,7 +4,6 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
-import com.my.world.core.Config;
 import com.my.world.core.Entity;
 import com.my.world.core.Prefab;
 import com.my.world.core.Scene;
@@ -17,7 +16,6 @@ import com.my.world.module.physics.PhysicsSystem;
 import com.my.world.module.physics.RigidBody;
 import com.my.world.module.physics.script.ConstraintController;
 import com.my.world.module.render.Camera;
-import com.my.world.module.render.CameraSystem;
 import com.my.world.module.render.script.EnhancedThirdPersonCameraController;
 import com.my.world.module.script.ScriptSystem;
 
@@ -25,9 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EmitterScript implements ScriptSystem.OnStart {
-
-    @Config
-    public boolean disabled;
 
     protected Scene scene;
     protected PhysicsSystem physicsSystem;
@@ -94,46 +89,9 @@ public class EmitterScript implements ScriptSystem.OnStart {
         return main.getComponent(RigidBody.class).body;
     }
 
-    public void changeCamera() {
-        disabled = !disabled;
-        if (!disabled) {
-            camera.layer = 0;
-            camera.startX = 0;
-            camera.startY = 0;
-            camera.endX = 1;
-            camera.endY = 1;
-        } else {
-            camera.layer = 1;
-            camera.startX = 0;
-            camera.startY = 0.7f;
-            camera.endX = 0.3f;
-            camera.endY = 1;
-        }
-        scene.getSystemManager().getSystem(CameraSystem.class).updateCameras();
-    }
-
-    private int mode = 0;
-    public void changeCameraFollowType() {
-        switch (mode) {
-            case 0:
-                mode = 1;
-                cameraController.translateTarget.set(0, 0, 0.001f);
-                cameraController.localPitchTarget = 0;
-                cameraController.flushStatus();
-                break;
-            case 1:
-                mode = 2;
-                cameraController.translateTarget.set(0, 5, 20);
-                cameraController.localPitchTarget = -5;
-                cameraController.flushStatus();
-                break;
-            case 2:
-                mode = 0;
-                cameraController.translateTarget.set(0, 5, 50);
-                cameraController.localPitchTarget = -30;
-                cameraController.flushStatus();
-                break;
-        }
+    public void toggleCamera() {
+        camera.setActive(!camera.isActive());
+        cameraController.setActive(camera.isActive());
     }
 
     public float getVelocity() {
