@@ -4,65 +4,72 @@ import com.badlogic.gdx.Gdx;
 import com.my.world.core.Config;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
-import com.my.world.module.script.ScriptSystem;
+import com.my.world.module.input.InputSystem;
 
-public class EnhancedThirdPersonCameraController extends SimpleThirdPersonCameraController implements ScriptSystem.OnUpdate {
+public class EnhancedThirdPersonCameraController extends SmoothThirdPersonCameraController implements InputSystem.OnScrolled, InputSystem.OnMouseMoved {
 
     @Config public float waitTime = 3f;
 
-    @Config public boolean yawRecoverEnable = true;
-    @Config public float yawTarget = 0;
-    @Config public float yawRecoverRate = 1f;
+    @Config public float yawRate = 1f;
+    @Config public boolean yawLimit = false;
+    @Config public float yawMin = -180;
+    @Config public float yawMax = 180;
 
-    @Config public boolean pitchRecoverEnable = true;
-    @Config public float pitchTarget = 0;
-    @Config public float pitchRecoverRate = 1f;
+    @Config public float pitchRate = 1f;
+    @Config public boolean pitchLimit = true;
+    @Config public float pitchMin = -90;
+    @Config public float pitchMax = 90;
 
-    @Config public boolean distanceRecoverEnable = true;
-    @Config public float distanceTarget = 20;
-    @Config public float distanceRecoverRate = 1f;
+    @Config public float distanceRate = 1f;
+    @Config public boolean distanceLimit = true;
+    @Config public float distanceMin = 0.001f;
+    @Config public float distanceMax = 100;
 
-    protected float lastYaw;
-    protected float lastPitch;
-    protected float lastDistance;
     protected float alreadyWaitTime;
+    protected boolean changed;
 
     @Override
-    public void update(Scene scene, Entity entity) {
-        if (lastYaw == yaw && lastPitch == pitch && lastDistance == distance) {
-            alreadyWaitTime += Gdx.graphics.getDeltaTime();
-            if (alreadyWaitTime > waitTime) {
-                updateStatus();
-            }
-        } else {
-            alreadyWaitTime = 0;
-            syncStatus();
-        }
-    }
+    public void scrolled(int amount) {
+        float distance = translate.len();
+        distance *= 1 + amount * 0.1f * distanceRate;
+        if (distanceLimit) distance = Math.max(Math.min(distance, distanceMax), distanceMin);
+        translate.nor().scl(distance);
 
-    public void flushStatus() {
-        alreadyWaitTime = waitTime;
-        syncStatus();
-    }
+        changed = true;
 
-    protected void updateStatus() {
-        if (yawRecoverEnable) {
-            yaw = (yaw + 180) % 360 - 180;
-            yaw -= (yaw - yawTarget) * 0.02f * yawRecoverRate;
-        }
-        if (pitchRecoverEnable) {
-            pitch -= (pitch - pitchTarget) * 0.02f * pitchRecoverRate;
-        }
-        if (distanceRecoverEnable) {
-            distance -= (distance - distanceTarget) * 0.02f * distanceRecoverRate;
-        }
-        syncStatus();
         updateTransform();
     }
 
-    protected void syncStatus() {
-        lastYaw = yaw;
-        lastPitch = pitch;
-        lastDistance = distance;
+    @Override
+    public void mouseMoved(int screenX, int screenY) {
+        yaw -= Gdx.input.getDeltaX() * 0.1f * yawRate;
+        if (yawLimit) yaw = Math.max(Math.min(yaw, yawMax), yawMin);
+
+        pitch -= Gdx.input.getDeltaY() * 0.1f * pitchRate;
+        if (pitchLimit) pitch = Math.max(Math.min(pitch, pitchMax), pitchMin);
+
+        changed = true;
+
+        updateTransform();
+    }
+
+    @Override
+    public void update(Scene scene, Entity entity) {
+        if (!changed) {
+            alreadyWaitTime += Gdx.graphics.getDeltaTime();
+            if (alreadyWaitTime > waitTime) {
+                recoverEnabled = true;
+            }
+        } else {
+            changed = false;
+            alreadyWaitTime = 0;
+            recoverEnabled = false;
+        }
+        super.update(scene, entity);
+    }
+
+    public void flushStatus() {
+        changed = false;
+        alreadyWaitTime = waitTime;
     }
 }

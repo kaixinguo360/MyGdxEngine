@@ -10,9 +10,14 @@ import com.my.world.module.script.ScriptSystem;
 
 public class ThirdPersonCameraController implements ScriptSystem.OnStart {
 
+    @Config public float localYaw = 0;
+    @Config public float localPitch = 0;
+
     @Config public float yaw = 0;
     @Config public float pitch = 0;
-    @Config public float distance = 20;
+
+    @Config public Vector3 center = new Vector3(0, 0, 0);
+    @Config public Vector3 translate = new Vector3(0, 0, 20);
 
     protected Position position;
 
@@ -24,6 +29,7 @@ public class ThirdPersonCameraController implements ScriptSystem.OnStart {
 
     public void updateTransform() {
         Matrix4 localTransform = position.getLocalTransform();
-        localTransform.idt().rotate(Vector3.Y, yaw).rotate(Vector3.X, pitch).translate(0, 0, distance);
+        localTransform.idt().translate(center).rotate(Vector3.Y, yaw).rotate(Vector3.X, pitch).translate(translate)
+                .rotate(Vector3.Y, localYaw).rotate(Vector3.X, localPitch);
     }
 }

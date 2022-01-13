@@ -158,7 +158,7 @@ public class ObjectBuilder {
         entity.addComponent(new Box(1, 1, 1, Color.YELLOW, attributes));
         entity.addComponent(new Camera(0, 0, 1, 1, 0, CameraSystem.FollowType.A));
         EnhancedThirdPersonCameraController cameraController = entity.addComponent(new EnhancedThirdPersonCameraController());
-        cameraController.distanceTarget = 0;
+        cameraController.translateTarget.set(0, 0, 0.001f);
         cameraController.waitTime = 10;
 
         scene.addEntity(entity);

@@ -117,17 +117,20 @@ public class EmitterScript implements ScriptSystem.OnStart {
         switch (mode) {
             case 0:
                 mode = 1;
-                cameraController.distanceTarget = 0;
+                cameraController.translateTarget.set(0, 0, 0.001f);
+                cameraController.localPitchTarget = 0;
                 cameraController.flushStatus();
                 break;
             case 1:
                 mode = 2;
-                cameraController.distanceTarget = 20;
+                cameraController.translateTarget.set(0, 5, 20);
+                cameraController.localPitchTarget = -5;
                 cameraController.flushStatus();
                 break;
             case 2:
                 mode = 0;
-                cameraController.distanceTarget = 50;
+                cameraController.translateTarget.set(0, 5, 50);
+                cameraController.localPitchTarget = -30;
                 cameraController.flushStatus();
                 break;
         }
