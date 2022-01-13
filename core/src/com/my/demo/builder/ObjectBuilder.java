@@ -16,7 +16,6 @@ import com.my.world.module.physics.constraint.HingeConstraint;
 import com.my.world.module.physics.rigidbody.BoxBody;
 import com.my.world.module.physics.rigidbody.CylinderBody;
 import com.my.world.module.render.Camera;
-import com.my.world.module.render.CameraSystem;
 import com.my.world.module.render.ModelRender;
 import com.my.world.module.render.PresetModelRender;
 import com.my.world.module.render.model.Box;
@@ -156,9 +155,11 @@ public class ObjectBuilder {
         entity.setName("Camera");
         entity.addComponent(new Position(new Matrix4()));
         entity.addComponent(new Box(1, 1, 1, Color.YELLOW, attributes)).setActive(false);
-        entity.addComponent(new Camera(0, 0, 1, 1, 0, CameraSystem.FollowType.A));
+        entity.addComponent(new Camera(0, 0, 1, 1, 0));
         EnhancedThirdPersonCameraController cameraController = entity.addComponent(new EnhancedThirdPersonCameraController());
-        cameraController.translateTarget.set(0, 0, 0.001f);
+        cameraController.centerTarget.set(0, 0, 0);
+        cameraController.translateTarget.set(0, 0, 20);
+        cameraController.translate.set(0, 0, 20);
         cameraController.recoverRate = 2f;
         cameraController.waitTime = 10;
 

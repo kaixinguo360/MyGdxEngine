@@ -17,18 +17,16 @@ public class Camera extends ActivatableComponent implements Loadable {
     @Config public float endY;
 
     @Config public int layer;
-    @Config public CameraSystem.FollowType followType;
 
     @Config(name = "camera", fields = { "far", "near", "up", "direction", "fieldOfView", "viewportWidth", "viewportHeight" })
     public final PerspectiveCamera perspectiveCamera = new PerspectiveCamera();
 
-    public Camera(float startX, float startY, float endX, float endY, int layer, CameraSystem.FollowType followType) {
+    public Camera(float startX, float startY, float endX, float endY, int layer) {
         this.startX = startX;
         this.startY = startY;
         this.endX = endX;
         this.endY = endY;
         this.layer = layer;
-        this.followType = followType;
         this.perspectiveCamera.far = 2000;
         this.perspectiveCamera.near = 0.1f;
         this.perspectiveCamera.position.set(0, 0, 0);

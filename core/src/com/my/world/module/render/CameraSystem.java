@@ -5,13 +5,9 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Quaternion;
-import com.badlogic.gdx.math.Vector3;
 import com.my.world.core.System;
 import com.my.world.core.*;
 import com.my.world.gdx.Matrix4Pool;
-import com.my.world.gdx.QuaternionPool;
-import com.my.world.gdx.Vector3Pool;
 import com.my.world.module.common.BaseSystem;
 import com.my.world.module.common.Position;
 
@@ -106,7 +102,7 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
 
         for (CameraInner cameraInner : cameraInners) {
             if (cameraInner.camera.isActive()) {
-                setCamera(cameraInner.camera.followType, cameraInner.camera.perspectiveCamera, cameraInner.position.getGlobalTransform());
+                setCamera(cameraInner.camera.perspectiveCamera, cameraInner.position.getGlobalTransform());
                 Gdx.gl.glViewport(
                         (int) (width * cameraInner.camera.startX),
                         (int) (height * cameraInner.camera.startY),
@@ -147,33 +143,11 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
 
     // ----- Private ----- //
 
-    private static void setCamera(FollowType type, PerspectiveCamera camera, Matrix4 transform) {
-        switch (type) {
-            case A: {
-                camera.position.set(0, 0.8f, -1.5f).mul(transform);
-                camera.direction.set(0, 0, -1).rot(transform);
-                camera.up.set(0, 1, 0).rot(transform);
-                camera.update();
-                break;
-            }
-            case B: {
-                Vector3 tmpV1 = Vector3Pool.obtain();
-                Quaternion tmpQ = QuaternionPool.obtain();
-                Matrix4 tmpM2 = Matrix4Pool.obtain();
-
-                transform.getTranslation(tmpV1);
-                float angle = transform.getRotation(tmpQ).getAngleAround(Vector3.Y);
-                tmpM2.setToTranslation(tmpV1).rotate(Vector3.Y, angle).translate(0, 0, 20);
-                camera.position.setZero().mul(tmpM2);
-                camera.lookAt(transform.getTranslation(tmpV1).add(0, 0, 0));
-                camera.up.set(0, 1, 0);
-                camera.update();
-
-                Vector3Pool.free(tmpV1);
-                QuaternionPool.free(tmpQ);
-                Matrix4Pool.free(tmpM2);
-            }
-        }
+    private static void setCamera(PerspectiveCamera camera, Matrix4 transform) {
+        camera.position.setZero().mul(transform);
+        camera.direction.set(0, 0, -1).rot(transform);
+        camera.up.set(0, 1, 0).rot(transform);
+        camera.update();
     }
 
     // ----- Inner Class ----- //
@@ -193,9 +167,5 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
         private String id;
         private Entity entity;
         private Position position;
-    }
-
-    public enum FollowType {
-        A, B, C
     }
 }

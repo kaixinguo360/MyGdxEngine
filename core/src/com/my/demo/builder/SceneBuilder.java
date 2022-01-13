@@ -78,8 +78,9 @@ public class SceneBuilder {
         Entity aircraftEntity = scene.instantiatePrefab("Aircraft");
         aircraftEntity.setName("Aircraft-6");
         aircraftEntity.getComponent(Position.class).getLocalTransform().translate(0, 0, 200);
-//        aircraftEntity.findChildByName("body").addComponent(new Camera(0, 0, 1, 1, 0, CameraSystem.FollowType.A));
+//        aircraftEntity.findChildByName("body").addComponent(new Camera(0, 0, 1, 1, 0));
         scene.instantiatePrefab("Camera", new HashMap<String, Object>() {{
+            put("Camera.components[3].config.translateTarget", new Vector3(0, 0.8f, -1.5f));
             put("Camera.parent", aircraftEntity.findChildByName("body"));
             put("Camera.name", "camera");
         }});
@@ -95,9 +96,10 @@ public class SceneBuilder {
                 new Matrix4().rotate(Vector3.X, 90),
                 false
         ));
-//        gunEntity.findChildByName("barrel").addComponent(new Camera(0, 0.7f, 0.3f, 1, 1, CameraSystem.FollowType.A));
+//        gunEntity.findChildByName("barrel").addComponent(new Camera(0, 0.7f, 0.3f, 1, 1));
         scene.instantiatePrefab("Camera", new HashMap<String, Object>() {{
             put("Camera.components[2].config.active", false);
+            put("Camera.components[3].config.translateTarget", new Vector3(0, 0.8f, -1.5f));
             put("Camera.parent", gunEntity.findChildByName("barrel"));
             put("Camera.name", "camera");
         }});

@@ -109,30 +109,30 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
         switch (cameraMode) {
             case 0:
                 cameraMode = 1;
-                cameraController.translateTarget.set(0, 0, 0.001f);
+                cameraController.translateTarget.set(0, 0, 0.01f);
                 cameraController.localPitchTarget = 0;
-                cameraController.centerTarget.set(0, 0, 0);
+                cameraController.centerTarget.set(0, 0.8f, -1.5f);
                 cameraController.flushStatus();
                 break;
             case 1:
                 cameraMode = 2;
                 cameraController.translateTarget.set(0, 0, 20);
                 cameraController.localPitchTarget = 0;
-                cameraController.centerTarget.set(0, 5, 0);
+                cameraController.centerTarget.set(0, 5.8f, -1.5f);
                 cameraController.flushStatus();
                 break;
             case 2:
                 cameraMode = 3;
                 cameraController.translateTarget.set(0, 0, 50);
                 cameraController.localPitchTarget = 0;
-                cameraController.centerTarget.set(0, -20, 0);
+                cameraController.centerTarget.set(0, -20, -1.5f);
                 cameraController.flushStatus();
                 break;
             case 3:
                 cameraMode = 0;
                 cameraController.translateTarget.set(0, 0, 20);
                 cameraController.localPitchTarget = 0;
-                cameraController.centerTarget.set(0, 5, 0);
+                cameraController.centerTarget.set(0, 5.8f, -1.5f);
                 cameraController.flushStatus();
                 break;
         }
