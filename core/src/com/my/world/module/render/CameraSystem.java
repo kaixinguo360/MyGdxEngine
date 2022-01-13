@@ -105,22 +105,24 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
         Matrix4 tmpM1 = Matrix4Pool.obtain();
 
         for (CameraInner cameraInner : cameraInners) {
-            setCamera(cameraInner.camera.followType, cameraInner.camera.perspectiveCamera, cameraInner.position.getGlobalTransform());
-            Gdx.gl.glViewport(
-                    (int) (width * cameraInner.camera.startX),
-                    (int) (height * cameraInner.camera.startY),
-                    (int) (width * cameraInner.camera.endX - width * cameraInner.camera.startX),
-                    (int) (height * cameraInner.camera.endY - height * cameraInner.camera.startY)
-            );
-            for (SkyBoxInner skyBox : skyBoxInners) {
-                if (skyBox.position == null) {
-                    skyBox.entity = scene.getEntityManager().findEntityById(skyBox.id);
-                    skyBox.position = skyBox.entity.getComponent(Position.class);
+            if (cameraInner.camera.isActive()) {
+                setCamera(cameraInner.camera.followType, cameraInner.camera.perspectiveCamera, cameraInner.position.getGlobalTransform());
+                Gdx.gl.glViewport(
+                        (int) (width * cameraInner.camera.startX),
+                        (int) (height * cameraInner.camera.startY),
+                        (int) (width * cameraInner.camera.endX - width * cameraInner.camera.startX),
+                        (int) (height * cameraInner.camera.endY - height * cameraInner.camera.startY)
+                );
+                for (SkyBoxInner skyBox : skyBoxInners) {
+                    if (skyBox.position == null) {
+                        skyBox.entity = scene.getEntityManager().findEntityById(skyBox.id);
+                        skyBox.position = skyBox.entity.getComponent(Position.class);
+                    }
+                    skyBox.position.getLocalTransform().setToTranslation(cameraInner.camera.perspectiveCamera.position);
                 }
-                skyBox.position.getLocalTransform().setToTranslation(cameraInner.camera.perspectiveCamera.position);
+                Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
+                renderSystem.render(cameraInner.camera.perspectiveCamera, environment);
             }
-            Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
-            renderSystem.render(cameraInner.camera.perspectiveCamera, environment);
         }
 
         Matrix4Pool.free(tmpM1);

@@ -3,12 +3,12 @@ package com.my.world.module.render;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
-import com.my.world.core.Component;
 import com.my.world.core.Config;
+import com.my.world.module.common.ActivatableComponent;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class Render implements Component {
+public class Render extends ActivatableComponent {
 
     @Config
     public boolean includeEnv = true;

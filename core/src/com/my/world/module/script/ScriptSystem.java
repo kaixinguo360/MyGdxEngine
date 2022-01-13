@@ -1,9 +1,7 @@
 package com.my.world.module.script;
 
-import com.my.world.core.Entity;
-import com.my.world.core.EntityListener;
-import com.my.world.core.Scene;
 import com.my.world.core.System;
+import com.my.world.core.*;
 import com.my.world.module.common.BaseSystem;
 import com.my.world.module.common.Script;
 
@@ -30,7 +28,9 @@ public class ScriptSystem extends BaseSystem implements EntityListener, System.A
     public void update(float deltaTime) {
         for (Entity entity : getEntities()) {
             for (OnUpdate script : entity.getComponents(OnUpdate.class)) {
-                script.update(scene, entity);
+                if (Component.isActive(script)) {
+                    script.update(scene, entity);
+                }
             }
         }
     }

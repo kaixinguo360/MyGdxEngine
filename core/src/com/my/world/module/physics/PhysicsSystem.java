@@ -322,7 +322,9 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
                     if (!entity1.getComponent(RigidBody.class).isTrigger) {
                         List<OnCollision> scripts = entity0.getComponents(OnCollision.class);
                         for (OnCollision script : scripts) {
-                            script.collision(entity1);
+                            if (Component.isActive(script)) {
+                                script.collision(entity1);
+                            }
                         }
                     }
                 }
@@ -331,7 +333,9 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
                     if (!entity0.getComponent(RigidBody.class).isTrigger) {
                         List<OnCollision> scripts = entity1.getComponents(OnCollision.class);
                         for (OnCollision script : scripts) {
-                            script.collision(entity0);
+                            if (Component.isActive(script)) {
+                                script.collision(entity0);
+                            }
                         }
                     }
                 }
@@ -359,7 +363,9 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
         public void onInternalTick(btDynamicsWorld dynamicsWorld, float timeStep) {
             for (Entity entity : scene.getEntityManager().getEntitiesByFilter(onFixedUpdateFilter)) {
                 for (OnFixedUpdate script : entity.getComponents(OnFixedUpdate.class)) {
-                    script.fixedUpdate(scene, dynamicsWorld, entity);
+                    if (Component.isActive(script)) {
+                        script.fixedUpdate(scene, dynamicsWorld, entity);
+                    }
                 }
             }
         }

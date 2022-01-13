@@ -31,13 +31,15 @@ public class RenderSystem extends BaseSystem implements Disposable {
         for (Entity entity : getEntities()) {
             Position position = entity.getComponent(Position.class);
             for (Render render : entity.getComponents(Render.class)) {
-                render.modelInstance.transform.set(position.getGlobalTransform());
+                if (render.isActive()) {
+                    render.modelInstance.transform.set(position.getGlobalTransform());
 
-                if (isVisible(cam, position, render)) {
-                    if (environment != null && render.includeEnv)
-                        batch.render(render.modelInstance, environment);
-                    else
-                        batch.render(render.modelInstance);
+                    if (isVisible(cam, position, render)) {
+                        if (environment != null && render.includeEnv)
+                            batch.render(render.modelInstance, environment);
+                        else
+                            batch.render(render.modelInstance);
+                    }
                 }
             }
         }

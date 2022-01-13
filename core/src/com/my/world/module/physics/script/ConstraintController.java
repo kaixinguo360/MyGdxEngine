@@ -3,10 +3,11 @@ package com.my.world.module.physics.script;
 import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
+import com.my.world.module.common.ActivatableComponent;
 import com.my.world.module.physics.Constraint;
 import com.my.world.module.script.ScriptSystem;
 
-public abstract class ConstraintController implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
+public abstract class ConstraintController extends ActivatableComponent implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
 
     private Constraint constraint;
 

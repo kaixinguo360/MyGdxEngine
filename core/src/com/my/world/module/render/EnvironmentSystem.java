@@ -29,10 +29,14 @@ public class EnvironmentSystem extends BaseSystem {
         environment.set(commonEnvironment);
         for (Entity entity : getEntities()) {
             for (EnvironmentAttribute attribute : entity.getComponents(EnvironmentAttribute.class)) {
-                environment.set(attribute.getAttribute());
+                if (attribute.isActive()) {
+                    environment.set(attribute.getAttribute());
+                }
             }
             for (Light light : entity.getComponents(Light.class)) {
-                environment.add(light.getLight());
+                if (light.isActive()) {
+                    environment.add(light.getLight());
+                }
             }
         }
         return environment;

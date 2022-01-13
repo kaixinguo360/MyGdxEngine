@@ -5,10 +5,11 @@ import com.badlogic.gdx.math.Vector3;
 import com.my.world.core.Config;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
+import com.my.world.module.common.ActivatableComponent;
 import com.my.world.module.common.Position;
 import com.my.world.module.script.ScriptSystem;
 
-public class ThirdPersonCameraController implements ScriptSystem.OnStart {
+public class ThirdPersonCameraController extends ActivatableComponent implements ScriptSystem.OnStart {
 
     @Config public float localYaw = 0;
     @Config public float localPitch = 0;

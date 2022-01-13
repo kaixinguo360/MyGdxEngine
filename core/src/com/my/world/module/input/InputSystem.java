@@ -3,10 +3,8 @@ package com.my.world.module.input;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
-import com.my.world.core.Entity;
-import com.my.world.core.EntityFilter;
-import com.my.world.core.Scene;
 import com.my.world.core.System;
+import com.my.world.core.*;
 import com.my.world.module.common.Script;
 import lombok.Getter;
 
@@ -59,7 +57,9 @@ public class InputSystem implements System, System.AfterAdded, System.OnStart, I
     public boolean keyDown(int keycode) {
         for (Entity entity : getEntities(keyDownFilter)) {
             for (OnKeyDown script : entity.getComponents(OnKeyDown.class)) {
-                script.keyDown(keycode);
+                if (Component.isActive(script)) {
+                    script.keyDown(keycode);
+                }
             }
         }
         return false;
@@ -69,7 +69,9 @@ public class InputSystem implements System, System.AfterAdded, System.OnStart, I
     public boolean keyUp(int keycode) {
         for (Entity entity : getEntities(keyUpFilter)) {
             for (OnKeyUp script : entity.getComponents(OnKeyUp.class)) {
-                script.keyUp(keycode);
+                if (Component.isActive(script)) {
+                    script.keyUp(keycode);
+                }
             }
         }
         return false;
@@ -79,7 +81,9 @@ public class InputSystem implements System, System.AfterAdded, System.OnStart, I
     public boolean keyTyped(char character) {
         for (Entity entity : getEntities(keyTypedFilter)) {
             for (OnKeyTyped script : entity.getComponents(OnKeyTyped.class)) {
-                script.keyTyped(character);
+                if (Component.isActive(script)) {
+                    script.keyTyped(character);
+                }
             }
         }
         return false;
@@ -89,7 +93,9 @@ public class InputSystem implements System, System.AfterAdded, System.OnStart, I
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         for (Entity entity : getEntities(touchDownFilter)) {
             for (OnTouchDown script : entity.getComponents(OnTouchDown.class)) {
-                script.touchDown(screenX, screenY, pointer, button);
+                if (Component.isActive(script)) {
+                    script.touchDown(screenX, screenY, pointer, button);
+                }
             }
         }
         return false;
@@ -99,7 +105,9 @@ public class InputSystem implements System, System.AfterAdded, System.OnStart, I
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         for (Entity entity : getEntities(touchUpFilter)) {
             for (OnTouchUp script : entity.getComponents(OnTouchUp.class)) {
-                script.touchUp(screenX, screenY, pointer, button);
+                if (Component.isActive(script)) {
+                    script.touchUp(screenX, screenY, pointer, button);
+                }
             }
         }
         return false;
@@ -109,7 +117,9 @@ public class InputSystem implements System, System.AfterAdded, System.OnStart, I
     public boolean touchDragged(int screenX, int screenY, int pointer) {
         for (Entity entity : getEntities(touchDraggedFilter)) {
             for (OnTouchDragged script : entity.getComponents(OnTouchDragged.class)) {
-                script.touchDragged(screenX, screenY, pointer);
+                if (Component.isActive(script)) {
+                    script.touchDragged(screenX, screenY, pointer);
+                }
             }
         }
         return false;
@@ -119,7 +129,9 @@ public class InputSystem implements System, System.AfterAdded, System.OnStart, I
     public boolean mouseMoved(int screenX, int screenY) {
         for (Entity entity : getEntities(mouseMovedFilter)) {
             for (OnMouseMoved script : entity.getComponents(OnMouseMoved.class)) {
-                script.mouseMoved(screenX, screenY);
+                if (Component.isActive(script)) {
+                    script.mouseMoved(screenX, screenY);
+                }
             }
         }
         return false;
@@ -129,7 +141,9 @@ public class InputSystem implements System, System.AfterAdded, System.OnStart, I
     public boolean scrolled(int amount) {
         for (Entity entity : getEntities(scrolledFilter)) {
             for (OnScrolled script : entity.getComponents(OnScrolled.class)) {
-                script.scrolled(amount);
+                if (Component.isActive(script)) {
+                    script.scrolled(amount);
+                }
             }
         }
         return false;

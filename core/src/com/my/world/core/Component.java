@@ -10,4 +10,17 @@ public interface Component extends Loadable {
         void detachFromEntity(Entity entity);
     }
 
+    interface Activatable {
+        void setActive(boolean active);
+        boolean isActive();
+    }
+
+    static boolean isActive(Component component) {
+        if (component instanceof Activatable) {
+            return ((Activatable) component).isActive();
+        } else {
+            return true;
+        }
+    }
+
 }
