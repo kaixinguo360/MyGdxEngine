@@ -18,7 +18,7 @@ public abstract class Relation<T extends Relation> {
     protected T parent;
 
     @Getter
-    private final List<T> children = new LinkedList<>();
+    protected final List<T> children = new LinkedList<>();
 
     public void addChild(T node) {
         children.add(node);
@@ -55,6 +55,13 @@ public abstract class Relation<T extends Relation> {
             }
         }
         return null;
+    }
+
+    protected void cascadeNotifyChange() {
+        this.changed = true;
+        for (T child : children) {
+            child.cascadeNotifyChange();
+        }
     }
 
     public abstract String getName();

@@ -8,15 +8,19 @@ public abstract class ActivatableRelation<T extends ActivatableRelation<T>> exte
     public void setActive(boolean active) {
         if (active != this.activeSelf) {
             this.activeSelf = active;
-            this.changed = true;
+            cascadeNotifyChange();
         }
     }
 
     public boolean isActiveInHierarchy() {
-        if (this.parent != null) {
-            return activeSelf && parent.activeSelf;
+        if (activeSelf) {
+            if (this.parent != null) {
+                return parent.isActiveInHierarchy();
+            } else {
+                return true;
+            }
         } else {
-            return activeSelf;
+            return false;
         }
     }
 
