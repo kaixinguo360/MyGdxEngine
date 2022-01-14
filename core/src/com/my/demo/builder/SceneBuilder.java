@@ -1,5 +1,6 @@
 package com.my.demo.builder;
 
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Matrix4;
@@ -12,6 +13,7 @@ import com.my.world.module.common.Position;
 import com.my.world.module.physics.PresetTemplateRigidBody;
 import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.constraint.HingeConstraint;
+import com.my.world.module.physics.script.EnhancedCharacterController;
 import com.my.world.module.render.ModelRender;
 import com.my.world.module.render.PresetModelRender;
 import com.my.world.module.render.attribute.ColorAttribute;
@@ -110,6 +112,31 @@ public class SceneBuilder {
             put("Camera.name", "camera");
         }});
 
+        Entity character = new Entity();
+        character.addComponent(new Position(new Matrix4().translate(0, 1, 0).rotate(Vector3.Y, 180)));
+        character.addComponent(new PresetModelRender(scene.getAsset("bullet", ModelRender.class)));
+        EnhancedCharacterController characterController = character.addComponent(new EnhancedCharacterController());
+        characterController.setActive(false);
+        characterController.shape = scene.getAsset("bullet", TemplateRigidBody.class);
+        characterController.velocity = 30;
+        characterController.mass = 0.5f;
+        characterController.keyUp = Input.Keys.W;
+        characterController.keyDown = Input.Keys.S;
+        characterController.keyLeft = Input.Keys.A;
+        characterController.keyRight = Input.Keys.D;
+        characterController.keyJump = Input.Keys.SPACE;
+        character.addComponent(new CharacterSwitcherAgent()).characterName = "character";
+        scene.addEntity(character);
+        scene.instantiatePrefab("Camera", new HashMap<String, Object>() {{
+            put("Camera.components[2].config.active", false);
+            put("Camera.components[3].config.yawLocked", true);
+            put("Camera.components[3].config.yaw", -180);
+            put("Camera.components[3].config.yawTarget", -180);
+            put("Camera.components[3].config.recoverEnabled", false);
+            put("Camera.parent", character);
+            put("Camera.name", "camera");
+        }});
+
         // ----- Init Scripts ----- //
 
         Entity exitScriptEntity = new Entity();
@@ -137,6 +164,7 @@ public class SceneBuilder {
         CharacterSwitcher characterSwitcher = characterSelectorEntity.addComponent(new CharacterSwitcher());
         characterSwitcher.characterNames.add("aircraft");
         characterSwitcher.characterNames.add("gun");
+        characterSwitcher.characterNames.add("character");
         scene.addEntity(characterSelectorEntity);
     }
 

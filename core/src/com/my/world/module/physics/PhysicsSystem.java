@@ -321,33 +321,38 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
     private static class ContactListener extends com.badlogic.gdx.physics.bullet.collision.ContactListener {
         @Override
         public boolean onContactAdded(btCollisionObject colObj0, int partId0, int index0, boolean match0, btCollisionObject colObj1, int partId1, int index1, boolean match1) {
-            if(colObj0.userData instanceof Entity && colObj1.userData instanceof Entity) {
-                Entity entity0 = (Entity) colObj0.userData;
-                Entity entity1 = (Entity) colObj1.userData;
-                if (match0) {
-//                    System.out.println(entity0.getId() + " =>" + entity1.getId());
-                    if (!entity1.getComponent(RigidBody.class).isTrigger) {
-                        List<OnCollision> scripts = entity0.getComponents(OnCollision.class);
-                        for (OnCollision script : scripts) {
-                            if (Component.isActive(script)) {
-                                script.collision(entity1);
+            try {
+                if(colObj0.userData instanceof Entity && colObj1.userData instanceof Entity) {
+                    Entity entity0 = (Entity) colObj0.userData;
+                    Entity entity1 = (Entity) colObj1.userData;
+                    if (match0 && entity1.contains(RigidBody.class)) {
+                        RigidBody rigidBody = entity1.getComponent(RigidBody.class);
+                        if (rigidBody == null || !rigidBody.isTrigger) {
+                            List<OnCollision> scripts = entity0.getComponents(OnCollision.class);
+                            for (OnCollision script : scripts) {
+                                if (Component.isActive(script)) {
+                                    script.collision(entity1);
+                                }
+                            }
+                        }
+                    }
+                    if (match1) {
+                        RigidBody rigidBody = entity0.getComponent(RigidBody.class);
+                        if (rigidBody == null || !rigidBody.isTrigger) {
+                            List<OnCollision> scripts = entity1.getComponents(OnCollision.class);
+                            for (OnCollision script : scripts) {
+                                if (Component.isActive(script)) {
+                                    script.collision(entity0);
+                                }
                             }
                         }
                     }
                 }
-                if (match1) {
-//                    System.out.println(entity1.getId() + " <= " + entity0.getId());
-                    if (!entity0.getComponent(RigidBody.class).isTrigger) {
-                        List<OnCollision> scripts = entity1.getComponents(OnCollision.class);
-                        for (OnCollision script : scripts) {
-                            if (Component.isActive(script)) {
-                                script.collision(entity0);
-                            }
-                        }
-                    }
-                }
+                return true;
+            } catch (Throwable e) {
+                e.printStackTrace();
+                throw e;
             }
-            return true;
         }
     }
 
