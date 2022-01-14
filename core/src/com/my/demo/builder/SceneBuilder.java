@@ -4,9 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.my.demo.script.ExitScript;
-import com.my.demo.script.GUIScript;
-import com.my.demo.script.ReloadScript;
+import com.my.demo.script.*;
 import com.my.world.core.Engine;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
@@ -115,6 +113,11 @@ public class SceneBuilder {
         reloadScriptEntity.setName("reloadScriptEntity");
         reloadScriptEntity.addComponent(new ReloadScript());
         scene.addEntity(reloadScriptEntity);
+
+//        Entity physicsDebugScriptEntity = new Entity();
+//        physicsDebugScriptEntity.setName("physicsDebugScriptEntity");
+//        physicsDebugScriptEntity.addComponent(new PhysicsDebugScript());
+//        scene.addEntity(physicsDebugScriptEntity);
 
         Entity guiEntity = new Entity();
         guiEntity.setName("guiEntity");
