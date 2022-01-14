@@ -16,6 +16,7 @@ import com.my.world.gdx.DisposableManager;
 import com.my.world.gdx.Vector3Pool;
 import com.my.world.module.common.Position;
 import com.my.world.module.common.Script;
+import lombok.Getter;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -32,6 +33,7 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
     @Config
     public float fixedTimeStep = 1 / 60f;
 
+    @Getter
     protected btDynamicsWorld dynamicsWorld;
     protected DebugDrawer debugDrawer;
     protected ClosestRayResultCallback rayTestCB;
@@ -54,6 +56,11 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
         // Create broadphase
         btDbvtBroadphase broadphase = new btDbvtBroadphase();
         disposableManager.addDisposable(broadphase);
+
+        // Create btGhostPairCallback
+        btGhostPairCallback ghostPairCallback = new btGhostPairCallback();
+        broadphase.getOverlappingPairCache().setInternalGhostPairCallback(ghostPairCallback);
+        disposableManager.addDisposable(ghostPairCallback);
 
         // Create constraintSolver
         btConstraintSolver constraintSolver = new btSequentialImpulseConstraintSolver();
