@@ -138,11 +138,11 @@ public class InputSystem implements System, System.AfterAdded, System.OnStart, I
     }
 
     @Override
-    public boolean scrolled(int amount) {
+    public boolean scrolled(float amountX, float amountY) {
         for (Entity entity : getEntities(scrolledFilter)) {
             for (OnScrolled script : entity.getComponents(OnScrolled.class)) {
                 if (Component.isActive(script)) {
-                    script.scrolled(amount);
+                    script.scrolled(amountX, amountY);
                 }
             }
         }
@@ -175,6 +175,6 @@ public class InputSystem implements System, System.AfterAdded, System.OnStart, I
         void mouseMoved(int screenX, int screenY);
     }
     public interface OnScrolled extends Script {
-        void scrolled(int amount);
+        void scrolled(float amountX, float amountY);
     }
 }

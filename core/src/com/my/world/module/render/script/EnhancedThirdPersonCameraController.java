@@ -31,9 +31,9 @@ public class EnhancedThirdPersonCameraController extends SmoothThirdPersonCamera
     protected boolean changed;
 
     @Override
-    public void scrolled(int amount) {
+    public void scrolled(float amountX, float amountY) {
         float distance = translate.len();
-        distance *= 1 + amount * 0.1f * distanceRate;
+        distance *= 1 + amountY * 0.1f * distanceRate;
         if (distanceLimit) distance = Math.max(Math.min(distance, distanceMax), distanceMin);
         translate.nor().scl(distance);
 
