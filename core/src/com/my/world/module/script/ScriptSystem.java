@@ -21,7 +21,9 @@ public class ScriptSystem extends BaseSystem implements EntityListener, System.A
 
     @Override
     public void afterEntityRemoved(Entity entity) {
-
+        for (OnRemoved script : entity.getComponents(OnRemoved.class)) {
+            script.removed(scene, entity);
+        }
     }
 
     @Override
@@ -41,5 +43,9 @@ public class ScriptSystem extends BaseSystem implements EntityListener, System.A
 
     public interface OnUpdate extends Script {
         void update(Scene scene, Entity entity);
+    }
+
+    public interface OnRemoved extends Script {
+        void removed(Scene scene, Entity entity);
     }
 }
