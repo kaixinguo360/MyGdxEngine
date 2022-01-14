@@ -4,7 +4,9 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.my.demo.script.*;
+import com.my.demo.script.ExitScript;
+import com.my.demo.script.GUIScript;
+import com.my.demo.script.ReloadScript;
 import com.my.world.core.Engine;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
@@ -12,11 +14,11 @@ import com.my.world.module.common.Position;
 import com.my.world.module.physics.PresetTemplateRigidBody;
 import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.constraint.HingeConstraint;
-import com.my.world.module.render.CameraSystem;
 import com.my.world.module.render.ModelRender;
 import com.my.world.module.render.PresetModelRender;
 import com.my.world.module.render.attribute.ColorAttribute;
 import com.my.world.module.render.light.DirectionalLight;
+import com.my.world.module.render.script.SkyBoxScript;
 
 import java.util.HashMap;
 
@@ -41,8 +43,8 @@ public class SceneBuilder {
         sky.setName("sky");
         sky.addComponent(new Position(new Matrix4()));
         sky.addComponent(new PresetModelRender(scene.getAsset("sky", ModelRender.class))).includeEnv = false;
+        sky.addComponent(new SkyBoxScript());
         scene.addEntity(sky);
-        scene.getSystemManager().getSystem(CameraSystem.class).addSkyBox(sky.getId());
 
         Entity ground = new Entity();
         ground.setName("ground");

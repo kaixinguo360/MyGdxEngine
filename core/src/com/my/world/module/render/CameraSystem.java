@@ -5,22 +5,24 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.math.Matrix4;
+import com.my.world.core.Entity;
+import com.my.world.core.EntityListener;
+import com.my.world.core.Scene;
 import com.my.world.core.System;
-import com.my.world.core.*;
 import com.my.world.gdx.Matrix4Pool;
 import com.my.world.module.common.BaseSystem;
 import com.my.world.module.common.Position;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
-public class CameraSystem extends BaseSystem implements EntityListener, System.OnUpdate, System.OnStart,
-        Loadable.OnLoad, Loadable.OnDump {
+public class CameraSystem extends BaseSystem implements EntityListener, System.OnUpdate, System.OnStart {
 
     private RenderSystem renderSystem;
     private EnvironmentSystem environmentSystem;
 
     private final List<CameraInner> cameraInners = new LinkedList<>();
-    private final List<SkyBoxInner> skyBoxInners = new LinkedList<>();
 
     @Override
     public boolean isHandleable(Entity entity) {
@@ -43,12 +45,6 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
             cameraInner.position = null;
         }
         cameraInners.clear();
-        for (SkyBoxInner skyBoxInner : skyBoxInners) {
-            skyBoxInner.id = null;
-            skyBoxInner.entity = null;
-            skyBoxInner.position = null;
-        }
-        skyBoxInners.clear();
     }
 
     @Override
@@ -67,25 +63,6 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
     @Override
     public void afterEntityRemoved(Entity entity) {
         this.cameraInners.removeIf(cameraInner -> cameraInner.entity == entity);
-    }
-
-    @Override
-    public void load(Map<String, Object> config, Context context) {
-        List<String> skyBoxes = (List<String>) config.get("skyBoxes");
-        for (String skyBox : skyBoxes) {
-            addSkyBox(skyBox);
-        }
-    }
-
-    @Override
-    public Map<String, Object> dump(Context context) {
-        Map<String, Object> config = new LinkedHashMap<>();
-        List<String> skyBoxes = new ArrayList<>();
-        for (SkyBoxInner skyBoxInner : this.skyBoxInners) {
-            skyBoxes.add(skyBoxInner.id);
-        }
-        config.put("skyBoxes", skyBoxes);
-        return config;
     }
 
     @Override
@@ -109,13 +86,6 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
                         (int) (width * cameraInner.camera.endX - width * cameraInner.camera.startX),
                         (int) (height * cameraInner.camera.endY - height * cameraInner.camera.startY)
                 );
-                for (SkyBoxInner skyBox : skyBoxInners) {
-                    if (skyBox.position == null) {
-                        skyBox.entity = scene.getEntityManager().findEntityById(skyBox.id);
-                        skyBox.position = skyBox.entity.getComponent(Position.class);
-                    }
-                    skyBox.position.getLocalTransform().setToTranslation(cameraInner.camera.perspectiveCamera.position);
-                }
                 Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
                 renderSystem.render(cameraInner.camera.perspectiveCamera, environment);
             }
@@ -129,16 +99,6 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
 
     public void updateCameras() {
         Collections.sort(this.cameraInners);
-    }
-
-    public void addSkyBox(String id) {
-        SkyBoxInner skyBoxInner = new SkyBoxInner();
-        skyBoxInner.id = id;
-        this.skyBoxInners.add(skyBoxInner);
-    }
-
-    public void removeSkyBox(String id) {
-        this.skyBoxInners.removeIf(skyBoxInner -> id.equals(skyBoxInner.id));
     }
 
     // ----- Private ----- //
@@ -163,9 +123,4 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
         }
     }
 
-    private static class SkyBoxInner {
-        private String id;
-        private Entity entity;
-        private Position position;
-    }
 }
