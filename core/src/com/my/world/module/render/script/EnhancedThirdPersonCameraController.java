@@ -10,11 +10,13 @@ public class EnhancedThirdPersonCameraController extends SmoothThirdPersonCamera
 
     @Config public float waitTime = 3f;
 
+    @Config public boolean yawLocked = false;
     @Config public float yawRate = 1f;
     @Config public boolean yawLimit = false;
     @Config public float yawMin = -180;
     @Config public float yawMax = 180;
 
+    @Config public boolean pitchLocked = false;
     @Config public float pitchRate = 1f;
     @Config public boolean pitchLimit = true;
     @Config public float pitchMin = -90;
@@ -42,11 +44,15 @@ public class EnhancedThirdPersonCameraController extends SmoothThirdPersonCamera
 
     @Override
     public void mouseMoved(int screenX, int screenY) {
-        yaw -= Gdx.input.getDeltaX() * 0.1f * yawRate;
-        if (yawLimit) yaw = Math.max(Math.min(yaw, yawMax), yawMin);
+        if (!yawLocked) {
+            yaw -= Gdx.input.getDeltaX() * 0.1f * yawRate;
+            if (yawLimit) yaw = Math.max(Math.min(yaw, yawMax), yawMin);
+        }
 
-        pitch -= Gdx.input.getDeltaY() * 0.1f * pitchRate;
-        if (pitchLimit) pitch = Math.max(Math.min(pitch, pitchMax), pitchMin);
+        if (!pitchLocked) {
+            pitch -= Gdx.input.getDeltaY() * 0.1f * pitchRate;
+            if (pitchLimit) pitch = Math.max(Math.min(pitch, pitchMax), pitchMin);
+        }
 
         changed = true;
 
@@ -55,17 +61,17 @@ public class EnhancedThirdPersonCameraController extends SmoothThirdPersonCamera
 
     @Override
     public void update(Scene scene, Entity entity) {
-        if (!changed) {
-            alreadyWaitTime += Gdx.graphics.getDeltaTime();
-            if (alreadyWaitTime > waitTime) {
-                recoverEnabled = true;
+        if (recoverEnabled) {
+            if (!changed) {
+                alreadyWaitTime += Gdx.graphics.getDeltaTime();
+                if (alreadyWaitTime > waitTime) {
+                    updateStatus();
+                }
+            } else {
+                changed = false;
+                alreadyWaitTime = 0;
             }
-        } else {
-            changed = false;
-            alreadyWaitTime = 0;
-            recoverEnabled = false;
         }
-        super.update(scene, entity);
     }
 
     public void flushStatus() {
