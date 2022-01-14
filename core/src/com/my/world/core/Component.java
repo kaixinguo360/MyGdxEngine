@@ -2,15 +2,15 @@ package com.my.world.core;
 
 public interface Component extends Loadable {
 
-    interface OnAttachToEntity {
+    interface OnAttachToEntity extends Component {
         void attachToEntity(Entity entity);
     }
 
-    interface OnDetachFromEntity {
+    interface OnDetachFromEntity extends Component {
         void detachFromEntity(Entity entity);
     }
 
-    interface Activatable {
+    interface Activatable extends Component {
         void setActive(boolean active);
         boolean isActive();
     }
