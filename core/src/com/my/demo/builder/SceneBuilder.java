@@ -10,6 +10,7 @@ import com.my.world.core.Engine;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
 import com.my.world.module.common.Position;
+import com.my.world.module.input.InputSystem;
 import com.my.world.module.physics.PresetTemplateRigidBody;
 import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.constraint.HingeConstraint;
@@ -126,6 +127,12 @@ public class SceneBuilder {
         characterController.keyRight = Input.Keys.D;
         characterController.keyJump = Input.Keys.SPACE;
         character.addComponent(new CharacterSwitcherAgent()).characterName = "character";
+        character.addComponent((InputSystem.OnTouchDown) (int screenX, int screenY, int pointer, int button) -> {
+            scene.instantiatePrefab("Cutter", new HashMap<String, Object>() {{
+                put("Cutter.components[0].config.localTransform", character.getComponent(Position.class).getGlobalTransform());
+            }});
+        });
+
         scene.addEntity(character);
         scene.instantiatePrefab("Camera", new HashMap<String, Object>() {{
             put("Camera.components[2].config.active", false);
