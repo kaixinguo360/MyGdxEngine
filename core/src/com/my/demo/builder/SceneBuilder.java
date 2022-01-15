@@ -4,9 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.my.demo.script.ExitScript;
-import com.my.demo.script.GUIScript;
-import com.my.demo.script.ReloadScript;
+import com.my.demo.script.*;
 import com.my.world.core.Engine;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
@@ -68,26 +66,35 @@ public class SceneBuilder {
         for (int x = -20; x <= 20; x+=40) {
             for (int y = 0; y <= 0; y+=20) {
                 for (int z = -20; z <= 20; z+=20) {
-                    Entity entity = scene.instantiatePrefab("Aircraft");
-                    entity.setName("Aircraft-" + aircraftNum++);
-                    entity.getComponent(Position.class).getLocalTransform().setToTranslation(x, y, z);
+                    int finalAircraftNum = aircraftNum;
+                    Matrix4 transform = new Matrix4().setToTranslation(x, y, z);
+                    scene.instantiatePrefab("Aircraft", new HashMap<String, Object>() {{
+                        put("Aircraft.components[0].config.localTransform", transform);
+                        put("Aircraft.components[1]", null);
+                        put("Aircraft.name", "Aircraft-" + finalAircraftNum);
+                    }});
+                    aircraftNum++;
                 }
             }
         }
 
-        Entity aircraftEntity = scene.instantiatePrefab("Aircraft");
-        aircraftEntity.setName("Aircraft-6");
-        aircraftEntity.getComponent(Position.class).getLocalTransform().translate(0, 0, 200);
-//        aircraftEntity.findChildByName("body").addComponent(new Camera(0, 0, 1, 1, 0));
+        Entity aircraftEntity = scene.instantiatePrefab("Aircraft", new HashMap<String, Object>() {{
+            put("Aircraft.components[0].config.localTransform", new Matrix4().setToTranslation(0, 0, 200));
+            put("Aircraft.name", "Aircraft-6");
+        }});
+        aircraftEntity.addComponent(new CharacterSwitcherAgent()).characterName = "aircraft";
         scene.instantiatePrefab("Camera", new HashMap<String, Object>() {{
             put("Camera.components[3].config.translateTarget", new Vector3(0, 0.8f, -1.5f));
             put("Camera.parent", aircraftEntity.findChildByName("body"));
             put("Camera.name", "camera");
         }});
 
-        Entity gunEntity = scene.instantiatePrefab("Gun");
-        gunEntity.setName("Gun-0");
-        gunEntity.getComponent(Position.class).getLocalTransform().translate(0, 0.01f / 2, -20);
+        Entity gunEntity = scene.instantiatePrefab("Gun", new HashMap<String, Object>() {{
+            put("Gun.components[0].config.localTransform", new Matrix4().setToTranslation(0, 0.01f / 2, -20));
+            put("Gun.components[1].config.active", false);
+            put("Gun.name", "Gun-0");
+        }});
+        gunEntity.addComponent(new CharacterSwitcherAgent()).characterName = "gun";
         Entity rotateY = gunEntity.findChildByName("rotate_Y");
         Matrix4 rotateYTransform = new Matrix4().translate(0, 0, -20).translate(0, 0.5f + 0.01f / 2, 0);
         Matrix4 groundTransform = ground.getComponent(Position.class).getGlobalTransform().cpy();
@@ -96,7 +103,6 @@ public class SceneBuilder {
                 new Matrix4().rotate(Vector3.X, 90),
                 false
         ));
-//        gunEntity.findChildByName("barrel").addComponent(new Camera(0, 0.7f, 0.3f, 1, 1));
         scene.instantiatePrefab("Camera", new HashMap<String, Object>() {{
             put("Camera.components[2].config.active", false);
             put("Camera.components[3].config.translateTarget", new Vector3(0, 0.8f, -1.5f));
@@ -125,6 +131,13 @@ public class SceneBuilder {
         guiEntity.setName("guiEntity");
         guiEntity.addComponent(new GUIScript()).targetEntity = scene.getEntityManager().findEntityByName("Aircraft-6");
         scene.addEntity(guiEntity);
+
+        Entity characterSelectorEntity = new Entity();
+        characterSelectorEntity.setName("characterSelectorEntity");
+        CharacterSwitcher characterSwitcher = characterSelectorEntity.addComponent(new CharacterSwitcher());
+        characterSwitcher.characterNames.add("aircraft");
+        characterSwitcher.characterNames.add("gun");
+        scene.addEntity(characterSelectorEntity);
     }
 
     public static void init(Engine engine) {

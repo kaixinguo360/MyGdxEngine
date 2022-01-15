@@ -4,12 +4,14 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
+import com.my.world.core.Config;
 import com.my.world.core.Entity;
 import com.my.world.core.Prefab;
 import com.my.world.core.Scene;
 import com.my.world.gdx.Matrix4Pool;
 import com.my.world.gdx.QuaternionPool;
 import com.my.world.gdx.Vector3Pool;
+import com.my.world.module.common.ActivatableComponent;
 import com.my.world.module.common.Position;
 import com.my.world.module.physics.Constraint;
 import com.my.world.module.physics.PhysicsSystem;
@@ -22,7 +24,10 @@ import com.my.world.module.script.ScriptSystem;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EmitterScript implements ScriptSystem.OnStart {
+public class EmitterScript extends ActivatableComponent implements ScriptSystem.OnStart {
+
+    @Config
+    public String name;
 
     protected Scene scene;
     protected PhysicsSystem physicsSystem;
@@ -87,11 +92,6 @@ public class EmitterScript implements ScriptSystem.OnStart {
 
     public btRigidBody getMainBody() {
         return main.getComponent(RigidBody.class).body;
-    }
-
-    public void toggleCamera() {
-        camera.setActive(!camera.isActive());
-        cameraController.setActive(camera.isActive());
     }
 
     public float getVelocity() {

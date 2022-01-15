@@ -71,36 +71,30 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
 
     @Override
     public void update(Scene scene, Entity entity) {
-        if (camera != null && camera.isActive()) {
-            float v1 = 1f;
-            float v2 = 0.5f;
-            if (aircraftController_L != null && aircraftController_R != null) {
-                if (Gdx.input.isKeyPressed(Input.Keys.W)) aircraftController_T.rotate(v1);
-                if (Gdx.input.isKeyPressed(Input.Keys.S)) aircraftController_T.rotate(-v1);
-                if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-                    aircraftController_L.rotate(v2);
-                    aircraftController_R.rotate(-v2);
-                }
-                if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-                    aircraftController_L.rotate(-v2);
-                    aircraftController_R.rotate(v2);
-                }
-                if (Gdx.input.isKeyPressed(Input.Keys.Q)) aircraftController_VL.rotate(v1);
-                if (Gdx.input.isKeyPressed(Input.Keys.E)) aircraftController_VR.rotate(-v1);
+        float v1 = 1f;
+        float v2 = 0.5f;
+        if (aircraftController_L != null && aircraftController_R != null) {
+            if (Gdx.input.isKeyPressed(Input.Keys.W)) aircraftController_T.rotate(v1);
+            if (Gdx.input.isKeyPressed(Input.Keys.S)) aircraftController_T.rotate(-v1);
+            if (Gdx.input.isKeyPressed(Input.Keys.A)) {
+                aircraftController_L.rotate(v2);
+                aircraftController_R.rotate(-v2);
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.J)) fire(bulletPrefab, bulletVelocity, bulletOffset, (float) Math.random());
-            if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) explode();
+            if (Gdx.input.isKeyPressed(Input.Keys.D)) {
+                aircraftController_L.rotate(-v2);
+                aircraftController_R.rotate(v2);
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.Q)) aircraftController_VL.rotate(v1);
+            if (Gdx.input.isKeyPressed(Input.Keys.E)) aircraftController_VR.rotate(-v1);
         }
+        if (Gdx.input.isKeyPressed(Input.Keys.J)) fire(bulletPrefab, bulletVelocity, bulletOffset, (float) Math.random());
+        if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) explode();
     }
 
     @Override
     public void keyDown(int keycode) {
-        if (camera == null) return;
-        if (keycode == Input.Keys.TAB) toggleCamera();
-        if (keycode == Input.Keys.SHIFT_LEFT && camera.isActive()) switchCameraMode();
-        if (camera.isActive()) {
-            if (keycode == Input.Keys.K) fire(bombPrefab, bombVelocity, AircraftScript.bombOffset, (float) Math.random());
-        }
+        if (keycode == Input.Keys.SHIFT_LEFT) switchCameraMode();
+        if (keycode == Input.Keys.K) fire(bombPrefab, bombVelocity, AircraftScript.bombOffset, (float) Math.random());
     }
 
     @Config

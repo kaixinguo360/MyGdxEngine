@@ -46,39 +46,33 @@ public class GunScript extends EmitterScript implements ScriptSystem.OnStart, Sc
 
     @Override
     public void update(Scene scene, Entity entity) {
-        if (camera != null && camera.isActive()) {
-            float v = 0.025f;
-            if (gunController_Y != null && gunController_X != null) {
-                if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-                    getMainBody().activate();
-                    gunController_X.target += -v;
-                }
-                if (Gdx.input.isKeyPressed(Input.Keys.S)) {
-                    getMainBody().activate();
-                    gunController_X.target += v;
-                }
-                if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-                    getMainBody().activate();
-                    gunController_Y.target += v;
-                }
-                if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-                    getMainBody().activate();
-                    gunController_Y.target += -v;
-                }
+        float v = 0.025f;
+        if (gunController_Y != null && gunController_X != null) {
+            if (Gdx.input.isKeyPressed(Input.Keys.W)) {
+                getMainBody().activate();
+                gunController_X.target -= v;
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.J)) fire(bulletPrefab, bulletVelocity, bulletOffset, (float) Math.random());
-            if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) explode();
+            if (Gdx.input.isKeyPressed(Input.Keys.S)) {
+                getMainBody().activate();
+                gunController_X.target += v;
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.A)) {
+                getMainBody().activate();
+                gunController_Y.target += v;
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.D)) {
+                getMainBody().activate();
+                gunController_Y.target -= v;
+            }
         }
+        if (Gdx.input.isKeyPressed(Input.Keys.J)) fire(bulletPrefab, bulletVelocity, bulletOffset, (float) Math.random());
+        if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) explode();
     }
 
     @Override
     public void keyDown(int keycode) {
-        if (camera == null) return;
-        if (keycode == Input.Keys.TAB) toggleCamera();
-        if (keycode == Input.Keys.SHIFT_LEFT && camera.isActive()) switchCameraMode();
-        if (camera.isActive()) {
-            if (keycode == Input.Keys.K) fire(bombPrefab, bombVelocity, bombOffset, (float) Math.random());
-        }
+        if (keycode == Input.Keys.SHIFT_LEFT) switchCameraMode();
+        if (keycode == Input.Keys.K) fire(bombPrefab, bombVelocity, bombOffset, (float) Math.random());
     }
 
     @Config
