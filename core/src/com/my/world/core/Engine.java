@@ -20,6 +20,9 @@ public class Engine implements Disposable {
     protected final JarManager jarManager;
 
     @Getter
+    private final EventManager eventManager = new EventManager();
+
+    @Getter
     protected final Context context;
 
     public Engine() {
@@ -39,6 +42,8 @@ public class Engine implements Disposable {
 
     @Override
     public void dispose() {
+        eventManager.dispose();
         sceneManager.dispose();
+        assetsManager.dispose();
     }
 }

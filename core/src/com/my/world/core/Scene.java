@@ -35,9 +35,13 @@ public class Scene implements Disposable {
     @Getter
     private final EntityManager entityManager = new EntityManager();
 
+    @Getter
+    private final EventManager eventManager = new EventManager();
+
     Scene(Engine engine, String name) {
         this.name = name;
         this.engine = engine;
+        this.engine.getEventManager().getChildren().add(eventManager);
         this.context = engine.newContext();
         this.context.setEnvironment(EntityManager.CONTEXT_ENTITY_PROVIDER, (Function<String, Entity>) entityManager::findEntityById);
     }
@@ -119,6 +123,9 @@ public class Scene implements Disposable {
     public void dispose() {
         entityManager.dispose();
         systemManager.dispose();
+
+        this.engine.getEventManager().getChildren().remove(eventManager);
+        eventManager.dispose();
     }
 
     public enum Status {
