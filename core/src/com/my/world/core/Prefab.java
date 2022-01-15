@@ -7,10 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 
 @NoArgsConstructor
@@ -38,24 +35,38 @@ public class Prefab implements Loadable {
         }
     }
 
+    private static final Map<String, String> tmpIdMap = new HashMap<>();
     public static Entity newInstance(Scene scene, List<Map<String, Object>> entityConfigs) {
         LoaderManager loaderManager = scene.getEngine().getLoaderManager();
         EntityManager entityManager = scene.getEntityManager();
         String prefix = UUID.randomUUID() + "_";
+        tmpIdMap.clear();
 
         Context context = scene.newContext();
         context.setEnvironment(EntityManager.CONTEXT_ENTITY_PROVIDER, (Function<String, Entity>) id -> {
-            try {
-                return entityManager.findEntityById(prefix + id);
-            } catch (EntityManager.EntityManagerException e) {
-                return entityManager.findEntityById(id);
+            if (!tmpIdMap.isEmpty() && tmpIdMap.containsKey(id)) {
+                return entityManager.findEntityById(tmpIdMap.get(id));
+            } else {
+                try {
+                    return entityManager.findEntityById(prefix + id);
+                } catch (EntityManager.EntityManagerException e) {
+                    return entityManager.findEntityById(id);
+                }
             }
         });
 
         Entity firstEntity = null;
         for (Map<String, Object> map : entityConfigs) {
             Entity entity = loaderManager.load(map, Entity.class, context);
-            if (entity.getId() != null) entity.setId(prefix + entity.getId());
+            if (entity.getId() != null) {
+                String globalId = (String) map.get("globalId");
+                if (globalId != null) {
+                    tmpIdMap.put(entity.getId(), globalId);
+                    entity.setId(globalId);
+                } else {
+                    entity.setId(prefix + entity.getId());
+                }
+            }
             if (firstEntity == null) firstEntity = entity;
             entityManager.addEntity(entity);
         }

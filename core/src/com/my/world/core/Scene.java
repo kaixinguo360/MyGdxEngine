@@ -72,7 +72,9 @@ public class Scene implements Disposable {
         for (Entity entity : entityManager.getEntities().values()) {
             String name = entity.getName();
             if ("tmp".equalsIgnoreCase(name)) continue;
-            entityConfigs.add(loaderManager.dump(entity, Map.class, context));
+            Map<String, Object> config = loaderManager.dump(entity, Map.class, context);
+            config.put("globalId", null);
+            entityConfigs.add(config);
         }
         entityManager.clearEntity();
 
@@ -86,7 +88,7 @@ public class Scene implements Disposable {
     }
     public Entity instantiatePrefab(String prefabName) {
         Prefab prefab = engine.getAssetsManager().getAsset(prefabName, Prefab.class);
-        return instantiatePrefab(prefab);
+        return Prefab.newInstance(this, prefab.getEntityConfigs());
     }
     public Entity instantiatePrefab(String prefabName, Map<String, Object> configs) {
         Prefab prefab = engine.getAssetsManager().getAsset(prefabName, Prefab.class);

@@ -57,8 +57,14 @@ public class SceneLoader implements Loader {
             if (entities != null) {
                 for (Map<String, Object> entity : entities) {
                     Class<? extends Entity> entityType = (Class<? extends Entity>) engine.getJarManager().loadClass((String) entity.get("type"));
-                    Object entityConfig = entity.get("config");
-                    entityManager.addEntity(context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).load(entityConfig, entityType, context));
+                    if (Prefab.class.isAssignableFrom(entityType)) {
+                        String prefabName = (String) entity.get("prefabName");
+                        Map<String, Object> prefabConfig = (Map<String, Object>) entity.get("config");
+                        scene.instantiatePrefab(prefabName, prefabConfig);
+                    } else {
+                        Object entityConfig = entity.get("config");
+                        entityManager.addEntity(context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).load(entityConfig, entityType, context));
+                    }
                 }
             }
         } catch (ClassNotFoundException e) {
