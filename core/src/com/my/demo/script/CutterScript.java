@@ -15,9 +15,11 @@ import com.my.world.module.render.ModelRender;
 import com.my.world.module.render.Render;
 import com.my.world.module.script.ScriptSystem;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-public class CutterScript implements ScriptSystem.OnStart, PhysicsSystem.OnCollision {
+public class CutterScript implements ScriptSystem.OnStart, PhysicsSystem.OnCollision, ScriptSystem.OnRemoved {
 
     @Config(type = Config.Type.Asset)
     public ModelRender cutter;
@@ -28,6 +30,7 @@ public class CutterScript implements ScriptSystem.OnStart, PhysicsSystem.OnColli
     @Config
     public Matrix4 offset = new Matrix4();
 
+    private final Set<Entity> entities = new HashSet<>();
     private EntityManager entityManager;
     private Entity self;
 
@@ -40,36 +43,50 @@ public class CutterScript implements ScriptSystem.OnStart, PhysicsSystem.OnColli
 
     @Override
     public void collision(Entity entity) {
-        if (entity == null || !entity.contains(Render.class) || !entity.contains(RigidBody.class)) return;
+        if (entity.contains(Render.class) && entity.contains(RigidBody.class)
+                && ("Box".equals(entity.getName()) || "Brick".equals(entity.getName()))) {
+            System.out.println("Pick:\tid=" + entity.getId());
+            entities.add(entity);
+        }
+    }
+
+    @Override
+    public void removed(Scene scene, Entity entity) {
+        for (Entity entity1 : entities) {
+            cut(entity1);
+        }
+    }
+
+    private void cut(Entity entity) {
         String id = entity.getId();
-        String name = entity.getName();
-
-        if (!"Box".equals(name) && !"Brick".equals(name)) return;
-        System.out.println("Cut:\tid=" + id);
-
-        Matrix4 tmpM = Matrix4Pool.obtain();
-        Matrix4 transform = tmpM.set(self.getComponent(Position.class).getGlobalTransform());
-        transform.mul(offset);
 
         try {
-            List<Entity> newEntities = BooleanCutUtils.cut(entity, cutter.model, transform, type);
-            if (newEntities == null) {
-                return;
-            } else {
-                try {
-                    entityManager.removeEntity(id);
-                } catch (EntityManager.EntityManagerException e) {
-                    return;
-                }
-                for (Entity newEntity : newEntities) {
-                    entityManager.getBatch().addEntity(newEntity);
-                }
-            }
-        } catch (BooleanOperationException e) {
-            entityManager.removeEntity(id);
-            e.printStackTrace();
+            entityManager.findEntityById(id);
+            System.out.println("Cut:\tid=" + id);
+        } catch (EntityManager.EntityManagerException e) {
+            System.out.println("Already Removed:\tid=" + id);
+            return;
         }
 
-        Matrix4Pool.free(tmpM);
+        Matrix4 tmpM = Matrix4Pool.obtain();
+        Matrix4 transform = tmpM.set(self.getComponent(Position.class).getGlobalTransform()).mul(offset);
+        List<Entity> newEntities = null;
+
+        try {
+            newEntities = BooleanCutUtils.cut(entity, cutter.model, transform, type);
+        } catch (BooleanOperationException e) {
+            e.printStackTrace();
+        } finally {
+            Matrix4Pool.free(tmpM);
+        }
+
+        if (newEntities == null) {
+            return;
+        }
+
+        entityManager.removeEntity(id);
+        for (Entity newEntity : newEntities) {
+            entityManager.addEntity(newEntity);
+        }
     }
 }
