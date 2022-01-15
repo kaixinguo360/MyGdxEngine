@@ -34,8 +34,11 @@ public class EntityManager implements Disposable {
         Entity removed = entities.remove(id);
         for (Map.Entry<EntityFilter, Set<Entity>> entry : filters.entrySet()) {
             EntityFilter filter = entry.getKey();
-            entry.getValue().remove(removed);
-            if (listeners.containsKey(filter)) listeners.get(filter).afterEntityRemoved(removed);
+            Set<Entity> entities = entry.getValue();
+            if (entities.contains(removed)) {
+                entities.remove(removed);
+                if (listeners.containsKey(filter)) listeners.get(filter).afterEntityRemoved(removed);
+            }
         }
         return removed;
     }
