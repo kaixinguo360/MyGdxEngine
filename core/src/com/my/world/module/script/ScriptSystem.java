@@ -2,14 +2,19 @@ package com.my.world.module.script;
 
 import com.my.world.core.System;
 import com.my.world.core.*;
-import com.my.world.module.common.BaseSystem;
 import com.my.world.module.common.Script;
 
-public class ScriptSystem extends BaseSystem implements EntityListener, System.AfterAdded, System.OnUpdate {
+public class ScriptSystem implements EntityListener, System.AfterAdded, System.OnUpdate {
+
+    protected Scene scene;
+    protected final EntityFilter entityListenerFilter = entity -> entity.contain(OnStart.class) || entity.contain(OnRemoved.class);
+    protected final EntityFilter onUpdateFilter = entity -> entity.contain(OnUpdate.class);
 
     @Override
-    protected boolean isHandleable(Entity entity) {
-        return entity.contain(OnStart.class) || entity.contain(OnUpdate.class);
+    public void afterAdded(Scene scene) {
+        this.scene = scene;
+        scene.getEntityManager().addListener(entityListenerFilter, this);
+        scene.getEntityManager().addFilter(onUpdateFilter);
     }
 
     @Override
@@ -28,7 +33,7 @@ public class ScriptSystem extends BaseSystem implements EntityListener, System.A
 
     @Override
     public void update(float deltaTime) {
-        for (Entity entity : getEntities()) {
+        for (Entity entity : scene.getEntityManager().getEntitiesByFilter(onUpdateFilter)) {
             for (OnUpdate script : entity.getComponents(OnUpdate.class)) {
                 if (Component.isActive(script)) {
                     script.update(scene, entity);
