@@ -1,6 +1,7 @@
 package com.my.world.module.render;
 
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
+import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.my.world.core.Config;
@@ -13,6 +14,9 @@ public class Render extends ActivatableComponent {
     @Config
     public boolean includeEnv = true;
 
+    @Config(type = Config.Type.Asset)
+    public Shader shader;
+
     public ModelInstance modelInstance;
     public final Vector3 center = new Vector3();
     public final Vector3 dimensions = new Vector3();
@@ -21,6 +25,7 @@ public class Render extends ActivatableComponent {
     public Render(ModelInstance modelInstance) {
         this.modelInstance = modelInstance;
         calculateBoundingBox();
+        includeEnv = true;
     }
 
     public void calculateBoundingBox() {

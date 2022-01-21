@@ -3,22 +3,46 @@ package com.my.world.module.render;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.graphics.g3d.Renderable;
+import com.badlogic.gdx.graphics.g3d.Shader;
+import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
+import com.badlogic.gdx.graphics.g3d.utils.ShaderProvider;
 import com.badlogic.gdx.math.Vector3;
-import com.my.world.core.Component;
-import com.my.world.core.Entity;
-import com.my.world.core.EntityFilter;
-import com.my.world.core.Scene;
+import com.my.world.core.*;
 import com.my.world.core.util.Disposable;
 import com.my.world.gdx.Vector3Pool;
 import com.my.world.module.common.BaseSystem;
 import com.my.world.module.common.Position;
 import com.my.world.module.common.Script;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class RenderSystem extends BaseSystem implements Disposable {
+
+    @Config(type = Config.Type.Asset, elementType = Shader.class)
+    public List<Shader> shaders = new ArrayList<>();
 
     protected final EntityFilter beforeRenderFilter = entity -> entity.contain(BeforeRender.class);
     protected final EntityFilter afterRenderFilter = entity -> entity.contain(AfterRender.class);
-    protected final ModelBatch batch  = new ModelBatch();
+    protected ModelBatch batch = new ModelBatch(null, new ShaderProvider() {
+
+        public final ShaderProvider defaultShaderProvider = new DefaultShaderProvider();
+
+        @Override
+        public Shader getShader(Renderable renderable) {
+            for (Shader shader : shaders) {
+                if (shader.canRender(renderable)) return shader;
+            }
+            return defaultShaderProvider.getShader(renderable);
+        }
+
+        @Override
+        public void dispose() {
+            defaultShaderProvider.dispose();
+        }
+
+    }, null);
 
     @Override
     public boolean isHandleable(Entity entity) {
@@ -56,10 +80,11 @@ public class RenderSystem extends BaseSystem implements Disposable {
                     render.modelInstance.transform.set(position.getGlobalTransform());
 
                     if (isVisible(cam, position, render)) {
-                        if (environment != null && render.includeEnv)
-                            batch.render(render.modelInstance, environment);
-                        else
-                            batch.render(render.modelInstance);
+                        if (environment != null && render.includeEnv) {
+                            batch.render(render.modelInstance, environment, render.shader);
+                        } else {
+                            batch.render(render.modelInstance, render.shader);
+                        }
                     }
                 }
             }
