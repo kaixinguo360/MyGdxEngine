@@ -1,7 +1,6 @@
 package com.my.demo.builder;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.demo.script.BombScript;
@@ -17,6 +16,7 @@ import com.my.world.module.physics.rigidbody.CapsuleBody;
 import com.my.world.module.physics.rigidbody.SphereBody;
 import com.my.world.module.render.ModelRender;
 import com.my.world.module.render.PresetModelRender;
+import com.my.world.module.render.enhanced.EnhancedPointLight;
 import com.my.world.module.render.model.Capsule;
 
 import static com.my.demo.builder.SceneBuilder.attributes;
@@ -26,7 +26,7 @@ public class BulletBuilder {
     public static void initAssets(Engine engine, Scene scene) {
         AssetsManager assetsManager = engine.getAssetsManager();
 
-        assetsManager.addAsset("bullet", ModelRender.class, new Capsule(0.5f, 2, 8, Color.YELLOW, VertexAttributes.Usage.Position));
+        assetsManager.addAsset("bullet", ModelRender.class, new Capsule(0.5f, 2, 8, Color.YELLOW, attributes));
         assetsManager.addAsset("bomb", ModelRender.class, new Capsule(0.5f, 2, 8, Color.GRAY, attributes));
 
         assetsManager.addAsset("bullet", TemplateRigidBody.class, new CapsuleBody(0.5f, 1, 50f));
@@ -74,6 +74,7 @@ public class BulletBuilder {
         entity.addComponent(new BombScript()).explosionPrefab = scene.getAsset("Explosion", Prefab.class);
         entity.addComponent(new DragForce(new Vector3(0, 0, 0.05f), new Vector3(0, -1, 0), false));
         entity.addComponent(new DragForce(new Vector3(0.05f, 0, 0), new Vector3(0, -1, 0), false));
+        entity.addComponent(new EnhancedPointLight(Color.YELLOW.cpy()));
         scene.addEntity(entity);
         return "Bomb";
     }

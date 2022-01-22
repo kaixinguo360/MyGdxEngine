@@ -3,17 +3,19 @@ package com.my.world.module.render;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.my.world.core.Entity;
 import com.my.world.module.common.BaseSystem;
+import com.my.world.module.render.enhanced.EnhancedEnvironment;
+import com.my.world.module.render.enhanced.EnhancedLight;
 import lombok.Getter;
 
 public class EnvironmentSystem extends BaseSystem {
 
     @Getter
-    private final Environment commonEnvironment = new Environment();
-    private final Environment environment = new Environment();
+    private final EnhancedEnvironment commonEnvironment = new EnhancedEnvironment();
+    private final EnhancedEnvironment environment = new EnhancedEnvironment();
 
     @Override
     public boolean isHandleable(Entity entity) {
-        return entity.contain(EnvironmentAttribute.class) || entity.contain(Light.class);
+        return entity.contain(EnvironmentAttribute.class) || entity.contain(Light.class) || entity.contain(EnhancedLight.class);
     }
 
     @Override
@@ -36,6 +38,11 @@ public class EnvironmentSystem extends BaseSystem {
             for (Light light : entity.getComponents(Light.class)) {
                 if (light.isActive()) {
                     environment.add(light.getLight());
+                }
+            }
+            for (EnhancedLight light : entity.getComponents(EnhancedLight.class)) {
+                if (light.isActive()) {
+                    environment.add(light);
                 }
             }
         }

@@ -1,6 +1,7 @@
 package com.my.demo.builder;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.demo.script.GunController;
@@ -19,6 +20,7 @@ import com.my.world.module.physics.rigidbody.BoxBody;
 import com.my.world.module.physics.rigidbody.CylinderBody;
 import com.my.world.module.render.ModelRender;
 import com.my.world.module.render.PresetModelRender;
+import com.my.world.module.render.enhanced.EnhancedShader;
 import com.my.world.module.render.model.Box;
 import com.my.world.module.render.model.Cylinder;
 import com.my.world.module.render.model.ExternalModel;
@@ -31,6 +33,8 @@ public class ObjectBuilder {
 
     public static void initAssets(Engine engine, Scene scene) {
         AssetsManager assetsManager = engine.getAssetsManager();
+
+        assetsManager.addAsset("customShader", Shader.class, new EnhancedShader());
 
         assetsManager.addAsset("box", ModelRender.class, new Box(1, 1, 1, Color.RED, attributes));
         assetsManager.addAsset("brick", ModelRender.class, new Box(2, 1, 1, Color.LIGHT_GRAY, attributes));

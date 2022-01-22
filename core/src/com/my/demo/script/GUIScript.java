@@ -87,9 +87,7 @@ public class GUIScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
         shapeRenderer.end();
 
         // Update Stage
-        getWidget("label", Label.class).setText(
-                "\nV = " + Math.floor(emitterScript.getVelocity()) +
-                        "\nH = " + Math.floor(emitterScript.getHeight()) + "\n");
+        getWidget("label", Label.class).setText("\nFPS = " + Gdx.graphics.getFramesPerSecond() + "\n");
         stage.act();
         stage.draw();
     }

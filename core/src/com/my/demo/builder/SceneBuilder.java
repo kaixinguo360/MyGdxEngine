@@ -3,6 +3,7 @@ package com.my.demo.builder;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.demo.script.*;
@@ -15,6 +16,7 @@ import com.my.world.module.physics.PresetTemplateRigidBody;
 import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.constraint.HingeConstraint;
 import com.my.world.module.physics.script.EnhancedCharacterController;
+import com.my.world.module.render.DefaultRenderSystem;
 import com.my.world.module.render.ModelRender;
 import com.my.world.module.render.PresetModelRender;
 import com.my.world.module.render.attribute.ColorAttribute;
@@ -27,6 +29,10 @@ public class SceneBuilder {
     public static final long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
 
     public static void initScene(Scene scene) {
+
+        // ----- Init Custom Shader ----- //
+
+        scene.getSystemManager().getSystem(DefaultRenderSystem.class).shaders.add(scene.getAsset("customShader", Shader.class));
 
         // ----- Init Environments ----- //
 
