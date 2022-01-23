@@ -22,7 +22,7 @@ public class GdxApplication extends ApplicationAdapter {
     @Override
     public void create() {
         Bullet.init();
-        engine = new GdxEngine();
+        engine = newEngine();
         sceneManager = engine.getSceneManager();
     }
 
@@ -47,5 +47,17 @@ public class GdxApplication extends ApplicationAdapter {
         systemManager.addSystem(new InputSystem());
         systemManager.addSystem(new ConstraintSystem());
         return scene;
+    }
+
+    public static Engine newEngine() {
+        Engine engine = new Engine();
+        List<Loader> loaders = engine.getLoaderManager().getLoaders();
+        loaders.add(new SceneLoader());
+        loaders.add(new Matrix4Loader());
+        loaders.add(new Vector3Loader());
+        loaders.add(new QuaternionLoader());
+        loaders.add(new ColorLoader());
+        loaders.add(new LoadableLoader());
+        return engine;
     }
 }
