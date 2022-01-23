@@ -1,9 +1,9 @@
 package com.my.demo.script;
 
 import com.my.world.core.*;
+import com.my.world.module.camera.Camera;
+import com.my.world.module.camera.script.EnhancedThirdPersonCameraController;
 import com.my.world.module.common.Script;
-import com.my.world.module.render.Camera;
-import com.my.world.module.render.script.EnhancedThirdPersonCameraController;
 import com.my.world.module.script.ScriptSystem;
 
 import static com.my.demo.script.CharacterSwitcher.DEFAULT_EVENT_ID;

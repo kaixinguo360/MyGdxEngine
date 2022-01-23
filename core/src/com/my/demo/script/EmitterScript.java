@@ -11,14 +11,14 @@ import com.my.world.core.Scene;
 import com.my.world.gdx.Matrix4Pool;
 import com.my.world.gdx.QuaternionPool;
 import com.my.world.gdx.Vector3Pool;
+import com.my.world.module.camera.Camera;
+import com.my.world.module.camera.script.EnhancedThirdPersonCameraController;
 import com.my.world.module.common.ActivatableComponent;
 import com.my.world.module.common.Position;
 import com.my.world.module.physics.Constraint;
 import com.my.world.module.physics.PhysicsSystem;
 import com.my.world.module.physics.RigidBody;
 import com.my.world.module.physics.script.ConstraintController;
-import com.my.world.module.render.Camera;
-import com.my.world.module.render.script.EnhancedThirdPersonCameraController;
 import com.my.world.module.script.ScriptSystem;
 
 import java.util.ArrayList;

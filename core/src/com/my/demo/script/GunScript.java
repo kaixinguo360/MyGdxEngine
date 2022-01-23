@@ -7,9 +7,9 @@ import com.my.world.core.Config;
 import com.my.world.core.Entity;
 import com.my.world.core.Prefab;
 import com.my.world.core.Scene;
+import com.my.world.module.camera.Camera;
+import com.my.world.module.camera.script.EnhancedThirdPersonCameraController;
 import com.my.world.module.input.InputSystem;
-import com.my.world.module.render.Camera;
-import com.my.world.module.render.script.EnhancedThirdPersonCameraController;
 import com.my.world.module.script.ScriptSystem;
 
 public class GunScript extends EmitterScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, InputSystem.OnKeyDown {

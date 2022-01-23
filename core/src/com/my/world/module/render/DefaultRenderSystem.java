@@ -8,23 +8,25 @@ import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.graphics.g3d.utils.ShaderProvider;
 import com.badlogic.gdx.math.Vector3;
-import com.my.world.core.*;
+import com.my.world.core.Config;
+import com.my.world.core.Entity;
+import com.my.world.core.Scene;
+import com.my.world.core.System;
 import com.my.world.core.util.Disposable;
 import com.my.world.gdx.Vector3Pool;
 import com.my.world.module.common.BaseSystem;
 import com.my.world.module.common.Position;
-import com.my.world.module.common.Script;
+import com.my.world.module.common.RenderSystem;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class RenderSystem extends BaseSystem implements Disposable {
+public class DefaultRenderSystem extends BaseSystem implements System.OnStart, RenderSystem, Disposable {
 
     @Config(type = Config.Type.Asset, elementType = Shader.class)
     public List<Shader> shaders = new ArrayList<>();
 
-    protected final EntityFilter beforeRenderFilter = entity -> entity.contain(BeforeRender.class);
-    protected final EntityFilter afterRenderFilter = entity -> entity.contain(AfterRender.class);
+    protected EnvironmentSystem environmentSystem;
     protected ModelBatch batch = new ModelBatch(null, new ShaderProvider() {
 
         public final ShaderProvider defaultShaderProvider = new DefaultShaderProvider();
@@ -50,28 +52,28 @@ public class RenderSystem extends BaseSystem implements Disposable {
     }
 
     @Override
-    public void afterAdded(Scene scene) {
-        super.afterAdded(scene);
-        scene.getEntityManager().addFilter(beforeRenderFilter);
-        scene.getEntityManager().addFilter(afterRenderFilter);
+    public void start(Scene scene) {
+        List<EnvironmentSystem> systemList = scene.getSystemManager().getSystems(EnvironmentSystem.class);
+        environmentSystem = systemList.get(0);
     }
 
     @Override
     public void dispose() {
         batch.dispose();
+        environmentSystem = null;
     }
 
-    // ----- Custom ----- //
+    // ----- RenderSystem ----- //
 
-    public void render(PerspectiveCamera cam, Environment environment) {
-        for (Entity entity : scene.getEntityManager().getEntitiesByFilter(beforeRenderFilter)) {
-            for (BeforeRender script : entity.getComponents(BeforeRender.class)) {
-                if (Component.isActive(script)) {
-                    script.beforeRender(cam, environment);
-                }
-            }
-        }
+    protected Environment currentEnvironment;
 
+    @Override
+    public void begin() {
+        currentEnvironment = environmentSystem.getEnvironment();
+    }
+
+    @Override
+    public void render(PerspectiveCamera cam) {
         batch.begin(cam);
         for (Entity entity : getEntities()) {
             Position position = entity.getComponent(Position.class);
@@ -80,8 +82,8 @@ public class RenderSystem extends BaseSystem implements Disposable {
                     render.modelInstance.transform.set(position.getGlobalTransform());
 
                     if (isVisible(cam, position, render)) {
-                        if (environment != null && render.includeEnv) {
-                            batch.render(render.modelInstance, environment, render.shader);
+                        if (currentEnvironment != null && render.includeEnv) {
+                            batch.render(render.modelInstance, currentEnvironment, render.shader);
                         } else {
                             batch.render(render.modelInstance, render.shader);
                         }
@@ -90,32 +92,21 @@ public class RenderSystem extends BaseSystem implements Disposable {
             }
         }
         batch.end();
-
-        for (Entity entity : scene.getEntityManager().getEntitiesByFilter(afterRenderFilter)) {
-            for (AfterRender script : entity.getComponents(AfterRender.class)) {
-                if (Component.isActive(script)) {
-                    script.afterRender(cam, environment);
-                }
-            }
-        }
     }
 
-    // ----- Private ----- //
+    @Override
+    public void end() {
+        currentEnvironment = null;
+    }
 
-    private boolean isVisible(PerspectiveCamera cam, Position position, Render render) {
+    // ----- Protected ----- //
+
+    protected boolean isVisible(PerspectiveCamera cam, Position position, Render render) {
         Vector3 tmpV = Vector3Pool.obtain();
         position.getGlobalTransform().getTranslation(tmpV);
         tmpV.add(render.center);
         boolean b = cam.frustum.sphereInFrustum(tmpV, render.radius);
         Vector3Pool.free(tmpV);
         return b;
-    }
-
-    public interface BeforeRender extends Script {
-        void beforeRender(PerspectiveCamera cam, Environment environment);
-    }
-
-    public interface AfterRender extends Script {
-        void afterRender(PerspectiveCamera cam, Environment environment);
     }
 }

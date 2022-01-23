@@ -1,14 +1,13 @@
 package com.my.demo.script;
 
 import com.badlogic.gdx.graphics.PerspectiveCamera;
-import com.badlogic.gdx.graphics.g3d.Environment;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
+import com.my.world.module.camera.CameraSystem;
 import com.my.world.module.physics.PhysicsSystem;
-import com.my.world.module.render.RenderSystem;
 import com.my.world.module.script.ScriptSystem;
 
-public class PhysicsDebugScript implements ScriptSystem.OnStart, RenderSystem.AfterRender {
+public class PhysicsDebugScript implements ScriptSystem.OnStart, CameraSystem.AfterRender {
 
     private PhysicsSystem physicsSystem;
 
@@ -18,7 +17,7 @@ public class PhysicsDebugScript implements ScriptSystem.OnStart, RenderSystem.Af
     }
 
     @Override
-    public void afterRender(PerspectiveCamera cam, Environment environment) {
+    public void afterRender(PerspectiveCamera cam) {
         physicsSystem.renderDebug(cam);
     }
 }

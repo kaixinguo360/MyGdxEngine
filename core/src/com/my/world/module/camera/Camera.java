@@ -1,4 +1,4 @@
-package com.my.world.module.render;
+package com.my.world.module.camera;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.PerspectiveCamera;

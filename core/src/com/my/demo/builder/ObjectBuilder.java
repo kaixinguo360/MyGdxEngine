@@ -9,19 +9,19 @@ import com.my.world.core.Engine;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
 import com.my.world.gdx.Matrix4Pool;
+import com.my.world.module.camera.Camera;
+import com.my.world.module.camera.script.EnhancedThirdPersonCameraController;
 import com.my.world.module.common.Position;
 import com.my.world.module.physics.PresetTemplateRigidBody;
 import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.constraint.HingeConstraint;
 import com.my.world.module.physics.rigidbody.BoxBody;
 import com.my.world.module.physics.rigidbody.CylinderBody;
-import com.my.world.module.render.Camera;
 import com.my.world.module.render.ModelRender;
 import com.my.world.module.render.PresetModelRender;
 import com.my.world.module.render.model.Box;
 import com.my.world.module.render.model.Cylinder;
 import com.my.world.module.render.model.ExternalModel;
-import com.my.world.module.render.script.EnhancedThirdPersonCameraController;
 
 import java.util.HashMap;
 

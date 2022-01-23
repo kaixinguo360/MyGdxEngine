@@ -2,17 +2,16 @@ package com.my.world.gdx;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.physics.bullet.Bullet;
-import com.my.world.core.Engine;
-import com.my.world.core.Scene;
-import com.my.world.core.SceneManager;
-import com.my.world.core.SystemManager;
+import com.my.world.core.*;
+import com.my.world.module.camera.CameraSystem;
 import com.my.world.module.input.InputSystem;
 import com.my.world.module.physics.ConstraintSystem;
 import com.my.world.module.physics.PhysicsSystem;
-import com.my.world.module.render.CameraSystem;
+import com.my.world.module.render.DefaultRenderSystem;
 import com.my.world.module.render.EnvironmentSystem;
-import com.my.world.module.render.RenderSystem;
 import com.my.world.module.script.ScriptSystem;
+
+import java.util.List;
 
 public class GdxApplication extends ApplicationAdapter {
 
@@ -40,7 +39,7 @@ public class GdxApplication extends ApplicationAdapter {
         Scene scene = engine.getSceneManager().newScene("default");
         SystemManager systemManager = scene.getSystemManager();
         systemManager.addSystem(new CameraSystem());
-        systemManager.addSystem(new RenderSystem());
+        systemManager.addSystem(new DefaultRenderSystem());
         systemManager.addSystem(new PhysicsSystem());
         systemManager.addSystem(new ScriptSystem());
         systemManager.addSystem(new EnvironmentSystem());

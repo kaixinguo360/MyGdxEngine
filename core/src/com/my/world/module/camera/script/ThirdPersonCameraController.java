@@ -1,4 +1,4 @@
-package com.my.world.module.render.script;
+package com.my.world.module.camera.script;
 
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;

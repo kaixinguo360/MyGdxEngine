@@ -9,6 +9,7 @@ import com.my.demo.script.*;
 import com.my.world.core.Engine;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
+import com.my.world.module.camera.script.SkyBoxScript;
 import com.my.world.module.common.Position;
 import com.my.world.module.physics.PresetTemplateRigidBody;
 import com.my.world.module.physics.TemplateRigidBody;
@@ -18,7 +19,6 @@ import com.my.world.module.render.ModelRender;
 import com.my.world.module.render.PresetModelRender;
 import com.my.world.module.render.attribute.ColorAttribute;
 import com.my.world.module.render.light.DirectionalLight;
-import com.my.world.module.render.script.SkyBoxScript;
 
 import java.util.HashMap;
 

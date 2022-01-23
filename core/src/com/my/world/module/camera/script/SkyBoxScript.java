@@ -1,14 +1,13 @@
-package com.my.world.module.render.script;
+package com.my.world.module.camera.script;
 
 import com.badlogic.gdx.graphics.PerspectiveCamera;
-import com.badlogic.gdx.graphics.g3d.Environment;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
+import com.my.world.module.camera.CameraSystem;
 import com.my.world.module.common.Position;
-import com.my.world.module.render.RenderSystem;
 import com.my.world.module.script.ScriptSystem;
 
-public class SkyBoxScript implements ScriptSystem.OnStart, RenderSystem.BeforeRender {
+public class SkyBoxScript implements ScriptSystem.OnStart, CameraSystem.BeforeRender {
 
     private Position position;
 
@@ -18,7 +17,7 @@ public class SkyBoxScript implements ScriptSystem.OnStart, RenderSystem.BeforeRe
     }
 
     @Override
-    public void beforeRender(PerspectiveCamera cam, Environment environment) {
+    public void beforeRender(PerspectiveCamera cam) {
         position.getLocalTransform().setToTranslation(cam.position);
     }
 }

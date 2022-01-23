@@ -1,4 +1,4 @@
-package com.my.world.module.render.script;
+package com.my.world.module.camera.script;
 
 import com.badlogic.gdx.Gdx;
 import com.my.world.core.Config;
