@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.my.world.core.*;
 import com.my.world.module.camera.CameraSystem;
+import com.my.world.module.gltf.GLTFRenderSystem;
 import com.my.world.module.input.InputSystem;
 import com.my.world.module.physics.ConstraintSystem;
 import com.my.world.module.physics.PhysicsSystem;
@@ -42,6 +43,19 @@ public class GdxApplication extends ApplicationAdapter {
         SystemManager systemManager = scene.getSystemManager();
         systemManager.addSystem(new CameraSystem());
         systemManager.addSystem(new DefaultRenderSystem());
+        systemManager.addSystem(new PhysicsSystem());
+        systemManager.addSystem(new ScriptSystem());
+        systemManager.addSystem(new EnvironmentSystem());
+        systemManager.addSystem(new InputSystem());
+        systemManager.addSystem(new ConstraintSystem());
+        return scene;
+    }
+
+    public Scene newGLTFScene(boolean useDefaultEnvironment) {
+        Scene scene = engine.getSceneManager().newScene("default");
+        SystemManager systemManager = scene.getSystemManager();
+        systemManager.addSystem(new CameraSystem());
+        systemManager.addSystem(new GLTFRenderSystem(useDefaultEnvironment));
         systemManager.addSystem(new PhysicsSystem());
         systemManager.addSystem(new ScriptSystem());
         systemManager.addSystem(new EnvironmentSystem());

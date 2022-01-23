@@ -21,6 +21,7 @@ allprojects {
     ext {
         appName = "MyGame"
         gdxVersion = '1.10.0'
+        gltfVersion = '2.0.0-rc.1'
     }
 
     repositories {
@@ -30,6 +31,7 @@ allprojects {
         google()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+        maven { url 'https://jitpack.io' }
     }
 }
 
@@ -51,6 +53,7 @@ project(":core") {
     dependencies {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-bullet:$gdxVersion"
+        compile "com.github.mgsx-dev.gdx-gltf:gltf:$gltfVersion"
         compile "org.projectlombok:lombok:1.18.8"
         compile "org.yaml:snakeyaml:1.29"
     }
