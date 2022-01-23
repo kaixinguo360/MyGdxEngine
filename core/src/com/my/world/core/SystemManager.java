@@ -12,7 +12,8 @@ public class SystemManager implements Disposable {
 
     @Getter
     private final Map<Class<?>, System> systems = new LinkedHashMap<>();
-    private final Map<Class<?>, List<System>> cache = new LinkedHashMap<>();
+    private final Map<Class<?>, System> cache1 = new LinkedHashMap<>();
+    private final Map<Class<?>, List<System>> cache2 = new LinkedHashMap<>();
 
     private final Scene scene;
 
@@ -36,11 +37,21 @@ public class SystemManager implements Disposable {
         return removed;
     }
     public <T extends System> T getSystem(Class<T> type) {
-        if (!systems.containsKey(type)) throw new RuntimeException("No Such System: " + type);
-        return (T) systems.get(type);
+        System cached = cache1.get(type);
+        if (cached != null) {
+            return (T) cached;
+        } else {
+            for (System system : systems.values()) {
+                if (type.isInstance(system)) {
+                    cache1.put(type, system);
+                    return (T) system;
+                }
+            }
+            throw new RuntimeException("No Such System: " + type);
+        }
     }
     public <T extends System> List<T> getSystems(Class<T> type) {
-        List<System> cached = cache.get(type);
+        List<System> cached = cache2.get(type);
         if (cached != null) {
             return (List<T>) cached;
         } else {
@@ -50,18 +61,18 @@ public class SystemManager implements Disposable {
                     list.add(system);
                 }
             }
-            cache.put(type, list);
+            cache2.put(type, list);
             return (List<T>) list;
         }
     }
 
     private void notifyChange() {
-        cache.clear();
+        cache2.clear();
     }
 
     @Override
     public void dispose() {
         Disposable.disposeAll(systems);
-        cache.clear();
+        cache2.clear();
     }
 }

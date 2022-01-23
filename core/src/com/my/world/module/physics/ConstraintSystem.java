@@ -60,7 +60,6 @@ public class ConstraintSystem extends BaseSystem implements EntityListener, Syst
 
     @Override
     public void afterEntityRemoved(Entity entity) {
-        btDynamicsWorld dynamicsWorld = scene.getSystemManager().getSystem(PhysicsSystem.class).dynamicsWorld;
         Iterator<ConstraintInner> it = constraintInners.iterator();
         while (it.hasNext()) {
             ConstraintInner constraintInner = it.next();
