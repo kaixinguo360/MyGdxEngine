@@ -1,6 +1,7 @@
 package com.my.world.gdx;
 
 import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.my.world.core.*;
 import com.my.world.module.camera.CameraSystem;
@@ -21,6 +22,7 @@ public class GdxApplication extends ApplicationAdapter {
     @Override
     public void create() {
         Bullet.init();
+        Gdx.input.setCursorCatched(true);
         engine = newEngine();
         sceneManager = engine.getSceneManager();
     }
