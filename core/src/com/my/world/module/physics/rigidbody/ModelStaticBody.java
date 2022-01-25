@@ -2,13 +2,13 @@ package com.my.world.module.physics.rigidbody;
 
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.my.world.core.Config;
-import com.my.world.core.Loadable;
+import com.my.world.core.Configurable;
 import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.render.ModelRender;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class ModelStaticBody extends TemplateRigidBody implements Loadable.OnInit {
+public class ModelStaticBody extends TemplateRigidBody implements Configurable.OnInit {
 
     @Config(type = Config.Type.Asset)
     public ModelRender modelRender;

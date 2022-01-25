@@ -24,7 +24,7 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
     protected final List<CameraInner> cameraInners = new LinkedList<>();
 
     @Override
-    public boolean isHandleable(Entity entity) {
+    public boolean canHandle(Entity entity) {
         return entity.contain(Camera.class);
     }
 

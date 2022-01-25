@@ -3,12 +3,12 @@ package com.my.world.module.camera;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.my.world.core.Config;
-import com.my.world.core.Loadable;
+import com.my.world.core.Configurable;
 import com.my.world.module.common.ActivatableComponent;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class Camera extends ActivatableComponent implements Loadable {
+public class Camera extends ActivatableComponent implements Configurable {
 
     @Config public float startX;
     @Config public float startY;

@@ -2,12 +2,12 @@ package com.my.world.gdx;
 
 import com.badlogic.gdx.math.Quaternion;
 import com.my.world.core.Context;
-import com.my.world.core.Loader;
+import com.my.world.core.Serializer;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class QuaternionLoader implements Loader, Loader.Setter {
+public class QuaternionSerializer implements Serializer, Serializer.Setter {
 
     @Override
     public <E, T> T load(E config, Class<T> type, Context context) {
@@ -32,7 +32,7 @@ public class QuaternionLoader implements Loader, Loader.Setter {
     }
 
     @Override
-    public <E, T> boolean handleable(Class<E> configType, Class<T> targetType) {
+    public <E, T> boolean canSerialize(Class<E> configType, Class<T> targetType) {
         return (configType == Object.class || List.class.isAssignableFrom(configType)) && targetType == Quaternion.class;
     }
 
@@ -44,7 +44,7 @@ public class QuaternionLoader implements Loader, Loader.Setter {
     }
 
     @Override
-    public boolean setterHandleable(Class<?> sourceType, Class<?> targetType) {
+    public boolean canSet(Class<?> sourceType, Class<?> targetType) {
         return Quaternion.class.isAssignableFrom(sourceType) && Quaternion.class.isAssignableFrom(targetType);
     }
 }

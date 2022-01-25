@@ -66,13 +66,13 @@ public class Scene implements Disposable {
 
     // ----- Prefab ----- //
     public Prefab dumpToPrefab() {
-        LoaderManager loaderManager = getEngine().getLoaderManager();
+        SerializerManager serializerManager = getEngine().getSerializerManager();
 
         List<Map<String, Object>> entityConfigs = new LinkedList<>();
         for (Entity entity : entityManager.getEntities().values()) {
             String name = entity.getName();
             if ("tmp".equalsIgnoreCase(name)) continue;
-            Map<String, Object> config = loaderManager.dump(entity, Map.class, context);
+            Map<String, Object> config = serializerManager.dump(entity, Map.class, context);
             config.put("globalId", null);
             entityConfigs.add(config);
         }
@@ -97,10 +97,10 @@ public class Scene implements Disposable {
 
     // ----- Load & Dump ----- //
     public <E, T> T load(E config, Class<T> type) {
-        return engine.getLoaderManager().load(config, type, newContext());
+        return engine.getSerializerManager().load(config, type, newContext());
     }
     public <E, T> E dump(T obj, Class<E> configType) {
-        return engine.getLoaderManager().dump(obj, configType, newContext());
+        return engine.getSerializerManager().dump(obj, configType, newContext());
     }
 
     // ----- Util Method ----- //

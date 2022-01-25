@@ -13,7 +13,7 @@ public abstract class BaseSystem implements System, System.AfterAdded {
     @Override
     public void afterAdded(Scene scene) {
         this.scene = scene;
-        this.entityFilter = BaseSystem.this::isHandleable;
+        this.entityFilter = BaseSystem.this::canHandle;
         scene.getEntityManager().addFilter(entityFilter);
         if (this instanceof EntityListener) {
             scene.getEntityManager().addListener(entityFilter, (EntityListener) this);
@@ -24,5 +24,5 @@ public abstract class BaseSystem implements System, System.AfterAdded {
     protected Collection<Entity> getEntities() {
         return scene.getEntityManager().getEntitiesByFilter(entityFilter);
     }
-    protected abstract boolean isHandleable(Entity entity);
+    protected abstract boolean canHandle(Entity entity);
 }

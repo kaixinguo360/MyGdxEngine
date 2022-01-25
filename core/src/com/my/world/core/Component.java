@@ -1,6 +1,6 @@
 package com.my.world.core;
 
-public interface Component extends Loadable {
+public interface Component extends Configurable {
 
     interface OnAttachToEntity extends Component {
         void attachToEntity(Entity entity);

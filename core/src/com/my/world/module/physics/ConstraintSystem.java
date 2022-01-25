@@ -37,7 +37,7 @@ public class ConstraintSystem extends BaseSystem implements EntityListener, Syst
     }
 
     @Override
-    public boolean isHandleable(Entity entity) {
+    public boolean canHandle(Entity entity) {
         return entity.contains(Constraint.class);
     }
 

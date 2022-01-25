@@ -11,7 +11,7 @@ public class Engine implements Disposable {
     protected final AssetsManager assetsManager;
 
     @Getter
-    protected final LoaderManager loaderManager;
+    protected final SerializerManager serializerManager;
 
     @Getter
     protected final SceneManager sceneManager;
@@ -27,12 +27,12 @@ public class Engine implements Disposable {
 
     public Engine() {
         assetsManager = new AssetsManager(this);
-        loaderManager = new LoaderManager(this);
+        serializerManager = new SerializerManager(this);
         sceneManager = new SceneManager(this);
         jarManager = new JarManager(this);
         context = new Context(null);
         context.setEnvironment(AssetsManager.CONTEXT_FIELD_NAME, assetsManager);
-        context.setEnvironment(LoaderManager.CONTEXT_FIELD_NAME, loaderManager);
+        context.setEnvironment(SerializerManager.CONTEXT_FIELD_NAME, serializerManager);
         context.setEnvironment(Engine.CONTEXT_FIELD_NAME, this);
     }
 

@@ -8,52 +8,52 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class LoaderManager {
+public class SerializerManager {
 
-    public static final String CONTEXT_FIELD_NAME = "LOADER_MANAGER";
+    public static final String CONTEXT_FIELD_NAME = "SERIALIZER_MANAGER";
 
     private final Engine engine;
 
     @Getter
-    protected final List<Loader> loaders = new ArrayList<>();
-    private final Map<String, Loader> loaderCache = new HashMap<>();
-    private final Map<String, Loader.Setter> setterCache = new HashMap<>();
+    protected final List<Serializer> serializers = new ArrayList<>();
+    private final Map<String, Serializer> serializerCache = new HashMap<>();
+    private final Map<String, Serializer.Setter> setterCache = new HashMap<>();
 
-    LoaderManager(Engine engine) {
+    SerializerManager(Engine engine) {
         this.engine = engine;
     }
 
     public <E, T> T load(E config, Class<T> type, Context context) {
         if (config == null) {
-            throw new RuntimeException("No such loader: null -> " + type);
+            throw new RuntimeException("No such serializer: null -> " + type);
         }
         String hash = config.getClass() + " -> " + type;
-        if (loaderCache.containsKey(hash)) {
-            return loaderCache.get(hash).load(config, type, context);
+        if (serializerCache.containsKey(hash)) {
+            return serializerCache.get(hash).load(config, type, context);
         } else {
-            for (Loader loader : loaders) {
-                if (loader.handleable(config.getClass(), type)) {
-                    loaderCache.put(hash, loader);
-                    return loader.load(config, type, context);
+            for (Serializer serializer : serializers) {
+                if (serializer.canSerialize(config.getClass(), type)) {
+                    serializerCache.put(hash, serializer);
+                    return serializer.load(config, type, context);
                 }
             }
         }
-        throw new RuntimeException("No such loader: " + config.getClass() + " -> " + type);
+        throw new RuntimeException("No such serializer: " + config.getClass() + " -> " + type);
     }
 
     public <E, T> E dump(T obj, Class<E> configType, Context context) {
         String hash = configType + " -> " + obj.getClass();
-        if (loaderCache.containsKey(hash)) {
-            return loaderCache.get(hash).dump(obj, configType, context);
+        if (serializerCache.containsKey(hash)) {
+            return serializerCache.get(hash).dump(obj, configType, context);
         } else {
-            for (Loader loader : loaders) {
-                if (loader.handleable(configType, obj.getClass())) {
-                    loaderCache.put(hash, loader);
-                    return loader.dump(obj, configType, context);
+            for (Serializer serializer : serializers) {
+                if (serializer.canSerialize(configType, obj.getClass())) {
+                    serializerCache.put(hash, serializer);
+                    return serializer.dump(obj, configType, context);
                 }
             }
         }
-        throw new RuntimeException("No such loader to get config: " + configType + " -> " + obj.getClass());
+        throw new RuntimeException("No such serializer to get config: " + configType + " -> " + obj.getClass());
     }
 
     public void set(Object source, Object target) {
@@ -64,10 +64,10 @@ public class LoaderManager {
             setterCache.get(hash).set(source, target);
             return;
         } else {
-            for (Loader loader : loaders) {
-                if (loader instanceof Loader.Setter) {
-                    Loader.Setter setter = (Loader.Setter) loader;
-                    if (setter.setterHandleable(sourceType, targetType)) {
+            for (Serializer serializer : serializers) {
+                if (serializer instanceof Serializer.Setter) {
+                    Serializer.Setter setter = (Serializer.Setter) serializer;
+                    if (setter.canSet(sourceType, targetType)) {
                         setterCache.put(hash, setter);
                         setter.set(source, target);
                         return;
@@ -78,19 +78,19 @@ public class LoaderManager {
         throw new RuntimeException("No such setter: " + source + " -> " + target);
     }
 
-    public <T extends Loader> T findLoader(Class<T> type) {
-        for (Loader loader : loaders) {
-            if (type.isInstance(loader)) {
-                return (T) loader;
+    public <T extends Serializer> T findSerializer(Class<T> type) {
+        for (Serializer serializer : serializers) {
+            if (type.isInstance(serializer)) {
+                return (T) serializer;
             }
         }
         return null;
     }
 
-    public <T extends Loader.Setter> T findSetter(Class<T> type) {
-        for (Loader loader : loaders) {
-            if (loader instanceof Loader.Setter) {
-                Loader.Setter setter = (Loader.Setter) loader;
+    public <T extends Serializer.Setter> T findSetter(Class<T> type) {
+        for (Serializer serializer : serializers) {
+            if (serializer instanceof Serializer.Setter) {
+                Serializer.Setter setter = (Serializer.Setter) serializer;
                 if (type.isInstance(setter)) {
                     return (T) setter;
                 }

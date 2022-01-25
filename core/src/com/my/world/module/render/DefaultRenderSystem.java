@@ -47,7 +47,7 @@ public class DefaultRenderSystem extends BaseSystem implements System.OnStart, R
     }, null);
 
     @Override
-    public boolean isHandleable(Entity entity) {
+    public boolean canHandle(Entity entity) {
         return entity.contain(Position.class, Render.class);
     }
 

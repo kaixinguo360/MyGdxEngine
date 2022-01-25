@@ -28,23 +28,23 @@ import java.util.function.Function;
  *          config: ...
  * </pre>
  */
-public interface Loadable extends Disposable {
+public interface Configurable extends Disposable {
 
-    interface OnLoad extends Loadable {
+    interface OnLoad extends Configurable {
         void load(Map<String, Object> config, Context context);
     }
 
-    interface OnInit extends Loadable {
+    interface OnInit extends Configurable {
         void init();
     }
 
-    interface OnDump extends Loadable {
+    interface OnDump extends Configurable {
         Map<String, Object> dump(Context context);
     }
 
-    static void load(Loadable loadable, Map<String, Object> config, Context context) {
+    static void load(Configurable configurable, Map<String, Object> config, Context context) {
         try {
-            for (Field field : getFields(loadable)) {
+            for (Field field : getFields(configurable)) {
                 field.setAccessible(true);
                 Config annotation = field.getAnnotation(Config.class);
                 String name = annotation.name();
@@ -62,14 +62,14 @@ public interface Loadable extends Disposable {
                     }
 
                     if (Modifier.isFinal(field.getModifiers())) {
-                        Object fieldObject = field.get(loadable);
+                        Object fieldObject = field.get(configurable);
                         if (fieldObject == null) throw new RuntimeException("Can not set a final field: " + field);
-                        context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).set(obj, fieldObject);
+                        context.getEnvironment(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).set(obj, fieldObject);
                     } else {
-                        field.set(loadable, obj);
+                        field.set(configurable, obj);
                     }
                 } else {
-                    Object fieldObject = field.get(loadable);
+                    Object fieldObject = field.get(configurable);
 
                     if (fieldObject == null) {
                         throw new RuntimeException("Can not set a null field: " + field);
@@ -90,7 +90,7 @@ public interface Loadable extends Disposable {
                         if (Modifier.isFinal(subField.getModifiers())) {
                             Object subFieldObject = subField.get(fieldObject);
                             if (subFieldObject == null) throw new RuntimeException("Can not set a final field: " + field);
-                            context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).set(obj, subFieldObject);
+                            context.getEnvironment(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).set(obj, subFieldObject);
                         } else {
                             subField.set(fieldObject, obj);
                         }
@@ -98,24 +98,24 @@ public interface Loadable extends Disposable {
                 }
             }
         } catch (IllegalAccessException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException | NoSuchFieldException e) {
-            throw new RuntimeException("Load Loadable Resource(" + loadable.getClass() + ") error: " + e.getMessage(), e);
+            throw new RuntimeException("Load Loadable Resource(" + configurable.getClass() + ") error: " + e.getMessage(), e);
         }
     }
 
-    static Map<String, Object> dump(Loadable loadable, Context context) {
+    static Map<String, Object> dump(Configurable configurable, Context context) {
         Map<String, Object> map = new LinkedHashMap<>();
         try {
-            for (Field field : getFields(loadable)) {
+            for (Field field : getFields(configurable)) {
                 field.setAccessible(true);
                 Config annotation = field.getAnnotation(Config.class);
                 String name = annotation.name();
                 if ("".equals(name)) name = field.getName();
 
                 if (annotation.fields().length == 0) {
-                    Object obj = getConfig(context, field.getType(), annotation, field.get(loadable));
+                    Object obj = getConfig(context, field.getType(), annotation, field.get(configurable));
                     map.put(name, obj);
                 } else {
-                    Object fieldObject = field.get(loadable);
+                    Object fieldObject = field.get(configurable);
 
                     if (fieldObject == null) {
                         throw new RuntimeException("Can not dump a null field: " + field);
@@ -131,7 +131,7 @@ public interface Loadable extends Disposable {
                 }
             }
         } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException | NoSuchFieldException e) {
-            throw new RuntimeException("Get config from Loadable Resource(" + loadable.getClass() + ") error: " + e.getMessage(), e);
+            throw new RuntimeException("Get config from Loadable Resource(" + configurable.getClass() + ") error: " + e.getMessage(), e);
         }
         return map;
     }
@@ -172,9 +172,9 @@ public interface Loadable extends Disposable {
                 String typeName = (String) map.get("type");
                 Object configValue = map.get("config");
                 Class<?> type = context.getEnvironment(Engine.CONTEXT_FIELD_NAME, Engine.class).getJarManager().loadClass(typeName);
-                return context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).load(configValue, type, context);
+                return context.getEnvironment(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).load(configValue, type, context);
             } else {
-                return context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).load(value, elementType, context);
+                return context.getEnvironment(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).load(value, elementType, context);
             }
         }
     }
@@ -200,16 +200,16 @@ public interface Loadable extends Disposable {
             return toString.invoke(value);
         } else {
             try {
-                // Use LoaderManager <Object.class> to get config
-                return context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).dump(value, Object.class, context);
+                // Use SerializerManager <Object.class> to get config
+                return context.getEnvironment(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).dump(value, Object.class, context);
             } catch (RuntimeException e) {
-                if (!(e.getMessage().startsWith("No such loader") || e.getMessage().startsWith("Can not get config")))
+                if (!(e.getMessage().startsWith("No such serializer") || e.getMessage().startsWith("Can not get config")))
                     throw e;
-                // Use LoaderManager <configType> to get config
+                // Use SerializerManager <configType> to get config
                 Class<?> type = value.getClass();
                 return new LinkedHashMap<String, Object>() {{
                     put("type", type.getName());
-                    put("config", context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).dump(type.cast(value), Map.class, context));
+                    put("config", context.getEnvironment(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).dump(type.cast(value), Map.class, context));
                 }};
             }
         }

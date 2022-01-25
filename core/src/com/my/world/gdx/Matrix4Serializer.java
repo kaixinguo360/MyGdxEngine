@@ -2,12 +2,12 @@ package com.my.world.gdx;
 
 import com.badlogic.gdx.math.Matrix4;
 import com.my.world.core.Context;
-import com.my.world.core.Loader;
+import com.my.world.core.Serializer;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Matrix4Loader implements Loader, Loader.Setter {
+public class Matrix4Serializer implements Serializer, Serializer.Setter {
 
     @Override
     public <E, T> T load(E config, Class<T> type, Context context) {
@@ -30,7 +30,7 @@ public class Matrix4Loader implements Loader, Loader.Setter {
     }
 
     @Override
-    public <E, T> boolean handleable(Class<E> configType, Class<T> targetType) {
+    public <E, T> boolean canSerialize(Class<E> configType, Class<T> targetType) {
         return (configType == Object.class || List.class.isAssignableFrom(configType)) && targetType == Matrix4.class;
     }
 
@@ -42,7 +42,7 @@ public class Matrix4Loader implements Loader, Loader.Setter {
     }
 
     @Override
-    public boolean setterHandleable(Class<?> sourceType, Class<?> targetType) {
+    public boolean canSet(Class<?> sourceType, Class<?> targetType) {
         return Matrix4.class.isAssignableFrom(sourceType) && Matrix4.class.isAssignableFrom(targetType);
     }
 }

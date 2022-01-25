@@ -65,7 +65,7 @@ public class AssetsManager implements Disposable {
 
     // ----- Load Asset ----- //
     public void loadAssetsFromFile(String path) {
-        String yamlConfig = LoaderManager.readFile(path);
+        String yamlConfig = SerializerManager.readFile(path);
         loadAssetsFromYaml(yamlConfig);
     }
     public void loadAssetsFromYaml(String yamlConfig) {
@@ -84,9 +84,9 @@ public class AssetsManager implements Disposable {
             if (config.containsKey("instanceType")) {
                 String instanceTypeName = (String) config.get("instanceType");
                 Class<?> instanceType = engine.getJarManager().loadClass(instanceTypeName);
-                asset = engine.getLoaderManager().load(assetConfig, instanceType, engine.newContext());
+                asset = engine.getSerializerManager().load(assetConfig, instanceType, engine.newContext());
             } else {
-                asset = engine.getLoaderManager().load(assetConfig, assetType, engine.newContext());
+                asset = engine.getSerializerManager().load(assetConfig, assetType, engine.newContext());
             }
             addAsset(assetId, assetType, asset);
         } catch (ClassNotFoundException e) {
@@ -97,7 +97,7 @@ public class AssetsManager implements Disposable {
     // ----- Dump Asset ----- //
     public void dumpAssetsToFile(String path) {
         String yamlConfig = dumpAssetsToYaml();
-        LoaderManager.writeFile(yamlConfig, path);
+        SerializerManager.writeFile(yamlConfig, path);
     }
     public String dumpAssetsToYaml() {
         List<Map<String, Object>> configList = new ArrayList<>();
@@ -118,7 +118,7 @@ public class AssetsManager implements Disposable {
         return yaml.dumpAll(configList.iterator());
     }
     public Map<String, Object> dumpAsset(Object asset) {
-        return engine.getLoaderManager().dump(asset, Map.class, engine.newContext());
+        return engine.getSerializerManager().dump(asset, Map.class, engine.newContext());
     }
 
     @Override

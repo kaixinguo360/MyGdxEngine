@@ -9,13 +9,13 @@ public @interface Config {
 
     String name() default "";
 
-    Type type() default Type.Loadable;
+    Type type() default Type.Serializable;
 
     Class<?> elementType() default Object.class;
 
     String[] fields() default {};
 
     enum Type {
-        Primitive, Asset, Entity, Loadable
+        Primitive, Asset, Entity, Serializable
     }
 }

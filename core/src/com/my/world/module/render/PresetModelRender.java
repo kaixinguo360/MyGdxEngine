@@ -2,11 +2,11 @@ package com.my.world.module.render;
 
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.my.world.core.Config;
-import com.my.world.core.Loadable;
+import com.my.world.core.Configurable;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class PresetModelRender extends Render implements Loadable.OnInit {
+public class PresetModelRender extends Render implements Configurable.OnInit {
 
     @Config(type = Config.Type.Asset)
     public ModelRender modelRender;

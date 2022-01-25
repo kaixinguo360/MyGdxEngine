@@ -50,13 +50,13 @@ public class GdxApplication extends ApplicationAdapter {
 
     public static Engine newEngine() {
         Engine engine = new Engine();
-        List<Loader> loaders = engine.getLoaderManager().getLoaders();
-        loaders.add(new SceneLoader());
-        loaders.add(new Matrix4Loader());
-        loaders.add(new Vector3Loader());
-        loaders.add(new QuaternionLoader());
-        loaders.add(new ColorLoader());
-        loaders.add(new LoadableLoader());
+        List<Serializer> serializers = engine.getSerializerManager().getSerializers();
+        serializers.add(new SceneSerializer());
+        serializers.add(new Matrix4Serializer());
+        serializers.add(new Vector3Serializer());
+        serializers.add(new QuaternionSerializer());
+        serializers.add(new ColorSerializer());
+        serializers.add(new ConfigurableSerializer());
         return engine;
     }
 }

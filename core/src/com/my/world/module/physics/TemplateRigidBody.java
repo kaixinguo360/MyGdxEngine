@@ -4,11 +4,11 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.my.world.core.Config;
-import com.my.world.core.Loadable;
+import com.my.world.core.Configurable;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class TemplateRigidBody extends RigidBody implements Loadable.OnInit {
+public class TemplateRigidBody extends RigidBody implements Configurable.OnInit {
 
     private static final Vector3 localInertia = new Vector3();
 

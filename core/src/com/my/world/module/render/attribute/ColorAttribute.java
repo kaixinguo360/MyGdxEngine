@@ -3,12 +3,12 @@ package com.my.world.module.render.attribute;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g3d.Attribute;
 import com.my.world.core.Config;
-import com.my.world.core.Loadable;
+import com.my.world.core.Configurable;
 import com.my.world.module.render.EnvironmentAttribute;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class ColorAttribute extends EnvironmentAttribute implements Loadable.OnInit {
+public class ColorAttribute extends EnvironmentAttribute implements Configurable.OnInit {
 
     @Config public long type;
     @Config public Color color;

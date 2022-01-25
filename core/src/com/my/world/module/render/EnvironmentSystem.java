@@ -12,7 +12,7 @@ public class EnvironmentSystem extends BaseSystem {
     private final Environment environment = new Environment();
 
     @Override
-    public boolean isHandleable(Entity entity) {
+    public boolean canHandle(Entity entity) {
         return entity.contain(EnvironmentAttribute.class) || entity.contain(Light.class);
     }
 

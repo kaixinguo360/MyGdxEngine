@@ -2,12 +2,12 @@ package com.my.world.module.physics.rigidbody;
 
 import com.badlogic.gdx.physics.bullet.collision.btSphereShape;
 import com.my.world.core.Config;
-import com.my.world.core.Loadable;
+import com.my.world.core.Configurable;
 import com.my.world.module.physics.TemplateRigidBody;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class SphereBody extends TemplateRigidBody implements Loadable.OnInit {
+public class SphereBody extends TemplateRigidBody implements Configurable.OnInit {
 
     @Config private float radius;
 

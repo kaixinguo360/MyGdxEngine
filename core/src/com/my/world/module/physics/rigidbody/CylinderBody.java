@@ -3,12 +3,12 @@ package com.my.world.module.physics.rigidbody;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btCylinderShape;
 import com.my.world.core.Config;
-import com.my.world.core.Loadable;
+import com.my.world.core.Configurable;
 import com.my.world.module.physics.TemplateRigidBody;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class CylinderBody extends TemplateRigidBody implements Loadable.OnInit {
+public class CylinderBody extends TemplateRigidBody implements Configurable.OnInit {
 
     @Config private Vector3 halfExtents;
 

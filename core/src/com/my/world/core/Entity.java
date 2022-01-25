@@ -6,7 +6,7 @@ import lombok.Setter;
 
 import java.util.*;
 
-public class Entity extends ActivatableRelation<Entity> implements Loadable.OnInit, Disposable {
+public class Entity extends ActivatableRelation<Entity> implements Configurable.OnInit, Disposable {
 
     @Getter
     @Setter

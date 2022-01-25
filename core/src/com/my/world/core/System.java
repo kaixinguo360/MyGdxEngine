@@ -1,6 +1,6 @@
 package com.my.world.core;
 
-public interface System extends Loadable {
+public interface System extends Configurable {
 
     interface AfterAdded extends System {
         void afterAdded(Scene scene);

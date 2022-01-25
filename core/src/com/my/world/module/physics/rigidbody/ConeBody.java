@@ -2,12 +2,12 @@ package com.my.world.module.physics.rigidbody;
 
 import com.badlogic.gdx.physics.bullet.collision.btConeShape;
 import com.my.world.core.Config;
-import com.my.world.core.Loadable;
+import com.my.world.core.Configurable;
 import com.my.world.module.physics.TemplateRigidBody;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class ConeBody extends TemplateRigidBody implements Loadable.OnInit {
+public class ConeBody extends TemplateRigidBody implements Configurable.OnInit {
 
     @Config private float radius;
     @Config private float height;

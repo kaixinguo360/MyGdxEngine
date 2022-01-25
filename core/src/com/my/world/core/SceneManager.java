@@ -87,7 +87,7 @@ public class SceneManager implements Disposable {
 
     // ----- Load Scene ----- //
     public Scene loadSceneFromFile(String path) {
-        String yamlConfig = LoaderManager.readFile(path);
+        String yamlConfig = SerializerManager.readFile(path);
         return loadSceneFromYaml(yamlConfig);
     }
     public Scene loadSceneFromYaml(String yamlConfig) {
@@ -96,7 +96,7 @@ public class SceneManager implements Disposable {
         return loadScene(config);
     }
     public Scene loadScene(Map<String, Object> config) {
-        Scene scene = engine.getLoaderManager().load(config, Scene.class, engine.newContext());
+        Scene scene = engine.getSerializerManager().load(config, Scene.class, engine.newContext());
         addScene(scene);
         return scene;
     }
@@ -104,7 +104,7 @@ public class SceneManager implements Disposable {
     // ----- Dump Scene ----- //
     public void dumpSceneToFile(Scene scene, String path) {
         String yamlConfig = dumpSceneToYaml(scene);
-        LoaderManager.writeFile(yamlConfig, path);
+        SerializerManager.writeFile(yamlConfig, path);
     }
     public String dumpSceneToYaml(Scene scene) {
         Map<String, Object> config = dumpScene(scene);
@@ -112,7 +112,7 @@ public class SceneManager implements Disposable {
         return yaml.dump(config);
     }
     public Map<String, Object> dumpScene(Scene scene) {
-        return engine.getLoaderManager().dump(scene, Map.class, scene.newContext());
+        return engine.getSerializerManager().dump(scene, Map.class, scene.newContext());
     }
 
     @Override

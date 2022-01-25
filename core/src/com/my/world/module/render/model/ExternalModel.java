@@ -3,12 +3,12 @@ package com.my.world.module.render.model;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.my.world.core.Config;
-import com.my.world.core.Loadable;
+import com.my.world.core.Configurable;
 import com.my.world.module.render.ModelRender;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class ExternalModel extends ModelRender implements Loadable.OnInit {
+public class ExternalModel extends ModelRender implements Configurable.OnInit {
 
     protected static final AssetManager assetManager = new AssetManager();
 

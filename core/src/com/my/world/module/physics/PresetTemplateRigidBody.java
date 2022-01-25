@@ -2,11 +2,11 @@ package com.my.world.module.physics;
 
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.my.world.core.Config;
-import com.my.world.core.Loadable;
+import com.my.world.core.Configurable;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class PresetTemplateRigidBody extends RigidBody implements Loadable.OnInit {
+public class PresetTemplateRigidBody extends RigidBody implements Configurable.OnInit {
 
     @Config(type = Config.Type.Asset)
     public TemplateRigidBody templateRigidBody;

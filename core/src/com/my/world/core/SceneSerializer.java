@@ -28,7 +28,7 @@ import java.util.function.Function;
  *         config: ...
  * </pre>
  */
-public class SceneLoader implements Loader {
+public class SceneSerializer implements Serializer {
 
     @Override
     public <E, T> T load(E config, Class<T> type, Context context) {
@@ -48,7 +48,7 @@ public class SceneLoader implements Loader {
                 for (Map<String, Object> system : systems) {
                     Class<? extends System> systemType = (Class<? extends System>) engine.getJarManager().loadClass((String) system.get("type"));
                     Object systemConfig = system.get("config");
-                    systemManager.addSystem(context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).load(systemConfig, systemType, context));
+                    systemManager.addSystem(context.getEnvironment(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).load(systemConfig, systemType, context));
                 }
             }
 
@@ -63,7 +63,7 @@ public class SceneLoader implements Loader {
                         scene.instantiatePrefab(prefabName, prefabConfig);
                     } else {
                         Object entityConfig = entity.get("config");
-                        entityManager.addEntity(context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).load(entityConfig, entityType, context));
+                        entityManager.addEntity(context.getEnvironment(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).load(entityConfig, entityType, context));
                     }
                 }
             }
@@ -88,7 +88,7 @@ public class SceneLoader implements Loader {
                 Entity entity = entry.getValue();
                 Map<String, Object> entityMap = new LinkedHashMap<>();
                 entityMap.put("type", entity.getClass().getName());
-                entityMap.put("config", context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).dump(entity, Map.class, context));
+                entityMap.put("config", context.getEnvironment(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).dump(entity, Map.class, context));
                 entityList.add(entityMap);
             }
             map.put("entities", entityList);
@@ -100,7 +100,7 @@ public class SceneLoader implements Loader {
             for (System system : systems.values()) {
                 Map<String, Object> systemMap = new LinkedHashMap<>();
                 systemMap.put("type", system.getClass().getName());
-                systemMap.put("config", context.getEnvironment(LoaderManager.CONTEXT_FIELD_NAME, LoaderManager.class).dump(system, Map.class, context));
+                systemMap.put("config", context.getEnvironment(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).dump(system, Map.class, context));
                 systemList.add(systemMap);
             }
             map.put("systems", systemList);
@@ -110,7 +110,7 @@ public class SceneLoader implements Loader {
     }
 
     @Override
-    public <E, T> boolean handleable(Class<E> configType, Class<T> targetType) {
+    public <E, T> boolean canSerialize(Class<E> configType, Class<T> targetType) {
         return (Map.class.isAssignableFrom(configType)) && (targetType == Scene.class);
     }
 }

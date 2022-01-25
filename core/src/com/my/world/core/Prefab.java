@@ -12,7 +12,7 @@ import java.util.function.Function;
 
 @NoArgsConstructor
 @AllArgsConstructor
-public class Prefab implements Loadable {
+public class Prefab implements Configurable {
 
     @Getter
     @Setter
@@ -37,7 +37,7 @@ public class Prefab implements Loadable {
 
     private static final Map<String, String> tmpIdMap = new HashMap<>();
     public static Entity newInstance(Scene scene, List<Map<String, Object>> entityConfigs) {
-        LoaderManager loaderManager = scene.getEngine().getLoaderManager();
+        SerializerManager serializerManager = scene.getEngine().getSerializerManager();
         EntityManager entityManager = scene.getEntityManager();
         String prefix = UUID.randomUUID() + "_";
         tmpIdMap.clear();
@@ -57,7 +57,7 @@ public class Prefab implements Loadable {
 
         Entity firstEntity = null;
         for (Map<String, Object> map : entityConfigs) {
-            Entity entity = loaderManager.load(map, Entity.class, context);
+            Entity entity = serializerManager.load(map, Entity.class, context);
             if (entity.getId() != null) {
                 String globalId = (String) map.get("globalId");
                 if (globalId != null) {
