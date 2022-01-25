@@ -1,6 +1,5 @@
 package com.my.demo.builder;
 
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.demo.script.AircraftController;
@@ -10,18 +9,15 @@ import com.my.world.core.Entity;
 import com.my.world.core.Prefab;
 import com.my.world.core.Scene;
 import com.my.world.module.common.Position;
+import com.my.world.module.gltf.render.GLTFModel;
 import com.my.world.module.physics.constraint.ConnectConstraint;
 import com.my.world.module.physics.constraint.HingeConstraint;
 import com.my.world.module.physics.force.ConstantForce;
 import com.my.world.module.physics.force.DragForce;
 import com.my.world.module.physics.rigidbody.BoxBody;
 import com.my.world.module.physics.rigidbody.ConeBody;
-import com.my.world.module.render.model.Box;
-import com.my.world.module.render.model.Cone;
 
 import java.util.HashMap;
-
-import static com.my.demo.builder.SceneBuilder.attributes;
 
 public class AircraftBuilder {
 
@@ -161,7 +157,7 @@ public class AircraftBuilder {
         Entity entity = new Entity();
         entity.setName("Body");
         entity.addComponent(new Position(new Matrix4()));
-        entity.addComponent(new Box(1, 1, 5, Color.GREEN, attributes));
+        entity.addComponent(new GLTFModel("obj/body.gltf"));
         entity.addComponent(new BoxBody(new Vector3(0.5f,0.5f,2.5f), 50f));
         entity.addComponent(new DragForce(new Vector3(0, 0, 1.2f), new Vector3(), false));
 
@@ -173,7 +169,7 @@ public class AircraftBuilder {
         Entity entity = new Entity();
         entity.setName("Wing");
         entity.addComponent(new Position(new Matrix4()));
-        entity.addComponent(new Box(2, 0.2f, 1, Color.BLUE, attributes));
+        entity.addComponent(new GLTFModel("obj/wing.gltf"));
         entity.addComponent(new BoxBody(new Vector3(1f,0.1f,0.5f), 25f));
         entity.addComponent(new ConnectConstraint(scene.tmpEntity(), 500));
         entity.addComponent(new DragForce(new Vector3(0, 30, 0), new Vector3(), false));
@@ -187,7 +183,7 @@ public class AircraftBuilder {
         Entity entity = new Entity();
         entity.setName("Engine");
         entity.addComponent(new Position(new Matrix4()));
-        entity.addComponent(new Cone(0.9f, 1, 0.9f, 18, Color.YELLOW, attributes));
+        entity.addComponent(new GLTFModel("obj/engine.gltf"));
         entity.addComponent(new ConeBody(0.45f,1, 50));
         entity.addComponent(new ConnectConstraint(scene.tmpEntity(), 2000));
         entity.addComponent(new ConstantForce(new Vector3(0, force, 0), new Vector3(), false));

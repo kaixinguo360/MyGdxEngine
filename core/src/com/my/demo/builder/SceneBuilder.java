@@ -2,29 +2,26 @@ package com.my.demo.builder;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.demo.script.*;
 import com.my.world.core.Engine;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
-import com.my.world.module.camera.script.SkyBoxScript;
 import com.my.world.module.common.Position;
+import com.my.world.module.gltf.light.GLTFDirectionalLight;
+import com.my.world.module.gltf.light.GLTFSpotLight;
+import com.my.world.module.gltf.render.GLTFModel;
+import com.my.world.module.gltf.render.GLTFModelInstance;
 import com.my.world.module.physics.PresetTemplateRigidBody;
 import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.constraint.HingeConstraint;
 import com.my.world.module.physics.script.EnhancedCharacterController;
-import com.my.world.module.render.ModelRender;
-import com.my.world.module.render.PresetModelRender;
 import com.my.world.module.render.attribute.ColorAttribute;
-import com.my.world.module.render.light.DirectionalLight;
 
 import java.util.HashMap;
 
 public class SceneBuilder {
-
-    public static final long attributes = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
 
     public static void initScene(Scene scene) {
 
@@ -33,23 +30,16 @@ public class SceneBuilder {
         Entity lightEntity = new Entity();
         lightEntity.addComponent(new ColorAttribute(com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute.AmbientLight, new Color(0.4f, 0.4f, 0.4f, 1f)));
         lightEntity.addComponent(new ColorAttribute(com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute.Fog, new Color(0.8f, 0.8f, 0.8f, 1f)));
-        lightEntity.addComponent(new DirectionalLight(new Color(0.8f, 0.8f, 0.8f, 1f), new Vector3(-0.2f, -0.8f, 1f)));
-        lightEntity.addComponent(new DirectionalLight(new Color(0.8f, 0.8f, 0.8f, 1f), new Vector3(0.2f, 0.8f, -1f)));
+        lightEntity.addComponent(new GLTFDirectionalLight(new Color(0.8f, 0.8f, 0.8f, 1f), 1f, new Vector3(-0.2f, -0.8f, 1f)));
+        lightEntity.addComponent(new GLTFDirectionalLight(new Color(0.8f, 0.8f, 0.8f, 1f), 1f, new Vector3(0.2f, 0.8f, -1f)));
         scene.getEntityManager().addEntity(lightEntity);
 
         // ----- Init Static Objects ----- //
 
-        Entity sky = new Entity();
-        sky.setName("sky");
-        sky.addComponent(new Position(new Matrix4()));
-        sky.addComponent(new PresetModelRender(scene.getAsset("sky", ModelRender.class))).includeEnv = false;
-        sky.addComponent(new SkyBoxScript());
-        scene.addEntity(sky);
-
         Entity ground = new Entity();
         ground.setName("ground");
         ground.addComponent(new Position(new Matrix4()));
-        ground.addComponent(new PresetModelRender(scene.getAsset("ground", ModelRender.class)));
+        ground.addComponent(new GLTFModelInstance(scene.getAsset("ground", GLTFModel.class)));
         ground.addComponent(new PresetTemplateRigidBody(scene.getAsset("ground", TemplateRigidBody.class)));
         scene.addEntity(ground);
 
@@ -114,7 +104,7 @@ public class SceneBuilder {
 
         Entity character = new Entity();
         character.addComponent(new Position(new Matrix4().translate(0, 1, 0).rotate(Vector3.Y, 180)));
-        character.addComponent(new PresetModelRender(scene.getAsset("bullet", ModelRender.class)));
+        character.addComponent(new GLTFModelInstance(scene.getAsset("bullet", GLTFModel.class)));
         EnhancedCharacterController characterController = character.addComponent(new EnhancedCharacterController());
         characterController.setActive(false);
         characterController.shape = scene.getAsset("bullet", TemplateRigidBody.class);
@@ -136,6 +126,13 @@ public class SceneBuilder {
             put("Camera.parent", character);
             put("Camera.name", "camera");
         }});
+
+        Entity spotLight = new Entity();
+        spotLight.setName("spotLight");
+        spotLight.addComponent(new Position(new Matrix4().translate(0, 1, 0)));
+        spotLight.addComponent(new GLTFSpotLight(Color.WHITE.cpy(), Vector3.Z.cpy(), 1f, 10f));
+        spotLight.setParent(character);
+        scene.addEntity(spotLight);
 
         // ----- Init Scripts ----- //
 

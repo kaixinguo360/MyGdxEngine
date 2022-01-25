@@ -1,6 +1,5 @@
 package com.my.demo.builder;
 
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.demo.script.GunScript;
@@ -9,13 +8,11 @@ import com.my.world.core.Entity;
 import com.my.world.core.Prefab;
 import com.my.world.core.Scene;
 import com.my.world.module.common.Position;
+import com.my.world.module.gltf.render.GLTFModel;
 import com.my.world.module.physics.constraint.ConnectConstraint;
 import com.my.world.module.physics.rigidbody.BoxBody;
-import com.my.world.module.render.model.Box;
 
 import java.util.HashMap;
-
-import static com.my.demo.builder.SceneBuilder.attributes;
 
 public class GunBuilder {
 
@@ -65,7 +62,7 @@ public class GunBuilder {
         Entity entity = new Entity();
         entity.setName("Barrel");
         entity.addComponent(new Position(new Matrix4()));
-        entity.addComponent(new Box(1, 1, 5, Color.GREEN, attributes));
+        entity.addComponent(new GLTFModel("obj/body.gltf"));
         entity.addComponent(new BoxBody(new Vector3(0.5f,0.5f,2.5f), 5f));
         entity.addComponent(new ConnectConstraint(scene.tmpEntity(), 2000));
 
