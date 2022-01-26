@@ -150,7 +150,7 @@ public interface Configurable extends Disposable {
                 }
             }
             return objList;
-        } else if (annotation.type() == Config.Type.Primitive || elementType.isPrimitive() || elementType == String.class) {
+        } else if (annotation.type() == Config.Type.Primitive || elementType.isPrimitive() || Number.class.isAssignableFrom(elementType) || elementType == String.class) {
             if ((elementType == float.class || elementType == Float.class) && Number.class.isAssignableFrom(value.getClass())) {
                 value = ((Number) value).floatValue();
             }
@@ -182,7 +182,7 @@ public interface Configurable extends Disposable {
     static Object getConfig(Context context, Class<?> elementType, Config annotation, Object value) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         if (value == null) {
             return null;
-        } else if (annotation.type() == Config.Type.Primitive || elementType.isPrimitive() || elementType == String.class) {
+        } else if (annotation.type() == Config.Type.Primitive || elementType.isPrimitive() || Number.class.isAssignableFrom(elementType) || elementType == String.class) {
             return value;
         } else if (List.class.isAssignableFrom(elementType)) {
             List<Object> configList = new ArrayList<>();
