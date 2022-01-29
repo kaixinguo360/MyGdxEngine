@@ -7,7 +7,7 @@ import com.my.world.core.Config;
 import com.my.world.core.Entity;
 import com.my.world.core.Prefab;
 import com.my.world.core.Scene;
-import com.my.world.core.util.StateManager;
+import com.my.world.core.util.EnhancedStateManager;
 import com.my.world.module.camera.Camera;
 import com.my.world.module.camera.script.EnhancedThirdPersonCameraController;
 import com.my.world.module.input.InputSystem;
@@ -29,21 +29,34 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
     @Config public Vector3 bombVelocity = new Vector3(0, -10, 0);
     private final static Vector3 bombOffset = new Vector3(0, -2, 0);
 
-    private final StateManager<State> stateManager = new StateManager<>(State.Idle);
+    private final EnhancedStateManager<State, Action> stateManager = new EnhancedStateManager<State, Action>(State.Idle) {{
+        whenEnter(State.Idle, () -> System.out.println(" -> Idle"));
+        whenEnter(State.PreFire, () -> System.out.println(" -> PreFire"));
+        whenEnter(State.Firing, () -> System.out.println(" -> Firing"));
+        whenEnter(State.PreBomb, () -> System.out.println(" -> PreBomb"));
+        whenEnter(State.Bombing, () -> System.out.println(" -> Bombing"));
+
+        whenEnter(State.Firing, () -> fire(bulletPrefab, bulletVelocity, bulletOffset, (float) Math.random()));
+        addAction(Action.Fire, State.Idle, State.PreFire);
+        addAction(Action.Fire, State.PreFire, 1000, State.Firing);
+        addAction(Action.Fire, State.Firing, State.Firing);
+        addAction(Action.StopFire, State.Firing, 1000, State.PreFire);
+        addAction(Action.StopFire, State.PreFire, 1000, State.Idle);
+
+        whenEnter(State.Bombing, () -> fire(bombPrefab, bombVelocity, AircraftScript.bombOffset, (float) Math.random()));
+        addAction(Action.Bomb, State.Idle, State.PreBomb);
+        addAction(Action.Bomb, State.PreBomb, 1000, State.Bombing);
+        addAction(Action.Bomb, State.Bombing, 1000, State.Bombing);
+        addAction(Action.StopBomb, State.Bombing, State.PreBomb);
+        addAction(Action.StopBomb, State.PreBomb, 2000, State.Idle);
+    }};
 
     public enum State {
         Idle, PreFire, Firing, PreBomb, Bombing
     }
 
-    public AircraftScript() {
-        stateManager.whenEnter(State.Idle, () -> System.out.println(" -> Idle"));
-        stateManager.whenEnter(State.PreFire, () -> System.out.println(" -> PreFire"));
-        stateManager.whenEnter(State.Firing, () -> System.out.println(" -> Firing"));
-        stateManager.whenEnter(State.PreBomb, () -> System.out.println(" -> PreBomb"));
-        stateManager.whenEnter(State.Bombing, () -> System.out.println(" -> Bombing"));
-
-        stateManager.whenEnter(State.Bombing, () -> fire(bombPrefab, bombVelocity, AircraftScript.bombOffset, (float) Math.random()));
-        stateManager.whenEnter(State.Firing, () -> fire(bulletPrefab, bulletVelocity, bulletOffset, (float) Math.random()));
+    public enum Action {
+        Fire, Bomb, StopFire, StopBomb
     }
 
     @Override
@@ -94,21 +107,15 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
         if (aircraftController_L != null && aircraftController_R != null) {
 
             if (Gdx.input.isKeyPressed(Input.Keys.J)) {
-                stateManager.switchState(State.Idle, State.PreFire);
-                stateManager.switchState(State.PreFire, 1000, State.Firing);
-                stateManager.switchState(State.Firing, State.Firing);
+                stateManager.doAction(Action.Fire);
             } else {
-                stateManager.switchState(State.Firing, 1000, State.PreFire);
-                stateManager.switchState(State.PreFire, 1000, State.Idle);
+                stateManager.doAction(Action.StopFire);
             }
 
             if (Gdx.input.isKeyPressed(Input.Keys.K)) {
-                stateManager.switchState(State.Idle, State.PreBomb);
-                stateManager.switchState(State.PreBomb, 1000, State.Bombing);
-                stateManager.switchState(State.Bombing, 500, State.Bombing);
+                stateManager.doAction(Action.Bomb);
             } else {
-                stateManager.switchState(State.Bombing, State.PreBomb);
-                stateManager.switchState(State.PreBomb, 2000, State.Idle);
+                stateManager.doAction(Action.StopBomb);
             }
 
             if (Gdx.input.isKeyPressed(Input.Keys.W)) aircraftController_T.rotate(v1);
