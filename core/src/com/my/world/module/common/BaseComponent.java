@@ -3,7 +3,7 @@ package com.my.world.module.common;
 import com.my.world.core.Component;
 import com.my.world.core.Entity;
 
-public class BaseComponent implements Component, Component.OnAttachToEntity, Component.OnDetachFromEntity {
+public abstract class BaseComponent implements Component, Component.OnAttachToEntity, Component.OnDetachFromEntity {
 
     protected Entity entity;
 

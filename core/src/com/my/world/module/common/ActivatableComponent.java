@@ -3,7 +3,7 @@ package com.my.world.module.common;
 import com.my.world.core.Component;
 import com.my.world.core.Config;
 
-public class ActivatableComponent implements Component, Component.Activatable {
+public abstract class ActivatableComponent implements Component, Component.Activatable {
 
     @Config
     protected boolean active = true;
