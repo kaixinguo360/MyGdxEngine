@@ -1,0 +1,16 @@
+plugins {
+    id 'java'
+}
+
+version '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(":core")
+    implementation 'org.reflections:reflections:0.10.2'
+    implementation 'com.alibaba:fastjson:1.2.47'
+    testImplementation 'junit:junit:4.13.2'
+}
