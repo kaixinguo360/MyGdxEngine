@@ -6,8 +6,8 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.my.world.module.common.Position;
-import com.my.world.module.physics.RigidBody;
-import com.my.world.module.render.Render;
+import com.my.world.module.gltf.render.GLTFModelInstance;
+import com.my.world.module.physics.PresetTemplateRigidBody;
 import org.reflections.Reflections;
 
 import java.lang.reflect.Field;
@@ -15,6 +15,22 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 
 public class TemplateGenerator {
+
+    public static final Map<String, String> presetGroups = new HashMap<String, String>() {{
+        put("com.my.world.module.camera", "Camera");
+        put("com.my.world.module.common", "Common");
+        put("com.my.world.module.gltf.light", "GLTF - Light");
+        put("com.my.world.module.gltf.render", "GLTF - Render");
+        put("com.my.world.module.gltf", "GLTF");
+        put("com.my.world.module.physics.rigidbody", "Physics - RigidBody");
+        put("com.my.world.module.physics.force", "Physics - Force");
+        put("com.my.world.module.physics.constraint", "Physics - Constraint");
+        put("com.my.world.module.physics", "Physics");
+        put("com.my.world.module.render.attribute", "Render - Attribute");
+        put("com.my.world.module.render.light", "Render - Light");
+        put("com.my.world.module.render.model", "Render - Model");
+        put("com.my.world.module.render", "Render");
+    }};
 
     public static void main(String[] args) {
 
@@ -28,11 +44,20 @@ public class TemplateGenerator {
             if (Modifier.isInterface(modifiers) || Modifier.isAbstract(modifiers)) {
                 continue;
             }
-            if (type == Position.class || type == RigidBody.class || type == Render.class) {
+            if (type == Position.class || type == PresetTemplateRigidBody.class || type == GLTFModelInstance.class) {
                 continue;
             }
 
             componentConfigs.add(new HashMap<String, Object>() {{
+
+                String packageName = type.getPackage().getName();
+                for (String pack : presetGroups.keySet()) {
+                    if (packageName.startsWith(pack)) {
+                        put("group", presetGroups.get(pack));
+                        put("ui_name", type.getSimpleName());
+                        break;
+                    }
+                }
 
                 Component newInstance = null;
                 try {
@@ -98,6 +123,8 @@ public class TemplateGenerator {
     public static String getName(Class type) {
         if (type == null) {
             return null;
+        } else if (type == String.class){
+            return "string";
         } else if (Entity.class.isAssignableFrom(type)){
             return "entity";
         } else if (Collection.class.isAssignableFrom(type)){
