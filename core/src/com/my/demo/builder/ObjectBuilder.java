@@ -50,12 +50,12 @@ public class ObjectBuilder {
         for (int i = 0; i < 100; i++) {
             int finalI = i;
             scene.instantiatePrefab("Box", new HashMap<String, Object>() {{
-                put("Box.components[0].config.localTransform", new Matrix4().translate(10, 0.5f, -10 * finalI));
-                put("Box.parent", entity);
+                put("Box.config.components[0].config.localTransform", new Matrix4().translate(10, 0.5f, -10 * finalI));
+                put("Box.config.parent", entity);
             }});
             scene.instantiatePrefab("Box", new HashMap<String, Object>() {{
-                put("Box.components[0].config.localTransform", new Matrix4().translate(-10, 0.5f, -10 * finalI));
-                put("Box.parent", entity);
+                put("Box.config.components[0].config.localTransform", new Matrix4().translate(-10, 0.5f, -10 * finalI));
+                put("Box.config.parent", entity);
             }});
         }
         return "Runway";
@@ -67,24 +67,24 @@ public class ObjectBuilder {
         entity.addComponent(new Position(new Matrix4()));
         scene.addEntity(entity);
         scene.instantiatePrefab("Wall", new HashMap<String, Object>() {{
-            put("Wall.components[0].config.localTransform", new Matrix4());
-            put("Wall.parent", entity);
-            put("Wall.name", "Tower-1");
+            put("Wall.config.components[0].config.localTransform", new Matrix4());
+            put("Wall.config.parent", entity);
+            put("Wall.config.name", "Tower-1");
         }});
         scene.instantiatePrefab("Wall", new HashMap<String, Object>() {{
-            put("Wall.components[0].config.localTransform", new Matrix4().translate(0, 0, 10).rotate(Vector3.Y, 90));
-            put("Wall.parent", entity);
-            put("Wall.name", "Tower-2");
+            put("Wall.config.components[0].config.localTransform", new Matrix4().translate(0, 0, 10).rotate(Vector3.Y, 90));
+            put("Wall.config.parent", entity);
+            put("Wall.config.name", "Tower-2");
         }});
         scene.instantiatePrefab("Wall", new HashMap<String, Object>() {{
-            put("Wall.components[0].config.localTransform", new Matrix4().translate(10, 0, 10).rotate(Vector3.Y, 180));
-            put("Wall.parent", entity);
-            put("Wall.name", "Tower-3");
+            put("Wall.config.components[0].config.localTransform", new Matrix4().translate(10, 0, 10).rotate(Vector3.Y, 180));
+            put("Wall.config.parent", entity);
+            put("Wall.config.name", "Tower-3");
         }});
         scene.instantiatePrefab("Wall", new HashMap<String, Object>() {{
-            put("Wall.components[0].config.localTransform", new Matrix4().translate(10, 0, 0).rotate(Vector3.Y, 270));
-            put("Wall.parent", entity);
-            put("Wall.name", "Tower-4");
+            put("Wall.config.components[0].config.localTransform", new Matrix4().translate(10, 0, 0).rotate(Vector3.Y, 270));
+            put("Wall.config.parent", entity);
+            put("Wall.config.name", "Tower-4");
         }});
         return "Tower";
     }

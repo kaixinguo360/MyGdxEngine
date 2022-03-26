@@ -61,9 +61,9 @@ public class SceneBuilder {
                     int finalAircraftNum = aircraftNum;
                     Matrix4 transform = new Matrix4().setToTranslation(x, y, z);
                     scene.instantiatePrefab("Aircraft", new HashMap<String, Object>() {{
-                        put("Aircraft.components[0].config.localTransform", transform);
-                        put("Aircraft.components[1]", null);
-                        put("Aircraft.name", "Aircraft-" + finalAircraftNum);
+                        put("Aircraft.config.components[0].config.localTransform", transform);
+                        put("Aircraft.config.components[1]", null);
+                        put("Aircraft.config.name", "Aircraft-" + finalAircraftNum);
                     }});
                     aircraftNum++;
                 }
@@ -71,20 +71,20 @@ public class SceneBuilder {
         }
 
         Entity aircraftEntity = scene.instantiatePrefab("Aircraft", new HashMap<String, Object>() {{
-            put("Aircraft.components[0].config.localTransform", new Matrix4().setToTranslation(0, 0, 200));
-            put("Aircraft.name", "Aircraft-6");
+            put("Aircraft.config.components[0].config.localTransform", new Matrix4().setToTranslation(0, 0, 200));
+            put("Aircraft.config.name", "Aircraft-6");
         }});
         aircraftEntity.addComponent(new CharacterSwitcherAgent()).characterName = "aircraft";
         scene.instantiatePrefab("Camera", new HashMap<String, Object>() {{
-            put("Camera.components[3].config.translateTarget", new Vector3(0, 0.8f, -1.5f));
-            put("Camera.parent", aircraftEntity.findChildByName("body"));
-            put("Camera.name", "camera");
+            put("Camera.config.components[3].config.translateTarget", new Vector3(0, 0.8f, -1.5f));
+            put("Camera.config.parent", aircraftEntity.findChildByName("body"));
+            put("Camera.config.name", "camera");
         }});
 
         Entity gunEntity = scene.instantiatePrefab("Gun", new HashMap<String, Object>() {{
-            put("Gun.components[0].config.localTransform", new Matrix4().setToTranslation(0, 0.01f / 2, -20));
-            put("Gun.components[1].config.active", false);
-            put("Gun.name", "Gun-0");
+            put("Gun.config.components[0].config.localTransform", new Matrix4().setToTranslation(0, 0.01f / 2, -20));
+            put("Gun.config.components[1].config.active", false);
+            put("Gun.config.name", "Gun-0");
         }});
         gunEntity.addComponent(new CharacterSwitcherAgent()).characterName = "gun";
         Entity rotateY = gunEntity.findChildByName("rotate_Y");
@@ -96,10 +96,10 @@ public class SceneBuilder {
                 false
         ));
         scene.instantiatePrefab("Camera", new HashMap<String, Object>() {{
-            put("Camera.components[2].config.active", false);
-            put("Camera.components[3].config.translateTarget", new Vector3(0, 0.8f, -1.5f));
-            put("Camera.parent", gunEntity.findChildByName("barrel"));
-            put("Camera.name", "camera");
+            put("Camera.config.components[2].config.active", false);
+            put("Camera.config.components[3].config.translateTarget", new Vector3(0, 0.8f, -1.5f));
+            put("Camera.config.parent", gunEntity.findChildByName("barrel"));
+            put("Camera.config.name", "camera");
         }});
 
         Entity character = new Entity();
@@ -118,13 +118,13 @@ public class SceneBuilder {
         character.addComponent(new CharacterSwitcherAgent()).characterName = "character";
         scene.addEntity(character);
         scene.instantiatePrefab("Camera", new HashMap<String, Object>() {{
-            put("Camera.components[2].config.active", false);
-            put("Camera.components[3].config.yawLocked", true);
-            put("Camera.components[3].config.yaw", -180);
-            put("Camera.components[3].config.yawTarget", -180);
-            put("Camera.components[3].config.recoverEnabled", false);
-            put("Camera.parent", character);
-            put("Camera.name", "camera");
+            put("Camera.config.components[2].config.active", false);
+            put("Camera.config.components[3].config.yawLocked", true);
+            put("Camera.config.components[3].config.yaw", -180);
+            put("Camera.config.components[3].config.yawTarget", -180);
+            put("Camera.config.components[3].config.recoverEnabled", false);
+            put("Camera.config.parent", character);
+            put("Camera.config.name", "camera");
         }});
 
         Entity spotLight = new Entity();
