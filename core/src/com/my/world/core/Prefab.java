@@ -19,45 +19,69 @@ public class Prefab implements Configurable {
     @Config(name = "entities", type = Config.Type.Primitive)
     private List<Map<String, Object>> entityConfigs;
 
-    private static final List<Map<String, Object>> tmpEntityConfigs = new ArrayList<>();
-    public static Entity newInstance(Scene scene, List<Map<String, Object>> entityConfigs, Map<String, Object> overlayConfigs) {
+    public static Entity newInstance(Scene scene, List<Map<String, Object>> entityConfigs, Map<String, Object> overlayConfigs, Context context) {
         if (overlayConfigs == null) {
-            return newInstance(scene, entityConfigs);
+            return newInstance(scene, entityConfigs, context);
         } else {
-            tmpEntityConfigs.clear();
+            List<Map<String, Object>> tmpEntityConfigs = new ArrayList<>();
             for (Map<String, Object> entityConfig : entityConfigs) {
-                String name = (String) entityConfig.get("name");
+                Map<String, Object> config = (Map<String, Object>) entityConfig.get("config");
+                String name = (String) config.get("name");
+                if (name == null) {
+                    String prefabName = (String) entityConfig.get("prefabName");
+                    name = (String) config.get(prefabName + ".config.name");
+                }
                 tmpEntityConfigs.add(OverlayMap.obtain(entityConfig, overlayConfigs, name));
             }
-            Entity entity = newInstance(scene, tmpEntityConfigs);
+            Entity entity = newInstance(scene, tmpEntityConfigs, context);
             Disposable.disposeAll(tmpEntityConfigs);
             return entity;
         }
     }
 
     private static final Map<String, String> tmpIdMap = new HashMap<>();
-    public static Entity newInstance(Scene scene, List<Map<String, Object>> entityConfigs) {
+    public static Entity newInstance(Scene scene, List<Map<String, Object>> entityConfigs, Context context) {
+        Engine engine = scene.getEngine();
         SerializerManager serializerManager = scene.getEngine().getSerializerManager();
         EntityManager entityManager = scene.getEntityManager();
         String prefix = UUID.randomUUID() + "_";
         tmpIdMap.clear();
 
-        Context context = scene.newContext();
+        Function<String, Entity> originalEntityProvider = context.getEnvironment(EntityManager.CONTEXT_ENTITY_PROVIDER, Function.class);
+
+        Function<String, Entity> entityProvider = (originalEntityProvider != null)
+                ? originalEntityProvider
+                : entityManager::findEntityById;
+
         context.setEnvironment(EntityManager.CONTEXT_ENTITY_PROVIDER, (Function<String, Entity>) id -> {
             if (!tmpIdMap.isEmpty() && tmpIdMap.containsKey(id)) {
-                return entityManager.findEntityById(tmpIdMap.get(id));
+                return entityProvider.apply(tmpIdMap.get(id));
             } else {
                 try {
-                    return entityManager.findEntityById(prefix + id);
+                    return entityProvider.apply(prefix + id);
                 } catch (EntityManager.EntityManagerException e) {
-                    return entityManager.findEntityById(id);
+                    return entityProvider.apply(id);
                 }
             }
         });
 
         Entity firstEntity = null;
         for (Map<String, Object> map : entityConfigs) {
-            Entity entity = serializerManager.load(map, Entity.class, context);
+            Entity entity;
+            Class<? extends Entity> entityType = null;
+            try {
+                entityType = (Class<? extends Entity>) engine.getJarManager().loadClass((String) map.get("type"));
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException("No such class error: " + e.getMessage(), e);
+            }
+            if (Prefab.class.isAssignableFrom(entityType)) {
+                String prefabName = (String) map.get("prefabName");
+                Map<String, Object> prefabConfig = (Map<String, Object>) map.get("config");
+                entity = scene.instantiatePrefab(prefabName, prefabConfig, context);
+            } else {
+                Object entityConfig = map.get("config");
+                entity = serializerManager.load(entityConfig, entityType, context);
+            }
             if (entity.getId() != null) {
                 String globalId = (String) map.get("globalId");
                 if (globalId != null) {
@@ -70,6 +94,8 @@ public class Prefab implements Configurable {
             if (firstEntity == null) firstEntity = entity;
             entityManager.addEntity(entity);
         }
+
+        context.setEnvironment(EntityManager.CONTEXT_ENTITY_PROVIDER, originalEntityProvider);
 
         return firstEntity;
     }

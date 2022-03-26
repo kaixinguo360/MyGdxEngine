@@ -60,7 +60,7 @@ public class SceneSerializer implements Serializer {
                     if (Prefab.class.isAssignableFrom(entityType)) {
                         String prefabName = (String) entity.get("prefabName");
                         Map<String, Object> prefabConfig = (Map<String, Object>) entity.get("config");
-                        scene.instantiatePrefab(prefabName, prefabConfig);
+                        scene.instantiatePrefab(prefabName, prefabConfig, context);
                     } else {
                         Object entityConfig = entity.get("config");
                         entityManager.addEntity(context.getEnvironment(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).load(entityConfig, entityType, context));
