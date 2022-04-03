@@ -45,6 +45,7 @@ public class Scene implements Disposable {
         this.engine.getEventManager().getChildren().add(eventManager);
         this.context = engine.newContext();
         this.context.setEnvironment(EntityManager.CONTEXT_ENTITY_PROVIDER, (Function<String, Entity>) entityManager::findEntityById);
+        this.context.setEnvironment(EntityManager.CONTEXT_ENTITY_ADDER, (Function<Entity, Entity>) entityManager::addEntity);
     }
 
     public void start() {

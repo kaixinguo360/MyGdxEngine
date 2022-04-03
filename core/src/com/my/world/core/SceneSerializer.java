@@ -1,9 +1,6 @@
 package com.my.world.core;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -41,6 +38,7 @@ public class SceneSerializer implements Serializer {
             String name = (String) map.get("name");
             scene = new Scene(engine, name);
             context.setEnvironment(EntityManager.CONTEXT_ENTITY_PROVIDER, (Function<String, Entity>) scene.getEntityManager()::findEntityById);
+            context.setEnvironment(EntityManager.CONTEXT_ENTITY_ADDER, (Function<Entity, Entity>) scene.getEntityManager()::addEntity);
 
             SystemManager systemManager = scene.getSystemManager();
             List<Map<String, Object>> systems = (List<Map<String, Object>>) map.get("systems");
@@ -60,7 +58,16 @@ public class SceneSerializer implements Serializer {
                     if (Prefab.class.isAssignableFrom(entityType)) {
                         String prefabName = (String) entity.get("prefabName");
                         Map<String, Object> prefabConfig = (Map<String, Object>) entity.get("config");
+
+                        String globalId = (String) entity.get("globalId");
+                        if (globalId == null) {
+                            globalId = UUID.randomUUID().toString();
+                        }
+                        context.setEnvironment(EntityManager.CONTEXT_ENTITY_PREFIX, globalId);
+
                         scene.instantiatePrefab(prefabName, prefabConfig, context);
+
+                        context.setEnvironment(EntityManager.CONTEXT_ENTITY_PREFIX, null);
                     } else {
                         Object entityConfig = entity.get("config");
                         entityManager.addEntity(context.getEnvironment(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).load(entityConfig, entityType, context));
