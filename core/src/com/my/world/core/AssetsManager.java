@@ -84,9 +84,9 @@ public class AssetsManager implements Disposable {
             if (config.containsKey("instanceType")) {
                 String instanceTypeName = (String) config.get("instanceType");
                 Class<?> instanceType = engine.getJarManager().loadClass(instanceTypeName);
-                asset = engine.getSerializerManager().load(assetConfig, instanceType, engine.newContext());
+                asset = engine.subContext(c -> engine.getSerializerManager().load(assetConfig, instanceType, c));
             } else {
-                asset = engine.getSerializerManager().load(assetConfig, assetType, engine.newContext());
+                asset = engine.subContext(c -> engine.getSerializerManager().load(assetConfig, assetType, c));
             }
             addAsset(assetId, assetType, asset);
         } catch (ClassNotFoundException e) {
@@ -118,7 +118,7 @@ public class AssetsManager implements Disposable {
         return yaml.dumpAll(configList.iterator());
     }
     public Map<String, Object> dumpAsset(Object asset) {
-        return engine.getSerializerManager().dump(asset, Map.class, engine.newContext());
+        return engine.subContext(c -> engine.getSerializerManager().dump(asset, Map.class, c));
     }
 
     @Override

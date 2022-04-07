@@ -96,7 +96,7 @@ public class SceneManager implements Disposable {
         return loadScene(config);
     }
     public Scene loadScene(Map<String, Object> config) {
-        Scene scene = engine.getSerializerManager().load(config, Scene.class, engine.newContext());
+        Scene scene = engine.subContext(c -> engine.getSerializerManager().load(config, Scene.class, c));
         addScene(scene);
         return scene;
     }
@@ -112,7 +112,7 @@ public class SceneManager implements Disposable {
         return yaml.dump(config);
     }
     public Map<String, Object> dumpScene(Scene scene) {
-        return engine.getSerializerManager().dump(scene, Map.class, scene.newContext());
+        return scene.subContext(c -> engine.getSerializerManager().dump(scene, Map.class, c));
     }
 
     @Override

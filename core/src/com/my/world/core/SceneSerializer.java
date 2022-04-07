@@ -31,7 +31,7 @@ public class SceneSerializer implements Serializer {
 
     @Override
     public <E, T> T load(E config, Class<T> type, Context context) {
-        Engine engine = context.getEnvironment(Engine.CONTEXT_FIELD_NAME, Engine.class);
+        Engine engine = context.get(Engine.CONTEXT_FIELD_NAME, Engine.class);
         Scene scene;
 
         try {
@@ -46,7 +46,7 @@ public class SceneSerializer implements Serializer {
                 for (Map<String, Object> system : systems) {
                     Class<? extends System> systemType = (Class<? extends System>) engine.getJarManager().loadClass((String) system.get("type"));
                     Object systemConfig = system.get("config");
-                    systemManager.addSystem(context.getEnvironment(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).load(systemConfig, systemType, context));
+                    systemManager.addSystem(context.get(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).load(systemConfig, systemType, context));
                 }
             }
 
@@ -75,7 +75,7 @@ public class SceneSerializer implements Serializer {
                 Entity entity = entry.getValue();
                 Map<String, Object> entityMap = new LinkedHashMap<>();
                 entityMap.put("type", entity.getClass().getName());
-                entityMap.put("config", context.getEnvironment(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).dump(entity, Map.class, context));
+                entityMap.put("config", context.get(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).dump(entity, Map.class, context));
                 entityList.add(entityMap);
             }
             map.put("entities", entityList);
@@ -87,7 +87,7 @@ public class SceneSerializer implements Serializer {
             for (System system : systems.values()) {
                 Map<String, Object> systemMap = new LinkedHashMap<>();
                 systemMap.put("type", system.getClass().getName());
-                systemMap.put("config", context.getEnvironment(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).dump(system, Map.class, context));
+                systemMap.put("config", context.get(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).dump(system, Map.class, context));
                 systemList.add(systemMap);
             }
             map.put("systems", systemList);

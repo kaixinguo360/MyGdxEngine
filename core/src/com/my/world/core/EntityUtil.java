@@ -34,12 +34,9 @@ public class EntityUtil {
     }
 
     public static Entity newInstance(Scene scene, List<Map<String, Object>> entityConfigs, Context context) {
-        Boolean originalPrefabFlag = context.getEnvironment(CONTEXT_ENTITY_PREFAB_FLAG, Boolean.class, null);
-
-        context.setEnvironment(CONTEXT_ENTITY_PREFAB_FLAG, true);
+        Boolean originalPrefabFlag = context.set(CONTEXT_ENTITY_PREFAB_FLAG, true);
         Entity entity = loadEntities(scene, entityConfigs, context);
-        context.setEnvironment(CONTEXT_ENTITY_PREFAB_FLAG, originalPrefabFlag);
-
+        context.set(CONTEXT_ENTITY_PREFAB_FLAG, originalPrefabFlag);
         return entity;
     }
 
@@ -49,37 +46,33 @@ public class EntityUtil {
         EntityManager entityManager = scene.getEntityManager();
         Map<String, String> tmpIdMap = new HashMap<>();
 
-        Function<String, Entity> originalEntityProvider = context.getEnvironment(CONTEXT_ENTITY_PROVIDER, Function.class, null);
-        Function<Entity, Entity> originalEntityAdder = context.getEnvironment(CONTEXT_ENTITY_ADDER, Function.class, null);
-        String originalPrefix = context.getEnvironment(CONTEXT_ENTITY_PREFIX, String.class, null);
+        Function<String, Entity> entityProvider = context.get(CONTEXT_ENTITY_PROVIDER, Function.class,
+                (Function<String, Entity>) entityManager::findEntityById);
+        Function<Entity, Entity> entityAdder = context.get(CONTEXT_ENTITY_ADDER, Function.class,
+                (Function<Entity, Entity>) entityManager::addEntity);
+        boolean prefabFlag = context.get(CONTEXT_ENTITY_PREFAB_FLAG, Boolean.class, false);
+        String prefix = context.get(CONTEXT_ENTITY_PREFIX, String.class, null);
 
-        boolean prefabFlag = context.getEnvironment(CONTEXT_ENTITY_PREFAB_FLAG, Boolean.class, false);
-        String prefix = (originalPrefix != null) ? (originalPrefix + '.') : "";
-        Function<String, Entity> entityProvider = (id) -> {
-            Function<String, Entity> oriEntityProvider = (originalEntityProvider != null)
-                    ? originalEntityProvider
-                    : entityManager::findEntityById;
+        Function<String, Entity> originalEntityProvider = context.set(CONTEXT_ENTITY_PROVIDER, (id) -> {
             if (!tmpIdMap.isEmpty() && tmpIdMap.containsKey(id)) {
                 id = tmpIdMap.get(id);
             }
-            try {
-                return oriEntityProvider.apply(prefix + id);
-            } catch (EntityManager.EntityManagerException e) {
-                return oriEntityProvider.apply(id);
+            if (prefix != null) {
+                try {
+                    return entityProvider.apply(prefix + id);
+                } catch (EntityManager.EntityManagerException e) {
+                    return entityProvider.apply(id);
+                }
+            } else {
+                return entityProvider.apply(id);
             }
-        };
-        Function<Entity, Entity> entityAdder = (entity) -> {
-            Function<Entity, Entity> oriEntityAdder = (originalEntityAdder != null)
-                    ? originalEntityAdder
-                    : entityManager::addEntity;
-            if (entity.getId() != null) {
+        });
+        Function<Entity, Entity> originalEntityAdder = context.set(CONTEXT_ENTITY_ADDER, (entity) -> {
+            if (prefix != null && entity.getId() != null) {
                 entity.setId(prefix + entity.getId());
             }
-            return oriEntityAdder.apply(entity);
-        };
-
-        context.setEnvironment(CONTEXT_ENTITY_PROVIDER, entityProvider);
-        context.setEnvironment(CONTEXT_ENTITY_ADDER, entityAdder);
+            return entityAdder.apply(entity);
+        });
 
         Entity firstEntity = null;
         for (Map<String, Object> map : entityConfigs) {
@@ -100,9 +93,9 @@ public class EntityUtil {
             if (Prefab.class.isAssignableFrom(entityType)) {
                 String prefabName = (String) map.get("prefabName");
                 Map<String, Object> prefabConfig = (Map<String, Object>) map.get("config");
-                context.setEnvironment(CONTEXT_ENTITY_PREFIX, globalId);
+                String originalPrefix = context.set(CONTEXT_ENTITY_PREFIX, globalId);
                 entity = scene.instantiatePrefab(prefabName, prefabConfig, context);
-                context.setEnvironment(CONTEXT_ENTITY_PREFIX, originalPrefix);
+                context.set(CONTEXT_ENTITY_PREFIX, originalPrefix);
             } else {
                 Object entityConfig = map.get("config");
                 entity = serializerManager.load(entityConfig, entityType, context);
@@ -110,16 +103,13 @@ public class EntityUtil {
                     tmpIdMap.put(entity.getId(), globalId);
                     entity.setId(globalId);
                 }
-                Function<Entity, Entity> oriEntityAdder = (originalEntityAdder != null)
-                        ? originalEntityAdder
-                        : entityManager::addEntity;
-                oriEntityAdder.apply(entity);
+                entityAdder.apply(entity);
             }
             if (firstEntity == null) firstEntity = entity;
         }
 
-        context.setEnvironment(CONTEXT_ENTITY_PROVIDER, originalEntityProvider);
-        context.setEnvironment(CONTEXT_ENTITY_ADDER, originalEntityAdder);
+        context.set(CONTEXT_ENTITY_PROVIDER, originalEntityProvider);
+        context.set(CONTEXT_ENTITY_ADDER, originalEntityAdder);
 
         return firstEntity;
     }

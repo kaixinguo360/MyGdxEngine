@@ -3,6 +3,8 @@ package com.my.world.core;
 import com.my.world.core.util.Disposable;
 import lombok.Getter;
 
+import java.util.function.Function;
+
 public class Engine implements Disposable {
 
     public static final String CONTEXT_FIELD_NAME = "ENGINE";
@@ -30,14 +32,18 @@ public class Engine implements Disposable {
         serializerManager = new SerializerManager(this);
         sceneManager = new SceneManager(this);
         jarManager = new JarManager(this);
-        context = new Context(null);
-        context.setEnvironment(AssetsManager.CONTEXT_FIELD_NAME, assetsManager);
-        context.setEnvironment(SerializerManager.CONTEXT_FIELD_NAME, serializerManager);
-        context.setEnvironment(Engine.CONTEXT_FIELD_NAME, this);
+        context = Context.obtain(null);
+        context.set(AssetsManager.CONTEXT_FIELD_NAME, assetsManager);
+        context.set(SerializerManager.CONTEXT_FIELD_NAME, serializerManager);
+        context.set(Engine.CONTEXT_FIELD_NAME, this);
     }
 
-    public Context newContext() {
-        return this.context.newContext();
+    public Context subContext() {
+        return this.context.subContext();
+    }
+
+    public <T> T subContext(Function<Context, T> fun) {
+        return this.context.subContext(fun);
     }
 
     @Override

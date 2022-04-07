@@ -43,7 +43,7 @@ public class Scene implements Disposable {
         this.name = name;
         this.engine = engine;
         this.engine.getEventManager().getChildren().add(eventManager);
-        this.context = engine.newContext();
+        this.context = engine.subContext();
     }
 
     public void start() {
@@ -60,8 +60,12 @@ public class Scene implements Disposable {
         entityManager.getBatch().commit();
     }
 
-    public Context newContext() {
-        return this.context.newContext();
+    public Context subContext() {
+        return this.context.subContext();
+    }
+
+    public <T> T subContext(Function<Context, T> fun) {
+        return this.context.subContext(fun);
     }
 
     // ----- Prefab ----- //
@@ -84,21 +88,21 @@ public class Scene implements Disposable {
         return new Prefab(entityConfigs);
     }
     public Entity instantiatePrefab(Prefab prefab) {
-        return EntityUtil.newInstance(this, prefab.getEntityConfigs(), newContext());
+        return subContext(c -> EntityUtil.newInstance(this, prefab.getEntityConfigs(), c));
     }
     public Entity instantiatePrefab(Prefab prefab, Map<String, Object> configs) {
-        return EntityUtil.newInstance(this, prefab.getEntityConfigs(), configs, newContext());
+        return subContext(c -> EntityUtil.newInstance(this, prefab.getEntityConfigs(), configs, c));
     }
     public Entity instantiatePrefab(Prefab prefab, Map<String, Object> configs, Context context) {
         return EntityUtil.newInstance(this, prefab.getEntityConfigs(), configs, context);
     }
     public Entity instantiatePrefab(String prefabName) {
         Prefab prefab = engine.getAssetsManager().getAsset(prefabName, Prefab.class);
-        return EntityUtil.newInstance(this, prefab.getEntityConfigs(), newContext());
+        return subContext(c -> EntityUtil.newInstance(this, prefab.getEntityConfigs(), c));
     }
     public Entity instantiatePrefab(String prefabName, Map<String, Object> configs) {
         Prefab prefab = engine.getAssetsManager().getAsset(prefabName, Prefab.class);
-        return EntityUtil.newInstance(this, prefab.getEntityConfigs(), configs, newContext());
+        return subContext(c -> EntityUtil.newInstance(this, prefab.getEntityConfigs(), configs, c));
     }
     public Entity instantiatePrefab(String prefabName, Map<String, Object> configs, Context context) {
         Prefab prefab = engine.getAssetsManager().getAsset(prefabName, Prefab.class);
@@ -107,10 +111,10 @@ public class Scene implements Disposable {
 
     // ----- Load & Dump ----- //
     public <E, T> T load(E config, Class<T> type) {
-        return engine.getSerializerManager().load(config, type, newContext());
+        return subContext(c -> engine.getSerializerManager().load(config, type, c));
     }
     public <E, T> E dump(T obj, Class<E> configType) {
-        return engine.getSerializerManager().dump(obj, configType, newContext());
+        return subContext(c -> engine.getSerializerManager().dump(obj, configType, c));
     }
 
     // ----- Util Method ----- //

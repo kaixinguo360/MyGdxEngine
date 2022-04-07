@@ -64,7 +64,7 @@ public interface Configurable extends Disposable {
                     if (Modifier.isFinal(field.getModifiers())) {
                         Object fieldObject = field.get(configurable);
                         if (fieldObject == null) throw new RuntimeException("Can not set a final field: " + field);
-                        context.getEnvironment(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).set(obj, fieldObject);
+                        context.get(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).set(obj, fieldObject);
                     } else {
                         field.set(configurable, obj);
                     }
@@ -90,7 +90,7 @@ public interface Configurable extends Disposable {
                         if (Modifier.isFinal(subField.getModifiers())) {
                             Object subFieldObject = subField.get(fieldObject);
                             if (subFieldObject == null) throw new RuntimeException("Can not set a final field: " + field);
-                            context.getEnvironment(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).set(obj, subFieldObject);
+                            context.get(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).set(obj, subFieldObject);
                         } else {
                             subField.set(fieldObject, obj);
                         }
@@ -157,11 +157,11 @@ public interface Configurable extends Disposable {
             return value;
         } else if (annotation.type() == Config.Type.Asset || Prefab.class.isAssignableFrom(elementType)) {
             String assetId = (String) value;
-            AssetsManager assetsManager = context.getEnvironment(AssetsManager.CONTEXT_FIELD_NAME, AssetsManager.class);
+            AssetsManager assetsManager = context.get(AssetsManager.CONTEXT_FIELD_NAME, AssetsManager.class);
             return assetsManager.getAsset(assetId, elementType);
         } else if (annotation.type() == Config.Type.Entity || Entity.class.isAssignableFrom(elementType)) {
             String entityId = (String) value;
-            Function<String, Entity> entityFinder = context.getEnvironment(EntityUtil.CONTEXT_ENTITY_PROVIDER, Function.class);
+            Function<String, Entity> entityFinder = context.get(EntityUtil.CONTEXT_ENTITY_PROVIDER, Function.class);
             return entityFinder.apply(entityId);
         } else if (elementType.isEnum()) {
             Method valueOf = elementType.getMethod("valueOf", String.class);
@@ -171,10 +171,10 @@ public interface Configurable extends Disposable {
                 Map<String, Object> map = (Map<String, Object>) value;
                 String typeName = (String) map.get("type");
                 Object configValue = map.get("config");
-                Class<?> type = context.getEnvironment(Engine.CONTEXT_FIELD_NAME, Engine.class).getJarManager().loadClass(typeName);
-                return context.getEnvironment(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).load(configValue, type, context);
+                Class<?> type = context.get(Engine.CONTEXT_FIELD_NAME, Engine.class).getJarManager().loadClass(typeName);
+                return context.get(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).load(configValue, type, context);
             } else {
-                return context.getEnvironment(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).load(value, elementType, context);
+                return context.get(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).load(value, elementType, context);
             }
         }
     }
@@ -191,7 +191,7 @@ public interface Configurable extends Disposable {
             }
             return configList;
         } else if (annotation.type() == Config.Type.Asset || Prefab.class.isAssignableFrom(elementType)) {
-            AssetsManager assetsManager = context.getEnvironment(AssetsManager.CONTEXT_FIELD_NAME, AssetsManager.class);
+            AssetsManager assetsManager = context.get(AssetsManager.CONTEXT_FIELD_NAME, AssetsManager.class);
             return assetsManager.getId(elementType, value);
         } else if (annotation.type() == Config.Type.Entity || Entity.class.isAssignableFrom(elementType)) {
             return ((Entity) value).getId();
@@ -201,7 +201,7 @@ public interface Configurable extends Disposable {
         } else {
             try {
                 // Use SerializerManager <Object.class> to get config
-                return context.getEnvironment(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).dump(value, Object.class, context);
+                return context.get(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).dump(value, Object.class, context);
             } catch (RuntimeException e) {
                 if (!(e.getMessage().startsWith("No such serializer") || e.getMessage().startsWith("Can not get config")))
                     throw e;
@@ -209,7 +209,7 @@ public interface Configurable extends Disposable {
                 Class<?> type = value.getClass();
                 return new LinkedHashMap<String, Object>() {{
                     put("type", type.getName());
-                    put("config", context.getEnvironment(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).dump(type.cast(value), Map.class, context));
+                    put("config", context.get(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).dump(type.cast(value), Map.class, context));
                 }};
             }
         }
