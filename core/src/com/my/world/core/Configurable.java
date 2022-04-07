@@ -161,7 +161,7 @@ public interface Configurable extends Disposable {
             return assetsManager.getAsset(assetId, elementType);
         } else if (annotation.type() == Config.Type.Entity || Entity.class.isAssignableFrom(elementType)) {
             String entityId = (String) value;
-            Function<String, Entity> entityFinder = context.getEnvironment(EntityManager.CONTEXT_ENTITY_PROVIDER, Function.class);
+            Function<String, Entity> entityFinder = context.getEnvironment(EntityUtil.CONTEXT_ENTITY_PROVIDER, Function.class);
             return entityFinder.apply(entityId);
         } else if (elementType.isEnum()) {
             Method valueOf = elementType.getMethod("valueOf", String.class);

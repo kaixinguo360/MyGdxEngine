@@ -44,8 +44,6 @@ public class Scene implements Disposable {
         this.engine = engine;
         this.engine.getEventManager().getChildren().add(eventManager);
         this.context = engine.newContext();
-        this.context.setEnvironment(EntityManager.CONTEXT_ENTITY_PROVIDER, (Function<String, Entity>) entityManager::findEntityById);
-        this.context.setEnvironment(EntityManager.CONTEXT_ENTITY_ADDER, (Function<Entity, Entity>) entityManager::addEntity);
     }
 
     public void start() {
@@ -86,25 +84,25 @@ public class Scene implements Disposable {
         return new Prefab(entityConfigs);
     }
     public Entity instantiatePrefab(Prefab prefab) {
-        return Prefab.newInstance(this, prefab.getEntityConfigs(), newContext());
+        return EntityUtil.newInstance(this, prefab.getEntityConfigs(), newContext());
     }
     public Entity instantiatePrefab(Prefab prefab, Map<String, Object> configs) {
-        return Prefab.newInstance(this, prefab.getEntityConfigs(), configs, newContext());
+        return EntityUtil.newInstance(this, prefab.getEntityConfigs(), configs, newContext());
     }
     public Entity instantiatePrefab(Prefab prefab, Map<String, Object> configs, Context context) {
-        return Prefab.newInstance(this, prefab.getEntityConfigs(), configs, context);
+        return EntityUtil.newInstance(this, prefab.getEntityConfigs(), configs, context);
     }
     public Entity instantiatePrefab(String prefabName) {
         Prefab prefab = engine.getAssetsManager().getAsset(prefabName, Prefab.class);
-        return Prefab.newInstance(this, prefab.getEntityConfigs(), newContext());
+        return EntityUtil.newInstance(this, prefab.getEntityConfigs(), newContext());
     }
     public Entity instantiatePrefab(String prefabName, Map<String, Object> configs) {
         Prefab prefab = engine.getAssetsManager().getAsset(prefabName, Prefab.class);
-        return Prefab.newInstance(this, prefab.getEntityConfigs(), configs, newContext());
+        return EntityUtil.newInstance(this, prefab.getEntityConfigs(), configs, newContext());
     }
     public Entity instantiatePrefab(String prefabName, Map<String, Object> configs, Context context) {
         Prefab prefab = engine.getAssetsManager().getAsset(prefabName, Prefab.class);
-        return Prefab.newInstance(this, prefab.getEntityConfigs(), configs, context);
+        return EntityUtil.newInstance(this, prefab.getEntityConfigs(), configs, context);
     }
 
     // ----- Load & Dump ----- //

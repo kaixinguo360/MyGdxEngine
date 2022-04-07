@@ -1,7 +1,9 @@
 package com.my.world.core;
 
-import java.util.*;
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Config Example:
@@ -37,8 +39,6 @@ public class SceneSerializer implements Serializer {
 
             String name = (String) map.get("name");
             scene = new Scene(engine, name);
-            context.setEnvironment(EntityManager.CONTEXT_ENTITY_PROVIDER, (Function<String, Entity>) scene.getEntityManager()::findEntityById);
-            context.setEnvironment(EntityManager.CONTEXT_ENTITY_ADDER, (Function<Entity, Entity>) scene.getEntityManager()::addEntity);
 
             SystemManager systemManager = scene.getSystemManager();
             List<Map<String, Object>> systems = (List<Map<String, Object>>) map.get("systems");
@@ -50,29 +50,9 @@ public class SceneSerializer implements Serializer {
                 }
             }
 
-            EntityManager entityManager = scene.getEntityManager();
             List<Map<String, Object>> entities = (List<Map<String, Object>>) map.get("entities");
             if (entities != null) {
-                for (Map<String, Object> entity : entities) {
-                    Class<? extends Entity> entityType = (Class<? extends Entity>) engine.getJarManager().loadClass((String) entity.get("type"));
-                    if (Prefab.class.isAssignableFrom(entityType)) {
-                        String prefabName = (String) entity.get("prefabName");
-                        Map<String, Object> prefabConfig = (Map<String, Object>) entity.get("config");
-
-                        String globalId = (String) entity.get("globalId");
-                        if (globalId == null) {
-                            globalId = UUID.randomUUID().toString();
-                        }
-                        context.setEnvironment(EntityManager.CONTEXT_ENTITY_PREFIX, globalId);
-
-                        scene.instantiatePrefab(prefabName, prefabConfig, context);
-
-                        context.setEnvironment(EntityManager.CONTEXT_ENTITY_PREFIX, null);
-                    } else {
-                        Object entityConfig = entity.get("config");
-                        entityManager.addEntity(context.getEnvironment(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).load(entityConfig, entityType, context));
-                    }
-                }
+                EntityUtil.loadEntities(scene, entities, context);
             }
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("No such class error: " + e.getMessage(), e);
@@ -120,4 +100,5 @@ public class SceneSerializer implements Serializer {
     public <E, T> boolean canSerialize(Class<E> configType, Class<T> targetType) {
         return (Map.class.isAssignableFrom(configType)) && (targetType == Scene.class);
     }
+
 }

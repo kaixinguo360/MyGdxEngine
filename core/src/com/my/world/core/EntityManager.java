@@ -7,10 +7,6 @@ import java.util.*;
 
 public class EntityManager implements Disposable {
 
-    public static final String CONTEXT_ENTITY_PROVIDER = "ENTITY_PROVIDER";
-    public static final String CONTEXT_ENTITY_ADDER = "ENTITY_ADDER";
-    public static final String CONTEXT_ENTITY_PREFIX = "ENTITY_PREFIX";
-
     @Getter
     private final Map<String, Entity> entities = new LinkedHashMap<>();
 

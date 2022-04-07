@@ -32,7 +32,11 @@ public class Context {
 
     public <T> T setEnvironment(String id, T value) {
         if (id == null) throw new RuntimeException("Environment variable id can not be null");
-        environment.put(id, value);
+        if (value == null) {
+            environment.remove(id);
+        } else {
+            environment.put(id, value);
+        }
         return value;
     }
 
@@ -44,6 +48,21 @@ public class Context {
         } else {
             if (parent == null) throw new RuntimeException("No such environment variable: id=" + id + ", type=" + type);
             return parent.getEnvironment(id, type);
+        }
+    }
+
+    public <T> T getEnvironment(String id, Class<T> type, T defaultValue) {
+        if (environment.containsKey(id)) {
+            Object value = environment.get(id);
+            if (value == null) {
+                return defaultValue;
+            }
+            return type.cast(value);
+        } else {
+            if (parent == null)  {
+                return defaultValue;
+            }
+            return parent.getEnvironment(id, type, defaultValue);
         }
     }
 
