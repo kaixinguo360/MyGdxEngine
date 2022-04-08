@@ -83,6 +83,12 @@ public class Context implements Disposable {
         return result;
     }
 
+    public Context clone() {
+        Context newContext = obtain(this.parent);
+        newContext.environment.putAll(this.environment);
+        return newContext;
+    }
+
     @Override
     public void dispose() {
         this.parent = null;

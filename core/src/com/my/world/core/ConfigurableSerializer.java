@@ -1,6 +1,7 @@
 package com.my.world.core;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public class ConfigurableSerializer implements Serializer, Serializer.Setter {
@@ -17,13 +18,30 @@ public class ConfigurableSerializer implements Serializer, Serializer.Setter {
             throw new RuntimeException("Load Loadable Resource(" + type + ") error: " + e.getMessage(), e);
         }
 
+        boolean isLazy = false;
         if (configurable instanceof Configurable.OnLoad) {
-            ((Configurable.OnLoad) configurable).load(config, context);
+            try {
+                ((Configurable.OnLoad) configurable).load(config, context);
+            } catch (EntityManager.EntityManagerException e) {
+                if (!context.contains(Configurable.CONTEXT_LAZY_LIST)) {
+                    throw e;
+                } else {
+                    List<Configurable.LazyContext> lazyList = context.get(Configurable.CONTEXT_LAZY_LIST, List.class);
+
+                    Configurable.LazyContext lazyContext = Configurable.LazyContext.obtain(configurable, context);
+                    lazyList.add(lazyContext);
+                    lazyContext.add(c -> {
+                        ((Configurable.OnLoad) configurable).load(config, context);
+                    });
+
+                    isLazy = true;
+                }
+            }
         } else {
-            Configurable.load(configurable, config, context);
+            isLazy = Configurable.load(configurable, config, context);
         }
 
-        if (configurable instanceof Configurable.OnInit) {
+        if (!isLazy && configurable instanceof Configurable.OnInit) {
             ((Configurable.OnInit) configurable).init();
         }
 

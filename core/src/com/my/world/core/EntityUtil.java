@@ -59,6 +59,7 @@ public class EntityUtil {
         Map<String, String> globalIdMap = null;
         Function<String, Entity> originalEntityProvider;
         Function<Entity, Entity> originalEntityAdder;
+        List<Configurable.LazyContext> lazyList = null;
 
         if (prefix != null) {
             Map<String, String> idMap = new HashMap<>();
@@ -84,6 +85,9 @@ public class EntityUtil {
         } else {
             originalEntityProvider = context.set(CONTEXT_ENTITY_PROVIDER, entityProvider);
             originalEntityAdder = context.set(CONTEXT_ENTITY_ADDER, entityAdder);
+
+            lazyList = new ArrayList<>();
+            context.set(Configurable.CONTEXT_LAZY_LIST, lazyList);
         }
 
         Entity firstEntity = null;
@@ -123,8 +127,17 @@ public class EntityUtil {
             if (firstEntity == null) firstEntity = entity;
         }
 
+        if (prefix == null) {
+            for (Configurable.LazyContext lazyContext : lazyList) {
+                lazyContext.load();
+                lazyContext.dispose();
+            }
+            lazyList.clear();
+        }
+
         context.set(CONTEXT_ENTITY_PROVIDER, originalEntityProvider);
         context.set(CONTEXT_ENTITY_ADDER, originalEntityAdder);
+        context.set(Configurable.CONTEXT_LAZY_LIST, null);
 
         return firstEntity;
     }

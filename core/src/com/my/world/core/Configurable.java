@@ -1,6 +1,7 @@
 package com.my.world.core;
 
 import com.my.world.core.util.Disposable;
+import com.my.world.core.util.Pool;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -30,6 +31,8 @@ import java.util.function.Function;
  */
 public interface Configurable extends Disposable {
 
+    String CONTEXT_LAZY_LIST = "LAZY_LIST";
+
     interface OnLoad extends Configurable {
         void load(Map<String, Object> config, Context context);
     }
@@ -42,7 +45,10 @@ public interface Configurable extends Disposable {
         Map<String, Object> dump(Context context);
     }
 
-    static void load(Configurable configurable, Map<String, Object> config, Context context) {
+    static boolean load(Configurable configurable, Map<String, Object> config, Context context) {
+        List<LazyContext> lazyList = context.get(CONTEXT_LAZY_LIST, List.class, null);
+        LazyContext lazyContext = null;
+
         try {
             for (Field field : getFields(configurable)) {
                 field.setAccessible(true);
@@ -52,22 +58,31 @@ public interface Configurable extends Disposable {
                 Class<?> fieldType = field.getType();
 
                 if (annotation.fields().length == 0) {
+                    if (!config.containsKey(name)) continue;
+
                     Object fieldConfig = config.get(name);
 
                     Object obj;
                     if (!List.class.isAssignableFrom(fieldType) && fieldType.isInstance(fieldConfig)) {
                         obj = fieldConfig;
                     } else {
-                        obj = getObject(context, fieldType, annotation, fieldConfig);
+                        try {
+                            obj = getObject(context, fieldType, annotation, fieldConfig);
+                        } catch (EntityManager.EntityManagerException e) {
+                            if (lazyList == null) throw e;
+                            if (lazyContext == null) {
+                                lazyContext = LazyContext.obtain(configurable, context);
+                                lazyList.add(lazyContext);
+                            }
+                            lazyContext.add(c -> {
+                                Object finalObj = getObject(c, fieldType, annotation, fieldConfig);
+                                setField(field, configurable, finalObj, c);
+                            });
+                            continue;
+                        }
                     }
 
-                    if (Modifier.isFinal(field.getModifiers())) {
-                        Object fieldObject = field.get(configurable);
-                        if (fieldObject == null) throw new RuntimeException("Can not set a final field: " + field);
-                        context.get(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).set(obj, fieldObject);
-                    } else {
-                        field.set(configurable, obj);
-                    }
+                    setField(field, configurable, obj, context);
                 } else {
                     Object fieldObject = field.get(configurable);
 
@@ -78,27 +93,48 @@ public interface Configurable extends Disposable {
                     for (String subFieldName : annotation.fields()) {
                         Field subField = fieldType.getField(subFieldName);
                         Class<?> subFieldType = subField.getType();
-                        Object subFieldConfig = config.get(name + "." + subFieldName);
+                        String subName = name + "." + subFieldName;
+                        if (!config.containsKey(subName)) continue;
+                        Object subFieldConfig = config.get(subName);
 
                         Object obj;
                         if (!List.class.isAssignableFrom(subFieldType) && subFieldType.isInstance(subFieldConfig)) {
                             obj = subFieldConfig;
                         } else {
-                            obj = getObject(context, subFieldType, annotation, subFieldConfig);
+                            try {
+                                obj = getObject(context, subFieldType, annotation, subFieldConfig);
+                            } catch (EntityManager.EntityManagerException e) {
+                                if (lazyList == null) throw e;
+                                if (lazyContext == null) {
+                                    lazyContext = LazyContext.obtain(configurable, context);
+                                    lazyList.add(lazyContext);
+                                }
+                                lazyContext.add(c -> {
+                                    Object finalObj = getObject(c, subFieldType, annotation, subFieldConfig);
+                                    setField(subField, fieldObject, finalObj, c);
+                                });
+                                continue;
+                            }
                         }
 
-                        if (Modifier.isFinal(subField.getModifiers())) {
-                            Object subFieldObject = subField.get(fieldObject);
-                            if (subFieldObject == null) throw new RuntimeException("Can not set a final field: " + field);
-                            context.get(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).set(obj, subFieldObject);
-                        } else {
-                            subField.set(fieldObject, obj);
-                        }
+                        setField(subField, fieldObject, obj, context);
                     }
                 }
             }
         } catch (IllegalAccessException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException | NoSuchFieldException e) {
             throw new RuntimeException("Load Loadable Resource(" + configurable.getClass() + ") error: " + e.getMessage(), e);
+        }
+
+        return lazyContext != null;
+    }
+
+    static void setField(Field field, Object target, Object value, Context context) throws IllegalAccessException {
+        if (Modifier.isFinal(field.getModifiers())) {
+            Object fieldObject = field.get(target);
+            if (fieldObject == null) throw new RuntimeException("Can not set a final field: " + field);
+            context.get(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).set(value, fieldObject);
+        } else {
+            field.set(target, value);
         }
     }
 
@@ -273,5 +309,56 @@ public interface Configurable extends Disposable {
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Dispose Resource(" + this.getClass() + ") error: " + e.getMessage(), e);
         }
+    }
+
+    class LazyContext implements Disposable {
+
+        private Object configurable;
+        private Context context;
+        private final List<LazyLoadFunction> functions = new ArrayList<>();
+
+        public void add(LazyLoadFunction function) {
+            functions.add(function);
+        }
+
+        public void load() {
+            for (LazyLoadFunction function : functions) {
+                try {
+                    function.run(context);
+                } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException | ClassNotFoundException e) {
+                    throw new RuntimeException("Load Loadable Resource(" + configurable.getClass() + ") error: " + e.getMessage(), e);
+                }
+            }
+
+            if (configurable instanceof Configurable.OnInit) {
+                ((Configurable.OnInit) configurable).init();
+            }
+        }
+
+        @Override
+        public void dispose() {
+            context.dispose();
+
+            this.configurable = null;
+            this.context = null;
+            this.functions.clear();
+
+            pool.free(this);
+        }
+
+        private static final Pool<LazyContext> pool = new Pool<>(LazyContext::new);
+        public static LazyContext obtain(Object configurable, Context context) {
+            LazyContext lazyContext = pool.obtain();
+
+            lazyContext.configurable = configurable;
+            lazyContext.context = context.clone();
+
+            return lazyContext;
+        }
+    }
+
+    @FunctionalInterface
+    interface LazyLoadFunction {
+        void run(Context context) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, ClassNotFoundException;
     }
 }
