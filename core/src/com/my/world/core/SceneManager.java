@@ -7,7 +7,6 @@ import org.yaml.snakeyaml.Yaml;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.UUID;
 
 public class SceneManager implements Disposable {
 
@@ -27,7 +26,7 @@ public class SceneManager implements Disposable {
         return scene;
     }
     protected Scene addScene(Scene scene) {
-        if (scene.getId() == null) scene.setId(scene.getName() + UUID.randomUUID());
+        if (scene.getId() == null) scene.setId(scene.getName() + '.' + EntityUtil.randomID());
         String id = scene.getId();
         if (scenes.containsKey(id)) throw new RuntimeException("Duplicate Scene: id=" + id);
         if (scene.getStatus() != Scene.Status.Created)
