@@ -14,18 +14,18 @@ import com.my.world.core.*;
 import com.my.world.core.util.Disposable;
 import com.my.world.gdx.DisposableManager;
 import com.my.world.gdx.Vector3Pool;
+import com.my.world.module.common.BaseSystem;
 import com.my.world.module.common.Position;
 import com.my.world.module.common.Script;
 import lombok.Getter;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Disposable {
+import static com.badlogic.gdx.physics.bullet.collision.btCollisionObject.CollisionFlags.*;
 
-    protected Scene scene;
+public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Disposable, EntityListener {
 
     @Config
     public int maxSubSteps = 5;
@@ -38,6 +38,7 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
     protected DebugDrawer debugDrawer;
     protected ClosestRayResultCallback rayTestCB;
 
+    protected final Map<Entity, RigidBody> rigidBodies = new HashMap<>();
     protected final DisposableManager disposableManager = new DisposableManager();
 
     public PhysicsSystem() {
@@ -92,22 +93,84 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
 
     @Override
     public void afterAdded(Scene scene) {
-        this.scene = scene;
-        EntityManager entityManager = scene.getEntityManager();
-        entityManager.addListener(rigidBodyListener, rigidBodyListener);
-        entityManager.addListener(colliderListener, colliderListener);
-        entityManager.addFilter(onFixedUpdateFilter);
+        super.afterAdded(scene);
+        scene.getEntityManager().addFilter(onFixedUpdateFilter);
+    }
+
+    @Override
+    public boolean canHandle(Entity entity) {
+        return entity.contain(RigidBody.class);
+    }
+
+    @Override
+    public void afterEntityAdded(Entity entity) {
+
+        // Get RigidBody
+        RigidBody rigidBody = entity.getComponent(RigidBody.class);
+        btRigidBody body = rigidBody.body;
+        body.userData = entity;
+
+        if (rigidBody.collisionFlags != null) {
+            body.setCollisionFlags(rigidBody.collisionFlags);
+        }
+
+        if (rigidBody.isStatic) {
+            body.setCollisionFlags(body.getCollisionFlags() | CF_STATIC_OBJECT);
+        }
+
+        if (rigidBody.isKinematic) {
+            body.setCollisionFlags(body.getCollisionFlags() & ~CF_STATIC_OBJECT | CF_KINEMATIC_OBJECT);
+        }
+
+        if (rigidBody.isTrigger) {
+            body.setCollisionFlags(body.getCollisionFlags() & ~CF_STATIC_OBJECT | CF_KINEMATIC_OBJECT | CF_NO_CONTACT_RESPONSE);
+        }
+
+        // Set Position
+        Position position = entity.getComponent(Position.class);
+        if (!position.isDisableInherit()) {
+            position.setLocalTransform(position.getGlobalTransform());
+            position.setDisableInherit(true);
+        }
+        body.proceedToTransform(position.getLocalTransform());
+        body.setMotionState(new MotionState(position.getLocalTransform()));
+
+        // Set OnCollision Callback
+        if (entity.contain(Collision.class)) {
+            Collision c = entity.getComponent(Collision.class);
+            body.setContactCallbackFlag(c.callbackFlag);
+            body.setContactCallbackFilter(c.callbackFilter);
+            body.setCollisionFlags(body.getCollisionFlags() | CF_CUSTOM_MATERIAL_CALLBACK);
+        }
+
+        // Add to World
+        if (rigidBody.isTrigger) {
+            dynamicsWorld.addCollisionObject(body, rigidBody.group, rigidBody.mask);
+        } else {
+            dynamicsWorld.addRigidBody(body, rigidBody.group, rigidBody.mask);
+        }
+
+        // Add to List
+        PhysicsSystem.this.rigidBodies.put(entity, rigidBody);
+    }
+
+    @Override
+    public void afterEntityRemoved(Entity entity) {
+        RigidBody rigidBody = rigidBodies.get(entity);
+        if (rigidBody != null) {
+            if (rigidBody.isTrigger) {
+                dynamicsWorld.removeCollisionObject(rigidBody.body);
+            } else {
+                btRigidBody body = rigidBody.body;
+                body.setMotionState(null);
+                dynamicsWorld.removeRigidBody(body);
+            }
+        }
+        rigidBodies.remove(entity);
     }
 
     @Override
     public void update(float deltaTime) {
-        // Set Position for Collider
-        for (Map.Entry<Entity, RigidBody> entry : colliders.entrySet()) {
-            Entity entity = entry.getKey();
-            RigidBody collider = entry.getValue();
-            Position position = entity.getComponent(Position.class);
-            collider.body.setWorldTransform(position.getGlobalTransform());
-        }
         dynamicsWorld.stepSimulation(deltaTime, maxSubSteps, fixedTimeStep);
     }
 
@@ -173,14 +236,16 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
     public void addExplosion(Vector3 position, float force) {
         Vector3 tmpV1 = Vector3Pool.obtain();
         for (Map.Entry<Entity, RigidBody> entry : rigidBodies.entrySet()) {
+            RigidBody rigidBody = entry.getValue();
+            if (rigidBody.isTrigger) continue;
             Entity entity = entry.getKey();
             entity.getComponent(Position.class).getGlobalTransform().getTranslation(tmpV1);
             tmpV1.sub(position);
             float len2 = tmpV1.len2();
             tmpV1.nor().scl(force * 1/len2);
             if (tmpV1.len() > MIN_FORCE) {
-                entry.getValue().body.activate();
-                entry.getValue().body.applyCentralImpulse(tmpV1);
+                rigidBody.body.activate();
+                rigidBody.body.applyCentralImpulse(tmpV1);
             }
         }
         Vector3Pool.free(tmpV1);
@@ -195,108 +260,6 @@ public class PhysicsSystem implements System.AfterAdded, System.OnUpdate, Dispos
             localInertia.set(0, 0, 0);
         }
         return new btRigidBody.btRigidBodyConstructionInfo(mass, null, shape, localInertia);
-    }
-
-    // ----- Collider ----- //
-
-    protected final ColliderListener colliderListener = new ColliderListener();
-    protected final Map<Entity, RigidBody> colliders = new LinkedHashMap<>();
-
-    private class ColliderListener implements EntityFilter, EntityListener {
-
-        @Override
-        public boolean filter(Entity entity) {
-            return entity.contain(RigidBody.class) && entity.getComponent(RigidBody.class).isTrigger;
-        }
-
-        @Override
-        public void afterEntityAdded(Entity entity) {
-
-            // Get CollisionObject
-            RigidBody collider = entity.getComponent(RigidBody.class);
-            btCollisionObject collisionObject = collider.body;
-            collisionObject.userData = entity;
-            collisionObject.setCollisionFlags(collisionObject.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_NO_CONTACT_RESPONSE);
-
-            // Set OnCollision Callback
-            if (entity.contain(Collision.class)) {
-                Collision c = entity.getComponent(Collision.class);
-                collisionObject.setContactCallbackFlag(c.callbackFlag);
-                collisionObject.setContactCallbackFilter(c.callbackFilter);
-                collisionObject.setCollisionFlags(collisionObject.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
-            }
-
-            // Add Collider to World
-            dynamicsWorld.addCollisionObject(collisionObject, collider.group, collider.mask);
-
-            // Add Collider to List
-            PhysicsSystem.this.colliders.put(entity, collider);
-        }
-
-        @Override
-        public void afterEntityRemoved(Entity entity) {
-            RigidBody collider = colliders.get(entity);
-            if (collider != null) {
-                dynamicsWorld.removeCollisionObject(collider.body);
-                colliders.remove(entity);
-            }
-        }
-    }
-
-    // ----- RigidBody ----- //
-
-    protected final RigidBodyListener rigidBodyListener = new RigidBodyListener();
-    protected final Map<Entity, RigidBody> rigidBodies = new HashMap<>();
-
-    private class RigidBodyListener implements EntityFilter, EntityListener {
-
-        @Override
-        public boolean filter(Entity entity) {
-            return entity.contain(RigidBody.class) && !entity.getComponent(RigidBody.class).isTrigger;
-        }
-
-        @Override
-        public void afterEntityAdded(Entity entity) {
-
-            // Get RigidBody
-            RigidBody rigidBody = entity.getComponent(RigidBody.class);
-            btRigidBody body = rigidBody.body;
-            body.userData = entity;
-
-            // Set Position
-            Position position = entity.getComponent(Position.class);
-            if (!position.isDisableInherit()) {
-                position.setLocalTransform(position.getGlobalTransform());
-                position.setDisableInherit(true);
-            }
-            body.proceedToTransform(position.getLocalTransform());
-            body.setMotionState(new MotionState(position.getLocalTransform()));
-
-            // Set OnCollision Callback
-            if (entity.contain(Collision.class)) {
-                Collision c = entity.getComponent(Collision.class);
-                body.setContactCallbackFlag(c.callbackFlag);
-                body.setContactCallbackFilter(c.callbackFilter);
-                body.setCollisionFlags(body.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
-            }
-
-            // Add RigidBody to World
-            dynamicsWorld.addRigidBody(body, rigidBody.group, rigidBody.mask);
-
-            // Add RigidBody to List
-            PhysicsSystem.this.rigidBodies.put(entity, rigidBody);
-        }
-
-        @Override
-        public void afterEntityRemoved(Entity entity) {
-            RigidBody rigidBody = rigidBodies.get(entity);
-            if (rigidBody != null) {
-                btRigidBody body = rigidBody.body;
-                body.setMotionState(null);
-                dynamicsWorld.removeRigidBody(body);
-                rigidBodies.remove(entity);
-            }
-        }
     }
 
     private static class MotionState extends btMotionState {

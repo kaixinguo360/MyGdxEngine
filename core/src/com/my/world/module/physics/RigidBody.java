@@ -21,7 +21,16 @@ public class RigidBody implements Component, Disposable {
     public int mask = ALL_FLAG;
 
     @Config
+    public boolean isStatic;
+
+    @Config
+    public boolean isKinematic;
+
+    @Config
     public boolean isTrigger;
+
+    @Config
+    public Integer collisionFlags;
 
     public btRigidBody body;
 
