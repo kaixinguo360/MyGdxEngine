@@ -16,6 +16,8 @@ import net.mgsx.gltf.scene3d.attributes.PBRTextureAttribute;
 import net.mgsx.gltf.scene3d.lights.DirectionalLightEx;
 import net.mgsx.gltf.scene3d.scene.SceneManager;
 import net.mgsx.gltf.scene3d.scene.SceneSkybox;
+import net.mgsx.gltf.scene3d.shaders.PBRShaderConfig;
+import net.mgsx.gltf.scene3d.shaders.PBRShaderProvider;
 import net.mgsx.gltf.scene3d.utils.IBLBuilder;
 
 @NoArgsConstructor
@@ -28,7 +30,7 @@ public class GLTFRenderSystem implements RenderSystem, System.AfterAdded, Config
     protected final Environment commonEnvironment = new Environment();
 
     @Getter
-    protected final SceneManager sceneManager = new SceneManager();
+    protected SceneManager sceneManager;
 
     protected final DisposableManager disposableManager = new DisposableManager();
 
@@ -39,7 +41,17 @@ public class GLTFRenderSystem implements RenderSystem, System.AfterAdded, Config
 
     @Override
     public void init() {
+
+        // setup sceneManager
+        PBRShaderConfig config = PBRShaderProvider.createDefaultConfig();
+        config.numPointLights = 30;
+        config.numDirectionalLights = 10;
+        config.numSpotLights = 10;
+        config.numBones = 24;
+        PBRShaderProvider shaderProvider = PBRShaderProvider.createDefault(config);
+        sceneManager = new SceneManager(shaderProvider, PBRShaderProvider.createDefaultDepth(config.numBones));
         disposableManager.addDisposable(sceneManager);
+
         if (!useDefaultEnvironment) return;
 
         // setup light
