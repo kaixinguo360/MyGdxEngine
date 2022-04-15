@@ -128,12 +128,14 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
 
         // Set Position
         Position position = entity.getComponent(Position.class);
-        if (!position.isDisableInherit()) {
-            position.setLocalTransform(position.getGlobalTransform());
-            position.setDisableInherit(true);
+        if (!rigidBody.isKinematic && !rigidBody.isStatic) {
+            if (!position.isDisableInherit()) {
+                position.setLocalTransform(position.getGlobalTransform());
+                position.setDisableInherit(true);
+            }
         }
-        body.proceedToTransform(position.getLocalTransform());
-        body.setMotionState(new MotionState(position.getLocalTransform()));
+        body.proceedToTransform(position.getGlobalTransform());
+        body.setMotionState(new MotionState(position));
 
         // Set OnCollision Callback
         if (entity.contain(Collision.class)) {
@@ -263,17 +265,25 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
     }
 
     private static class MotionState extends btMotionState {
-        Matrix4 transform;
-        MotionState(Matrix4 transform) {
-            this.transform = transform;
+
+        private final Position position;
+
+        private MotionState(Position position) {
+            this.position = position;
         }
+
         @Override
-        public void getWorldTransform (Matrix4 worldTrans) {
-            if (transform != null) worldTrans.set(transform);
+        public void getWorldTransform(Matrix4 worldTrans) {
+            if (position != null) {
+                position.getGlobalTransform(worldTrans);
+            }
         }
+
         @Override
-        public void setWorldTransform (Matrix4 worldTrans) {
-            if (transform != null) transform.set(worldTrans);
+        public void setWorldTransform(Matrix4 worldTrans) {
+            if (position != null) {
+                position.setLocalTransform(worldTrans);
+            }
         }
     }
 

@@ -43,7 +43,7 @@ public class GLTFSpotLight extends GLTFLight<SpotLightEx> {
     public SpotLightEx getLight() {
         Matrix4 transform = Matrix4Pool.obtain();
 
-        transform.set(position.getGlobalTransform()).translate(this.rel_pos);
+        position.getGlobalTransform(transform).translate(this.rel_pos);
         transform.getTranslation(light.position);
         light.direction.set(direction).rot(transform);
         light.setConeDeg(outerConeAngleDeg, innerConeAngleDeg);

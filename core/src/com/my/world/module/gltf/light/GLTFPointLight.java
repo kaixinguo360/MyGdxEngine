@@ -31,7 +31,7 @@ public class GLTFPointLight extends GLTFLight<PointLightEx> {
     @Override
     public PointLightEx getLight() {
         Matrix4 transform = Matrix4Pool.obtain();
-        transform.set(position.getGlobalTransform()).translate(this.rel_pos).getTranslation(light.position);
+        position.getGlobalTransform(transform).translate(this.rel_pos).getTranslation(light.position);
         Matrix4Pool.free(transform);
         return light;
     }

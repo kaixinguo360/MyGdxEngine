@@ -41,7 +41,7 @@ public class GunBuilder {
         Entity rotate_X = scene.instantiatePrefab("Rotate", new HashMap<String, Object>() {{
             put("Rotate.config.components[0].config.localTransform", transform);
             put("Rotate.config.components[3].config.base", rotate_Y);
-            put("Rotate.config.components[3].config.frameInA", new Matrix4(rotate_Y.getComponent(Position.class).getGlobalTransform()).inv().mul(transform).rotate(Vector3.X, 90));
+            put("Rotate.config.components[3].config.frameInA", rotate_Y.getComponent(Position.class).getGlobalTransform(new Matrix4()).inv().mul(transform).rotate(Vector3.X, 90));
             put("Rotate.config.components[4].config.min", (float) Math.toRadians(-90));
             put("Rotate.config.components[4].config.max", (float) Math.toRadians(0));
             put("Rotate.config.components[4].config.limit", true);

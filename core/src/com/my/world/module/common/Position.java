@@ -26,6 +26,10 @@ public class Position extends BaseComponent {
         return localTransform;
     }
 
+    public Matrix4 getLocalTransform(Matrix4 transform) {
+        return transform.set(localTransform);
+    }
+
     public void setLocalTransform(Matrix4 transform) {
         localTransform.set(transform);
     }
@@ -39,7 +43,15 @@ public class Position extends BaseComponent {
         }
     }
 
-    private Matrix4 getGlobalTransform(Matrix4 transform) {
+    public Matrix4 getGlobalTransform(Matrix4 transform) {
+        if (disableInherit || entity.getParent() == null) {
+            return transform.set(localTransform);
+        } else {
+            return getGlobalTransformInner(transform);
+        }
+    }
+
+    private Matrix4 getGlobalTransformInner(Matrix4 transform) {
         if (entity == null) throw new RuntimeException("This position component not attached to any entity: " + this);
         if (disableInherit || entity.getParent() == null) {
             transform.set(localTransform);
@@ -47,7 +59,7 @@ public class Position extends BaseComponent {
             Entity parent = entity.getParent();
             Position position = parent.getComponent(Position.class);
             if (position == null) throw new RuntimeException("No location component in parent entity: id=" + parent.getId());
-            position.getGlobalTransform(transform);
+            position.getGlobalTransformInner(transform);
             transform.mul(localTransform);
         }
         return transform;

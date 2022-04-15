@@ -79,7 +79,7 @@ public class DefaultRenderSystem extends BaseSystem implements System.OnStart, R
             Position position = entity.getComponent(Position.class);
             for (Render render : entity.getComponents(Render.class)) {
                 if (render.isActive()) {
-                    render.modelInstance.transform.set(position.getGlobalTransform());
+                    position.getGlobalTransform(render.modelInstance.transform);
 
                     if (isVisible(cam, position, render)) {
                         if (currentEnvironment != null && render.includeEnv) {

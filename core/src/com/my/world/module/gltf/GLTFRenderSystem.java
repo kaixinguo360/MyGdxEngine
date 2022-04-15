@@ -127,7 +127,7 @@ public class GLTFRenderSystem implements RenderSystem, System.AfterAdded, Config
             Position position = entity.getComponent(Position.class);
             for (GLTFRender component : entity.getComponents(GLTFRender.class)) {
                 if (component.isActive()) {
-                    component.scene.modelInstance.transform.set(position.getGlobalTransform());
+                    position.getGlobalTransform(component.scene.modelInstance.transform);
                     sceneManager.addScene(component.scene);
                 }
             }
