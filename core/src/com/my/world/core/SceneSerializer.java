@@ -32,6 +32,7 @@ public class SceneSerializer implements Serializer {
     @Override
     public <E, T> T load(E config, Class<T> type, Context context) {
         Engine engine = context.get(Engine.CONTEXT_FIELD_NAME, Engine.class);
+        SerializerManager serializerManager = context.get(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class);
         Scene scene;
 
         try {
@@ -40,13 +41,19 @@ public class SceneSerializer implements Serializer {
             String name = (String) map.get("name");
             scene = new Scene(engine, name);
 
+            Map<String, Object> timeConfig = (Map<String, Object>) map.get("time");
+            if (timeConfig != null) {
+                TimeManager timeManager = serializerManager.load(timeConfig, TimeManager.class, context);
+                scene.setTimeManager(timeManager);
+            }
+
             SystemManager systemManager = scene.getSystemManager();
             List<Map<String, Object>> systems = (List<Map<String, Object>>) map.get("systems");
             if (systems != null) {
                 for (Map<String, Object> system : systems) {
                     Class<? extends System> systemType = (Class<? extends System>) engine.getJarManager().loadClass((String) system.get("type"));
                     Object systemConfig = system.get("config");
-                    systemManager.addSystem(context.get(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).load(systemConfig, systemType, context));
+                    systemManager.addSystem(serializerManager.load(systemConfig, systemType, context));
                 }
             }
 
@@ -64,6 +71,7 @@ public class SceneSerializer implements Serializer {
     @Override
     public <E, T> E dump(T obj, Class<E> configType, Context context) {
         Scene scene = (Scene) obj;
+        SerializerManager serializerManager = context.get(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class);
         Map<String, Object> map = new LinkedHashMap<>();
 
         map.put("name", scene.getName());
@@ -75,7 +83,7 @@ public class SceneSerializer implements Serializer {
                 Entity entity = entry.getValue();
                 Map<String, Object> entityMap = new LinkedHashMap<>();
                 entityMap.put("type", entity.getClass().getName());
-                entityMap.put("config", context.get(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).dump(entity, Map.class, context));
+                entityMap.put("config", serializerManager.dump(entity, Map.class, context));
                 entityList.add(entityMap);
             }
             map.put("entities", entityList);
@@ -87,11 +95,14 @@ public class SceneSerializer implements Serializer {
             for (System system : systems.values()) {
                 Map<String, Object> systemMap = new LinkedHashMap<>();
                 systemMap.put("type", system.getClass().getName());
-                systemMap.put("config", context.get(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).dump(system, Map.class, context));
+                systemMap.put("config", serializerManager.dump(system, Map.class, context));
                 systemList.add(systemMap);
             }
             map.put("systems", systemList);
         }
+
+        TimeManager timeManager = scene.getTimeManager();
+        map.put("time", serializerManager.dump(timeManager, Map.class, context));
 
         return (E) map;
     }

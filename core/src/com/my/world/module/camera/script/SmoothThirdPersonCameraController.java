@@ -39,32 +39,33 @@ public class SmoothThirdPersonCameraController extends ThirdPersonCameraControll
     @Override
     public void update(Scene scene, Entity entity) {
         if (recoverEnabled) {
-            updateStatus();
+            updateStatus(scene.getTimeManager().getDeltaTime());
         }
     }
 
-    protected void updateStatus() {
+    protected void updateStatus(float deltaTime) {
+        float rate = recoverRate * deltaTime * 50f;
         if (yawRecoverEnabled) {
             yaw = (yaw + 180) % 360 - 180;
-            yaw -= (yaw - yawTarget) * 0.02f * yawRecoverRate * recoverRate;
+            yaw -= (yaw - yawTarget) * 0.02f * yawRecoverRate * rate;
         }
         if (pitchRecoverEnabled) {
-            pitch -= (pitch - pitchTarget) * 0.02f * pitchRecoverRate * recoverRate;
+            pitch -= (pitch - pitchTarget) * 0.02f * pitchRecoverRate * rate;
         }
         if (localYawRecoverEnabled) {
             localYaw = (localYaw + 180) % 360 - 180;
-            localYaw -= (localYaw - localYawTarget) * 0.02f * localYawRecoverRate * recoverRate;
+            localYaw -= (localYaw - localYawTarget) * 0.02f * localYawRecoverRate * rate;
         }
         if (localPitchRecoverEnabled) {
-            localPitch -= (localPitch - localPitchTarget) * 0.02f * localPitchRecoverRate * recoverRate;
+            localPitch -= (localPitch - localPitchTarget) * 0.02f * localPitchRecoverRate * rate;
         }
         Vector3 tmp = Vector3Pool.obtain();
         if (centerRecoverEnabled) {
-            tmp.set(center).sub(centerTarget).scl(0.02f * centerRecoverRate * recoverRate);
+            tmp.set(center).sub(centerTarget).scl(0.02f * centerRecoverRate * rate);
             center.sub(tmp);
         }
         if (translateRecoverEnabled) {
-            tmp.set(translate).sub(translateTarget).scl(0.02f * translateRecoverRate * recoverRate);
+            tmp.set(translate).sub(translateTarget).scl(0.02f * translateRecoverRate * rate);
             translate.sub(tmp);
         }
         Vector3Pool.free(tmp);

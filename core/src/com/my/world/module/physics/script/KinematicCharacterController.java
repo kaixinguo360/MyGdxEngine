@@ -1,6 +1,5 @@
 package com.my.world.module.physics.script;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btBroadphaseProxy;
@@ -79,7 +78,8 @@ public class KinematicCharacterController extends ActivatableComponent implement
 
     @Override
     public void update(Scene scene, Entity entity) {
-        characterController.setWalkDirection(currentVelocity.rot(position.getGlobalTransform()).scl(Gdx.graphics.getDeltaTime()));
+        float deltaTime = scene.getTimeManager().getDeltaTime();
+        characterController.setWalkDirection(currentVelocity.rot(position.getGlobalTransform()).scl(deltaTime));
         currentVelocity.setZero();
         position.getLocalTransform().set(ghostObject.getWorldTransform());
     }

@@ -1,5 +1,6 @@
 package com.my.world.core.util;
 
+import com.my.world.core.TimeManager;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -13,7 +14,10 @@ public class StateManager<T extends Enum<T>> {
     protected T currentState;
 
     @Getter
-    protected long lastSwitchTime;
+    protected float lastSwitchTime;
+
+    @Getter
+    protected TimeManager timeManager;
 
     public final Map<T, Map<T, List<Runnable>>> switchFunctions = new HashMap<>();
     public final Map<T, List<Runnable>> leaveFunctions = new HashMap<>();
@@ -21,7 +25,11 @@ public class StateManager<T extends Enum<T>> {
 
     public StateManager(T currentState) {
         this.currentState = currentState;
-        this.lastSwitchTime = System.currentTimeMillis();
+    }
+
+    public void init(TimeManager timeManager) {
+        this.timeManager = timeManager;
+        this.lastSwitchTime = timeManager.getCurrentTime();
     }
 
     public void whenSwitch(T fromState, T toState, Runnable fun) {
@@ -43,8 +51,8 @@ public class StateManager<T extends Enum<T>> {
             fun.run();
         }
     }
-    public void invoke(T state, long waitTime, Runnable fun) {
-        if (currentState == state && (System.currentTimeMillis() - lastSwitchTime) > waitTime) {
+    public void invoke(T state, float waitTime, Runnable fun) {
+        if (currentState == state && (timeManager.getCurrentTime() - lastSwitchTime) > waitTime) {
             fun.run();
         }
     }
@@ -53,15 +61,15 @@ public class StateManager<T extends Enum<T>> {
         if (currentState != fromState) return;
         switchState(toState);
     }
-    public void switchState(T fromState, long waitTime, T toState) {
+    public void switchState(T fromState, float waitTime, T toState) {
         if (currentState != fromState) return;
-        if ((System.currentTimeMillis() - lastSwitchTime) <= waitTime) return;
+        if ((timeManager.getCurrentTime() - lastSwitchTime) <= waitTime) return;
         switchState(toState);
     }
     public void switchState(T toState) {
         invokeLeaveFunction(currentState);
         currentState = toState;
-        lastSwitchTime = System.currentTimeMillis();
+        lastSwitchTime = timeManager.getCurrentTime();
         invokeSwitchFunction(currentState, toState);
         invokeEnterFunction(toState);
     }

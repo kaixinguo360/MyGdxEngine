@@ -46,7 +46,8 @@ public class GunScript extends EmitterScript implements ScriptSystem.OnStart, Sc
 
     @Override
     public void update(Scene scene, Entity entity) {
-        float v = 0.025f;
+        float deltaTime = scene.getTimeManager().getDeltaTime();
+        float v = 0.025f * deltaTime * 50f;
         if (gunController_Y != null && gunController_X != null) {
             if (Gdx.input.isKeyPressed(Input.Keys.W)) {
                 getMainBody().activate();

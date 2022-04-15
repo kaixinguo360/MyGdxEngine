@@ -30,7 +30,7 @@ public class GdxApplication extends ApplicationAdapter {
 
     @Override
     public void render() {
-        sceneManager.update(1 / 60f);
+        sceneManager.update(Gdx.graphics.getDeltaTime());
     }
 
     @Override

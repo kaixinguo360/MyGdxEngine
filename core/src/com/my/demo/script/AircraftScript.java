@@ -38,17 +38,17 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
 
         whenEnter(State.Firing, () -> fire(bulletPrefab, bulletVelocity, bulletOffset, (float) Math.random()));
         addAction(Action.Fire, State.Idle, State.PreFire);
-        addAction(Action.Fire, State.PreFire, 1000, State.Firing);
+        addAction(Action.Fire, State.PreFire, 1, State.Firing);
         addAction(Action.Fire, State.Firing, State.Firing);
-        addAction(Action.StopFire, State.Firing, 1000, State.PreFire);
-        addAction(Action.StopFire, State.PreFire, 1000, State.Idle);
+        addAction(Action.StopFire, State.Firing, 1, State.PreFire);
+        addAction(Action.StopFire, State.PreFire, 1, State.Idle);
 
         whenEnter(State.Bombing, () -> fire(bombPrefab, bombVelocity, AircraftScript.bombOffset, (float) Math.random()));
         addAction(Action.Bomb, State.Idle, State.PreBomb);
-        addAction(Action.Bomb, State.PreBomb, 1000, State.Bombing);
-        addAction(Action.Bomb, State.Bombing, 1000, State.Bombing);
+        addAction(Action.Bomb, State.PreBomb, 1, State.Bombing);
+        addAction(Action.Bomb, State.Bombing, 1, State.Bombing);
         addAction(Action.StopBomb, State.Bombing, State.PreBomb);
-        addAction(Action.StopBomb, State.PreBomb, 2000, State.Idle);
+        addAction(Action.StopBomb, State.PreBomb, 1, State.Idle);
     }};
 
     public enum State {
@@ -62,6 +62,8 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
     @Override
     public void start(Scene scene, Entity entity) {
         super.start(scene, entity);
+
+        stateManager.init(scene.getTimeManager());
 
         main = entity.findChildByName("body");
 
@@ -102,8 +104,9 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
 
     @Override
     public void update(Scene scene, Entity entity) {
-        float v1 = 1f;
-        float v2 = 0.5f;
+        float deltaTime = scene.getTimeManager().getDeltaTime();
+        float v1 = 1f * deltaTime * 50f;
+        float v2 = 0.5f * deltaTime * 50f;
         if (aircraftController_L != null && aircraftController_R != null) {
 
             if (Gdx.input.isKeyPressed(Input.Keys.J)) {

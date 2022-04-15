@@ -92,12 +92,14 @@ public class GLTFRenderSystem implements RenderSystem, System.AfterAdded, Config
 
     // ----- EntityListener ----- //
 
+    protected TimeManager timeManager;
     protected EntityManager entityManager;
     protected final EntityFilter renderFilter = entity -> entity.contains(GLTFRender.class);
     protected final EntityFilter lightFilter = entity -> entity.contains(GLTFLight.class);
 
     @Override
     public void afterAdded(Scene scene) {
+        timeManager = scene.getTimeManager();
         entityManager = scene.getEntityManager();
         entityManager.addFilter(renderFilter);
         entityManager.addFilter(lightFilter);
@@ -138,7 +140,7 @@ public class GLTFRenderSystem implements RenderSystem, System.AfterAdded, Config
     public void render(PerspectiveCamera cam) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         sceneManager.setCamera(cam);
-        sceneManager.update(Gdx.graphics.getDeltaTime());
+        sceneManager.update(timeManager.getDeltaTime());
         sceneManager.render();
     }
 

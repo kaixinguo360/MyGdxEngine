@@ -29,7 +29,7 @@ public class EnhancedCharacterController extends KinematicCharacterController im
         if (Gdx.input.isKeyPressed(keyRight)) currentVelocity.x = -velocity;
 
         if (currentJumpCD > 0) {
-            currentJumpCD -= Gdx.graphics.getDeltaTime();
+            currentJumpCD -= scene.getTimeManager().getDeltaTime();
         }
 
         super.update(scene, entity);

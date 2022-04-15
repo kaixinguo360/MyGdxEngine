@@ -39,6 +39,10 @@ public class Scene implements Disposable {
     @Getter
     private final EventManager eventManager = new EventManager();
 
+    @Getter
+    @Setter(AccessLevel.PROTECTED)
+    private TimeManager timeManager = new TimeManager();
+
     Scene(Engine engine, String name) {
         this.name = name;
         this.engine = engine;
@@ -52,7 +56,13 @@ public class Scene implements Disposable {
         }
     }
 
-    public void update(float deltaTime) {
+    public void update(float realDeltaTime) {
+
+        // Update Time
+        timeManager.update(realDeltaTime);
+        float deltaTime = timeManager.getDeltaTime();
+
+        // Update Entities and Systems
         entityManager.updateFilters();
         for (System.OnUpdate system : systemManager.getSystems(System.OnUpdate.class)) {
             system.update(deltaTime);

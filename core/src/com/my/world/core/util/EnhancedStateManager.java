@@ -22,7 +22,7 @@ public class EnhancedStateManager<T extends Enum<T>, E extends Enum<E>> extends 
 
         list.add(actionInner);
     }
-    public void addAction(E action, T fromState, long waitTime, T toState) {
+    public void addAction(E action, T fromState, float waitTime, T toState) {
         List<ActionInner> list = actions.computeIfAbsent(action, k -> new ArrayList<>());
 
         ActionInner actionInner = new ActionInner();
@@ -47,6 +47,6 @@ public class EnhancedStateManager<T extends Enum<T>, E extends Enum<E>> extends 
     public class ActionInner {
         public T fromState;
         public T toState;
-        public Long waitTime;
+        public Float waitTime;
     }
 }

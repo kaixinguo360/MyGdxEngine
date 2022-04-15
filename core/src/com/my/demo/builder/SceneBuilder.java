@@ -146,6 +146,11 @@ public class SceneBuilder {
         reloadScriptEntity.addComponent(new ReloadScript());
         scene.addEntity(reloadScriptEntity);
 
+        Entity pauseScriptEntity = new Entity();
+        pauseScriptEntity.setName("pauseScriptEntity");
+        pauseScriptEntity.addComponent(new PauseScript());
+        scene.addEntity(pauseScriptEntity);
+
 //        Entity physicsDebugScriptEntity = new Entity();
 //        physicsDebugScriptEntity.setName("physicsDebugScriptEntity");
 //        physicsDebugScriptEntity.addComponent(new PhysicsDebugScript());

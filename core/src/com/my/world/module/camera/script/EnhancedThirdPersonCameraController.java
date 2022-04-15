@@ -63,9 +63,10 @@ public class EnhancedThirdPersonCameraController extends SmoothThirdPersonCamera
     public void update(Scene scene, Entity entity) {
         if (recoverEnabled) {
             if (!changed) {
-                alreadyWaitTime += Gdx.graphics.getDeltaTime();
+                float deltaTime = scene.getTimeManager().getDeltaTime();
+                alreadyWaitTime += deltaTime;
                 if (alreadyWaitTime > waitTime) {
-                    updateStatus();
+                    updateStatus(deltaTime);
                 }
             } else {
                 changed = false;
