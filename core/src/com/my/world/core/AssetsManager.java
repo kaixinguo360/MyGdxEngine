@@ -21,7 +21,7 @@ public class AssetsManager implements Disposable {
         this.engine = engine;
     }
 
-    public <T> T addAsset(String id, Class<?> type, Object asset) {
+    public <T> T addAsset(String id, Class<T> type, Object asset) {
         if (!type.isInstance(asset)) throw new RuntimeException("Asset type not equal: " + type + " != " + asset.getClass());
         if (!allAssets.containsKey(type)) allAssets.put(type, new LinkedHashMap<>());
         Map<String, Object> assets = allAssets.get(type);
