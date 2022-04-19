@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.demo.script.*;
+import com.my.world.core.Component;
 import com.my.world.core.Engine;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
@@ -17,7 +18,6 @@ import com.my.world.module.physics.PresetTemplateRigidBody;
 import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.constraint.HingeConstraint;
 import com.my.world.module.physics.script.EnhancedCharacterController;
-import com.my.world.module.render.attribute.ColorAttribute;
 
 import java.util.HashMap;
 
@@ -28,11 +28,12 @@ public class SceneBuilder {
         // ----- Init Environments ----- //
 
         Entity lightEntity = new Entity();
-        lightEntity.addComponent(new ColorAttribute(com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute.AmbientLight, new Color(0.4f, 0.4f, 0.4f, 1f)));
-        lightEntity.addComponent(new ColorAttribute(com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute.Fog, new Color(0.8f, 0.8f, 0.8f, 1f)));
+//        lightEntity.addComponent(new ColorAttribute(com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute.AmbientLight, new Color(0.4f, 0.4f, 0.4f, 1f)));
+//        lightEntity.addComponent(new ColorAttribute(com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute.Fog, new Color(0.8f, 0.8f, 0.8f, 1f)));
         lightEntity.addComponent(new GLTFDirectionalLight(new Color(0.8f, 0.8f, 0.8f, 1f), 1f, new Vector3(-0.2f, -0.8f, 1f)));
         lightEntity.addComponent(new GLTFDirectionalLight(new Color(0.8f, 0.8f, 0.8f, 1f), 1f, new Vector3(0.2f, 0.8f, -1f)));
         scene.getEntityManager().addEntity(lightEntity);
+        scene.addEntity(newEntity(new EnvironmentSetupScript()));
 
         // ----- Init Static Objects ----- //
 
@@ -134,6 +135,14 @@ public class SceneBuilder {
         spotLight.setParent(character);
         scene.addEntity(spotLight);
 
+        Entity animationEntity = scene.instantiatePrefab("AnimationEntity");
+//        scene.addEntity(newEntity((InputSystem.OnKeyDown) keycode -> {
+//            if (keycode == Input.Keys.R) {
+//                Animation animation = animationEntity.getComponent(Animation.class);
+//                animation.animationController.initState = "state2";
+//            }
+//        }));
+
         // ----- Init Scripts ----- //
 
         Entity exitScriptEntity = new Entity();
@@ -177,7 +186,14 @@ public class SceneBuilder {
         BulletBuilder.initAssets(engine, scene);
         GunBuilder.initAssets(engine, scene);
         AircraftBuilder.initAssets(engine, scene);
+        AnimationBuilder.initAssets(engine, scene);
 
         engine.getSceneManager().removeScene(scene.getId());
+    }
+
+    public static Entity newEntity(Component component) {
+        Entity entity = new Entity();
+        entity.addComponent(component);
+        return entity;
     }
 }
