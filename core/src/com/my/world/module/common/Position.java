@@ -11,12 +11,12 @@ import lombok.Setter;
 public class Position extends BaseComponent {
 
     @Config
-    private Matrix4 localTransform;
+    protected Matrix4 localTransform;
 
     @Getter
     @Setter
     @Config
-    private boolean disableInherit = false;
+    protected boolean disableInherit = false;
 
     public Position(Matrix4 localTransform) {
         this.localTransform = localTransform;
