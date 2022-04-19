@@ -9,6 +9,7 @@ import com.my.world.core.*;
 import com.my.world.gdx.DisposableManager;
 import com.my.world.module.common.Position;
 import com.my.world.module.common.RenderSystem;
+import com.my.world.module.render.Light;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.mgsx.gltf.scene3d.attributes.PBRCubemapAttribute;
@@ -95,7 +96,7 @@ public class GLTFRenderSystem implements RenderSystem, System.AfterAdded, Config
     protected TimeManager timeManager;
     protected EntityManager entityManager;
     protected final EntityFilter renderFilter = entity -> entity.contains(GLTFRender.class);
-    protected final EntityFilter lightFilter = entity -> entity.contains(GLTFLight.class);
+    protected final EntityFilter lightFilter = entity -> entity.contains(Light.class);
 
     @Override
     public void afterAdded(Scene scene) {
@@ -117,7 +118,7 @@ public class GLTFRenderSystem implements RenderSystem, System.AfterAdded, Config
         // Add Light Component
         sceneManager.environment.set(commonEnvironment);
         for (Entity entity : entityManager.getEntitiesByFilter(lightFilter)) {
-            for (GLTFLight component : entity.getComponents(GLTFLight.class)) {
+            for (Light component : entity.getComponents(Light.class)) {
                 if (component.isActive()) {
                     sceneManager.environment.add(component.getLight());
                 }

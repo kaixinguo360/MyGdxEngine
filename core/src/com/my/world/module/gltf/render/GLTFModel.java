@@ -37,5 +37,7 @@ public class GLTFModel extends GLTFRender implements Component, Configurable.OnI
         assetManager.finishLoading();
         sceneAsset = assetManager.get(path, SceneAsset.class);
         scene = new Scene(sceneAsset.scene);
+        modelInstance = scene.modelInstance;
+        calculateBoundingBox();
     }
 }

@@ -21,5 +21,7 @@ public class GLTFModelInstance extends GLTFRender implements Component, Configur
     @Override
     public void init() {
         scene = new Scene(model.sceneAsset.scene);
+        modelInstance = scene.modelInstance;
+        calculateBoundingBox();
     }
 }

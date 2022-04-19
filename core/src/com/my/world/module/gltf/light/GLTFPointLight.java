@@ -5,12 +5,12 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.world.core.Config;
 import com.my.world.gdx.Matrix4Pool;
-import com.my.world.module.gltf.GLTFLight;
+import com.my.world.module.render.Light;
 import lombok.NoArgsConstructor;
 import net.mgsx.gltf.scene3d.lights.PointLightEx;
 
 @NoArgsConstructor
-public class GLTFPointLight extends GLTFLight<PointLightEx> {
+public class GLTFPointLight extends Light {
 
     @Config public Vector3 rel_pos;
 

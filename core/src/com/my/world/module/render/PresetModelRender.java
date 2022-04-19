@@ -6,7 +6,7 @@ import com.my.world.core.Configurable;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class PresetModelRender extends Render implements Configurable.OnInit {
+public class PresetModelRender extends BaseRender implements Configurable.OnInit {
 
     @Config(type = Config.Type.Asset)
     public ModelRender modelRender;

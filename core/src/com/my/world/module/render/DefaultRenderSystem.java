@@ -1,19 +1,23 @@
 package com.my.world.module.render;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.Shader;
+import com.badlogic.gdx.graphics.g3d.utils.DefaultRenderableSorter;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
+import com.badlogic.gdx.graphics.g3d.utils.RenderableSorter;
 import com.badlogic.gdx.graphics.g3d.utils.ShaderProvider;
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
 import com.my.world.core.Config;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
 import com.my.world.core.System;
 import com.my.world.core.util.Disposable;
-import com.my.world.gdx.Vector3Pool;
 import com.my.world.module.common.BaseSystem;
 import com.my.world.module.common.Position;
 import com.my.world.module.common.RenderSystem;
@@ -26,8 +30,14 @@ public class DefaultRenderSystem extends BaseSystem implements System.OnStart, R
     @Config(type = Config.Type.Asset, elementType = Shader.class)
     public List<Shader> shaders = new ArrayList<>();
 
+    @Config(type = Config.Type.Asset)
+    public ShaderProvider shaderProvider;
+
+    @Config(type = Config.Type.Asset)
+    public RenderableSorter renderableSorter;
+
     protected EnvironmentSystem environmentSystem;
-    protected ModelBatch batch = new ModelBatch(null, new ShaderProvider() {
+    protected ModelBatch batch = new ModelBatch(new ShaderProvider() {
 
         public final ShaderProvider defaultShaderProvider = new DefaultShaderProvider();
 
@@ -36,7 +46,11 @@ public class DefaultRenderSystem extends BaseSystem implements System.OnStart, R
             for (Shader shader : shaders) {
                 if (shader.canRender(renderable)) return shader;
             }
-            return defaultShaderProvider.getShader(renderable);
+            if (shaderProvider != null) {
+                return shaderProvider.getShader(renderable);
+            } else {
+                return defaultShaderProvider.getShader(renderable);
+            }
         }
 
         @Override
@@ -44,7 +58,19 @@ public class DefaultRenderSystem extends BaseSystem implements System.OnStart, R
             defaultShaderProvider.dispose();
         }
 
-    }, null);
+    }, new RenderableSorter() {
+
+        public final DefaultRenderableSorter defaultRenderableSorter = new DefaultRenderableSorter();
+
+        @Override
+        public void sort(Camera camera, Array<Renderable> renderables) {
+            if (renderableSorter != null) {
+                renderableSorter.sort(camera, renderables);
+            } else {
+                defaultRenderableSorter.sort(camera, renderables);
+            }
+        }
+    });
 
     @Override
     public boolean canHandle(Entity entity) {
@@ -74,18 +100,27 @@ public class DefaultRenderSystem extends BaseSystem implements System.OnStart, R
 
     @Override
     public void render(PerspectiveCamera cam) {
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         batch.begin(cam);
         for (Entity entity : getEntities()) {
             Position position = entity.getComponent(Position.class);
             for (Render render : entity.getComponents(Render.class)) {
                 if (render.isActive()) {
-                    position.getGlobalTransform(render.modelInstance.transform);
-
-                    if (isVisible(cam, position, render)) {
-                        if (currentEnvironment != null && render.includeEnv) {
-                            batch.render(render.modelInstance, currentEnvironment, render.shader);
+                    render.setTransform(position);
+                    if (!render.isVisible(cam)) {
+                        continue;
+                    }
+                    if (currentEnvironment != null && render.includeEnv) {
+                        if (render.shader != null) {
+                            batch.render(render, currentEnvironment, render.shader);
                         } else {
-                            batch.render(render.modelInstance, render.shader);
+                            batch.render(render, currentEnvironment);
+                        }
+                    } else {
+                        if (render.shader != null) {
+                            batch.render(render, render.shader);
+                        } else {
+                            batch.render(render);
                         }
                     }
                 }
@@ -97,16 +132,5 @@ public class DefaultRenderSystem extends BaseSystem implements System.OnStart, R
     @Override
     public void end() {
         currentEnvironment = null;
-    }
-
-    // ----- Protected ----- //
-
-    protected boolean isVisible(PerspectiveCamera cam, Position position, Render render) {
-        Vector3 tmpV = Vector3Pool.obtain();
-        position.getGlobalTransform().getTranslation(tmpV);
-        tmpV.add(render.center);
-        boolean b = cam.frustum.sphereInFrustum(tmpV, render.radius);
-        Vector3Pool.free(tmpV);
-        return b;
     }
 }

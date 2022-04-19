@@ -7,7 +7,7 @@ import com.my.world.core.Configurable;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class ModelRender extends Render implements Configurable.OnInit {
+public class ModelRender extends BaseRender implements Configurable.OnInit {
 
     protected static final ModelBuilder mdBuilder = new ModelBuilder();
 

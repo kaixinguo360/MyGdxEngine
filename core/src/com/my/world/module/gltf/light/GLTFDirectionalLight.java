@@ -3,12 +3,12 @@ package com.my.world.module.gltf.light;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector3;
 import com.my.world.core.Config;
-import com.my.world.module.gltf.GLTFLight;
+import com.my.world.module.render.Light;
 import lombok.NoArgsConstructor;
 import net.mgsx.gltf.scene3d.lights.DirectionalLightEx;
 
 @NoArgsConstructor
-public class GLTFDirectionalLight extends GLTFLight<DirectionalLightEx> {
+public class GLTFDirectionalLight extends Light {
 
     @Config(fields = { "baseColor", "intensity", "direction" })
     public final DirectionalLightEx light = new DirectionalLightEx();

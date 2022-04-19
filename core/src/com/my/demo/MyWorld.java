@@ -32,7 +32,7 @@ public class MyWorld extends GdxApplication {
     }
 
     private Scene createScene() {
-        Scene scene = newGLTFScene(true);
+        Scene scene = newScene();
         SceneBuilder.initScene(scene);
         return scene;
     }

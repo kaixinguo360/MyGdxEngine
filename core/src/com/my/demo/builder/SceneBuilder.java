@@ -2,13 +2,12 @@ package com.my.demo.builder;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g3d.utils.RenderableSorter;
+import com.badlogic.gdx.graphics.g3d.utils.ShaderProvider;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.demo.script.*;
-import com.my.world.core.Component;
-import com.my.world.core.Engine;
-import com.my.world.core.Entity;
-import com.my.world.core.Scene;
+import com.my.world.core.*;
 import com.my.world.module.common.Position;
 import com.my.world.module.gltf.light.GLTFDirectionalLight;
 import com.my.world.module.gltf.light.GLTFSpotLight;
@@ -18,12 +17,34 @@ import com.my.world.module.physics.PresetTemplateRigidBody;
 import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.constraint.HingeConstraint;
 import com.my.world.module.physics.script.EnhancedCharacterController;
+import com.my.world.module.render.DefaultRenderSystem;
+import net.mgsx.gltf.scene3d.scene.SceneRenderableSorter;
+import net.mgsx.gltf.scene3d.shaders.PBRShaderConfig;
+import net.mgsx.gltf.scene3d.shaders.PBRShaderProvider;
 
 import java.util.HashMap;
 
 public class SceneBuilder {
 
     public static void initScene(Scene scene) {
+
+        // ----- Init RenderSystem ----- //
+
+        AssetsManager assetsManager = scene.getEngine().getAssetsManager();
+        PBRShaderConfig config = PBRShaderProvider.createDefaultConfig();
+        config.numPointLights = 30;
+        config.numDirectionalLights = 10;
+        config.numSpotLights = 10;
+        config.numBones = 24;
+        PBRShaderProvider shaderProvider = PBRShaderProvider.createDefault(config);
+        assetsManager.addAsset("CustomShaderProvider", ShaderProvider.class, shaderProvider);
+
+        SceneRenderableSorter renderableSorter = new SceneRenderableSorter();
+        assetsManager.addAsset("CustomRenderableSorter", RenderableSorter.class, renderableSorter);
+
+        DefaultRenderSystem renderSystem = scene.getSystemManager().getSystem(DefaultRenderSystem.class);
+        renderSystem.shaderProvider = shaderProvider;
+        renderSystem.renderableSorter = renderableSorter;
 
         // ----- Init Environments ----- //
 
@@ -33,7 +54,12 @@ public class SceneBuilder {
         lightEntity.addComponent(new GLTFDirectionalLight(new Color(0.8f, 0.8f, 0.8f, 1f), 1f, new Vector3(-0.2f, -0.8f, 1f)));
         lightEntity.addComponent(new GLTFDirectionalLight(new Color(0.8f, 0.8f, 0.8f, 1f), 1f, new Vector3(0.2f, 0.8f, -1f)));
         scene.getEntityManager().addEntity(lightEntity);
-        scene.addEntity(newEntity(new EnvironmentSetupScript()));
+
+        Entity environmentEntity = new Entity();
+        environmentEntity.setName("environmentEntity");
+        environmentEntity.addComponent(new Position(new Matrix4()));
+        environmentEntity.addComponent(new EnvironmentSetupScript());
+        scene.addEntity(environmentEntity);
 
         // ----- Init Static Objects ----- //
 
