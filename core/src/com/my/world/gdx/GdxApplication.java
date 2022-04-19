@@ -72,6 +72,8 @@ public class GdxApplication extends ApplicationAdapter {
         serializers.add(new Vector3Serializer());
         serializers.add(new QuaternionSerializer());
         serializers.add(new ColorSerializer());
+        serializers.add(new Vector2Serializer());
+        serializers.add(new TypeSerializer());
         serializers.add(new ConfigurableSerializer());
         return engine;
     }
