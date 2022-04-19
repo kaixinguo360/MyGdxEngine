@@ -38,6 +38,10 @@ public class EntityManager implements Disposable {
                 if (listeners.containsKey(filter)) listeners.get(filter).afterEntityRemoved(removed);
             }
         }
+        removed.clearParent();
+        for (Entity child : removed.getChildren()) {
+            child.clearParent();
+        }
         return removed;
     }
     public Entity findEntityById(String id) {
