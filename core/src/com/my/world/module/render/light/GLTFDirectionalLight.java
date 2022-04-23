@@ -1,4 +1,4 @@
-package com.my.world.module.gltf.light;
+package com.my.world.module.render.light;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector3;

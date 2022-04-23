@@ -9,13 +9,13 @@ import com.my.world.core.Entity;
 import com.my.world.core.Prefab;
 import com.my.world.core.Scene;
 import com.my.world.module.common.Position;
-import com.my.world.module.gltf.render.GLTFModel;
 import com.my.world.module.physics.constraint.ConnectConstraint;
 import com.my.world.module.physics.constraint.HingeConstraint;
 import com.my.world.module.physics.force.ConstantForce;
 import com.my.world.module.physics.force.DragForce;
 import com.my.world.module.physics.rigidbody.BoxBody;
 import com.my.world.module.physics.rigidbody.ConeBody;
+import com.my.world.module.render.model.GLTFModel;
 
 import java.util.HashMap;
 

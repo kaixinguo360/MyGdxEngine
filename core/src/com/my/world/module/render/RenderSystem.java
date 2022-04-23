@@ -1,8 +1,6 @@
 package com.my.world.module.render;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
@@ -20,12 +18,11 @@ import com.my.world.core.System;
 import com.my.world.core.util.Disposable;
 import com.my.world.module.common.BaseSystem;
 import com.my.world.module.common.Position;
-import com.my.world.module.common.RenderSystem;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DefaultRenderSystem extends BaseSystem implements System.OnStart, RenderSystem, Disposable {
+public class RenderSystem extends BaseSystem implements System.OnStart, Disposable, System {
 
     @Config(type = Config.Type.Asset, elementType = Shader.class)
     public List<Shader> shaders = new ArrayList<>();
@@ -93,14 +90,11 @@ public class DefaultRenderSystem extends BaseSystem implements System.OnStart, R
 
     protected Environment currentEnvironment;
 
-    @Override
     public void begin() {
         currentEnvironment = environmentSystem.getEnvironment();
     }
 
-    @Override
     public void render(PerspectiveCamera cam) {
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         batch.begin(cam);
         for (Entity entity : getEntities()) {
             Position position = entity.getComponent(Position.class);
@@ -129,7 +123,6 @@ public class DefaultRenderSystem extends BaseSystem implements System.OnStart, R
         batch.end();
     }
 
-    @Override
     public void end() {
         currentEnvironment = null;
     }

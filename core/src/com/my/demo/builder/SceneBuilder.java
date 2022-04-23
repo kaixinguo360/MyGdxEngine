@@ -9,15 +9,15 @@ import com.badlogic.gdx.math.Vector3;
 import com.my.demo.script.*;
 import com.my.world.core.*;
 import com.my.world.module.common.Position;
-import com.my.world.module.gltf.light.GLTFDirectionalLight;
-import com.my.world.module.gltf.light.GLTFSpotLight;
-import com.my.world.module.gltf.render.GLTFModel;
-import com.my.world.module.gltf.render.GLTFModelInstance;
 import com.my.world.module.physics.PresetTemplateRigidBody;
 import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.constraint.HingeConstraint;
 import com.my.world.module.physics.script.EnhancedCharacterController;
-import com.my.world.module.render.DefaultRenderSystem;
+import com.my.world.module.render.RenderSystem;
+import com.my.world.module.render.light.GLTFDirectionalLight;
+import com.my.world.module.render.light.GLTFSpotLight;
+import com.my.world.module.render.model.GLTFModel;
+import com.my.world.module.render.model.GLTFModelInstance;
 import net.mgsx.gltf.scene3d.scene.SceneRenderableSorter;
 import net.mgsx.gltf.scene3d.shaders.PBRShaderConfig;
 import net.mgsx.gltf.scene3d.shaders.PBRShaderProvider;
@@ -42,7 +42,7 @@ public class SceneBuilder {
         SceneRenderableSorter renderableSorter = new SceneRenderableSorter();
         assetsManager.addAsset("CustomRenderableSorter", RenderableSorter.class, renderableSorter);
 
-        DefaultRenderSystem renderSystem = scene.getSystemManager().getSystem(DefaultRenderSystem.class);
+        RenderSystem renderSystem = scene.getSystemManager().getSystem(RenderSystem.class);
         renderSystem.shaderProvider = shaderProvider;
         renderSystem.renderableSorter = renderableSorter;
 

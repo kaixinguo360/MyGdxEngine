@@ -11,13 +11,13 @@ import com.my.world.gdx.Matrix4Pool;
 import com.my.world.module.camera.Camera;
 import com.my.world.module.camera.script.EnhancedThirdPersonCameraController;
 import com.my.world.module.common.Position;
-import com.my.world.module.gltf.render.GLTFModel;
-import com.my.world.module.gltf.render.GLTFModelInstance;
 import com.my.world.module.physics.PresetTemplateRigidBody;
 import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.constraint.HingeConstraint;
 import com.my.world.module.physics.rigidbody.BoxBody;
 import com.my.world.module.physics.rigidbody.CylinderBody;
+import com.my.world.module.render.model.GLTFModel;
+import com.my.world.module.render.model.GLTFModelInstance;
 
 import java.util.HashMap;
 

@@ -8,8 +8,8 @@ import com.my.world.core.System;
 import com.my.world.core.*;
 import com.my.world.module.common.BaseSystem;
 import com.my.world.module.common.Position;
-import com.my.world.module.common.RenderSystem;
 import com.my.world.module.common.Script;
+import com.my.world.module.render.RenderSystem;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -110,6 +110,7 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
             }
         }
 
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         renderSystem.render(perspectiveCamera);
 
         for (Entity entity : scene.getEntityManager().getEntitiesByFilter(afterRenderFilter)) {

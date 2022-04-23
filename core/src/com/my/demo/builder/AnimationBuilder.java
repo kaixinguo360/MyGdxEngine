@@ -14,10 +14,10 @@ import com.my.world.module.animation.clip.Clip;
 import com.my.world.module.animation.clip.ClipGroup;
 import com.my.world.module.animation.clip.ReverseLoopClip;
 import com.my.world.module.common.EnhancedPosition;
-import com.my.world.module.gltf.light.GLTFSpotLight;
-import com.my.world.module.gltf.render.GLTFModel;
-import com.my.world.module.gltf.render.GLTFModelInstance;
 import com.my.world.module.physics.rigidbody.BoxBody;
+import com.my.world.module.render.light.GLTFSpotLight;
+import com.my.world.module.render.model.GLTFModel;
+import com.my.world.module.render.model.GLTFModelInstance;
 
 public class AnimationBuilder {
 

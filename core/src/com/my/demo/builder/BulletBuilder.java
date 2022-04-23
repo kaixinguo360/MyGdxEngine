@@ -11,15 +11,15 @@ import com.my.demo.script.RemoveByTimeScript;
 import com.my.world.core.*;
 import com.my.world.module.animation.*;
 import com.my.world.module.common.Position;
-import com.my.world.module.gltf.light.GLTFPointLight;
-import com.my.world.module.gltf.render.GLTFModel;
-import com.my.world.module.gltf.render.GLTFModelInstance;
 import com.my.world.module.physics.Collision;
 import com.my.world.module.physics.PresetTemplateRigidBody;
 import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.force.DragForce;
 import com.my.world.module.physics.rigidbody.CapsuleBody;
 import com.my.world.module.physics.rigidbody.SphereBody;
+import com.my.world.module.render.light.GLTFPointLight;
+import com.my.world.module.render.model.GLTFModel;
+import com.my.world.module.render.model.GLTFModelInstance;
 
 import java.util.ArrayList;
 

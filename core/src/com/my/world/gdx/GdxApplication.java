@@ -5,12 +5,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.my.world.core.*;
 import com.my.world.module.camera.CameraSystem;
-import com.my.world.module.gltf.GLTFRenderSystem;
 import com.my.world.module.input.InputSystem;
 import com.my.world.module.physics.ConstraintSystem;
 import com.my.world.module.physics.PhysicsSystem;
-import com.my.world.module.render.DefaultRenderSystem;
 import com.my.world.module.render.EnvironmentSystem;
+import com.my.world.module.render.RenderSystem;
 import com.my.world.module.script.ScriptSystem;
 
 import java.util.List;
@@ -42,20 +41,7 @@ public class GdxApplication extends ApplicationAdapter {
         Scene scene = engine.getSceneManager().newScene("default");
         SystemManager systemManager = scene.getSystemManager();
         systemManager.addSystem(new CameraSystem());
-        systemManager.addSystem(new DefaultRenderSystem());
-        systemManager.addSystem(new PhysicsSystem());
-        systemManager.addSystem(new ScriptSystem());
-        systemManager.addSystem(new EnvironmentSystem());
-        systemManager.addSystem(new InputSystem());
-        systemManager.addSystem(new ConstraintSystem());
-        return scene;
-    }
-
-    public Scene newGLTFScene(boolean useDefaultEnvironment) {
-        Scene scene = engine.getSceneManager().newScene("default");
-        SystemManager systemManager = scene.getSystemManager();
-        systemManager.addSystem(new CameraSystem());
-        systemManager.addSystem(new GLTFRenderSystem(useDefaultEnvironment));
+        systemManager.addSystem(new RenderSystem());
         systemManager.addSystem(new PhysicsSystem());
         systemManager.addSystem(new ScriptSystem());
         systemManager.addSystem(new EnvironmentSystem());
