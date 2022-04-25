@@ -15,27 +15,42 @@ import com.my.world.gdx.Matrix4Pool;
 import com.my.world.gdx.Vector3Pool;
 import com.my.world.module.camera.CameraSystem;
 import com.my.world.module.common.Position;
+import com.my.world.module.physics.PhysicsSystem;
+import com.my.world.module.physics.RigidBody;
 import com.my.world.module.render.Render;
 import com.my.world.module.render.RenderSystem;
 import com.my.world.module.script.ScriptSystem;
 
 import java.nio.IntBuffer;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import static com.badlogic.gdx.graphics.GL20.*;
 import static com.badlogic.gdx.graphics.GL30.GL_DEPTH24_STENCIL8;
 import static com.badlogic.gdx.graphics.GL30.GL_DEPTH_STENCIL_ATTACHMENT;
 
-public class PortalScript implements ScriptSystem.OnStart, CameraSystem.BeforeRender, CameraSystem.AfterRender {
+public class PortalScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, PhysicsSystem.OnCollision,
+        CameraSystem.BeforeRender, CameraSystem.AfterRender {
 
     @Config
-    public final Matrix4 targetTransform = new Matrix4();
+    public Matrix4 targetTransform;
+
+    @Config
+    public String targetPortalName;
 
     @Config
     public float radius = 1;
 
-    private Position position;
-    private Render render;
     private RenderSystem renderSystem;
+
+    private Entity selfEntity;
+    private Position selfPosition;
+    private Render selfRender;
+
+    private Entity targetEntity;
+    private Position targetPosition;
+    private PortalScript targetScript;
 
     private Shader shader;
     private final ModelBatch batch = new ModelBatch();
@@ -45,10 +60,18 @@ public class PortalScript implements ScriptSystem.OnStart, CameraSystem.BeforeRe
 
     @Override
     public void start(Scene scene, Entity entity) {
-        this.position = entity.getComponent(Position.class);
-        this.render = entity.getComponent(Render.class);
-        this.render.setActive(false);
         this.renderSystem = scene.getSystemManager().getSystem(RenderSystem.class);
+
+        this.selfEntity = entity;
+        this.selfPosition = entity.getComponent(Position.class);
+        this.selfRender = entity.getComponent(Render.class);
+        this.selfRender.setActive(false);
+
+        if (targetPortalName != null) {
+            this.targetEntity = scene.getEntityManager().findEntityByName(targetPortalName);
+            this.targetPosition = this.targetEntity.getComponent(Position.class);
+            this.targetScript = this.targetEntity.getComponent(PortalScript.class);
+        }
     }
 
     static {
@@ -97,12 +120,14 @@ public class PortalScript implements ScriptSystem.OnStart, CameraSystem.BeforeRe
 
     @Override
     public void beforeRender(PerspectiveCamera cam) {
-        render.setTransform(position);
+        selfRender.setTransform(selfPosition);
+
+        Matrix4 targetTransform = getTargetTransform();
 
         Vector3 tmpV = Vector3Pool.obtain();
         Matrix4 tmpM = Matrix4Pool.obtain();
 
-        tmpM.set(position.getGlobalTransform()).inv().mul(targetTransform);
+        tmpM.set(selfPosition.getGlobalTransform()).inv().mul(targetTransform);
 
         this.camera.far = cam.far;
         this.camera.near = cam.near;
@@ -125,6 +150,16 @@ public class PortalScript implements ScriptSystem.OnStart, CameraSystem.BeforeRe
         Vector3Pool.free(tmpV);
     }
 
+    private Matrix4 getTargetTransform() {
+        Matrix4 targetTransform;
+        if (targetPosition != null) {
+            targetTransform = this.targetPosition.getGlobalTransform();
+        } else {
+            targetTransform = this.targetTransform;
+        }
+        return targetTransform;
+    }
+
     @Override
     public void afterRender(PerspectiveCamera cam) {
 
@@ -143,7 +178,7 @@ public class PortalScript implements ScriptSystem.OnStart, CameraSystem.BeforeRe
         Gdx.gl.glColorMask(false, false, false, false);
         Gdx.gl.glFrontFace(GL_CW);
         batch.begin(cam);
-        batch.render(render, shader);
+        batch.render(selfRender, shader);
         batch.end();
         Gdx.gl.glFrontFace(GL_CCW);
         Gdx.gl.glColorMask(true, true, true, true);
@@ -162,6 +197,84 @@ public class PortalScript implements ScriptSystem.OnStart, CameraSystem.BeforeRe
         Gdx.gl.glDisable(GL_STENCIL_TEST);
 
 //        Gdx.gl.glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    private final Map<Entity, Status> ids = new HashMap<>();
+
+    @Override
+    public void collision(Entity entity) {
+        String name = entity.getName();
+        if (name == null) return;
+        if (name.equals("ground")) return;
+        if (name.equals("Box")) return;
+        if (ids.containsKey(entity)) {
+            Status status = ids.get(entity);
+            switch (status) {
+                case IN:
+                case OUT:
+                    break;
+                case IN_UNKNOWN:
+                    ids.put(entity, Status.IN);
+                    break;
+                case OUT_UNKNOWN:
+                    ids.put(entity, Status.OUT);
+                    break;
+            }
+        } else {
+            System.out.println(selfEntity.getId() + " <- " + entity.getId());
+            ids.put(entity, Status.IN);
+        }
+    }
+
+    @Override
+    public void update(Scene scene, Entity entity) {
+        Iterator<Map.Entry<Entity, Status>> it = ids.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<Entity, Status> entry = it.next();
+            switch (entry.getValue()) {
+                case IN:
+                    entry.setValue(Status.IN_UNKNOWN);
+                    break;
+                case OUT:
+                    entry.setValue(Status.OUT_UNKNOWN);
+                    break;
+                case IN_UNKNOWN:
+                    move(entry.getKey());
+                    it.remove();
+                    break;
+                case OUT_UNKNOWN:
+                    System.out.println(selfEntity.getId() + " -> " + entity.getId());
+                    it.remove();
+                    break;
+            }
+        }
+    }
+
+    private void move(Entity entity) {
+        Matrix4 tmpM = Matrix4Pool.obtain();
+
+        Matrix4 targetTransform = getTargetTransform();
+        tmpM.set(selfPosition.getGlobalTransform()).inv().mul(targetTransform);
+
+        Position position = entity.getComponent(Position.class);
+        if (position != null) {
+            position.getLocalTransform().mulLeft(tmpM);
+            RigidBody body = entity.getComponent(RigidBody.class);
+            if (body != null) {
+                body.body.proceedToTransform(position.getLocalTransform());
+                body.body.setLinearVelocity(body.body.getLinearVelocity().rot(tmpM));
+                body.body.setAngularVelocity(body.body.getAngularVelocity().rot(tmpM));
+            }
+        }
+
+        System.out.println(selfEntity.getId() + " -> " + targetEntity.getId());
+        targetScript.ids.put(entity, Status.OUT);
+
+        Matrix4Pool.free(tmpM);
+    }
+
+    private enum Status {
+        IN_UNKNOWN, OUT_UNKNOWN, IN, OUT
     }
 
 //    // ----- 基于斜近平面平截头体映射矩阵实现传送门前方遮挡物体剔除 (废弃: 未测试) ----- //

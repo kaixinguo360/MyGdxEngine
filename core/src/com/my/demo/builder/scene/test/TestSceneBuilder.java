@@ -42,13 +42,15 @@ public class TestSceneBuilder extends BaseBuilder<TestSceneBuilder> {
         }));
 
         PortalEntity portal1 = new PortalEntity(2.5f);
+        portal1.setName("portal1");
         portal1.position.getLocalTransform().setToTranslation(5, 2.5f, 0);
-        portal1.portalScript.targetTransform.setToTranslation(-5, 2.5f, 0);
+        portal1.portalScript.targetPortalName = "portal2";
         portal1.addToScene(scene);
 
         PortalEntity portal2 = new PortalEntity(2.5f);
+        portal2.setName("portal2");
         portal2.position.getLocalTransform().setToTranslation(-5, 2.5f, 0);
-        portal2.portalScript.targetTransform.setToTranslation(5, 2.5f, 0);
+        portal2.portalScript.targetPortalName = "portal1";
         portal2.addToScene(scene);
 
         return ground;
