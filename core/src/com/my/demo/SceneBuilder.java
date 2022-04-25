@@ -10,7 +10,7 @@ import com.my.demo.builder.common.EnvironmentSetupScript;
 import com.my.demo.builder.common.ExitScript;
 import com.my.demo.builder.common.PauseScript;
 import com.my.demo.builder.common.ReloadScript;
-import com.my.demo.builder.scene.airport.AirportBuilder;
+import com.my.demo.builder.scene.test.TestSceneBuilder;
 import com.my.world.core.AssetsManager;
 import com.my.world.core.Engine;
 import com.my.world.core.Entity;
@@ -70,7 +70,7 @@ public class SceneBuilder {
 
         // ----- Init Scene ----- //
 
-        builder.build(AirportBuilder.class);
+        builder.build(TestSceneBuilder.class);
 
         // ----- Init Scripts ----- //
 
