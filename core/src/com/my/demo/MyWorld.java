@@ -1,6 +1,5 @@
 package com.my.demo;
 
-import com.my.demo.builder.SceneBuilder;
 import com.my.world.core.Scene;
 import com.my.world.gdx.GdxApplication;
 
@@ -22,7 +21,7 @@ public class MyWorld extends GdxApplication {
     }
 
     private void createAssets() {
-        SceneBuilder.init(engine);
+        SceneBuilder.initBuilderManager(engine);
     }
     private void saveAssets() {
         engine.getAssetsManager().dumpAssetsToFile("assets.yml");
