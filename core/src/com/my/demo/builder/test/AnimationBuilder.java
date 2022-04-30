@@ -1,4 +1,4 @@
-package com.my.demo.builder.animation;
+package com.my.demo.builder.test;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
