@@ -139,6 +139,9 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
             body.setInterpolationWorldTransform(position.getGlobalTransform());
             body.setInterpolationLinearVelocity(Vector3.Zero);
             body.setInterpolationAngularVelocity(Vector3.Zero);
+            body.setActivationState(CollisionConstants.DISABLE_DEACTIVATION);
+        } else {
+            body.setActivationState(CollisionConstants.WANTS_DEACTIVATION);
         }
         body.setMotionState(new MotionState(position));
 
