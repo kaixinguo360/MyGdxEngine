@@ -128,7 +128,7 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
 
         // Set Position
         Position position = entity.getComponent(Position.class);
-        if (!rigidBody.isKinematic && !rigidBody.isStatic) {
+        if (rigidBody.autoConvertToWorldTransform || (!rigidBody.isKinematic && !rigidBody.isStatic)) {
             if (!position.isDisableInherit()) {
                 position.setLocalTransform(position.getGlobalTransform());
                 position.setDisableInherit(true);

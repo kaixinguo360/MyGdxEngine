@@ -27,6 +27,9 @@ public class RigidBody implements Component, Disposable {
     public boolean isKinematic;
 
     @Config
+    public boolean autoConvertToWorldTransform = false;
+
+    @Config
     public boolean isTrigger;
 
     @Config
