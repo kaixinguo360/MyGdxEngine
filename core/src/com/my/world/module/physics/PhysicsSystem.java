@@ -135,6 +135,11 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
             }
         }
         body.proceedToTransform(position.getGlobalTransform());
+        if (rigidBody.isKinematic) {
+            body.setInterpolationWorldTransform(position.getGlobalTransform());
+            body.setInterpolationLinearVelocity(Vector3.Zero);
+            body.setInterpolationAngularVelocity(Vector3.Zero);
+        }
         body.setMotionState(new MotionState(position));
 
         // Set OnCollision Callback
