@@ -12,12 +12,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class HingeConstraint extends Constraint {
 
-    @Config
-    public Matrix4 frameInA;
-    @Config
-    public Matrix4 frameInB;
-    @Config
-    public boolean useLinearReferenceFrameA;
+    @Config public Matrix4 frameInA;
+    @Config public Matrix4 frameInB;
+    @Config public boolean useLinearReferenceFrameA;
+
+    @Config public Float low;
+    @Config public Float high;
 
     public HingeConstraint(Entity base, Matrix4 frameInA, Matrix4 frameInB, boolean useLinearReferenceFrameA) {
         super(base);
@@ -28,8 +28,13 @@ public class HingeConstraint extends Constraint {
 
     @Override
     public btTypedConstraint get(btRigidBody base, btRigidBody self) {
-        return (base != self) ?
+        btHingeConstraint constraint = (base != self) ?
                 new btHingeConstraint(base, self, frameInA, frameInB, useLinearReferenceFrameA) :
                 new btHingeConstraint(base, frameInA, useLinearReferenceFrameA);
+        constraint.setBreakingImpulseThreshold(breakingImpulseThreshold);
+        if (low != null && high != null) {
+            constraint.setLimit(low, high);
+        }
+        return constraint;
     }
 }

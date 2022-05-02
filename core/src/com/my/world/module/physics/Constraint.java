@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 public abstract class Constraint implements Component, Disposable {
 
     @Config public Entity base;
+    @Config public float breakingImpulseThreshold = 2000f;
+    @Config public boolean disableCollisionsBetweenLinkedBodies = false;
 
     public btTypedConstraint btConstraint;
 

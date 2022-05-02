@@ -12,10 +12,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Point2PointConstraint extends Constraint {
 
-    @Config
-    public Vector3 pivotInA;
-    @Config
-    public Vector3 pivotInB;
+    @Config public Vector3 pivotInA;
+    @Config public Vector3 pivotInB;
 
     public Point2PointConstraint(Entity base, Vector3 pivotInA, Vector3 pivotInB) {
         super(base);
@@ -25,6 +23,8 @@ public class Point2PointConstraint extends Constraint {
 
     @Override
     public btTypedConstraint get(btRigidBody base, btRigidBody self) {
-        return new btPoint2PointConstraint(base, self, pivotInA, pivotInB);
+        btPoint2PointConstraint constraint = new btPoint2PointConstraint(base, self, pivotInA, pivotInB);
+        constraint.setBreakingImpulseThreshold(breakingImpulseThreshold);
+        return constraint;
     }
 }

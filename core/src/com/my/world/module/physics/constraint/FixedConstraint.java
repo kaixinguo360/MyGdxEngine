@@ -12,10 +12,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class FixedConstraint extends Constraint {
 
-    @Config
-    public Matrix4 frameInA;
-    @Config
-    public Matrix4 frameInB;
+    @Config public Matrix4 frameInA;
+    @Config public Matrix4 frameInB;
 
     public FixedConstraint(Entity base, Matrix4 frameInA, Matrix4 frameInB) {
         super(base);
@@ -25,6 +23,8 @@ public class FixedConstraint extends Constraint {
 
     @Override
     public btTypedConstraint get(btRigidBody base, btRigidBody self) {
-        return new btFixedConstraint(base, self, frameInA, frameInB);
+        btFixedConstraint constraint = new btFixedConstraint(base, self, frameInA, frameInB);
+        constraint.setBreakingImpulseThreshold(breakingImpulseThreshold);
+        return constraint;
     }
 }

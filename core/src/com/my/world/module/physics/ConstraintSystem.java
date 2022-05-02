@@ -53,7 +53,7 @@ public class ConstraintSystem extends BaseSystem implements EntityListener, Syst
             constraint.btConstraint = constraint.get(base, self);
             constraint.btConstraint.setParam(BT_CONSTRAINT_CFM, 0);
             constraint.btConstraint.setParam(BT_CONSTRAINT_ERP, 0.5f);
-            dynamicsWorld.addConstraint(constraint.btConstraint);
+            dynamicsWorld.addConstraint(constraint.btConstraint, constraint.disableCollisionsBetweenLinkedBodies);
             constraintInners.add(constraintInner);
         }
     }

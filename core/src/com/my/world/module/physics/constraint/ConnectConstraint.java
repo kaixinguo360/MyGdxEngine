@@ -4,7 +4,6 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.physics.bullet.dynamics.btFixedConstraint;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
-import com.my.world.core.Config;
 import com.my.world.core.Entity;
 import com.my.world.gdx.Matrix4Pool;
 import com.my.world.module.physics.Constraint;
@@ -12,9 +11,6 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 public class ConnectConstraint extends Constraint {
-
-    @Config
-    public float breakingImpulseThreshold;
 
     public ConnectConstraint(Entity base, float breakingImpulseThreshold) {
         super(base);
@@ -30,7 +26,7 @@ public class ConnectConstraint extends Constraint {
         tmp2.set(self.getWorldTransform());
         tmp1.inv().mul(tmp2);
         tmp2.idt();
-        btTypedConstraint constraint = new btFixedConstraint(base, self, tmp1, tmp2);
+        btFixedConstraint constraint = new btFixedConstraint(base, self, tmp1, tmp2);
         constraint.setBreakingImpulseThreshold(breakingImpulseThreshold);
 
         Matrix4Pool.free(tmp1);
