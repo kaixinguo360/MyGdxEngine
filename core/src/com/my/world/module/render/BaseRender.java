@@ -7,12 +7,16 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
+import com.my.world.core.Config;
 import com.my.world.gdx.Vector3Pool;
 import com.my.world.module.common.Position;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 public class BaseRender extends Render {
+
+    @Config
+    public boolean isAlwaysVisible = false;
 
     public ModelInstance modelInstance;
     public final Vector3 center = new Vector3();
@@ -37,6 +41,7 @@ public class BaseRender extends Render {
 
     @Override
     public boolean isVisible(PerspectiveCamera cam) {
+        if (isAlwaysVisible) return true;
         Vector3 tmpV = Vector3Pool.obtain();
         modelInstance.transform.getTranslation(tmpV);
         tmpV.add(this.center);
