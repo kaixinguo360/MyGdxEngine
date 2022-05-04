@@ -34,6 +34,9 @@ public class RigidBody extends BaseActivatableComponent {
     @Config
     public boolean autoConvertToWorldTransform = false;
 
+    @Config
+    public boolean autoConvertToLocalTransform = false;
+
     public btRigidBody body;
     public PhysicsSystem system;
 

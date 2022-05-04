@@ -131,8 +131,7 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
         Position position = entity.getComponent(Position.class);
         if (rigidBody.autoConvertToWorldTransform || (!rigidBody.isKinematic && !rigidBody.isStatic)) {
             if (!position.isDisableInherit()) {
-                position.setLocalTransform(position.getGlobalTransform());
-                position.setDisableInherit(true);
+                position.disableInherit();
             }
         }
         body.proceedToTransform(position.getGlobalTransform());
@@ -172,6 +171,12 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
                 btRigidBody body = rigidBody.body;
                 body.setMotionState(null);
                 dynamicsWorld.removeRigidBody(body);
+            }
+            if (rigidBody.autoConvertToLocalTransform) {
+                Position position = entity.getComponent(Position.class);
+                if (position != null && position.isDisableInherit()) {
+                    position.enableInherit();
+                }
             }
             rigidBody.system = null;
         }
