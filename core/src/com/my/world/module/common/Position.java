@@ -3,6 +3,7 @@ package com.my.world.module.common;
 import com.badlogic.gdx.math.Matrix4;
 import com.my.world.core.Config;
 import com.my.world.core.Entity;
+import com.my.world.gdx.Matrix4Pool;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -67,7 +68,56 @@ public class Position extends BaseComponent {
 
     public void setGlobalTransform(Matrix4 transform) {
         if (entity == null) throw new RuntimeException("This position component not attached to any entity: " + this);
-        // TODO ...
-        throw new RuntimeException("Not Implemented");
+        if (disableInherit || entity.getParent() == null) {
+            setLocalTransform(transform);
+        } else {
+            Entity parent = entity.getParent();
+            Position parentPosition = parent.getComponent(Position.class);
+            if (parentPosition == null) {
+                setLocalTransform(transform);
+                return;
+            }
+            Matrix4 tmpM = Matrix4Pool.obtain();
+            parentPosition.getGlobalTransform(tmpM);
+            tmpM.inv().mul(transform);
+            setLocalTransform(tmpM);
+            Matrix4Pool.free(tmpM);
+        }
+    }
+
+    public void enableInherit() {
+        if (entity == null) throw new RuntimeException("This position component not attached to any entity: " + this);
+        if (!disableInherit) throw new RuntimeException("This component is already enabled inherit: " + this);
+        if (entity.getParent() == null) {
+            disableInherit = false;
+        } else {
+            Entity parent = entity.getParent();
+            Position parentPosition = parent.getComponent(Position.class);
+            if (parentPosition == null) {
+                disableInherit = false;
+                return;
+            }
+            Matrix4 localTransform = getLocalTransform();
+            disableInherit = false;
+            setGlobalTransform(localTransform);
+        }
+    }
+
+    public void disableInherit() {
+        if (entity == null) throw new RuntimeException("This position component not attached to any entity: " + this);
+        if (disableInherit) throw new RuntimeException("This component is already disabled inherit: " + this);
+        if (entity.getParent() == null) {
+            disableInherit = true;
+        } else {
+            Entity parent = entity.getParent();
+            Position parentPosition = parent.getComponent(Position.class);
+            if (parentPosition == null) {
+                disableInherit = true;
+                return;
+            }
+            Matrix4 globalTransform = getGlobalTransform();
+            disableInherit = true;
+            setLocalTransform(globalTransform);
+        }
     }
 }
