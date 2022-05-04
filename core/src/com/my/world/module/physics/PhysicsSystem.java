@@ -107,6 +107,7 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
 
         // Get RigidBody
         RigidBody rigidBody = entity.getComponent(RigidBody.class);
+        rigidBody.system = this;
         btRigidBody body = rigidBody.body;
         body.userData = entity;
 
@@ -172,6 +173,7 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
                 body.setMotionState(null);
                 dynamicsWorld.removeRigidBody(body);
             }
+            rigidBody.system = null;
         }
         rigidBodies.remove(entity);
     }

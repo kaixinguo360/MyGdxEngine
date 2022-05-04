@@ -20,21 +20,22 @@ public class RigidBody extends BaseActivatableComponent {
     public int mask = ALL_FLAG;
 
     @Config
+    public Integer collisionFlags;
+
+    @Config
     public boolean isStatic;
 
     @Config
     public boolean isKinematic;
 
     @Config
-    public boolean autoConvertToWorldTransform = false;
-
-    @Config
     public boolean isTrigger;
 
     @Config
-    public Integer collisionFlags;
+    public boolean autoConvertToWorldTransform = false;
 
     public btRigidBody body;
+    public PhysicsSystem system;
 
     protected RigidBody(boolean isTrigger) {
         this.isTrigger = isTrigger;
@@ -43,6 +44,15 @@ public class RigidBody extends BaseActivatableComponent {
     public RigidBody(btRigidBody body, boolean isTrigger) {
         this(isTrigger);
         this.body = body;
+    }
+
+    public void reset() {
+        if (system == null) throw new RuntimeException("This component not attached to a PhysicsSystem: " + this);
+        if (entity == null) throw new RuntimeException("This component not attached to an entity: " + this);
+        if (!system.canHandle(this.entity)) throw new RuntimeException("This component is not active: " + this);
+        PhysicsSystem system = this.system;
+        system.afterEntityRemoved(this.entity);
+        system.afterEntityAdded(this.entity);
     }
 
     @Override
