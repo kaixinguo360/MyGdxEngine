@@ -2,14 +2,13 @@ package com.my.world.module.physics;
 
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.dynamics.btTypedConstraint;
-import com.my.world.core.Component;
 import com.my.world.core.Config;
 import com.my.world.core.Entity;
-import com.my.world.core.util.Disposable;
+import com.my.world.module.common.BaseActivatableComponent;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public abstract class Constraint implements Component, Disposable {
+public abstract class Constraint extends BaseActivatableComponent {
 
     @Config public Entity base;
     @Config public float breakingImpulseThreshold = 2000f;

@@ -38,7 +38,8 @@ public class ConstraintSystem extends BaseSystem implements EntityListener, Syst
 
     @Override
     public boolean canHandle(Entity entity) {
-        return entity.contains(Constraint.class);
+        return entity.contains(Constraint.class) && entity.getComponent(Constraint.class).isActive()
+                && entity.contain(RigidBody.class) && entity.getComponent(RigidBody.class).isActive();
     }
 
     @Override

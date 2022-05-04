@@ -99,7 +99,7 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
 
     @Override
     public boolean canHandle(Entity entity) {
-        return entity.contain(RigidBody.class);
+        return entity.contain(RigidBody.class) && entity.getComponent(RigidBody.class).isActive();
     }
 
     @Override
