@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -55,6 +56,23 @@ public abstract class Relation<T extends Relation> {
             }
         }
         return null;
+    }
+
+    public Collection<T> findAllChildren(Collection<T> list) {
+        list.addAll(this.children);
+        for (T child : this.children) {
+            child.findAllChildren(list);
+        }
+        return list;
+    }
+
+    public Collection<T> findAllChildrenByName(String name, Collection<T> list) {
+        T child = findChildByName(name);
+        if (child != null) {
+            list.add(child);
+            child.findAllChildren(list);
+        }
+        return list;
     }
 
     protected void cascadeNotifyChange() {

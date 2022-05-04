@@ -34,6 +34,7 @@ public class Entity extends ActivatableRelation<Entity> implements Configurable.
             ((Component.OnAttachToEntity) component).attachToEntity(this);
         }
         notifyChange();
+        clearCache();
         return component;
     }
     public <T extends Component> void removeComponent(Class<T> type) {
@@ -48,6 +49,7 @@ public class Entity extends ActivatableRelation<Entity> implements Configurable.
             }
         }
         notifyChange();
+        clearCache();
     }
     public <T extends Component> T getComponent(Class<T> type) {
         Component cached = cache1.get(type);
@@ -108,8 +110,11 @@ public class Entity extends ActivatableRelation<Entity> implements Configurable.
         }
     }
 
-    private void notifyChange() {
+    public void notifyChange() {
         changed = true;
+    }
+
+    private void clearCache() {
         cache1.clear();
         cache2.clear();
     }
