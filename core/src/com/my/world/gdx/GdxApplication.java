@@ -40,13 +40,16 @@ public class GdxApplication extends ApplicationAdapter {
     public Scene newScene() {
         Scene scene = engine.getSceneManager().newScene("default");
         SystemManager systemManager = scene.getSystemManager();
+        // Script Module
+        systemManager.addSystem(new InputSystem());
+        systemManager.addSystem(new ScriptSystem());
+        // Physics Module
+        systemManager.addSystem(new PhysicsSystem());
+        systemManager.addSystem(new ConstraintSystem());
+        // Render Module
+        systemManager.addSystem(new EnvironmentSystem());
         systemManager.addSystem(new CameraSystem());
         systemManager.addSystem(new RenderSystem());
-        systemManager.addSystem(new PhysicsSystem());
-        systemManager.addSystem(new ScriptSystem());
-        systemManager.addSystem(new EnvironmentSystem());
-        systemManager.addSystem(new InputSystem());
-        systemManager.addSystem(new ConstraintSystem());
         return scene;
     }
 
