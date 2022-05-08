@@ -3,11 +3,13 @@ package com.my.demo.builder.test;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.Shader;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.BufferUtils;
 import com.my.world.core.Config;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
@@ -21,26 +23,26 @@ import com.my.world.module.render.Render;
 import com.my.world.module.render.RenderSystem;
 import com.my.world.module.script.ScriptSystem;
 
-import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 import static com.badlogic.gdx.graphics.GL20.*;
-import static com.badlogic.gdx.graphics.GL30.GL_DEPTH24_STENCIL8;
-import static com.badlogic.gdx.graphics.GL30.GL_DEPTH_STENCIL_ATTACHMENT;
 
 public class PortalScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, PhysicsSystem.OnCollision,
         CameraSystem.BeforeRender, CameraSystem.AfterRender {
 
     @Config
-    public Matrix4 targetTransform;
-
-    @Config
     public String targetPortalName;
 
     @Config
+    public Matrix4 targetTransform;
+
+    @Config
     public float radius = 1;
+
+    @Config
+    public Shader shader;
 
     private RenderSystem renderSystem;
 
@@ -52,11 +54,11 @@ public class PortalScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate
     private Position targetPosition;
     private PortalScript targetScript;
 
-    private Shader shader;
-    private final ModelBatch batch = new ModelBatch();
     private final PerspectiveCamera camera = new PerspectiveCamera();
 
-    private static final int frameBuffer;
+    private static final ModelBatch batch = new ModelBatch();
+    private static final SpriteBatch spriteBatch = new SpriteBatch();
+    private static final FrameBuffer fbo = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
 
     @Override
     public void start(Scene scene, Entity entity) {
@@ -72,50 +74,6 @@ public class PortalScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate
             this.targetPosition = this.targetEntity.getComponent(Position.class);
             this.targetScript = this.targetEntity.getComponent(PortalScript.class);
         }
-    }
-
-    static {
-        // 新建帧缓冲用于离屏渲染 (暂未使用)
-
-        IntBuffer intBuffer = BufferUtils.newIntBuffer(1);
-
-        // 新建帧缓冲
-        intBuffer.clear();
-        Gdx.gl.glGenFramebuffers(1, intBuffer);
-        frameBuffer = intBuffer.get(0);
-
-        // 绑定帧缓冲
-        Gdx.gl.glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-
-        // 生成纹理
-        Gdx.gl.glGenTextures(1, intBuffer);
-        int texColorBuffer = intBuffer.get(0);
-        Gdx.gl.glBindTexture(GL_TEXTURE_2D, texColorBuffer);
-        Gdx.gl.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, null);
-        Gdx.gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-        Gdx.gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        Gdx.gl.glBindTexture(GL_TEXTURE_2D, 0);
-
-        // 将它附加到当前绑定的帧缓冲对象
-        Gdx.gl.glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
-
-        // 生成渲染缓冲对象
-        Gdx.gl.glGenRenderbuffers(1, intBuffer);
-        int rbo = intBuffer.get(0);
-        Gdx.gl.glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-        Gdx.gl.glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
-        Gdx.gl.glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-        // 将渲染缓冲对象附加到帧缓冲的深度和模板附件上
-        Gdx.gl.glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-
-        // 检查帧缓冲完整性
-        int status = Gdx.gl.glCheckFramebufferStatus(GL20.GL_FRAMEBUFFER);
-        if (status != GL20.GL_FRAMEBUFFER_COMPLETE) {
-            System.out.println("[ERROR] frame buffer not complete. status 0x" + Integer.toHexString(status));
-            Gdx.app.exit();
-        }
-        Gdx.gl.glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     @Override
@@ -163,8 +121,6 @@ public class PortalScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate
     @Override
     public void afterRender(PerspectiveCamera cam) {
 
-//        Gdx.gl.glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-
         // 准备工作
         Gdx.gl.glEnable(GL_STENCIL_TEST);
         Gdx.gl.glClear(GL_STENCIL_BUFFER_BIT);
@@ -183,20 +139,27 @@ public class PortalScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate
         Gdx.gl.glFrontFace(GL_CCW);
         Gdx.gl.glColorMask(true, true, true, true);
 
-//        Gdx.gl.glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//        Gdx.gl.glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+        // 渲染传送门内场景至帧缓冲
+        fbo.begin();
+        Gdx.gl.glClearColor(1, 1, 1, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+        renderSystem.render(camera);
+        fbo.end();
 
-        // 渲染传送门内场景
-        Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT); // FIXME: 清空默认帧缓冲的深度缓存, 导致多于两个传送门的场景出现问题
+        // 渲染帧缓冲内容至传送门轮廓
         Gdx.gl.glStencilFunc(GL_EQUAL, 1, 0xFF);
         Gdx.gl.glStencilMask(0x00);
-        renderSystem.render(camera);
+        spriteBatch.begin();
+        spriteBatch.draw(
+                fbo.getColorBufferTexture(),
+                0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(),
+                0, 0, 1, 1
+        );
+        spriteBatch.end();
         Gdx.gl.glStencilMask(0xFF);
 
         // 收尾工作
         Gdx.gl.glDisable(GL_STENCIL_TEST);
-
-//        Gdx.gl.glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     private final Map<Entity, Status> ids = new HashMap<>();
