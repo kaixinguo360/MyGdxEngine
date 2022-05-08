@@ -25,6 +25,7 @@ import com.my.world.module.script.ScriptSystem;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import static com.badlogic.gdx.graphics.GL20.*;
@@ -85,7 +86,7 @@ public class PortalScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate
         Vector3 tmpV = Vector3Pool.obtain();
         Matrix4 tmpM = Matrix4Pool.obtain();
 
-        tmpM.set(selfPosition.getGlobalTransform()).inv().mul(targetTransform);
+        getConvertTransform(tmpM, targetTransform);
 
         this.camera.far = cam.far;
         this.camera.near = cam.near;
@@ -118,6 +119,10 @@ public class PortalScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate
         return targetTransform;
     }
 
+    private Matrix4 getConvertTransform(Matrix4 matrix4, Matrix4 targetTransform) {
+        return matrix4.set(selfPosition.getGlobalTransform()).inv().mul(targetTransform);
+    }
+
     @Override
     public void afterRender(PerspectiveCamera cam) {
 
@@ -144,6 +149,26 @@ public class PortalScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         renderSystem.render(camera);
+        for (Map.Entry<Entity, Info> entry : ids.entrySet()) {
+            renderSystem.beginBatch(camera);
+
+            Info info = entry.getValue();
+            List<Render> renders = info.entity.getComponents(Render.class);
+            info.calculateTransform();
+
+            info.position.setGlobalTransform(info.virtualTransform);
+            for (Render render : renders) {
+                render.setTransform(info.position);
+                renderSystem.addToBatch(render);
+            }
+
+            renderSystem.endBatch();
+
+            info.position.setGlobalTransform(info.realTransform);
+            for (Render render : renders) {
+                render.setTransform(info.position);
+            }
+        }
         fbo.end();
 
         // 渲染帧缓冲内容至传送门轮廓
@@ -162,7 +187,7 @@ public class PortalScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate
         Gdx.gl.glDisable(GL_STENCIL_TEST);
     }
 
-    private final Map<Entity, Status> ids = new HashMap<>();
+    private final Map<Entity, Info> ids = new HashMap<>();
 
     @Override
     public void collision(Entity entity) {
@@ -171,73 +196,85 @@ public class PortalScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate
         if (name.equals("ground")) return;
         if (name.equals("Box")) return;
         if (ids.containsKey(entity)) {
-            Status status = ids.get(entity);
-            switch (status) {
-                case IN:
-                case OUT:
-                    break;
-                case IN_UNKNOWN:
-                    ids.put(entity, Status.IN);
-                    break;
-                case OUT_UNKNOWN:
-                    ids.put(entity, Status.OUT);
-                    break;
+            Info info = ids.get(entity);
+            if (!info.isKnown) {
+                info.isKnown = true;
             }
         } else {
             System.out.println(selfEntity.getId() + " <- " + entity.getId());
-            ids.put(entity, Status.IN);
+            ids.put(entity, new Info(entity, true));
         }
     }
 
     @Override
     public void update(Scene scene, Entity entity) {
-        Iterator<Map.Entry<Entity, Status>> it = ids.entrySet().iterator();
+        Iterator<Map.Entry<Entity, Info>> it = ids.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry<Entity, Status> entry = it.next();
-            switch (entry.getValue()) {
-                case IN:
-                    entry.setValue(Status.IN_UNKNOWN);
-                    break;
-                case OUT:
-                    entry.setValue(Status.OUT_UNKNOWN);
-                    break;
-                case IN_UNKNOWN:
-                    move(entry.getKey());
+            Map.Entry<Entity, Info> entry = it.next();
+            Info info = entry.getValue();
+            if (info.isKnown) {
+                info.isKnown = false;
+            } else {
+                if (info.in) {
+                    info.move();
                     it.remove();
-                    break;
-                case OUT_UNKNOWN:
+                } else {
                     System.out.println(selfEntity.getId() + " -> " + entity.getId());
                     it.remove();
-                    break;
+                }
             }
         }
     }
 
-    private void move(Entity entity) {
-        Matrix4 tmpM = Matrix4Pool.obtain();
+    private class Info {
 
-        Matrix4 targetTransform = getTargetTransform();
-        tmpM.set(selfPosition.getGlobalTransform()).inv().mul(targetTransform);
+        private boolean in;
+        private boolean isKnown = true;
+        private final Entity entity;
+        private final Position position;
 
-        Position position = entity.getComponent(Position.class);
-        if (position != null) {
-            position.getLocalTransform().mulLeft(tmpM);
+        private final Matrix4 realTransform = new Matrix4();
+        private final Matrix4 virtualTransform = new Matrix4();
+        private final Matrix4 offsetTransform = new Matrix4();
+
+        private Info(Entity entity, boolean in) {
+            this.in = in;
+            this.entity = entity;
+            this.position = entity.getComponent(Position.class);
+            calculateTransform();
+        }
+
+        private void calculateTransform() {
+            position.getGlobalTransform(this.realTransform);
+            getConvertTransform(offsetTransform, getTargetTransform());
+            virtualTransform.set(realTransform);
+            if (in) {
+                virtualTransform.mulLeft(offsetTransform);
+            } else {
+                Matrix4 tmpM = Matrix4Pool.obtain();
+                tmpM.set(offsetTransform);
+                tmpM.inv();
+                virtualTransform.mulLeft(tmpM);
+                Matrix4Pool.free(tmpM);
+            }
+        }
+
+        private void move() {
+            calculateTransform();
+
+            position.setGlobalTransform(virtualTransform);
+
             RigidBody body = entity.getComponent(RigidBody.class);
             if (body != null) {
-                body.body.proceedToTransform(position.getLocalTransform());
-                body.body.setLinearVelocity(body.body.getLinearVelocity().rot(tmpM));
-                body.body.setAngularVelocity(body.body.getAngularVelocity().rot(tmpM));
+                body.body.proceedToTransform(virtualTransform);
+                body.body.setLinearVelocity(body.body.getLinearVelocity().rot(offsetTransform));
+                body.body.setAngularVelocity(body.body.getAngularVelocity().rot(offsetTransform));
             }
+
+            System.out.println(selfEntity.getId() + " -> " + targetEntity.getId());
+            in = !in;
+            targetScript.ids.put(entity, this);
         }
-
-        System.out.println(selfEntity.getId() + " -> " + targetEntity.getId());
-        targetScript.ids.put(entity, Status.OUT);
-
-        Matrix4Pool.free(tmpM);
-    }
-
-    private enum Status {
-        IN_UNKNOWN, OUT_UNKNOWN, IN, OUT
     }
 
 //    // ----- 基于斜近平面平截头体映射矩阵实现传送门前方遮挡物体剔除 (废弃: 未测试) ----- //
