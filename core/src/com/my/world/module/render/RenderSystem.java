@@ -33,6 +33,7 @@ public class RenderSystem extends BaseSystem implements System.OnStart, Disposab
     @Config(type = Config.Type.Asset)
     public RenderableSorter renderableSorter;
 
+    protected Camera currentCamera;
     protected EnvironmentSystem environmentSystem;
     protected ModelBatch batch = new ModelBatch(new ShaderProvider() {
 
@@ -95,35 +96,54 @@ public class RenderSystem extends BaseSystem implements System.OnStart, Disposab
     }
 
     public void render(PerspectiveCamera cam) {
-        batch.begin(cam);
+        beginBatch(cam);
         for (Entity entity : getEntities()) {
             Position position = entity.getComponent(Position.class);
             for (Render render : entity.getComponents(Render.class)) {
                 if (render.isActive()) {
                     render.setTransform(position);
-                    if (!render.isVisible(cam)) {
-                        continue;
-                    }
-                    if (currentEnvironment != null && render.includeEnv) {
-                        if (render.shader != null) {
-                            batch.render(render, currentEnvironment, render.shader);
-                        } else {
-                            batch.render(render, currentEnvironment);
-                        }
-                    } else {
-                        if (render.shader != null) {
-                            batch.render(render, render.shader);
-                        } else {
-                            batch.render(render);
-                        }
-                    }
+                    addToBatch(render);
                 }
             }
         }
-        batch.end();
+        endBatch();
     }
 
     public void end() {
         currentEnvironment = null;
+    }
+
+    // ----- RenderBatch ----- //
+
+    public void beginBatch(Camera cam) {
+        if (currentCamera != null) throw new RuntimeException("Current camera is not null");
+        currentCamera = cam;
+        batch.begin(currentCamera);
+    }
+
+    public void endBatch() {
+        if (currentCamera == null) throw new RuntimeException("Current camera is null");
+        batch.end();
+        currentCamera = null;
+    }
+
+    public void addToBatch(Render render) {
+        if (currentCamera == null) throw new RuntimeException("Current camera is null");
+        if (!render.isVisible(currentCamera)) {
+            return;
+        }
+        if (currentEnvironment != null && render.includeEnv) {
+            if (render.shader != null) {
+                batch.render(render, currentEnvironment, render.shader);
+            } else {
+                batch.render(render, currentEnvironment);
+            }
+        } else {
+            if (render.shader != null) {
+                batch.render(render, render.shader);
+            } else {
+                batch.render(render);
+            }
+        }
     }
 }

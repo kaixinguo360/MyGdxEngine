@@ -1,6 +1,6 @@
 package com.my.world.module.render;
 
-import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
 import com.badlogic.gdx.graphics.g3d.Shader;
 import com.my.world.core.Config;
@@ -19,5 +19,5 @@ public abstract class Render extends ActivatableComponent implements RenderableP
 
     public abstract void setTransform(Position position);
 
-    public abstract boolean isVisible(PerspectiveCamera cam);
+    public abstract boolean isVisible(Camera cam);
 }

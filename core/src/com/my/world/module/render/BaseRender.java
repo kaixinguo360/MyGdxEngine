@@ -1,6 +1,6 @@
 package com.my.world.module.render;
 
-import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.math.Vector3;
@@ -40,7 +40,7 @@ public class BaseRender extends Render {
     }
 
     @Override
-    public boolean isVisible(PerspectiveCamera cam) {
+    public boolean isVisible(Camera cam) {
         if (isAlwaysVisible) return true;
         Vector3 tmpV = Vector3Pool.obtain();
         modelInstance.transform.getTranslation(tmpV);

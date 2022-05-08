@@ -1,9 +1,9 @@
 package com.my.demo.builder.common;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Cubemap;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Renderable;
@@ -74,7 +74,7 @@ public class EnvironmentSetupScript extends Render implements ScriptSystem.OnSta
     }
 
     @Override
-    public boolean isVisible(PerspectiveCamera cam) {
+    public boolean isVisible(Camera cam) {
         skybox.update(cam, 0);
         return true;
     }
