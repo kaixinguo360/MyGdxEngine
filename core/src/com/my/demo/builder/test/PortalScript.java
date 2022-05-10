@@ -125,6 +125,7 @@ public class PortalScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate
 
     @Override
     public void afterRender(PerspectiveCamera cam) {
+        if (!selfRender.isVisible(cam)) return;
 
         // 传送门外虚像
         if (this.targetScript != null) {
