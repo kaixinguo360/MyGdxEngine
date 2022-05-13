@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g3d.utils.RenderableSorter;
 import com.badlogic.gdx.graphics.g3d.utils.ShaderProvider;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
+import com.my.demo.attribute.MyRenderableSorter;
 import com.my.demo.attribute.MyShaderProvider;
 import com.my.demo.builder.BuilderManager;
 import com.my.demo.builder.common.EnvironmentSetupScript;
@@ -47,7 +48,7 @@ public class SceneBuilder {
         PBRShaderProvider shaderProvider = new MyShaderProvider(config);
         assetsManager.addAsset("CustomShaderProvider", ShaderProvider.class, shaderProvider);
 
-        SceneRenderableSorter renderableSorter = new SceneRenderableSorter();
+        SceneRenderableSorter renderableSorter = new MyRenderableSorter();
         assetsManager.addAsset("CustomRenderableSorter", RenderableSorter.class, renderableSorter);
 
         RenderSystem renderSystem = scene.getSystemManager().getSystem(RenderSystem.class);
