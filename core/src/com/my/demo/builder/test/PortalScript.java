@@ -126,6 +126,30 @@ public class PortalScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate
     @Override
     public void afterRender(PerspectiveCamera cam) {
 
+        // 传送门外虚像
+        if (this.targetScript != null) {
+            for (Map.Entry<Entity, Info> entry : this.targetScript.ids.entrySet()) {
+                renderSystem.beginBatch(cam);
+
+                Info info = entry.getValue();
+                List<Render> renders = info.entity.getComponents(Render.class);
+                info.calculateTransform();
+
+                info.position.setGlobalTransform(info.virtualTransform);
+                for (Render render : renders) {
+                    render.setTransform(info.position);
+                    renderSystem.addToBatch(render);
+                }
+
+                renderSystem.endBatch();
+
+                info.position.setGlobalTransform(info.realTransform);
+                for (Render render : renders) {
+                    render.setTransform(info.position);
+                }
+            }
+        }
+
         // 准备工作
         Gdx.gl.glEnable(GL_STENCIL_TEST);
         Gdx.gl.glClear(GL_STENCIL_BUFFER_BIT);
@@ -149,6 +173,7 @@ public class PortalScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         renderSystem.render(camera);
+        // 传送门内虚像
         for (Map.Entry<Entity, Info> entry : ids.entrySet()) {
             renderSystem.beginBatch(camera);
 
