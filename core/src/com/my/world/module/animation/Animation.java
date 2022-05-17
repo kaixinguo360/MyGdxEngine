@@ -100,11 +100,11 @@ public class Animation extends ActivatableComponent implements ScriptSystem.OnSt
 
     // ----- Animation Context ----- //
 
-    Scene scene;
-    Entity entity;
-    AnimationController.Instance controllerInstance;
-    final Set<SyncComponent> changedSyncComponents = new HashSet<>();
-    final Set<String> changedChannels = new HashSet<>();
-    final Map<String, AnimationChannel.Instance> channelInstanceCaches = new HashMap<>();
+    public Scene scene;
+    public Entity entity;
+    public AnimationController.Instance controllerInstance;
+    public final Set<SyncComponent> changedSyncComponents = new HashSet<>();
+    public final Set<String> changedChannels = new HashSet<>();
+    public final Map<String, AnimationChannel.Instance> channelInstanceCaches = new HashMap<>();
 
 }

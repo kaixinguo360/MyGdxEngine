@@ -234,7 +234,7 @@ public class AnimationBuilder extends PrefabBuilder<AnimationBuilder> {
         return clip;
     }
 
-    public static class TestAnimationController extends AnimationController {{
+    public static class TestAnimationController extends DefaultAnimationController {{
         setInitState("state1");
         addState("state1", "clip1");
         addState("state2", "clip2");
