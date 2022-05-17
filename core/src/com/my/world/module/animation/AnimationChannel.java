@@ -43,7 +43,7 @@ public class AnimationChannel implements Configurable {
         }
 
         String hash = getHash();
-        boolean useBlend = animation.changedChannels.contains(hash);
+        boolean useBlend = weights >= 0 && animation.changedChannels.contains(hash);
         animation.changedChannels.add(hash);
 
         Object value = this.values.valueAt(currentTime);
@@ -60,8 +60,9 @@ public class AnimationChannel implements Configurable {
             }
         }
 
-        if (weights != 1 && value != null) {
-            value = applyWeightsToValue(weights, value);
+        float absWeights = Math.abs(weights);
+        if (absWeights != 1 && value != null) {
+            value = applyWeightsToValue(absWeights, value);
         }
 
         if (useBlend) {

@@ -17,7 +17,7 @@ public class GdxAnimationUtil {
         if (gdxAnimations.size == 0) throw new RuntimeException("gdxAnimations is empty");
 
         Animation animation = new Animation();
-        DefaultAnimationController controller = new DefaultAnimationController();
+        GdxAnimationController controller = new GdxAnimationController();
 
         animation.useLocalTime = true;
         animation.animationController = controller;
@@ -27,7 +27,7 @@ public class GdxAnimationUtil {
             id = id.replaceAll("^([^\\[]*)\\[.*$", "$1");
             AnimationClip clip = getAnimationClip(gdxAnimation);
             animation.addPlayable(id, clip);
-            controller.addState(id, id);
+            controller.addState(new GdxAnimationController.State(id, id, gdxAnimation.duration));
         }
 
         if (!animation.playables.containsKey("default")) {
@@ -82,5 +82,63 @@ public class GdxAnimationUtil {
             }
         }
         return clip;
+    }
+
+    public static class GdxAnimationController extends DefaultAnimationController {
+
+        @Override
+        public AnimationController.Instance newInstance(Animation animation) {
+            return new Instance(animation);
+        }
+
+        public static class State extends DefaultAnimationController.State {
+
+            public float duration;
+
+            public State(String name, String playableName, float duration) {
+                super(name, playableName);
+                this.duration = duration;
+            }
+        }
+
+        public class Instance extends DefaultAnimationController.Instance {
+
+            public State currentAction;
+            public float lastActionSwitchTime;
+
+            public Instance(Animation animation) {
+                super(animation);
+            }
+
+            public void applyAction(String name) {
+                currentAction = (State) getState(name);
+            }
+
+            public void clearAction() {
+                currentAction = null;
+                lastActionSwitchTime = 0;
+            }
+
+            public void updateCurrentAction() {
+                if (currentAction == null) throw new RuntimeException("Illegal State: currentState=null");
+                float timeSinceActionSwitch = currentTime - lastActionSwitchTime;
+                if (timeSinceActionSwitch > currentAction.duration) {
+                    clearAction();
+                } else {
+                    currentAction.update(timeSinceActionSwitch, -1, this);
+                }
+            }
+
+            @Override
+            public void update(float currentTime, float weights) {
+                super.update(currentTime, weights);
+                if (currentAction != null) {
+                    if (lastActionSwitchTime == 0) {
+                        lastActionSwitchTime = currentTime;
+                    }
+                    updateCurrentAction();
+                }
+            }
+        }
     }
 }
