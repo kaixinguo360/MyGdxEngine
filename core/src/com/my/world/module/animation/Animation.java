@@ -1,12 +1,13 @@
 package com.my.world.module.animation;
 
 import com.my.world.core.*;
+import com.my.world.module.common.ActivatableComponent;
 import com.my.world.module.common.SyncComponent;
 import com.my.world.module.script.ScriptSystem;
 
 import java.util.*;
 
-public class Animation implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, Configurable.OnLoad, Configurable.OnDump {
+public class Animation extends ActivatableComponent implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, Configurable.OnLoad, Configurable.OnDump {
 
     @Config(type = Config.Type.Asset)
     public AnimationController animationController;
