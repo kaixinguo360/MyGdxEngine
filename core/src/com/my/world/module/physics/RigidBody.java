@@ -23,6 +23,9 @@ public class RigidBody extends BaseActivatableComponent {
     public Integer collisionFlags;
 
     @Config
+    public Integer activationState;
+
+    @Config
     public boolean isStatic;
 
     @Config

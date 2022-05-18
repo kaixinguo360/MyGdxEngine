@@ -115,6 +115,16 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
             body.setCollisionFlags(rigidBody.collisionFlags);
         }
 
+        if (rigidBody.activationState != null) {
+            body.setActivationState(rigidBody.activationState);
+        } else {
+            if (rigidBody.isKinematic) {
+                body.setActivationState(CollisionConstants.DISABLE_DEACTIVATION);
+            } else {
+                body.setActivationState(CollisionConstants.ACTIVE_TAG);
+            }
+        }
+
         if (rigidBody.isStatic) {
             body.setCollisionFlags(body.getCollisionFlags() | CF_STATIC_OBJECT);
         }
