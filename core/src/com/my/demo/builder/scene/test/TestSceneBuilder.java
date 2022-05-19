@@ -11,7 +11,7 @@ import com.my.demo.builder.enhanced.EnhancedEntity;
 import com.my.demo.builder.object.CharacterBuilder;
 import com.my.demo.builder.object.GroundBuilder;
 import com.my.demo.builder.test.AnimationBuilder;
-import com.my.demo.builder.test.CylinderDepthMaskEntity;
+import com.my.demo.builder.test.EnhancedHoleSpaceEntity;
 import com.my.demo.builder.test.GdxAnimationUtil;
 import com.my.demo.builder.test.ModelEntity;
 import com.my.world.core.Component;
@@ -25,7 +25,6 @@ import com.my.world.module.camera.script.EnhancedThirdPersonCameraController;
 import com.my.world.module.common.EnhancedPosition;
 import com.my.world.module.common.Position;
 import com.my.world.module.input.InputSystem;
-import com.my.world.module.render.Render;
 import com.my.world.module.script.ScriptSystem;
 import net.mgsx.gltf.loaders.glb.GLBAssetLoader;
 import net.mgsx.gltf.loaders.gltf.GLTFAssetLoader;
@@ -105,6 +104,12 @@ public class TestSceneBuilder extends BaseBuilder<TestSceneBuilder> {
                 this.nextState = "up";
                 this.canSwitch = instance -> Gdx.input.isKeyPressed(Input.Keys.NUM_2);
             }});
+            controller.addTransition(new DefaultAnimationController.Transition() {{
+                this.start = 0;
+                this.end = 0.5f;
+                this.nextState = "low";
+                this.canSwitch = instance -> Gdx.input.isKeyPressed(Input.Keys.NUM_4);
+            }});
             entity.addComponent((InputSystem.OnKeyDown) keycode -> {
                 if (keycode == Input.Keys.NUM_3) {
                     ((GdxAnimationUtil.GdxAnimationController.Instance) animation.controllerInstance).applyAction("test");
@@ -138,6 +143,14 @@ public class TestSceneBuilder extends BaseBuilder<TestSceneBuilder> {
                 control2.translation.x -= v;
                 control2.sync();
             }
+            if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
+                control2.translation.z += v;
+                control2.sync();
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+                control2.translation.z -= v;
+                control2.sync();
+            }
             if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
                 control3.rotation.x += v * 20;
                 control3.sync();
@@ -151,23 +164,12 @@ public class TestSceneBuilder extends BaseBuilder<TestSceneBuilder> {
 
         Entity leftLeg = entity.findChildByName("Leg_L");
         EnhancedPosition leftLegPosition = leftLeg.getComponent(EnhancedPosition.class);
-        Render leftLegRender = leftLeg.getComponent(Render.class);
+        leftLegPosition.getLocalTransform().rotate(Vector3.X, -90);
 
-        CylinderDepthMaskEntity leftDepthMask = new CylinderDepthMaskEntity(1f, 2f);
-        leftDepthMask.setName("leftDepthMask");
-        leftDepthMask.position.getLocalTransform().setToTranslation(2, 5, 0).rotate(Vector3.X, 90);
-        leftDepthMask.depthMaskScript.addHiddenRender(leftLegRender, leftLegPosition);
-        leftDepthMask.addToScene(scene);
-
-        Entity rightLeg = entity.findChildByName("Leg_R");
-        EnhancedPosition rightLegPosition = rightLeg.getComponent(EnhancedPosition.class);
-        Render rightLegRender = rightLeg.getComponent(Render.class);
-
-        CylinderDepthMaskEntity rightDepthMask = new CylinderDepthMaskEntity(1f, 2f);
-        rightDepthMask.setName("rightDepthMask");
-        rightDepthMask.position.getLocalTransform().setToTranslation(-2, 5, 0).rotate(Vector3.X, 90);
-        rightDepthMask.depthMaskScript.addHiddenRender(rightLegRender, rightLegPosition);
-        rightDepthMask.addToScene(scene);
+        EnhancedHoleSpaceEntity holeSpaceEntity = new EnhancedHoleSpaceEntity(1f, 4f);
+        holeSpaceEntity.position.getLocalTransform().setToTranslation(0, 5, 0).rotate(Vector3.X, 90);
+        holeSpaceEntity.addToScene(scene);
+        holeSpaceEntity.addRendersFromEntity(leftLeg, false);
 
         Entity camera = new Entity();
         camera.setName("Camera");
