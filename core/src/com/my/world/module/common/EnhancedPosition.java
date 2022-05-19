@@ -10,10 +10,16 @@ import lombok.NoArgsConstructor;
 public class EnhancedPosition extends Position implements SyncComponent {
 
     @Config
+    public boolean isDirect = false;
+
+    @Config
     public final Vector3 translation = new Vector3();
 
     @Config
     public final Vector3 rotation = new Vector3();
+
+    @Config
+    private final Quaternion orientation = new Quaternion();
 
     @Config
     public final Vector3 scale = new Vector3();
@@ -34,15 +40,19 @@ public class EnhancedPosition extends Position implements SyncComponent {
         compose();
     }
 
-    private final Quaternion orientation = new Quaternion();
     public void decompose() {
         localTransform.getTranslation(translation);
         localTransform.getScale(scale);
         localTransform.getRotation(orientation);
-        rotation.set(orientation.getYaw(), orientation.getPitch(), orientation.getRoll());
+        if (!isDirect) {
+            rotation.set(orientation.getYaw(), orientation.getPitch(), orientation.getRoll());
+        }
     }
 
     public void compose() {
-        localTransform.set(translation, orientation.setEulerAngles(rotation.x, rotation.y, rotation.z), scale);
+        if (!isDirect) {
+            orientation.setEulerAngles(rotation.x, rotation.y, rotation.z);
+        }
+        localTransform.set(translation, orientation, scale);
     }
 }
