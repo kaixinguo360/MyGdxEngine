@@ -8,11 +8,8 @@ import com.badlogic.gdx.math.Vector3;
 import com.my.demo.attribute.MyRenderableSorter;
 import com.my.demo.attribute.MyShaderProvider;
 import com.my.demo.builder.BuilderManager;
-import com.my.demo.builder.common.EnvironmentSetupScript;
-import com.my.demo.builder.common.ExitScript;
-import com.my.demo.builder.common.PauseScript;
-import com.my.demo.builder.common.ReloadScript;
-import com.my.demo.builder.scene.airport.AirportBuilder;
+import com.my.demo.builder.common.*;
+import com.my.demo.builder.scene.test.TestSceneBuilder;
 import com.my.world.core.AssetsManager;
 import com.my.world.core.Engine;
 import com.my.world.core.Entity;
@@ -72,7 +69,7 @@ public class SceneBuilder {
 
         // ----- Init Scene ----- //
 
-        builder.build(AirportBuilder.class);
+        builder.build(TestSceneBuilder.class);
 
         // ----- Init Scripts ----- //
 
@@ -91,9 +88,9 @@ public class SceneBuilder {
         pauseScriptEntity.addComponent(new PauseScript());
         scene.addEntity(pauseScriptEntity);
 
-//        Entity physicsDebugScriptEntity = new Entity();
-//        physicsDebugScriptEntity.setName("physicsDebugScriptEntity");
-//        physicsDebugScriptEntity.addComponent(new PhysicsDebugScript());
+        Entity physicsDebugScriptEntity = new Entity();
+        physicsDebugScriptEntity.setName("physicsDebugScriptEntity");
+        physicsDebugScriptEntity.addComponent(new PhysicsDebugScript());
 //        scene.addEntity(physicsDebugScriptEntity);
     }
 
