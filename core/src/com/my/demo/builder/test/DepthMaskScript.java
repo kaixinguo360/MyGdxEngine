@@ -1,11 +1,16 @@
 package com.my.demo.builder.test;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Pool;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
 import com.my.world.module.camera.CameraSystem;
@@ -19,62 +24,23 @@ import java.util.Map;
 
 import static com.badlogic.gdx.graphics.GL20.*;
 
-public class DepthMaskScript implements ScriptSystem.OnStart, CameraSystem.AfterRender {
+public class DepthMaskScript extends Render implements ScriptSystem.OnStart, CameraSystem.BeforeRender {
+
+    protected static final ModelBatch batch = new ModelBatch();
+    protected static final ClearScreenShader clearScreenShader = new ClearScreenShader();
 
     protected RenderSystem renderSystem;
+    protected final FrameBuffer fbo;
+    protected final int depthMapHandler;
 
-    protected final Map<Render, Position> maskEntities = new HashMap<>();
-    protected final Map<Render, Position> hiddenEntities = new HashMap<>();
+    public final Material material;
+    protected final ClearScreenShader.Param param;
+    protected final Renderable renderable;
 
-    protected static final ModelBatch batch;
-    protected static final ShaderProgram depthShader;
-    protected static final ShaderProgram clearShader;
+    public final Map<Render, Position> maskEntities = new HashMap<>();
+    public final Map<Render, Position> hiddenEntities = new HashMap<>();
 
-    protected static final int depthMapHandler;
-    protected static final FrameBuffer fbo;
-    protected static Mesh mesh;
-
-    static {
-        // 初始化ModelBatch
-        batch = new ModelBatch();
-
-        // 初始化depthShader渲染器
-        depthShader = new ShaderProgram(
-                Gdx.files.classpath("com/my/demo/builder/test/enhanced-depth-mask.vertex.glsl").readString(),
-                Gdx.files.classpath("com/my/demo/builder/test/enhanced-depth-mask.fragment.glsl").readString()
-        );
-        if (!depthShader.isCompiled()) {
-            throw new GdxRuntimeException(depthShader.getLog());
-        }
-
-        // 初始化clearShader渲染器
-        clearShader = new ShaderProgram(
-                Gdx.files.classpath("com/my/demo/builder/test/clear.vertex.glsl").readString(),
-                Gdx.files.classpath("com/my/demo/builder/test/clear.fragment.glsl").readString()
-        );
-        if (!clearShader.isCompiled()) {
-            throw new GdxRuntimeException(clearShader.getLog());
-        }
-
-        // 初始化覆盖屏幕的矩形网格
-        VertexAttributes attributes = new VertexAttributes(
-                VertexAttribute.Position(),
-                VertexAttribute.TexCoords(0)
-        );
-        float[] vertices = {
-                1f, 1f, 0.0f,    1f, 1f,// 右上角
-                1f, -1f, 0.0f,   1f, 0f,// 右下角
-                -1f, -1f, 0.0f,  0f, 0f,// 左下角
-                -1f, 1f, 0.0f,   0f, 1f,// 左上角
-        };
-        short[] indices = {
-                0, 1, 3, // 第一个三角形
-                1, 2, 3  // 第二个三角形
-        };
-        mesh = new Mesh(true, 4, 6, attributes);
-        mesh.setVertices(vertices);
-        mesh.setIndices(indices);
-
+    public DepthMaskScript() {
         // 创建帧缓冲 (无深度缓存, 有模板缓存)
         int windowWidth = Gdx.graphics.getWidth();
         int windowHeight = Gdx.graphics.getHeight();
@@ -90,9 +56,29 @@ public class DepthMaskScript implements ScriptSystem.OnStart, CameraSystem.After
         Gdx.gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
         // 手动绑定深度贴图到帧缓冲
-        Gdx.gl.glBindFramebuffer(GL_FRAMEBUFFER, fbo.getFramebufferHandle());
+        fbo.bind();
         Gdx.gl.glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapHandler, 0);
-        Gdx.gl.glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        if (Gdx.gl.glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            throw new RuntimeException("Gdx.gl.glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE");
+        }
+        FrameBuffer.unbind();
+
+        // 设置Render
+        includeEnv = false;
+        shader = clearScreenShader;
+
+        // 创建 ClearScreenShader.Param
+        param = new ClearScreenShader.Param();
+        param.colorMapHandler = fbo.getColorBufferTexture().getTextureObjectHandle();
+        param.depthMapHandler = depthMapHandler;
+
+        // 创建 Material
+        material = new Material();
+
+        // 创建 Renderable
+        renderable = new Renderable();
+        renderable.userData = this.param;
+        renderable.material = material;
     }
 
     @Override
@@ -101,8 +87,7 @@ public class DepthMaskScript implements ScriptSystem.OnStart, CameraSystem.After
     }
 
     @Override
-    public void afterRender(PerspectiveCamera cam) {
-
+    public void beforeRender(PerspectiveCamera cam) {
         // 切换帧缓冲
         fbo.begin();
 
@@ -142,31 +127,15 @@ public class DepthMaskScript implements ScriptSystem.OnStart, CameraSystem.After
         Gdx.gl.glEnable(GL_DEPTH_TEST);
 
         // 清除模板之外的部分
-        clearShader.bind();
-        clearShader.setUniformf("u_color", Color.PINK);
-        clearShader.setUniformf("u_depth", 1);
         Gdx.gl.glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
         Gdx.gl.glStencilMask(0x00);
         Gdx.gl.glDepthFunc(GL_ALWAYS);
-        mesh.render(clearShader, GL_TRIANGLES);
+        ShaderUtil.clearScreen(Color.CLEAR, 1);
         Gdx.gl.glDepthFunc(GL_LESS);
         Gdx.gl.glDisable(GL_STENCIL_TEST);
 
         // 切换帧缓冲
         fbo.end();
-
-        // 渲染帧缓冲至屏幕
-        depthShader.bind();
-
-        Gdx.gl.glActiveTexture(GL_TEXTURE0); //激活纹理单元, 接下来的glBindTexture函数调用会绑定这个纹理到当前激活的纹理单元
-        Gdx.gl.glBindTexture(GL_TEXTURE_2D, fbo.getColorBufferTexture().getTextureObjectHandle());
-        depthShader.setUniformi("u_colorMap", 0);
-
-        Gdx.gl.glActiveTexture(GL_TEXTURE1);
-        Gdx.gl.glBindTexture(GL_TEXTURE_2D, depthMapHandler);
-        depthShader.setUniformi("u_depthMap", 1);
-
-        mesh.render(depthShader, GL_TRIANGLES);
     }
 
     // ----- Hidden Render Component ----- //
@@ -211,5 +180,22 @@ public class DepthMaskScript implements ScriptSystem.OnStart, CameraSystem.After
             render.setActive(true);
         }
         maskEntities.clear();
+    }
+
+    // ----- Abstract Methods ----- //
+
+    @Override
+    public void setTransform(Position position) {
+
+    }
+
+    @Override
+    public boolean isVisible(Camera cam) {
+        return true;
+    }
+
+    @Override
+    public void getRenderables(Array<Renderable> renderables, Pool<Renderable> pool) {
+        renderables.add(renderable);
     }
 }
