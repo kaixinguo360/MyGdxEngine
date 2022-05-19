@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.g3d.utils.ShaderProvider;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.demo.entity.common.EnvironmentSetupScript;
-import com.my.demo.scene.AirportSceneBuilder;
+import com.my.demo.scene.TestSceneBuilder;
 import com.my.world.core.AssetsManager;
 import com.my.world.core.Engine;
 import com.my.world.core.Entity;
@@ -77,7 +77,7 @@ public class SceneBuilder {
 
         // ----- Init Scene ----- //
 
-        builder.build(AirportSceneBuilder.class);
+        builder.build(TestSceneBuilder.class);
 
         // ----- Init Scripts ----- //
 
