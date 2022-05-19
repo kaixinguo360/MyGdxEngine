@@ -21,12 +21,9 @@ import static com.badlogic.gdx.graphics.GL20.*;
 
 public class DepthMaskScript implements ScriptSystem.OnStart, CameraSystem.AfterRender {
 
-    protected Entity selfEntity;
-    protected Position selfPosition;
-    protected Render selfRender;
-
     protected RenderSystem renderSystem;
 
+    protected final Map<Render, Position> maskEntities = new HashMap<>();
     protected final Map<Render, Position> hiddenEntities = new HashMap<>();
 
     protected static final ModelBatch batch;
@@ -100,29 +97,27 @@ public class DepthMaskScript implements ScriptSystem.OnStart, CameraSystem.After
 
     @Override
     public void start(Scene scene, Entity entity) {
-        this.selfEntity = entity;
-        this.selfPosition = entity.getComponent(Position.class);
-        this.selfRender = entity.getComponent(Render.class);
-        this.selfRender.setActive(false);
-
         this.renderSystem = scene.getSystemManager().getSystem(RenderSystem.class);
     }
 
     @Override
     public void afterRender(PerspectiveCamera cam) {
-        selfRender.setTransform(selfPosition);
-        selfRender.isVisible(cam);
 
         // 切换帧缓冲
         fbo.begin();
 
         // 渲染DepthMaskObject至帧缓冲
         Gdx.gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        if (selfRender.isVisible(cam)) {
-            batch.begin(cam);
-            batch.render(selfRender, selfRender.shader);
-            batch.end();
+        batch.begin(cam);
+        for (Map.Entry<Render, Position> entry : maskEntities.entrySet()) {
+            Position position = entry.getValue();
+            Render render = entry.getKey();
+            render.setTransform(position);
+            if (render.isVisible(cam)) {
+                batch.render(render, render.shader);
+            }
         }
+        batch.end();
 
         // 开启模板测试并清空模板缓冲
         Gdx.gl.glEnable(GL_STENCIL_TEST);
@@ -174,25 +169,47 @@ public class DepthMaskScript implements ScriptSystem.OnStart, CameraSystem.After
         mesh.render(depthShader, GL_TRIANGLES);
     }
 
-    public void addRender(Render render, Position position) {
-        if (render.isActive()) {
-            render.setActive(false);
-            hiddenEntities.put(render, position);
-        }
+    // ----- Hidden Render Component ----- //
+
+    public void addHiddenRender(Render render, Position position) {
+        render.setActive(false);
+        hiddenEntities.put(render, position);
     }
 
-    public void removeRender(Render render) {
+    public void removeHiddenRender(Render render) {
         if (!hiddenEntities.containsKey(render)) {
-            throw new RuntimeException("No such render: " + render);
+            throw new RuntimeException("No such hidden render component: " + render);
         }
         hiddenEntities.remove(render);
         render.setActive(true);
     }
 
-    public void clearRender() {
+    public void clearHiddenRender() {
         for (Render render : hiddenEntities.keySet()) {
             render.setActive(true);
         }
         hiddenEntities.clear();
+    }
+
+    // ----- Mask Render Component ----- //
+
+    public void addMaskRender(Render render, Position position) {
+        render.setActive(false);
+        maskEntities.put(render, position);
+    }
+
+    public void removeMaskRender(Render render) {
+        if (!maskEntities.containsKey(render)) {
+            throw new RuntimeException("No such mask render component: " + render);
+        }
+        maskEntities.remove(render);
+        render.setActive(true);
+    }
+
+    public void clearMaskRender() {
+        for (Render render : maskEntities.keySet()) {
+            render.setActive(true);
+        }
+        maskEntities.clear();
     }
 }

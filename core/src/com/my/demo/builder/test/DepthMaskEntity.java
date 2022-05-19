@@ -29,5 +29,6 @@ public class DepthMaskEntity extends EnhancedEntity {
         rigidBody.isTrigger = true;
         collision = addComponent(new Collision(Collision.NORMAL_FLAG, Collision.ALL_FLAG));
         depthMaskScript = addComponent(new CollisionDepthMaskScript());
+        depthMaskScript.addMaskRender(maskRender, position);
     }
 }
