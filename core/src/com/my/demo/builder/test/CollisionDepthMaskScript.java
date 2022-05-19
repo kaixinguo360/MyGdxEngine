@@ -18,15 +18,15 @@ public class CollisionDepthMaskScript extends DepthMaskScript implements ScriptS
     public void collision(Entity entity) {
         Position position = entity.getComponent(Position.class);
         for (Render render : entity.getComponents(Render.class)) {
-            addRender(render, position);
+            addHiddenRender(render, position);
         }
     }
 
     @Override
     public void update(Scene scene, Entity entity) {
-        clearRender();
+        clearHiddenRender();
         for (Map.Entry<Render, Position> entry : commonHiddenEntities.entrySet()) {
-            addRender(entry.getKey(), entry.getValue());
+            addHiddenRender(entry.getKey(), entry.getValue());
         }
     }
 }
