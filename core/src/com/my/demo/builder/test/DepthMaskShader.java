@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.my.demo.attribute.CustomShaderAttribute;
 import com.my.world.core.Config;
 import com.my.world.core.Configurable;
 
@@ -67,6 +68,8 @@ public class DepthMaskShader implements Shader, Configurable.OnInit {
 
     @Override
     public void render(Renderable renderable) {
+        DepthMaskAttribute attribute = renderable.material.get(DepthMaskAttribute.class, CustomShaderAttribute.CustomShader);
+        shaderProgram.setUniformf("u_color", attribute.color);
         shaderProgram.setUniformMatrix("u_worldTrans", renderable.worldTransform);
         renderable.meshPart.render(shaderProgram);
     }
