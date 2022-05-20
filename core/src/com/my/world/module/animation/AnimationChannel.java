@@ -43,7 +43,7 @@ public class AnimationChannel implements Configurable {
         }
 
         String hash = getHash();
-        boolean useBlend = animation.changedChannels.contains(hash);
+        boolean useBlend = weights >= 0 && animation.changedChannels.contains(hash);
         animation.changedChannels.add(hash);
 
         Object value = this.values.valueAt(currentTime);
@@ -60,8 +60,9 @@ public class AnimationChannel implements Configurable {
             }
         }
 
-        if (weights != 1 && value != null) {
-            value = applyWeightsToValue(weights, value);
+        float absWeights = Math.abs(weights);
+        if (absWeights != 1 && value != null) {
+            value = applyWeightsToValue(absWeights, value);
         }
 
         if (useBlend) {
@@ -75,7 +76,7 @@ public class AnimationChannel implements Configurable {
 
     // ----- Blend Values Utils ----- //
 
-    private void applyValueToInstance(Object value, Instance instance, Animation animation) {
+    public static void applyValueToInstance(Object value, Instance instance, Animation animation) {
         Field field = instance.field;
         Object target = instance.target;
 
@@ -98,7 +99,7 @@ public class AnimationChannel implements Configurable {
         }
     }
 
-    private void blendValueToInstance(Object value, Instance instance) {
+    public static void blendValueToInstance(Object value, Instance instance) {
         Field field = instance.field;
         Object target = instance.target;
 
@@ -120,7 +121,7 @@ public class AnimationChannel implements Configurable {
         }
     }
 
-    private Object blendTwoValues(Object v1, Object v2) {
+    public static Object blendTwoValues(Object v1, Object v2) {
         Class<?> type1 = v1.getClass();
         Class<?> type2 = v2.getClass();
         if (type1 != type2 && !type1.isAssignableFrom(type2) && !type2.isAssignableFrom(type1)) {
@@ -152,12 +153,7 @@ public class AnimationChannel implements Configurable {
         } else if (v1 instanceof Quaternion) {
             Quaternion q1 = (Quaternion) v1;
             Quaternion q2 = (Quaternion) v2;
-            q1.setEulerAngles(
-                    q1.getYaw() * q2.getYaw(),
-                    q1.getPitch() * q2.getPitch(),
-                    q1.getRoll() * q2.getRoll()
-            );
-            return q1;
+            return q1.add(q2);
         } else if (v1 instanceof Color) {
             Color c1 = (Color) v1;
             Color c2 = (Color) v2;
@@ -167,7 +163,7 @@ public class AnimationChannel implements Configurable {
         }
     }
 
-    private static Object applyWeightsToValue(float weights, Object value) {
+    public static Object applyWeightsToValue(float weights, Object value) {
         if (isPrimitive(value.getClass())) {
             if (value instanceof Float) {
                 return (float) (value) * weights;
@@ -193,11 +189,7 @@ public class AnimationChannel implements Configurable {
             return value;
         } else if (value instanceof Quaternion) {
             Quaternion q = (Quaternion) value;
-            q.setEulerAngles(
-                    q.getYaw() * weights,
-                    q.getPitch() * weights,
-                    q.getRoll() * weights
-            );
+            q.set(q.x * weights, q.y * weights, q.z * weights, q.w * weights);
             return q;
         } else if (value instanceof Color) {
             return ((Color) value).mul(weights);
@@ -272,7 +264,7 @@ public class AnimationChannel implements Configurable {
 
     // ----- Class Operation Utils ----- //
 
-    private static Field getField(Object obj, String name) {
+    public static Field getField(Object obj, String name) {
         Class<?> tmpType = obj.getClass();
         while (tmpType != null && tmpType != Object.class) {
             try {
@@ -284,7 +276,7 @@ public class AnimationChannel implements Configurable {
         return null;
     }
 
-    private static boolean isPrimitive(Class<?> type) {
+    public static boolean isPrimitive(Class<?> type) {
         return type.isPrimitive() || Number.class.isAssignableFrom(type) || type == String.class ||
                 type == Boolean.class || type == Character.class;
     }

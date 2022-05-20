@@ -1,12 +1,13 @@
 package com.my.world.module.animation;
 
 import com.my.world.core.*;
+import com.my.world.module.common.ActivatableComponent;
 import com.my.world.module.common.SyncComponent;
 import com.my.world.module.script.ScriptSystem;
 
 import java.util.*;
 
-public class Animation implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, Configurable.OnLoad, Configurable.OnDump {
+public class Animation extends ActivatableComponent implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, Configurable.OnLoad, Configurable.OnDump {
 
     @Config(type = Config.Type.Asset)
     public AnimationController animationController;
@@ -99,11 +100,11 @@ public class Animation implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, C
 
     // ----- Animation Context ----- //
 
-    Scene scene;
-    Entity entity;
-    AnimationController.Instance controllerInstance;
-    final Set<SyncComponent> changedSyncComponents = new HashSet<>();
-    final Set<String> changedChannels = new HashSet<>();
-    final Map<String, AnimationChannel.Instance> channelInstanceCaches = new HashMap<>();
+    public Scene scene;
+    public Entity entity;
+    public AnimationController.Instance controllerInstance;
+    public final Set<SyncComponent> changedSyncComponents = new HashSet<>();
+    public final Set<String> changedChannels = new HashSet<>();
+    public final Map<String, AnimationChannel.Instance> channelInstanceCaches = new HashMap<>();
 
 }
