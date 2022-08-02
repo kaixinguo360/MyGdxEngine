@@ -1,11 +1,18 @@
 apply plugin: "java"
 
+dependencies {
+    compile "com.badlogicgames.gdx:gdx:$gdxVersion"
+    compile "com.badlogicgames.gdx:gdx-bullet:$gdxVersion"
+    compile "com.github.mgsx-dev.gdx-gltf:gltf:$gltfVersion"
+    compile "org.projectlombok:lombok:1.18.8"
+    compile "org.yaml:snakeyaml:1.29"
+}
+
 sourceCompatibility = 1.8
-[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
-
 sourceSets.main.java.srcDirs = [ "src/" ]
-
 
 eclipse.project {
     name = appName + "-core"
 }
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
