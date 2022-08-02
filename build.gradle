@@ -18,6 +18,18 @@ allprojects {
         appName = "MyGame"
         gdxVersion = '1.10.0'
         gltfVersion = '2.0.0-rc.1'
+
+        mavenUrl = has('mavenUrl') ? mavenUrl : ''
+        mavenUsername = has('mavenUsername') ? mavenUsername : ''
+        mavenPassword = has('mavenPassword') ? mavenPassword : ''
+
+        if (rootProject.file("local.properties").exists()) {
+            Properties properties = new Properties()
+            properties.load(rootProject.file("local.properties").newDataInputStream())
+            properties.each {
+                set(it.key, it.value)
+            }
+        }
     }
 
     repositories {
