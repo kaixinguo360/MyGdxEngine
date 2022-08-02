@@ -9,6 +9,7 @@ import com.my.world.core.Component;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
 import com.my.world.module.animation.Animation;
+import com.my.world.module.animation.DefaultAnimationController;
 import com.my.world.module.input.InputSystem;
 
 import java.util.Map;
@@ -36,7 +37,7 @@ public class TestSceneBuilder extends BaseBuilder<TestSceneBuilder> {
         scene.addEntity(newEntity((InputSystem.OnKeyDown) keycode -> {
             if (keycode == Input.Keys.R) {
                 Animation animation = animationEntity.getComponent(Animation.class);
-                animation.animationController.initState = "state2";
+                ((DefaultAnimationController) animation.animationController).initState = "state2";
             }
         }));
 
