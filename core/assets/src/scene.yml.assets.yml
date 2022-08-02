@@ -1,0 +1,1036 @@
+type: com.my.world.module.animation.AnimationClip
+id: TestAction
+config:
+  name: TestAction
+  channels:
+    - type: com.my.world.module.animation.AnimationChannel
+      config:
+        entity: null
+        component: com.my.world.module.common.EnhancedPosition
+        field: translation.x
+        index: 0
+        values:
+          type: com.my.world.module.animation.BezierCurve
+          config:
+            points:
+              - [ 1.0, 0.0 ]
+              - [ 2.3333334922790527, 0.0 ]
+              - [ 3.6666665077209473, -5.0 ]
+              - [ 5.0, -5.0 ]
+              - [ 6.666666507720947, -5.0 ]
+              - [ 8.333333015441895, 3.2281265258789062 ]
+              - [ 10.0, 3.2281265258789062 ]
+              - [ 11.666666984558105, 3.2281265258789062 ]
+              - [ 13.333333015441895, -4.873898506164551 ]
+              - [ 15.0, -4.873898506164551 ]
+    - type: com.my.world.module.animation.AnimationChannel
+      config:
+        entity: null
+        component: com.my.world.module.common.EnhancedPosition
+        field: translation.y
+        index: 0
+        values:
+          type: com.my.world.module.animation.BezierCurve
+          config:
+            points:
+              - [ 1.0, 0.0 ]
+              - [ 2.3333334922790527, 0.0 ]
+              - [ 3.6666665077209473, 0.0 ]
+              - [ 5.0, 0.0 ]
+              - [ 6.666666507720947, 0.0 ]
+              - [ 8.333333015441895, 0.0 ]
+              - [ 10.0, 0.0 ]
+    - type: com.my.world.module.animation.AnimationChannel
+      config:
+        entity: null
+        component: com.my.world.module.common.EnhancedPosition
+        field: translation.z
+        index: 0
+        values:
+          type: com.my.world.module.animation.BezierCurve
+          config:
+            points:
+              - [ 1.0, 0.0 ]
+              - [ 2.3333334922790527, 0.0 ]
+              - [ 3.6666665077209473, 0.0 ]
+              - [ 5.0, 0.0 ]
+              - [ 6.666666507720947, 0.0 ]
+              - [ 8.333333015441895, 0.0 ]
+              - [ 10.0, 0.0 ]
+
+---
+type: com.my.world.core.Prefab
+id: BL_Aircraft
+globalId: null
+config:
+  entities:
+  - type: com.my.world.core.Entity
+    globalId: null
+    config:
+      name: BL_Aircraft
+      id: BL_Aircraft
+      activeSelf: true
+      parent: null
+      components:
+      - type: com.my.world.module.common.Position
+        config:
+          localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+          disableInherit: False
+      - type: com.my.demo.script.AircraftScript
+        config:
+          bulletPrefab: Bullet
+          bulletVelocity: [0, 0, -2000]
+          bombPrefab: Bomb
+          bombVelocity: [0, -10, 0]
+          name: #####()
+          active: False
+          cameraMode: 0
+      - type: com.my.demo.script.CharacterSwitcherAgent
+        config:
+          characterName: BL_Aircraft
+          eventId: CharacterSwitch
+          cameraName: camera
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Body
+    globalId: BL_Body.001
+    config:
+      BL_Body.config.name: body
+      BL_Body.globalId: BL_Body.001
+      BL_Body.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, 0.0, 1.0]
+      BL_Body.config.parent: BL_Aircraft
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Engine
+    globalId: BL_Engine.001
+    config:
+      BL_Engine.config.name: engine
+      BL_Engine.globalId: BL_Engine.001
+      BL_Engine.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, -4.371138828673793e-08, -1.0, 0.0, 0.0, 1.0, -4.371138828673793e-08, 0.0, 0.0, 0.09999990463256836, -3.0, 1.0]
+      BL_Engine.config.components[2].config.base: BL_Body.001
+      BL_Engine.config.parent: BL_Body.001
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Rotate
+    globalId: BL_Rotate.001
+    config:
+      BL_Rotate.config.name: rotate_T
+      BL_Rotate.globalId: BL_Rotate.001
+      BL_Rotate.config.components[0].config.localTransform: [7.549790126404332e-08, -1.0, 0.0, 0.0, -1.0, -7.549790126404332e-08, 3.2584136988589307e-07, 0.0, -3.2584136988589307e-07, -2.460033892359107e-14, -1.0, 0.0, 0.0, 0.0, 3.0, 1.0]
+      BL_Rotate.config.components[1].config.frameInA: [7.549790126404332e-08, -1.0, 0.0, 0.0, -4.0133926404450904e-07, -3.030027265335175e-14, -1.0, 0.0, 1.0, 7.549790126404332e-08, -4.0133926404450904e-07, 0.0, 0.0, 0.0, 3.0, 1.0]
+      BL_Rotate.config.components[1].config.base: BL_Body.001
+      BL_Rotate.config.components[4].config.low: -0.2
+      BL_Rotate.config.components[4].config.resilience: 1
+      BL_Rotate.config.parent: BL_Body.001
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Wing
+    globalId: BL_Wing.005
+    config:
+      BL_Wing.config.name: BL_Wing.005
+      BL_Wing.globalId: BL_Wing.005
+      BL_Wing.config.components[0].config.localTransform: [2.2649371089755732e-07, -1.0, 3.2584136988589307e-07, 0.0, -0.9743700623512268, -2.93987028499032e-07, -0.22495104372501373, 0.0, 0.22495104372501373, -2.6654007001525315e-07, -0.9743700623512268, 0.0, -3.516654487611959e-07, 1.5, -2.384185791015625e-07, 1.0]
+      BL_Wing.config.components[3].config.base: BL_Rotate.001
+      BL_Wing.config.parent: BL_Rotate.001
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Wing
+    globalId: BL_Wing.006
+    config:
+      BL_Wing.config.name: BL_Wing.006
+      BL_Wing.globalId: BL_Wing.006
+      BL_Wing.config.components[0].config.localTransform: [2.2649371089755732e-07, -1.0, 3.2584136988589307e-07, 0.0, -0.9743700623512268, -2.93987028499032e-07, -0.22495104372501373, 0.0, 0.22495104372501373, -2.6654007001525315e-07, -0.9743700623512268, 0.0, 3.516654487611959e-07, -1.5, 2.384185791015625e-07, 1.0]
+      BL_Wing.config.components[3].config.base: BL_Rotate.001
+      BL_Wing.config.parent: BL_Rotate.001
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Rotate
+    globalId: BL_Rotate.002
+    config:
+      BL_Rotate.config.name: rotate_R
+      BL_Rotate.globalId: BL_Rotate.002
+      BL_Rotate.config.components[0].config.localTransform: [7.549790126404332e-08, -1.0, 0.0, 0.0, -1.0, -7.549790126404332e-08, 3.2584136988589307e-07, 0.0, -3.2584136988589307e-07, -2.460033892359107e-14, -1.0, 0.0, 1.0, 0.0, -2.0, 1.0]
+      BL_Rotate.config.components[1].config.frameInA: [7.549790126404332e-08, -1.0, 0.0, 0.0, -4.0133926404450904e-07, -3.030027265335175e-14, -1.0, 0.0, 1.0, 7.549790126404332e-08, -4.0133926404450904e-07, 0.0, 1.0, 0.0, -2.0, 1.0]
+      BL_Rotate.config.components[1].config.base: BL_Body.001
+      BL_Rotate.config.parent: BL_Body.001
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Wing
+    globalId: BL_Wing.001
+    config:
+      BL_Wing.config.name: BL_Wing.001
+      BL_Wing.globalId: BL_Wing.001
+      BL_Wing.config.components[0].config.localTransform: [2.2649373931926675e-07, -1.0, 3.2584136988589307e-07, 0.0, -0.9702957272529602, -2.985940739108628e-07, -0.24192190170288086, 0.0, 0.24192190170288086, -2.613686831409723e-07, -0.9702957272529602, 0.0, 4.867679308517836e-07, -1.4999998807907104, 2.384185791015625e-07, 1.0]
+      BL_Wing.config.components[3].config.base: BL_Rotate.002
+      BL_Wing.config.parent: BL_Rotate.002
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Wing
+    globalId: BL_Wing.002
+    config:
+      BL_Wing.config.name: BL_Wing.002
+      BL_Wing.globalId: BL_Wing.002
+      BL_Wing.config.components[0].config.localTransform: [1.0, 0.0, 2.4868995751603507e-14, 0.0, -1.4210854715202004e-14, 1.0, 0.0, 0.0, -2.842170943040401e-14, 0.0, 1.0, 0.0, 2.0000007152557373, 5.960464477539063e-08, -2.384185791015625e-07, 1.0]
+      BL_Wing.config.components[3].config.base: BL_Wing.001
+      BL_Wing.config.parent: BL_Wing.001
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Rotate
+    globalId: BL_Rotate.003
+    config:
+      BL_Rotate.config.name: rotate_L
+      BL_Rotate.globalId: BL_Rotate.003
+      BL_Rotate.config.components[0].config.localTransform: [7.549790126404332e-08, -1.0, 0.0, 0.0, -1.0, -7.549790126404332e-08, 3.2584136988589307e-07, 0.0, -3.2584136988589307e-07, -2.460033892359107e-14, -1.0, 0.0, -1.0, 0.0, -2.0, 1.0]
+      BL_Rotate.config.components[1].config.frameInA: [7.549790126404332e-08, -1.0, 0.0, 0.0, -4.0133926404450904e-07, -3.030027265335175e-14, -1.0, 0.0, 1.0, 7.549790126404332e-08, -4.0133926404450904e-07, 0.0, -1.0, 0.0, -2.0, 1.0]
+      BL_Rotate.config.components[1].config.base: BL_Body.001
+      BL_Rotate.config.parent: BL_Body.001
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Wing
+    globalId: BL_Wing.003
+    config:
+      BL_Wing.config.name: BL_Wing.003
+      BL_Wing.globalId: BL_Wing.003
+      BL_Wing.config.components[0].config.localTransform: [2.2649373931926675e-07, -1.0, 3.2584136988589307e-07, 0.0, -0.9702957272529602, -2.985940739108628e-07, -0.24192190170288086, 0.0, 0.24192190170288086, -2.613686831409723e-07, -0.9702957272529602, 0.0, -5.463726324705931e-07, 1.5, 0.0, 1.0]
+      BL_Wing.config.components[3].config.base: BL_Rotate.003
+      BL_Wing.config.parent: BL_Rotate.003
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Wing
+    globalId: BL_Wing.004
+    config:
+      BL_Wing.config.name: BL_Wing.004
+      BL_Wing.globalId: BL_Wing.004
+      BL_Wing.config.components[0].config.localTransform: [1.0, 0.0, 2.4868995751603507e-14, 0.0, -1.4210854715202004e-14, 1.0, 0.0, 0.0, -2.842170943040401e-14, 0.0, 1.0, 0.0, -1.999999761581421, -8.940696716308594e-08, 1.1920928955078125e-07, 1.0]
+      BL_Wing.config.components[3].config.base: BL_Wing.003
+      BL_Wing.config.parent: BL_Wing.003
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Wing
+    globalId: BL_Wing.007
+    config:
+      BL_Wing.config.name: wing_VL
+      BL_Wing.globalId: BL_Wing.007
+      BL_Wing.config.components[0].config.localTransform: [1.9470718370939721e-07, -1.0, 0.0, 0.0, 1.0, 1.9470718370939721e-07, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -0.6000000238418579, 0.5, 2.0, 1.0]
+      BL_Wing.config.components[3].config.base: BL_Body.001
+      BL_Wing.config.parent: BL_Body.001
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Wing
+    globalId: BL_Wing.008
+    config:
+      BL_Wing.config.name: wing_VR
+      BL_Wing.globalId: BL_Wing.008
+      BL_Wing.config.components[0].config.localTransform: [1.9470718370939721e-07, -1.0, 0.0, 0.0, 1.0, 1.9470718370939721e-07, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.5999999642372131, 0.5, 2.0, 1.0]
+      BL_Wing.config.components[3].config.base: BL_Body.001
+      BL_Wing.config.parent: BL_Body.001
+---
+type: com.my.world.core.Prefab
+id: BL_Body
+globalId: null
+config:
+  entities:
+  - type: com.my.world.core.Entity
+    globalId: null
+    config:
+      name: BL_Body
+      id: BL_Body
+      activeSelf: true
+      parent: null
+      components:
+      - type: com.my.world.module.common.Position
+        config:
+          localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+          disableInherit: False
+      - type: com.my.world.module.physics.rigidbody.BoxBody
+        config:
+          boxHalfExtents: [0.5, 0.5, 2.5]
+          mass: 50.0
+          isTrigger: False
+          group: 512
+          mask: -1
+      - type: com.my.world.module.gltf.render.GLTFModel
+        config:
+          path: obj/body.gltf
+          active: True
+      - type: com.my.world.module.physics.force.DragForce
+        config:
+          rel_pos: [0.0, 0.0, 0.0]
+          global: False
+          direction: [0.0, 0.0, 1.2000000476837158]
+---
+type: com.my.world.core.Prefab
+id: BL_Box
+globalId: null
+config:
+  entities:
+  - type: com.my.world.core.Entity
+    globalId: null
+    config:
+      name: BL_Box
+      id: BL_Box
+      activeSelf: true
+      parent: null
+      components:
+      - type: com.my.world.module.common.Position
+        config:
+          localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+          disableInherit: False
+          test: 123
+      - type: com.my.world.module.gltf.render.GLTFModelInstance
+        config:
+          model: box
+          active: True
+      - type: com.my.world.module.physics.rigidbody.BoxBody
+        config:
+          boxHalfExtents: [0.5, 0.5, 0.5]
+          mass: 10.0
+          isTrigger: False
+          group: 512
+          mask: -1
+      - type: com.my.world.module.physics.constraint.FixedConstraint
+        config:
+          frameInB: #####(instance.parent.matrix_world @ instance.matrix_world.inverted())
+          frameInA: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+          base: null
+---
+type: com.my.world.core.Prefab
+id: BL_Brick
+globalId: null
+config:
+  entities:
+  - type: com.my.world.core.Entity
+    globalId: null
+    config:
+      name: BL_Brick
+      id: BL_Brick
+      activeSelf: true
+      parent: null
+      components:
+      - type: com.my.world.module.common.Position
+        config:
+          localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+          disableInherit: False
+      - type: com.my.world.module.gltf.render.GLTFModelInstance
+        config:
+          model: brick
+          active: True
+      - type: com.my.world.module.physics.rigidbody.BoxBody
+        config:
+          boxHalfExtents: [1.0, 0.5, 0.5]
+          mass: 50.0
+          isTrigger: False
+          group: 512
+          mask: -1
+      - type: com.my.world.module.physics.constraint.FixedConstraint
+        config:
+          frameInB: #####(instance.parent.matrix_world @ instance.matrix_world.inverted())
+          frameInA: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+          base: null
+---
+type: com.my.world.core.Prefab
+id: BL_Camera
+globalId: null
+config:
+  entities:
+  - type: com.my.world.core.Entity
+    globalId: null
+    config:
+      name: BL_Camera
+      id: BL_Camera
+      activeSelf: true
+      parent: null
+      components:
+      - type: com.my.world.module.common.Position
+        config:
+          localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+          disableInherit: False
+      - type: com.my.world.module.gltf.render.GLTFModel
+        config:
+          path: obj/camera.gltf
+          active: True
+      - type: com.my.world.module.camera.Camera
+        config:
+          endY: 1.0
+          endX: 1.0
+          perspectiveCamera: com.badlogic.gdx.graphics.PerspectiveCamera@402bba4f
+          active: True
+          startY: 0.0
+          startX: 0.0
+          layer: 0
+          camera.far: 2000
+          camera.near: 0.1
+          camera.up: [0, 0, -1]
+          camera.direction: [0, -1, 0]
+          camera.fieldOfView: 67
+          camera.viewportWidth: 1280
+          camera.viewportHeight: 720
+      - type: com.my.world.module.camera.script.EnhancedThirdPersonCameraController
+        config:
+          yawRecoverEnabled: True
+          pitchMax: 90.0
+          recoverEnabled: True
+          centerRecoverRate: 1.0
+          pitchLimit: True
+          distanceLimit: True
+          localPitchRecoverEnabled: True
+          localYawTarget: 0.0
+          translateRecoverEnabled: True
+          localPitch: 0.0
+          centerRecoverEnabled: True
+          translate: [0.0, 0.0, 20.0]
+          localYaw: 0.0
+          distanceMin: 0.001
+          yawLimit: False
+          pitchRecoverRate: 1.0
+          pitch: 0.0
+          pitchTarget: 0.0
+          localYawRecoverEnabled: True
+          distanceMax: 100.0
+          distanceRate: 1.0
+          yawRate: 1.0
+          localPitchTarget: 0.0
+          localPitchRecoverRate: 1.0
+          center: [0.0, 0.0, 0.0]
+          active: True
+          yawMin: -180.0
+          pitchLocked: False
+          pitchRate: 1.0
+          translateTarget: [0.0, 0.0, 20.0]
+          yaw: 0.0
+          yawLocked: False
+          yawRecoverRate: 1.0
+          yawTarget: 0.0
+          recoverRate: 2.0
+          pitchMin: -90.0
+          localYawRecoverRate: 1.0
+          pitchRecoverEnabled: True
+          centerTarget: [0.0, 0.0, 0.0]
+          waitTime: 10.0
+          yawMax: 180.0
+          translateRecoverRate: 1.0
+---
+type: com.my.world.core.Prefab
+id: BL_Engine
+globalId: null
+config:
+  entities:
+  - type: com.my.world.core.Entity
+    globalId: null
+    config:
+      name: BL_Engine
+      id: BL_Engine
+      activeSelf: true
+      parent: null
+      components:
+      - type: com.my.world.module.common.Position
+        config:
+          localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+          disableInherit: False
+      - type: com.my.world.module.gltf.render.GLTFModel
+        config:
+          path: obj/engine.gltf
+          active: True
+      - type: com.my.world.module.physics.constraint.ConnectConstraint
+        config:
+          breakingImpulseThreshold: 2000.0
+          base: null
+      - type: com.my.world.module.physics.rigidbody.ConeBody
+        config:
+          mass: 50.0
+          isTrigger: False
+          radius: 0.44999998807907104
+          height: 1.0
+          group: 512
+          mask: -1
+      - type: com.my.world.module.physics.force.ConstantForce
+        config:
+          rel_pos: [0.0, 0.0, 0.0]
+          force: [0.0, 4000.0, 0.0]
+          global: False
+---
+type: com.my.world.core.Prefab
+id: BL_Rotate
+globalId: null
+config:
+  entities:
+  - type: com.my.world.core.Entity
+    globalId: null
+    config:
+      name: BL_Rotate
+      id: BL_Rotate
+      activeSelf: true
+      parent: null
+      components:
+      - type: com.my.world.module.common.Position
+        config:
+          localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+          disableInherit: False
+      - type: com.my.world.module.physics.constraint.HingeConstraint
+        config:
+          frameInB: [1.0, 0.0, 0.0, 0.0, 0.0, 7.549790126404332e-08, 1.0, 0.0, 0.0, -1.0, 7.549790126404332e-08, 0.0, 0.0, 0.0, 0.0, 1.0]
+          frameInA: #####(instance.parent.matrix_world.inverted() @ instance.matrix_world @ Matrix.Rotation(radians(90), 4, 'X'))
+          useLinearReferenceFrameA: False
+          base: null
+      - type: com.my.world.module.physics.rigidbody.CylinderBody
+        config:
+          mass: 50.0
+          isTrigger: False
+          halfExtents: [0.5, 0.5, 0.5]
+          group: 512
+          mask: -1
+      - type: com.my.world.module.gltf.render.GLTFModel
+        config:
+          path: obj/rotate.gltf
+          active: True
+      - type: com.my.demo.script.AircraftController
+        config:
+          low: -0.15
+          high: 0.2
+          resilience: 0.5
+          target: 0
+          isRotated: False
+          active: True
+---
+type: com.my.world.core.Prefab
+id: BL_Runway
+globalId: null
+config:
+  entities:
+  - type: com.my.world.core.Entity
+    globalId: null
+    config:
+      name: BL_Runway
+      id: BL_Runway
+      activeSelf: true
+      parent: null
+      components:
+      - type: com.my.world.module.common.Position
+        config:
+          localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+          disableInherit: False
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Box
+    globalId: BL_Box.001
+    config:
+      BL_Box.config.name: BL_Box.001
+      BL_Box.globalId: BL_Box.001
+      BL_Box.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, 0.0, 1.0]
+      BL_Box.config.components[3]: null
+      BL_Box.config.parent: BL_Runway
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Box
+    globalId: BL_Box.002
+    config:
+      BL_Box.config.name: BL_Box.002
+      BL_Box.globalId: BL_Box.002
+      BL_Box.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, -10.0, 1.0]
+      BL_Box.config.components[3]: null
+      BL_Box.config.parent: BL_Runway
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Box
+    globalId: BL_Box.003
+    config:
+      BL_Box.config.name: BL_Box.003
+      BL_Box.globalId: BL_Box.003
+      BL_Box.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, -20.0, 1.0]
+      BL_Box.config.components[3]: null
+      BL_Box.config.parent: BL_Runway
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Box
+    globalId: BL_Box.004
+    config:
+      BL_Box.config.name: BL_Box.004
+      BL_Box.globalId: BL_Box.004
+      BL_Box.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, -30.0, 1.0]
+      BL_Box.config.components[3]: null
+      BL_Box.config.parent: BL_Runway
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Box
+    globalId: BL_Box.005
+    config:
+      BL_Box.config.name: BL_Box.005
+      BL_Box.globalId: BL_Box.005
+      BL_Box.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, -40.0, 1.0]
+      BL_Box.config.components[3]: null
+      BL_Box.config.parent: BL_Runway
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Box
+    globalId: BL_Box.006
+    config:
+      BL_Box.config.name: BL_Box.006
+      BL_Box.globalId: BL_Box.006
+      BL_Box.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, -50.0, 1.0]
+      BL_Box.config.components[3]: null
+      BL_Box.config.parent: BL_Runway
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Box
+    globalId: BL_Box.007
+    config:
+      BL_Box.config.name: BL_Box.007
+      BL_Box.globalId: BL_Box.007
+      BL_Box.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, -60.0, 1.0]
+      BL_Box.config.components[3]: null
+      BL_Box.config.parent: BL_Runway
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Box
+    globalId: BL_Box.008
+    config:
+      BL_Box.config.name: BL_Box.008
+      BL_Box.globalId: BL_Box.008
+      BL_Box.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, -70.0, 1.0]
+      BL_Box.config.components[3]: null
+      BL_Box.config.parent: BL_Runway
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Box
+    globalId: BL_Box.009
+    config:
+      BL_Box.config.name: BL_Box.009
+      BL_Box.globalId: BL_Box.009
+      BL_Box.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, -80.0, 1.0]
+      BL_Box.config.components[3]: null
+      BL_Box.config.parent: BL_Runway
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Box
+    globalId: BL_Box.010
+    config:
+      BL_Box.config.name: BL_Box.010
+      BL_Box.globalId: BL_Box.010
+      BL_Box.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, -90.0, 1.0]
+      BL_Box.config.components[3]: null
+      BL_Box.config.parent: BL_Runway
+---
+type: com.my.world.core.Prefab
+id: BL_Team
+globalId: null
+config:
+  entities:
+  - type: com.my.world.core.Entity
+    globalId: null
+    config:
+      name: BL_Team
+      id: BL_Team
+      activeSelf: true
+      parent: null
+      components:
+      - type: com.my.world.module.common.Position
+        config:
+          localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+          disableInherit: False
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Aircraft
+    globalId: Test.001
+    config:
+      BL_Aircraft.config.name: Test.001
+      BL_Aircraft.globalId: Test.001
+      BL_Aircraft.config.components[0].config.localTransform: [0.9999999403953552, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.9999999403953552, 0.0, -20.0, 0.0, 9.5367431640625e-07, 1.0]
+      BL_Aircraft.config.components[2]: null
+      BL_Aircraft.config.parent: BL_Team
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Aircraft
+    globalId: Test.002
+    config:
+      BL_Aircraft.config.name: Test.002
+      BL_Aircraft.globalId: Test.002
+      BL_Aircraft.config.components[0].config.localTransform: [0.9999999403953552, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.9999999403953552, 0.0, -20.0, 0.0, 10.0, 1.0]
+      BL_Aircraft.config.components[2]: null
+      BL_Aircraft.config.parent: BL_Team
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Aircraft
+    globalId: Test.003
+    config:
+      BL_Aircraft.config.name: Test.003
+      BL_Aircraft.globalId: Test.003
+      BL_Aircraft.config.components[0].config.localTransform: [0.9999999403953552, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.9999999403953552, 0.0, -20.0, 0.0, -9.999998092651367, 1.0]
+      BL_Aircraft.config.components[2]: null
+      BL_Aircraft.config.parent: BL_Team
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Aircraft
+    globalId: Test.004
+    config:
+      BL_Aircraft.config.name: Test.004
+      BL_Aircraft.globalId: Test.004
+      BL_Aircraft.config.components[0].config.localTransform: [0.9999999403953552, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.9999999403953552, 0.0, 20.0, 0.0, 10.0, 1.0]
+      BL_Aircraft.config.components[2]: null
+      BL_Aircraft.config.parent: BL_Team
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Aircraft
+    globalId: Test.005
+    config:
+      BL_Aircraft.config.name: Test.005
+      BL_Aircraft.globalId: Test.005
+      BL_Aircraft.config.components[0].config.localTransform: [0.9999999403953552, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.9999999403953552, 0.0, 20.0, 0.0, 9.5367431640625e-07, 1.0]
+      BL_Aircraft.config.components[2]: null
+      BL_Aircraft.config.parent: BL_Team
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Aircraft
+    globalId: Test.006
+    config:
+      BL_Aircraft.config.name: Test.006
+      BL_Aircraft.globalId: Test.006
+      BL_Aircraft.config.components[0].config.localTransform: [0.9999999403953552, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.9999999403953552, 0.0, 20.0, 0.0, -9.999998092651367, 1.0]
+      BL_Aircraft.config.components[2]: null
+      BL_Aircraft.config.parent: BL_Team
+---
+type: com.my.world.core.Prefab
+id: BL_Tower
+globalId: null
+config:
+  entities:
+  - type: com.my.world.core.Entity
+    globalId: null
+    config:
+      name: BL_Tower
+      id: BL_Tower
+      activeSelf: true
+      parent: null
+      components:
+      - type: com.my.world.module.common.Position
+        config:
+          localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+          disableInherit: False
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Wall
+    globalId: BL_Wall.001
+    config:
+      BL_Wall.config.name: BL_Wall.001
+      BL_Wall.globalId: BL_Wall.001
+      BL_Wall.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 5.0, 1.0]
+      BL_Wall.config.parent: BL_Tower
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Wall
+    globalId: BL_Wall.002
+    config:
+      BL_Wall.config.name: BL_Wall.002
+      BL_Wall.globalId: BL_Wall.002
+      BL_Wall.config.components[0].config.localTransform: [-4.371138828673793e-08, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, -4.371138828673793e-08, 0.0, 5.0, 0.0, 0.0, 1.0]
+      BL_Wall.config.parent: BL_Tower
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Wall
+    globalId: BL_Wall.003
+    config:
+      BL_Wall.config.name: BL_Wall.003
+      BL_Wall.globalId: BL_Wall.003
+      BL_Wall.config.components[0].config.localTransform: [-1.0, 0.0, 3.2584136988589307e-07, 0.0, 0.0, 1.0, 0.0, 0.0, -3.2584136988589307e-07, 0.0, -1.0, 0.0, -4.37113897078234e-07, 0.0, -5.0, 1.0]
+      BL_Wall.config.parent: BL_Tower
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Wall
+    globalId: BL_Wall.004
+    config:
+      BL_Wall.config.name: BL_Wall.004
+      BL_Wall.globalId: BL_Wall.004
+      BL_Wall.config.components[0].config.localTransform: [1.1924880638503055e-08, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, -1.0, 0.0, 1.1924880638503055e-08, 0.0, -5.0, 0.0, 4.37113897078234e-07, 1.0]
+      BL_Wall.config.parent: BL_Tower
+---
+type: com.my.world.core.Prefab
+id: BL_Wall
+globalId: null
+config:
+  entities:
+  - type: com.my.world.core.Entity
+    globalId: null
+    config:
+      name: BL_Wall
+      id: BL_Wall
+      activeSelf: true
+      parent: null
+      components:
+      - type: com.my.world.module.common.Position
+        config:
+          localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+          disableInherit: False
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.001
+    config:
+      BL_Brick.config.name: BL_Brick.001
+      BL_Brick.globalId: BL_Brick.001
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -4.5, 0.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.002
+    config:
+      BL_Brick.config.name: BL_Brick.002
+      BL_Brick.globalId: BL_Brick.002
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -2.5, 0.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.003
+    config:
+      BL_Brick.config.name: BL_Brick.003
+      BL_Brick.globalId: BL_Brick.003
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -0.5, 0.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.004
+    config:
+      BL_Brick.config.name: BL_Brick.004
+      BL_Brick.globalId: BL_Brick.004
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.5, 0.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.005
+    config:
+      BL_Brick.config.name: BL_Brick.005
+      BL_Brick.globalId: BL_Brick.005
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 3.5, 0.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.006
+    config:
+      BL_Brick.config.name: BL_Brick.006
+      BL_Brick.globalId: BL_Brick.006
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -3.5, 1.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.007
+    config:
+      BL_Brick.config.name: BL_Brick.007
+      BL_Brick.globalId: BL_Brick.007
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -1.5, 1.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.008
+    config:
+      BL_Brick.config.name: BL_Brick.008
+      BL_Brick.globalId: BL_Brick.008
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.5, 1.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.009
+    config:
+      BL_Brick.config.name: BL_Brick.009
+      BL_Brick.globalId: BL_Brick.009
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 2.5, 1.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.010
+    config:
+      BL_Brick.config.name: BL_Brick.010
+      BL_Brick.globalId: BL_Brick.010
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 4.5, 1.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.011
+    config:
+      BL_Brick.config.name: BL_Brick.011
+      BL_Brick.globalId: BL_Brick.011
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -4.5, 2.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.012
+    config:
+      BL_Brick.config.name: BL_Brick.012
+      BL_Brick.globalId: BL_Brick.012
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -2.5, 2.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.013
+    config:
+      BL_Brick.config.name: BL_Brick.013
+      BL_Brick.globalId: BL_Brick.013
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -0.5, 2.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.014
+    config:
+      BL_Brick.config.name: BL_Brick.014
+      BL_Brick.globalId: BL_Brick.014
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.5, 2.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.015
+    config:
+      BL_Brick.config.name: BL_Brick.015
+      BL_Brick.globalId: BL_Brick.015
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 3.5, 2.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.016
+    config:
+      BL_Brick.config.name: BL_Brick.016
+      BL_Brick.globalId: BL_Brick.016
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -3.5, 3.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.017
+    config:
+      BL_Brick.config.name: BL_Brick.017
+      BL_Brick.globalId: BL_Brick.017
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -1.5, 3.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.018
+    config:
+      BL_Brick.config.name: BL_Brick.018
+      BL_Brick.globalId: BL_Brick.018
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.5, 3.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.019
+    config:
+      BL_Brick.config.name: BL_Brick.019
+      BL_Brick.globalId: BL_Brick.019
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 2.5, 3.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.020
+    config:
+      BL_Brick.config.name: BL_Brick.020
+      BL_Brick.globalId: BL_Brick.020
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 4.5, 3.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.021
+    config:
+      BL_Brick.config.name: BL_Brick.021
+      BL_Brick.globalId: BL_Brick.021
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -4.5, 4.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.022
+    config:
+      BL_Brick.config.name: BL_Brick.022
+      BL_Brick.globalId: BL_Brick.022
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -2.5, 4.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.023
+    config:
+      BL_Brick.config.name: BL_Brick.023
+      BL_Brick.globalId: BL_Brick.023
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -0.5, 4.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.024
+    config:
+      BL_Brick.config.name: BL_Brick.024
+      BL_Brick.globalId: BL_Brick.024
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.5, 4.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.025
+    config:
+      BL_Brick.config.name: BL_Brick.025
+      BL_Brick.globalId: BL_Brick.025
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 3.5, 4.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.026
+    config:
+      BL_Brick.config.name: BL_Brick.026
+      BL_Brick.globalId: BL_Brick.026
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -3.5, 5.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.027
+    config:
+      BL_Brick.config.name: BL_Brick.027
+      BL_Brick.globalId: BL_Brick.027
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -1.5, 5.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.028
+    config:
+      BL_Brick.config.name: BL_Brick.028
+      BL_Brick.globalId: BL_Brick.028
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.5, 5.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.029
+    config:
+      BL_Brick.config.name: BL_Brick.029
+      BL_Brick.globalId: BL_Brick.029
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 2.5, 5.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Brick
+    globalId: BL_Brick.030
+    config:
+      BL_Brick.config.name: BL_Brick.030
+      BL_Brick.globalId: BL_Brick.030
+      BL_Brick.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 4.5, 5.5, 0.0, 1.0]
+      BL_Brick.config.components[3]: null
+      BL_Brick.config.parent: BL_Wall
+---
+type: com.my.world.core.Prefab
+id: BL_Wing
+globalId: null
+config:
+  entities:
+  - type: com.my.world.core.Entity
+    globalId: null
+    config:
+      name: BL_Wing
+      id: BL_Wing
+      activeSelf: true
+      parent: null
+      components:
+      - type: com.my.world.module.common.Position
+        config:
+          localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+          disableInherit: False
+      - type: com.my.world.module.physics.rigidbody.BoxBody
+        config:
+          boxHalfExtents: [1.0, 0.10000000149011612, 0.5]
+          mass: 25.0
+          isTrigger: False
+          group: 512
+          mask: -1
+      - type: com.my.world.module.gltf.render.GLTFModel
+        config:
+          path: obj/wing.gltf
+          active: True
+      - type: com.my.world.module.physics.constraint.ConnectConstraint
+        config:
+          breakingImpulseThreshold: 500.0
+          base: null
+      - type: com.my.world.module.physics.force.DragForce
+        config:
+          rel_pos: [0.0, 0.0, 0.0]
+          global: False
+          direction: [0.0, 30.0, 0.0]
