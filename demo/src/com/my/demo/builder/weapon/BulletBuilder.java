@@ -2,11 +2,11 @@ package com.my.demo.builder.weapon;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Matrix4;
-import com.my.demo.builder.PrefabBuilder;
-import com.my.demo.builder.common.RemoveByPositionScript;
 import com.my.world.core.Engine;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
+import com.my.world.enhanced.builder.PrefabBuilder;
+import com.my.world.enhanced.script.RemoveByPositionScript;
 import com.my.world.module.common.Position;
 import com.my.world.module.physics.Collision;
 import com.my.world.module.physics.PresetTemplateRigidBody;

@@ -1,13 +1,13 @@
 package com.my.demo.builder.scene.test;
 
 import com.badlogic.gdx.Input;
-import com.my.demo.builder.BaseBuilder;
+import com.my.demo.builder.common.AnimationBuilder;
 import com.my.demo.builder.object.CharacterBuilder;
 import com.my.demo.builder.object.GroundBuilder;
-import com.my.demo.builder.test.AnimationBuilder;
 import com.my.world.core.Component;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
+import com.my.world.enhanced.builder.BaseBuilder;
 import com.my.world.module.animation.Animation;
 import com.my.world.module.animation.DefaultAnimationController;
 import com.my.world.module.input.InputSystem;

@@ -1,9 +1,9 @@
 package com.my.demo.builder.object;
 
 import com.badlogic.gdx.math.Matrix4;
-import com.my.demo.builder.PrefabBuilder;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
+import com.my.world.enhanced.builder.PrefabBuilder;
 import com.my.world.module.common.Position;
 
 import java.util.HashMap;

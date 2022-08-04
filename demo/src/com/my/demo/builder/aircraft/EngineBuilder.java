@@ -2,9 +2,9 @@ package com.my.demo.builder.aircraft;
 
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.my.demo.builder.PrefabBuilder;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
+import com.my.world.enhanced.builder.PrefabBuilder;
 import com.my.world.module.common.Position;
 import com.my.world.module.physics.constraint.ConnectConstraint;
 import com.my.world.module.physics.force.ConstantForce;
