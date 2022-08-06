@@ -16,9 +16,4 @@ public interface EntityBuilder {
         return build(scene, null);
     }
 
-    class DependenciesException extends RuntimeException {
-        public DependenciesException(Class<? extends EntityBuilder> builderType) {
-            super("No such builder: " + builderType);
-        }
-    }
 }

@@ -41,7 +41,7 @@ public class BuilderManager {
                     EntityBuilder builder = it.next();
                     builder.init(engine, scene);
                     it.remove();
-                } catch (EntityBuilder.DependenciesException ignored) {
+                } catch (DependenciesException ignored) {
                 }
             }
             if (builders.size() == 0) {

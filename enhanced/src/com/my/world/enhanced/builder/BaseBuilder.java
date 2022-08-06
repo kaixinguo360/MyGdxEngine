@@ -38,7 +38,7 @@ public abstract class BaseBuilder<T extends BaseBuilder<T>> implements EntityBui
         try {
             return (E) assetsManager.getAsset(dependency.getName(), EntityBuilder.class);
         } catch (RuntimeException e) {
-            throw new DependenciesException(dependency);
+            throw new DependenciesException("No such builder: " + dependency);
         }
     }
 
