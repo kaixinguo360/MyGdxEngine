@@ -2,7 +2,7 @@ package com.my.world.module.animation;
 
 import com.badlogic.gdx.math.Bezier;
 import com.badlogic.gdx.math.Vector2;
-import com.my.demo.builder.common.AnimationBuilder;
+import com.my.demo.entity.common.AnimationEntity;
 import com.my.world.core.Engine;
 import com.my.world.core.SerializerManager;
 import com.my.world.gdx.GdxApplication;
@@ -53,7 +53,7 @@ public class AnimationTest {
 
     @Test
     public void testAnimationController() {
-        testSerialize(new AnimationBuilder.TestAnimationController());
+        testSerialize(new AnimationEntity.TestAnimationController());
     }
 
     @Test

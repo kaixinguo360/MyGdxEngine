@@ -5,8 +5,8 @@ import com.badlogic.gdx.graphics.g3d.utils.RenderableSorter;
 import com.badlogic.gdx.graphics.g3d.utils.ShaderProvider;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.my.demo.builder.common.EnvironmentSetupScript;
-import com.my.demo.builder.scene.airport.AirportBuilder;
+import com.my.demo.entity.common.EnvironmentSetupScript;
+import com.my.demo.scene.AirportSceneBuilder;
 import com.my.world.core.AssetsManager;
 import com.my.world.core.Engine;
 import com.my.world.core.Entity;
@@ -14,6 +14,7 @@ import com.my.world.core.Scene;
 import com.my.world.enhanced.attribute.MyRenderableSorter;
 import com.my.world.enhanced.attribute.MyShaderProvider;
 import com.my.world.enhanced.builder.BuilderManager;
+import com.my.world.enhanced.builder.EntityRegister;
 import com.my.world.enhanced.script.ExitScript;
 import com.my.world.enhanced.script.PauseScript;
 import com.my.world.enhanced.script.ReloadScript;
@@ -28,8 +29,12 @@ public class SceneBuilder {
 
     public static BuilderManager builderManager = new BuilderManager();
 
+    public static EntityRegister entityRegister = new EntityRegister();
+
     public static void initBuilderManager(Engine engine) {
-        builderManager.scanPackage("com.my.demo.builder");
+        entityRegister.scanPackage("com.my.demo");
+        entityRegister.init(engine);
+        builderManager.scanPackage("com.my.demo");
         builderManager.init(engine);
     }
 
@@ -72,7 +77,7 @@ public class SceneBuilder {
 
         // ----- Init Scene ----- //
 
-        builder.build(AirportBuilder.class);
+        builder.build(AirportSceneBuilder.class);
 
         // ----- Init Scripts ----- //
 
