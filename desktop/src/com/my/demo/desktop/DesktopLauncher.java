@@ -10,6 +10,7 @@ public class DesktopLauncher {
         config.width = LwjglApplicationConfiguration.getDesktopDisplayMode().width * 2 / 3;
         config.height = LwjglApplicationConfiguration.getDesktopDisplayMode().height * 2 / 3;
         config.depth = 32;
+        config.forceExit = true;
         new LwjglApplication(new MyWorld(), config);
     }
 }
