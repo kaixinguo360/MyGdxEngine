@@ -6,17 +6,23 @@ import java.util.Map;
 
 public class ConfigurableSerializer implements Serializer, Serializer.Setter {
 
+    protected <E, T> Configurable newInstance(E configObj, Class<T> type, Context context) {
+        Configurable configurable;
+        try {
+            configurable = (Configurable) type.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException("Load Loadable Resource(" + type + ") error: " + e.getMessage(), e);
+        }
+        return configurable;
+    }
+
     @Override
     public <E, T> T load(E configObj, Class<T> type, Context context) {
         Map<String, Object> config = (Map<String, Object>) configObj;
 
         Configurable configurable;
 
-        try {
-            configurable = (Configurable) type.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException("Load Loadable Resource(" + type + ") error: " + e.getMessage(), e);
-        }
+        configurable = newInstance(configObj, type, context);
 
         boolean isLazy = false;
         if (configurable instanceof Configurable.OnLoad) {
@@ -46,7 +52,6 @@ public class ConfigurableSerializer implements Serializer, Serializer.Setter {
         }
 
         return (T) configurable;
-
     }
 
     @Override
