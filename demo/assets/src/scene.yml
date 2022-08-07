@@ -1,0 +1,104 @@
+name: 场景
+entities:
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Aircraft
+    globalId: aircraft
+    config:
+      BL_Aircraft.config.name: aircraft
+      BL_Aircraft.globalId: aircraft
+      BL_Aircraft.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 80.0, 1.0]
+      BL_Aircraft.config.components[1].config.active: True
+      BL_Aircraft.config.components[2].config.characterName: aircraft
+  - type: com.my.world.core.Prefab
+    prefabName: BL_Camera
+    globalId: BL_Camera.001
+    config:
+      BL_Camera.config.name: camera
+      BL_Camera.globalId: BL_Camera.001
+      BL_Camera.config.components[0].config.localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 10.0, 1.0]
+      BL_Camera.config.components[1]: null
+      BL_Camera.config.components[2].config.active: True
+      BL_Camera.config.parent: aircraft/BL_Body.001
+  - type: com.my.world.core.Entity
+    globalId: null
+    config:
+      name: Scene.Base
+      id: Scene.Base
+      activeSelf: true
+      parent: null
+      components:
+      - type: com.my.demo.script.ExitScript
+        config: {}
+      - type: com.my.demo.script.ReloadScript
+        config: {}
+  - type: com.my.world.core.Entity
+    globalId: null
+    config:
+      name: Scene.CharacterSwitcher
+      id: Scene.CharacterSwitcher
+      activeSelf: true
+      parent: null
+      components:
+      - type: com.my.demo.script.CharacterSwitcher
+        config:
+          eventId: CharacterSwitch
+          keySwitch: 61
+          currentIndex: 0
+          characterNames: ['aircraft', 'character']
+  - type: com.my.world.core.Entity
+    globalId: null
+    config:
+      name: Ground
+      id: Ground
+      activeSelf: true
+      parent: null
+      components:
+      - type: com.my.world.module.common.Position
+        config:
+          localTransform: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+          disableInherit: False
+      - type: com.my.world.module.gltf.render.GLTFModelInstance
+        config:
+          model: ground
+          active: True
+      - type: com.my.world.module.physics.PresetTemplateRigidBody
+        config:
+          templateRigidBody: ground
+          group: 512
+          mask: -1
+          isTrigger: False
+  - type: com.my.world.core.Entity
+    globalId: null
+    config:
+      name: Scene.Light
+      id: Scene.Light
+      activeSelf: true
+      parent: null
+      components:
+      - type: com.my.world.module.render.attribute.ColorAttribute
+        config:
+          color: [0.4, 0.4, 0.4, 1]
+          active: True
+          type: 32
+      - type: com.my.world.module.gltf.light.GLTFDirectionalLight
+        config:
+          light: net.mgsx.gltf.scene3d.lights.DirectionalLightEx@294425a7
+          active: True
+          light.baseColor: [0.8, 0.8, 0.8, 1]
+          light.intensity: 1
+          light.direction: [-0.2, -0.8, 1]
+systems:
+  - type: com.my.world.module.camera.CameraSystem
+    config: {}
+  - type: com.my.world.module.gltf.GLTFRenderSystem
+    config: {useDefaultEnvironment: true}
+  - type: com.my.world.module.physics.PhysicsSystem
+    config: {maxSubSteps: 5, fixedTimeStep: 0.016666668}
+  - type: com.my.world.module.script.ScriptSystem
+    config: {}
+  - type: com.my.world.module.render.EnvironmentSystem
+    config: {}
+  - type: com.my.world.module.input.InputSystem
+    config: {}
+  - type: com.my.world.module.physics.ConstraintSystem
+    config: {}

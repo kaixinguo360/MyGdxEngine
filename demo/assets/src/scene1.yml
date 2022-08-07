@@ -1,0 +1,24 @@
+name: 场景
+entities:
+  - type: com.my.world.core.Prefab
+    prefabName: Test
+    globalId: null
+    config:
+      Test.config.name: Test.002
+      Test.globalId: Test.002
+      Test.config.components[0].config.localTransform: [0.9999999403953552, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.9999999403953552, 0.0, -12.0, 0.0, 0.0, 1.0]
+systems:
+  - type: com.my.world.module.camera.CameraSystem
+    config: {}
+  - type: com.my.world.module.gltf.GLTFRenderSystem
+    config: {useDefaultEnvironment: true}
+  - type: com.my.world.module.physics.PhysicsSystem
+    config: {maxSubSteps: 5, fixedTimeStep: 0.016666668}
+  - type: com.my.world.module.script.ScriptSystem
+    config: {}
+  - type: com.my.world.module.render.EnvironmentSystem
+    config: {}
+  - type: com.my.world.module.input.InputSystem
+    config: {}
+  - type: com.my.world.module.physics.ConstraintSystem
+    config: {}
