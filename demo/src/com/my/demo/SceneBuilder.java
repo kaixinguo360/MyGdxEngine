@@ -17,6 +17,7 @@ import com.my.world.enhanced.builder.BuilderManager;
 import com.my.world.enhanced.builder.EntityRegister;
 import com.my.world.enhanced.script.ExitScript;
 import com.my.world.enhanced.script.PauseScript;
+import com.my.world.enhanced.script.PhysicsDebugScript;
 import com.my.world.enhanced.script.ReloadScript;
 import com.my.world.module.common.Position;
 import com.my.world.module.render.RenderSystem;
@@ -27,18 +28,17 @@ import net.mgsx.gltf.scene3d.shaders.PBRShaderProvider;
 
 public class SceneBuilder {
 
+    public static EntityRegister entityRegister = new EntityRegister();
     public static BuilderManager builderManager = new BuilderManager();
 
-    public static EntityRegister entityRegister = new EntityRegister();
-
-    public static void initBuilderManager(Engine engine) {
+    public static void init(Engine engine) {
         entityRegister.scanPackage("com.my.demo");
         entityRegister.init(engine);
         builderManager.scanPackage("com.my.demo");
         builderManager.init(engine);
     }
 
-    public static void initScene(Scene scene) {
+    public static void build(Scene scene) {
 
         BuilderManager.Instance builder = builderManager.newInstance(scene);
 
@@ -96,9 +96,9 @@ public class SceneBuilder {
         pauseScriptEntity.addComponent(new PauseScript());
         scene.addEntity(pauseScriptEntity);
 
-//        Entity physicsDebugScriptEntity = new Entity();
-//        physicsDebugScriptEntity.setName("physicsDebugScriptEntity");
-//        physicsDebugScriptEntity.addComponent(new PhysicsDebugScript());
+        Entity physicsDebugScriptEntity = new Entity();
+        physicsDebugScriptEntity.setName("physicsDebugScriptEntity");
+        physicsDebugScriptEntity.addComponent(new PhysicsDebugScript());
 //        scene.addEntity(physicsDebugScriptEntity);
     }
 

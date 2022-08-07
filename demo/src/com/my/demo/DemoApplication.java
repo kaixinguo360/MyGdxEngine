@@ -1,9 +1,9 @@
 package com.my.demo;
 
-import com.my.world.core.Scene;
-import com.my.world.gdx.GdxApplication;
+import com.my.world.core.*;
+import com.my.world.enhanced.EnhancedApplication;
 
-public class MyWorld extends GdxApplication {
+public class DemoApplication extends EnhancedApplication {
 
     @Override
     public void create() {
@@ -21,7 +21,7 @@ public class MyWorld extends GdxApplication {
     }
 
     private void createAssets() {
-        SceneBuilder.initBuilderManager(engine);
+        SceneBuilder.init(engine);
     }
     private void saveAssets() {
         engine.getAssetsManager().dumpAssetsToFile("assets.yml");
@@ -32,7 +32,7 @@ public class MyWorld extends GdxApplication {
 
     private Scene createScene() {
         Scene scene = newScene();
-        SceneBuilder.initScene(scene);
+        SceneBuilder.build(scene);
         return scene;
     }
     private void saveScene(Scene scene) {
