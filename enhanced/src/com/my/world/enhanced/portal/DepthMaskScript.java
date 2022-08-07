@@ -1,10 +1,7 @@
 package com.my.world.enhanced.portal;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
-import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.Renderable;
@@ -30,7 +27,7 @@ public class DepthMaskScript extends Render implements ScriptSystem.OnStart, Cam
     protected static final ClearScreenShader clearScreenShader = new ClearScreenShader();
 
     protected RenderSystem renderSystem;
-    protected final FrameBuffer fbo;
+    protected final EnhancedFrameBuffer fbo;
     protected final int depthMapHandler;
 
     public final Material material;
@@ -44,7 +41,7 @@ public class DepthMaskScript extends Render implements ScriptSystem.OnStart, Cam
         // 创建帧缓冲 (无深度缓存, 有模板缓存)
         int windowWidth = Gdx.graphics.getWidth();
         int windowHeight = Gdx.graphics.getHeight();
-        fbo = new FrameBuffer(Pixmap.Format.RGBA8888, windowWidth, windowHeight, false, true);
+        fbo = new EnhancedFrameBuffer(Pixmap.Format.RGBA8888, windowWidth, windowHeight, false, true);
 
         // 手动创建深度贴图
         depthMapHandler = Gdx.gl.glGenTexture();

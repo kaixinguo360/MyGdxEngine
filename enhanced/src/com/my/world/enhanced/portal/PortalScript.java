@@ -30,8 +30,7 @@ import java.util.Map;
 
 import static com.badlogic.gdx.graphics.GL20.*;
 
-public class PortalScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, PhysicsSystem.OnCollision,
-        CameraSystem.BeforeRender, CameraSystem.AfterRender {
+public class PortalScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, PhysicsSystem.OnCollision, CameraSystem.AfterRender {
 
     @Config
     public String targetPortalName;
@@ -45,6 +44,9 @@ public class PortalScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate
     @Config
     public Shader shader;
 
+    private static int level = 0;
+
+    private CameraSystem cameraSystem;
     private RenderSystem renderSystem;
 
     private Entity selfEntity;
@@ -59,10 +61,11 @@ public class PortalScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate
 
     private static final ModelBatch batch = new ModelBatch();
     private static final SpriteBatch spriteBatch = new SpriteBatch();
-    private static final FrameBuffer fbo = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
+    private static final FrameBuffer fbo = new EnhancedFrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
 
     @Override
     public void start(Scene scene, Entity entity) {
+        this.cameraSystem = scene.getSystemManager().getSystem(CameraSystem.class);
         this.renderSystem = scene.getSystemManager().getSystem(RenderSystem.class);
 
         this.selfEntity = entity;
@@ -78,8 +81,39 @@ public class PortalScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate
     }
 
     @Override
-    public void beforeRender(PerspectiveCamera cam) {
+    public void afterRender(PerspectiveCamera cam) {
+        if (level <= 0 && cam != camera) {
+            level++;
+
+            boolean isVisible = setCamera(cam);
+            if (isVisible) {
+                renderPortal(cam);
+            }
+
+            level--;
+        }
+    }
+
+    private Matrix4 getTargetTransform() {
+        Matrix4 targetTransform;
+        if (targetPosition != null) {
+            targetTransform = this.targetPosition.getGlobalTransform();
+        } else {
+            targetTransform = this.targetTransform;
+        }
+        return targetTransform;
+    }
+
+    private Matrix4 getConvertTransform(Matrix4 matrix4, Matrix4 targetTransform) {
+        return matrix4.set(selfPosition.getGlobalTransform()).inv().mul(targetTransform);
+    }
+
+    private boolean setCamera(PerspectiveCamera cam) {
         selfRender.setTransform(selfPosition);
+
+        if (!selfRender.isVisible(cam)) {
+            return false;
+        }
 
         Matrix4 targetTransform = getTargetTransform();
 
@@ -107,25 +141,11 @@ public class PortalScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate
 
         Matrix4Pool.free(tmpM);
         Vector3Pool.free(tmpV);
+
+        return true;
     }
 
-    private Matrix4 getTargetTransform() {
-        Matrix4 targetTransform;
-        if (targetPosition != null) {
-            targetTransform = this.targetPosition.getGlobalTransform();
-        } else {
-            targetTransform = this.targetTransform;
-        }
-        return targetTransform;
-    }
-
-    private Matrix4 getConvertTransform(Matrix4 matrix4, Matrix4 targetTransform) {
-        return matrix4.set(selfPosition.getGlobalTransform()).inv().mul(targetTransform);
-    }
-
-    @Override
-    public void afterRender(PerspectiveCamera cam) {
-        if (!selfRender.isVisible(cam)) return;
+    private void renderPortal(PerspectiveCamera cam) {
 
         // 传送门外虚像
         if (this.targetScript != null) {
@@ -171,8 +191,10 @@ public class PortalScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate
 
         // 渲染传送门内场景至帧缓冲
         fbo.begin();
+        cameraSystem.callAllBeforeRenderScript(camera);
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+        // 传送门内场景
         renderSystem.render(camera);
         // 传送门内虚像
         for (Map.Entry<Entity, Info> entry : ids.entrySet()) {
@@ -195,9 +217,11 @@ public class PortalScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate
                 render.setTransform(info.position);
             }
         }
+        cameraSystem.callAllAfterRenderScript(camera);
         fbo.end();
 
         // 渲染帧缓冲内容至传送门轮廓
+        Gdx.gl.glEnable(GL_STENCIL_TEST);
         Gdx.gl.glStencilFunc(GL_EQUAL, 1, 0xFF);
         Gdx.gl.glStencilMask(0x00);
         spriteBatch.begin();
