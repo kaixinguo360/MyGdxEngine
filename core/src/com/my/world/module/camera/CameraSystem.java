@@ -102,21 +102,29 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
     // ----- Protected ----- //
 
     protected void render(PerspectiveCamera perspectiveCamera) {
-        for (Entity entity : scene.getEntityManager().getEntitiesByFilter(beforeRenderFilter)) {
-            for (BeforeRender script : entity.getComponents(BeforeRender.class)) {
-                if (Component.isActive(script)) {
-                    script.beforeRender(perspectiveCamera);
-                }
-            }
-        }
+        callAllBeforeRenderScript(perspectiveCamera);
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         renderSystem.render(perspectiveCamera);
 
+        callAllAfterRenderScript(perspectiveCamera);
+    }
+
+    public void callAllAfterRenderScript(PerspectiveCamera perspectiveCamera) {
         for (Entity entity : scene.getEntityManager().getEntitiesByFilter(afterRenderFilter)) {
             for (AfterRender script : entity.getComponents(AfterRender.class)) {
                 if (Component.isActive(script)) {
                     script.afterRender(perspectiveCamera);
+                }
+            }
+        }
+    }
+
+    public void callAllBeforeRenderScript(PerspectiveCamera perspectiveCamera) {
+        for (Entity entity : scene.getEntityManager().getEntitiesByFilter(beforeRenderFilter)) {
+            for (BeforeRender script : entity.getComponents(BeforeRender.class)) {
+                if (Component.isActive(script)) {
+                    script.beforeRender(perspectiveCamera);
                 }
             }
         }
