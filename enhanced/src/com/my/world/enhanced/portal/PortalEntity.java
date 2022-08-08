@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.math.Matrix4;
 import com.my.world.enhanced.entity.EnhancedEntity;
 import com.my.world.enhanced.portal.render.PortalRenderScript;
+import com.my.world.enhanced.portal.transfer.PortalTransferScript;
+import com.my.world.enhanced.portal.transfer.UniversalPortalTransferScript;
 import com.my.world.module.physics.Collision;
 import com.my.world.module.physics.RigidBody;
 import com.my.world.module.physics.rigidbody.SphereBody;
@@ -20,6 +22,7 @@ public class PortalEntity extends EnhancedEntity {
     public final Collision collision;
     public final Portal portal;
     public final PortalRenderScript renderScript;
+    public final PortalTransferScript transferScript;
 
     public PortalEntity(float radius) {
         setName("Portal");
@@ -31,5 +34,6 @@ public class PortalEntity extends EnhancedEntity {
         portal = addComponent(new Portal());
         portal.targetTransform = new Matrix4();
         renderScript = addComponent(new PortalRenderScript());
+        transferScript = addComponent(new UniversalPortalTransferScript());
     }
 }
