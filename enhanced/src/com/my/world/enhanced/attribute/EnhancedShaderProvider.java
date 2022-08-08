@@ -5,9 +5,9 @@ import com.badlogic.gdx.graphics.g3d.Shader;
 import net.mgsx.gltf.scene3d.shaders.PBRShaderConfig;
 import net.mgsx.gltf.scene3d.shaders.PBRShaderProvider;
 
-public class MyShaderProvider extends PBRShaderProvider {
+public class EnhancedShaderProvider extends PBRShaderProvider {
 
-    public MyShaderProvider(PBRShaderConfig config) {
+    public EnhancedShaderProvider(PBRShaderConfig config) {
         super(config);
     }
 

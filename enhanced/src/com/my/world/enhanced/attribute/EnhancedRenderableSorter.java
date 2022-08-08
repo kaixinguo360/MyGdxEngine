@@ -3,7 +3,7 @@ package com.my.world.enhanced.attribute;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import net.mgsx.gltf.scene3d.scene.SceneRenderableSorter;
 
-public class MyRenderableSorter extends SceneRenderableSorter {
+public class EnhancedRenderableSorter extends SceneRenderableSorter {
 
     @Override
     public int compare(Renderable o1, Renderable o2) {

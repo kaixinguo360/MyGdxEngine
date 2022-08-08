@@ -1,6 +1,7 @@
 package com.my.world.enhanced.entity;
 
 import com.my.world.module.physics.RigidBody;
+import com.my.world.module.render.Render;
 
 public class RigidBodyEntity extends RenderEntity {
 
@@ -13,5 +14,10 @@ public class RigidBodyEntity extends RenderEntity {
     public RigidBodyEntity(Param p) {
         super(p);
         this.rigidBody = addComponent(p.rigidBody);
+    }
+
+    public RigidBodyEntity(Render render, RigidBody rigidBody) {
+        super(render);
+        this.rigidBody = addComponent(rigidBody);
     }
 }
