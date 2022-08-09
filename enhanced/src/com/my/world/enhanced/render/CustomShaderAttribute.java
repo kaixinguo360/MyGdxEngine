@@ -1,4 +1,4 @@
-package com.my.world.enhanced.attribute;
+package com.my.world.enhanced.render;
 
 import com.badlogic.gdx.graphics.g3d.Attribute;
 import com.badlogic.gdx.graphics.g3d.Shader;

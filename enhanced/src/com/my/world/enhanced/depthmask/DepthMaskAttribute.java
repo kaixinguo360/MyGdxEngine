@@ -1,8 +1,8 @@
-package com.my.world.enhanced.portal;
+package com.my.world.enhanced.depthmask;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g3d.Attribute;
-import com.my.world.enhanced.attribute.CustomShaderAttribute;
+import com.my.world.enhanced.render.CustomShaderAttribute;
 
 public class DepthMaskAttribute extends CustomShaderAttribute {
 

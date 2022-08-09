@@ -1,4 +1,4 @@
-package com.my.world.enhanced.portal;
+package com.my.world.enhanced.depthmask;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;

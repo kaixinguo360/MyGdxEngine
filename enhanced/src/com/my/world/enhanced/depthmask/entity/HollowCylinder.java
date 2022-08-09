@@ -1,4 +1,4 @@
-package com.my.world.enhanced.portal;
+package com.my.world.enhanced.depthmask.entity;
 
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.Material;

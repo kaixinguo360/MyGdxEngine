@@ -1,4 +1,4 @@
-package com.my.world.enhanced.portal;
+package com.my.world.enhanced.depthmask;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
@@ -10,7 +10,7 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.my.world.core.Config;
 import com.my.world.core.Configurable;
-import com.my.world.enhanced.attribute.CustomShaderAttribute;
+import com.my.world.enhanced.render.CustomShaderAttribute;
 
 public class DepthMaskShader implements Shader, Configurable.OnInit {
 

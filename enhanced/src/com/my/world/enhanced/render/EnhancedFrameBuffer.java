@@ -1,4 +1,4 @@
-package com.my.world.enhanced.portal;
+package com.my.world.enhanced.render;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;

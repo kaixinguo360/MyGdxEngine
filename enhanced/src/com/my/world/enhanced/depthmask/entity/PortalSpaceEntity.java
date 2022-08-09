@@ -1,4 +1,4 @@
-package com.my.world.enhanced.portal;
+package com.my.world.enhanced.depthmask.entity;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -8,11 +8,12 @@ import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.CylinderShapeBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.EllipseShapeBuilder;
 import com.badlogic.gdx.math.Matrix4;
+import com.my.world.enhanced.depthmask.DepthMaskEntity;
 import com.my.world.module.render.Render;
 import com.my.world.module.render.model.ProceduralModelRender;
 import net.mgsx.gltf.scene3d.attributes.PBRColorAttribute;
 
-public class PortalSpaceEntity extends HiddenSpaceEntity {
+public class PortalSpaceEntity extends DepthMaskEntity {
 
     public static final int DIVISIONS = 16;
     public static final long ATTRIBUTES = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;

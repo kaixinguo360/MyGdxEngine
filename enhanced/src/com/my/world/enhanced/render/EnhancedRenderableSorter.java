@@ -1,4 +1,4 @@
-package com.my.world.enhanced.attribute;
+package com.my.world.enhanced.render;
 
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import net.mgsx.gltf.scene3d.scene.SceneRenderableSorter;

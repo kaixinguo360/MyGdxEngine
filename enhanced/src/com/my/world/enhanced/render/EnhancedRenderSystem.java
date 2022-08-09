@@ -1,4 +1,4 @@
-package com.my.world.enhanced.attribute;
+package com.my.world.enhanced.render;
 
 import com.my.world.core.Configurable;
 import com.my.world.core.Context;

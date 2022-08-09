@@ -1,4 +1,4 @@
-package com.my.world.enhanced.portal;
+package com.my.world.enhanced.depthmask;
 
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;

@@ -1,15 +1,16 @@
-package com.my.world.enhanced.portal;
+package com.my.world.enhanced.depthmask;
 
 import com.my.world.core.Entity;
 import com.my.world.enhanced.entity.EnhancedEntity;
 import com.my.world.module.common.Position;
 import com.my.world.module.render.Render;
 
-public class HiddenSpaceEntity extends EnhancedEntity {
+public class DepthMaskEntity extends EnhancedEntity {
 
     public final DepthMaskScript depthMaskScript;
 
-    public HiddenSpaceEntity() {
+    public DepthMaskEntity() {
+        setName("DepthMask");
         depthMaskScript = addComponent(new DepthMaskScript());
     }
 

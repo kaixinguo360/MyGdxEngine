@@ -13,6 +13,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.my.world.core.Config;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
+import com.my.world.enhanced.render.EnhancedFrameBuffer;
 import com.my.world.gdx.Matrix4Pool;
 import com.my.world.gdx.Vector3Pool;
 import com.my.world.module.camera.CameraSystem;
