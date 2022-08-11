@@ -18,7 +18,7 @@ import com.my.world.module.render.light.GLTFSpotLight;
 
 import java.util.Map;
 
-public class AirportSceneBuilder extends BaseBuilder<AirportSceneBuilder> {
+public class AirportScene extends BaseBuilder<AirportScene> {
 
     @Override
     public Entity build(Scene scene, Map<String, Object> params) {

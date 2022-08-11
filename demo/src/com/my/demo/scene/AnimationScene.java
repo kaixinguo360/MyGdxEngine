@@ -14,7 +14,7 @@ import com.my.world.module.input.InputSystem;
 
 import java.util.Map;
 
-public class TestSceneBuilder extends BaseBuilder<TestSceneBuilder> {
+public class AnimationScene extends BaseBuilder<AnimationScene> {
 
     @Override
     public Entity build(Scene scene, Map<String, Object> params) {
