@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.function.Consumer;
+
 @NoArgsConstructor
 public class Position extends BaseComponent {
 
@@ -33,6 +35,14 @@ public class Position extends BaseComponent {
 
     public void setLocalTransform(Matrix4 transform) {
         localTransform.set(transform);
+    }
+
+    public void setLocalTransform(Consumer<Matrix4> consumer) {
+        Matrix4 tmpM = Matrix4Pool.obtain();
+        getLocalTransform(tmpM);
+        consumer.accept(tmpM);
+        setLocalTransform(tmpM);
+        Matrix4Pool.free(tmpM);
     }
 
     private static final Matrix4 tmpM = new Matrix4();
@@ -83,6 +93,14 @@ public class Position extends BaseComponent {
             setLocalTransform(tmpM);
             Matrix4Pool.free(tmpM);
         }
+    }
+
+    public void setGlobalTransform(Consumer<Matrix4> consumer) {
+        Matrix4 tmpM = Matrix4Pool.obtain();
+        getGlobalTransform(tmpM);
+        consumer.accept(tmpM);
+        setGlobalTransform(tmpM);
+        Matrix4Pool.free(tmpM);
     }
 
     public void enableInherit() {
