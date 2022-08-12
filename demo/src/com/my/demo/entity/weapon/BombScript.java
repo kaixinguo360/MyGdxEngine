@@ -26,7 +26,7 @@ public class BombScript extends CollisionHandler {
     public void collision(Entity target) {
         if (!target.contain(RigidBody.class)) return;
         if (checkVelocity(self, target)) {
-            System.out.println("Bomb! " + self.getId() + " ==> " + target.getId());
+//            System.out.println("Bomb! " + self.getId() + " ==> " + target.getId());
             Entity entity = explosionBuilder.build(scene);
             Matrix4 entityTransform = entity.getComponent(Position.class).getLocalTransform();
             self.getComponent(Position.class).getGlobalTransform(entityTransform);

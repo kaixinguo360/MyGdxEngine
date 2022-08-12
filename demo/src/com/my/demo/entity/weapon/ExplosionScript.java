@@ -37,7 +37,7 @@ public class ExplosionScript implements ScriptSystem.OnStart, PhysicsSystem.OnCo
             tmpV2.sub(tmpV1);
             float len2 = tmpV2.len2();
             tmpV2.nor().scl(maxForce * 1/len2);
-            System.out.println("Explosion:\t" + entity.getName() + "\tforce:\t" + tmpV2.len());
+//            System.out.println("Explosion:\t" + entity.getName() + "\tforce:\t" + tmpV2.len());
             RigidBody rigidBody = entity.getComponent(RigidBody.class);
             rigidBody.body.activate();
             rigidBody.body.applyCentralImpulse(tmpV2);
