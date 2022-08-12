@@ -13,11 +13,11 @@ public class Context implements Disposable {
 
     @Getter
     @Setter
-    private Context parent;
+    protected Context parent;
 
-    private final Map<String, Object> environment = new HashMap<>();
+    protected final Map<String, Object> environment = new HashMap<>();
 
-    private Context() {}
+    protected Context() {}
 
     public boolean contains(String id) {
         if (environment.containsKey(id)) {
