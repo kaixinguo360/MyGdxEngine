@@ -37,6 +37,14 @@ public class KinematicCharacterController extends ActivatableComponent implement
 
     @Config public final Vector3 currentVelocity = new Vector3();
 
+    public void syncTransformFromEntity() {
+        ghostObject.setWorldTransform(position.getLocalTransform());
+    }
+
+    public void syncTransformFromDynamicsWorld() {
+        ghostObject.getWorldTransform(position.getLocalTransform());
+    }
+
     @Override
     public void start(Scene scene, Entity entity) {
         Matrix4 tmp = Matrix4Pool.obtain();

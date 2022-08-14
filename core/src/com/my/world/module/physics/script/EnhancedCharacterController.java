@@ -47,7 +47,8 @@ public class EnhancedCharacterController extends KinematicCharacterController im
 
     @Override
     public void mouseMoved(int screenX, int screenY) {
+        syncTransformFromDynamicsWorld();
         position.getLocalTransform().rotate(Vector3.Y, -Gdx.input.getDeltaX() * 0.1f * yawRate);
-        ghostObject.setWorldTransform(position.getGlobalTransform());
+        syncTransformFromEntity();
     }
 }
