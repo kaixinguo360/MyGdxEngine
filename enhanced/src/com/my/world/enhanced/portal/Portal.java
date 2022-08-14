@@ -8,6 +8,7 @@ import com.my.world.enhanced.portal.render.PortalRenderScript;
 import com.my.world.gdx.Matrix4Pool;
 import com.my.world.module.common.Position;
 import com.my.world.module.physics.RigidBody;
+import com.my.world.module.physics.script.KinematicCharacterController;
 import com.my.world.module.script.ScriptSystem;
 
 public class Portal implements ScriptSystem.OnStart {
@@ -66,6 +67,11 @@ public class Portal implements ScriptSystem.OnStart {
             body.body.proceedToTransform(virtualTransform);
             body.body.setLinearVelocity(body.body.getLinearVelocity().rot(offsetTransform));
             body.body.setAngularVelocity(body.body.getAngularVelocity().rot(offsetTransform));
+        }
+
+        KinematicCharacterController controller = entity.getComponent(KinematicCharacterController.class);
+        if (controller != null) {
+            controller.syncTransformFromEntity();
         }
 
         Matrix4Pool.free(realTransform);
