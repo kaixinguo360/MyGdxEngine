@@ -20,7 +20,9 @@ import com.my.world.module.render.Render;
 import com.my.world.module.render.RenderSystem;
 import com.my.world.module.script.ScriptSystem;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.badlogic.gdx.graphics.GL20.*;
@@ -40,6 +42,9 @@ public class DepthMaskScript extends Render implements ScriptSystem.OnStart, Cam
 
     public final Map<Render, Position> maskEntities = new HashMap<>();
     public final Map<Render, Position> hiddenEntities = new HashMap<>();
+
+    protected final List<Render> visibleMaskEntities = new ArrayList<>();
+    protected final List<Render> visibleHiddenEntities = new ArrayList<>();
 
     public DepthMaskScript() {
         // 创建帧缓冲 (无深度缓存, 有模板缓存)
@@ -89,19 +94,17 @@ public class DepthMaskScript extends Render implements ScriptSystem.OnStart, Cam
 
     @Override
     public void beforeRender(PerspectiveCamera cam) {
+        updateVisibleEntities(cam);
+        if (visibleHiddenEntities.size() == 0) return;
+
         // 切换帧缓冲
         fbo.begin();
 
         // 渲染DepthMaskObject至帧缓冲
         Gdx.gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         batch.begin(cam);
-        for (Map.Entry<Render, Position> entry : maskEntities.entrySet()) {
-            Position position = entry.getValue();
-            Render render = entry.getKey();
-            render.setTransform(position);
-            if (render.isVisible(cam)) {
-                batch.render(render, render.shader);
-            }
+        for (Render render : visibleMaskEntities) {
+            batch.render(render, render.shader);
         }
         batch.end();
 
@@ -114,13 +117,8 @@ public class DepthMaskScript extends Render implements ScriptSystem.OnStart, Cam
 
         // 渲染HiddenObject至帧缓冲
         renderSystem.beginBatch(cam);
-        for (Map.Entry<Render, Position> entry : hiddenEntities.entrySet()) {
-            Position position = entry.getValue();
-            Render render = entry.getKey();
-            render.setTransform(position);
-            if (render.isVisible(cam)) {
-                renderSystem.addToBatch(render);
-            }
+        for (Render render : visibleHiddenEntities) {
+            renderSystem.addToBatch(render);
         }
         renderSystem.endBatch();
 
@@ -137,6 +135,28 @@ public class DepthMaskScript extends Render implements ScriptSystem.OnStart, Cam
 
         // 切换帧缓冲
         fbo.end();
+    }
+
+    private void updateVisibleEntities(PerspectiveCamera cam) {
+        visibleMaskEntities.clear();
+        for (Map.Entry<Render, Position> entry : maskEntities.entrySet()) {
+            Position position = entry.getValue();
+            Render render = entry.getKey();
+            render.setTransform(position);
+            if (render.isVisible(cam)) {
+                visibleMaskEntities.add(render);
+            }
+        }
+
+        visibleHiddenEntities.clear();
+        for (Map.Entry<Render, Position> entry : hiddenEntities.entrySet()) {
+            Position position = entry.getValue();
+            Render render = entry.getKey();
+            render.setTransform(position);
+            if (render.isVisible(cam)) {
+                visibleHiddenEntities.add(render);
+            }
+        }
     }
 
     // ----- Hidden Render Component ----- //
@@ -192,11 +212,18 @@ public class DepthMaskScript extends Render implements ScriptSystem.OnStart, Cam
 
     @Override
     public boolean isVisible(Camera cam) {
-        return true;
+        return visibleHiddenEntities.size() != 0;
     }
 
     @Override
     public void getRenderables(Array<Renderable> renderables, Pool<Renderable> pool) {
         renderables.add(renderable);
+//        if (visibleMaskEntities.size() != 0) {
+//            renderables.add(renderable);
+//        } else {
+//            for (Map.Entry<Render, Position> entry : hiddenEntities.entrySet()) {
+//                entry.getKey().getRenderables(renderables, pool);
+//            }
+//        }
     }
 }
