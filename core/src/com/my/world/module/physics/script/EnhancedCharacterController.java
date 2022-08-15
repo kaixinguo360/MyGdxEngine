@@ -7,8 +7,9 @@ import com.my.world.core.Config;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
 import com.my.world.module.input.InputSystem;
+import com.my.world.module.script.ScriptSystem;
 
-public class EnhancedCharacterController extends KinematicCharacterController implements InputSystem.OnKeyDown, InputSystem.OnMouseMoved {
+public class EnhancedCharacterController extends KinematicCharacterController implements ScriptSystem.OnUpdate, InputSystem.OnKeyDown, InputSystem.OnMouseMoved {
 
     @Config public int keyUp = Input.Keys.UP;
     @Config public int keyDown = Input.Keys.DOWN;
@@ -17,6 +18,8 @@ public class EnhancedCharacterController extends KinematicCharacterController im
     @Config public int keyJump = Input.Keys.SPACE;
 
     @Config public float yawRate = 1f;
+    @Config public float velocity = 1f;
+    @Config public final Vector3 currentVelocity = new Vector3();
 
     @Config public float jumpCD = 1f;
     protected float currentJumpCD = 0;
@@ -32,7 +35,10 @@ public class EnhancedCharacterController extends KinematicCharacterController im
             currentJumpCD -= scene.getTimeManager().getDeltaTime();
         }
 
-        super.update(scene, entity);
+        float deltaTime = scene.getTimeManager().getDeltaTime();
+        characterController.setWalkDirection(currentVelocity.rot(position.getGlobalTransform()).scl(deltaTime));
+        currentVelocity.setZero();
+        position.getLocalTransform().set(ghostObject.getWorldTransform());
     }
 
     @Override
@@ -47,7 +53,7 @@ public class EnhancedCharacterController extends KinematicCharacterController im
 
     @Override
     public void mouseMoved(int screenX, int screenY) {
-        syncTransformFromDynamicsWorld();
+        syncTransformFromWorld();
         position.getLocalTransform().rotate(Vector3.Y, -Gdx.input.getDeltaX() * 0.1f * yawRate);
         syncTransformFromEntity();
     }

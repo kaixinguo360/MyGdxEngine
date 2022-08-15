@@ -1,14 +1,12 @@
 package com.my.world.module.physics;
 
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.physics.bullet.DebugDrawer;
 import com.badlogic.gdx.physics.bullet.collision.*;
 import com.badlogic.gdx.physics.bullet.dynamics.*;
 import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw;
-import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
 import com.my.world.core.System;
 import com.my.world.core.*;
 import com.my.world.core.util.Disposable;
@@ -23,8 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.badlogic.gdx.physics.bullet.collision.btCollisionObject.CollisionFlags.*;
-
 public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Disposable, EntityListener {
 
     @Config
@@ -38,7 +34,7 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
     protected DebugDrawer debugDrawer;
     protected ClosestRayResultCallback rayTestCB;
 
-    protected final Map<Entity, RigidBody> rigidBodies = new HashMap<>();
+    protected final Map<Entity, PhysicsBody> physicsBodies = new HashMap<>();
     protected final DisposableManager disposableManager = new DisposableManager();
 
     public PhysicsSystem() {
@@ -99,98 +95,23 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
 
     @Override
     public boolean canHandle(Entity entity) {
-        return entity.contain(RigidBody.class) && entity.getComponent(RigidBody.class).isActive();
+        return entity.contain(PhysicsBody.class) && entity.getComponent(PhysicsBody.class).isActive();
     }
 
     @Override
     public void afterEntityAdded(Entity entity) {
-
-        // Get RigidBody
-        RigidBody rigidBody = entity.getComponent(RigidBody.class);
-        rigidBody.system = this;
-        btRigidBody body = rigidBody.body;
-        body.userData = entity;
-
-        if (rigidBody.collisionFlags != null) {
-            body.setCollisionFlags(rigidBody.collisionFlags);
-        }
-
-        if (rigidBody.activationState != null) {
-            body.setActivationState(rigidBody.activationState);
-        } else {
-            if (rigidBody.isKinematic) {
-                body.setActivationState(CollisionConstants.DISABLE_DEACTIVATION);
-            } else {
-                body.setActivationState(CollisionConstants.ACTIVE_TAG);
-            }
-        }
-
-        if (rigidBody.isStatic) {
-            body.setCollisionFlags(body.getCollisionFlags() | CF_STATIC_OBJECT);
-        }
-
-        if (rigidBody.isKinematic) {
-            body.setCollisionFlags(body.getCollisionFlags() & ~CF_STATIC_OBJECT | CF_KINEMATIC_OBJECT);
-        }
-
-        if (rigidBody.isTrigger) {
-            body.setCollisionFlags(body.getCollisionFlags() & ~CF_STATIC_OBJECT | CF_KINEMATIC_OBJECT | CF_NO_CONTACT_RESPONSE);
-        }
-
-        // Set Position
-        Position position = entity.getComponent(Position.class);
-        if (rigidBody.autoConvertToWorldTransform || (!rigidBody.isKinematic && !rigidBody.isStatic)) {
-            if (!position.isDisableInherit()) {
-                position.disableInherit();
-            }
-        }
-        body.proceedToTransform(position.getGlobalTransform());
-        if (rigidBody.isKinematic) {
-            body.setInterpolationWorldTransform(position.getGlobalTransform());
-            body.setInterpolationLinearVelocity(Vector3.Zero);
-            body.setInterpolationAngularVelocity(Vector3.Zero);
-        }
-        body.setMotionState(new MotionState(position));
-
-        // Set OnCollision Callback
-        if (entity.contain(Collision.class)) {
-            Collision c = entity.getComponent(Collision.class);
-            body.setContactCallbackFlag(c.callbackFlag);
-            body.setContactCallbackFilter(c.callbackFilter);
-            body.setCollisionFlags(body.getCollisionFlags() | CF_CUSTOM_MATERIAL_CALLBACK);
-        }
-
-        // Add to World
-        if (rigidBody.isTrigger) {
-            dynamicsWorld.addCollisionObject(body, rigidBody.group, rigidBody.mask);
-        } else {
-            dynamicsWorld.addRigidBody(body, rigidBody.group, rigidBody.mask);
-        }
-
-        // Add to List
-        PhysicsSystem.this.rigidBodies.put(entity, rigidBody);
+        PhysicsBody physicsBody = entity.getComponent(PhysicsBody.class);
+        physicsBody.addToWorld(dynamicsWorld);
+        PhysicsSystem.this.physicsBodies.put(entity, physicsBody);
     }
 
     @Override
     public void afterEntityRemoved(Entity entity) {
-        RigidBody rigidBody = rigidBodies.get(entity);
-        if (rigidBody != null) {
-            if (rigidBody.isTrigger) {
-                dynamicsWorld.removeCollisionObject(rigidBody.body);
-            } else {
-                btRigidBody body = rigidBody.body;
-                body.setMotionState(null);
-                dynamicsWorld.removeRigidBody(body);
-            }
-            if (rigidBody.autoConvertToLocalTransform) {
-                Position position = entity.getComponent(Position.class);
-                if (position != null && position.isDisableInherit()) {
-                    position.enableInherit();
-                }
-            }
-            rigidBody.system = null;
+        PhysicsBody physicsBody = physicsBodies.get(entity);
+        if (physicsBody != null) {
+            physicsBody.removeFromWorld(dynamicsWorld);
         }
-        rigidBodies.remove(entity);
+        physicsBodies.remove(entity);
     }
 
     @Override
@@ -259,17 +180,19 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
     private static final float MIN_FORCE = 10;
     public void addExplosion(Vector3 position, float force) {
         Vector3 tmpV1 = Vector3Pool.obtain();
-        for (Map.Entry<Entity, RigidBody> entry : rigidBodies.entrySet()) {
-            RigidBody rigidBody = entry.getValue();
-            if (rigidBody.isTrigger) continue;
-            Entity entity = entry.getKey();
-            entity.getComponent(Position.class).getGlobalTransform().getTranslation(tmpV1);
-            tmpV1.sub(position);
-            float len2 = tmpV1.len2();
-            tmpV1.nor().scl(force * 1/len2);
-            if (tmpV1.len() > MIN_FORCE) {
-                rigidBody.body.activate();
-                rigidBody.body.applyCentralImpulse(tmpV1);
+        for (Map.Entry<Entity, PhysicsBody> entry : physicsBodies.entrySet()) {
+            PhysicsBody physicsBody = entry.getValue();
+            if (!physicsBody.isTrigger && physicsBody instanceof RigidBody) {
+                Entity entity = entry.getKey();
+                entity.getComponent(Position.class).getGlobalTransform().getTranslation(tmpV1);
+                tmpV1.sub(position);
+                float len2 = tmpV1.len2();
+                tmpV1.nor().scl(force * 1/len2);
+                if (tmpV1.len() > MIN_FORCE) {
+                    btRigidBody body = ((RigidBody) physicsBody).body;
+                    body.activate();
+                    body.applyCentralImpulse(tmpV1);
+                }
             }
         }
         Vector3Pool.free(tmpV1);
@@ -286,29 +209,6 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
         return new btRigidBody.btRigidBodyConstructionInfo(mass, null, shape, localInertia);
     }
 
-    private static class MotionState extends btMotionState {
-
-        private final Position position;
-
-        private MotionState(Position position) {
-            this.position = position;
-        }
-
-        @Override
-        public void getWorldTransform(Matrix4 worldTrans) {
-            if (position != null) {
-                position.getGlobalTransform(worldTrans);
-            }
-        }
-
-        @Override
-        public void setWorldTransform(Matrix4 worldTrans) {
-            if (position != null) {
-                position.setLocalTransform(worldTrans);
-            }
-        }
-    }
-
     // ----- OnCollision Script ----- //
 
     protected final ContactListener contactListener;
@@ -320,9 +220,9 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
                 if(colObj0.userData instanceof Entity && colObj1.userData instanceof Entity) {
                     Entity entity0 = (Entity) colObj0.userData;
                     Entity entity1 = (Entity) colObj1.userData;
-                    if (match0 && entity1.contains(RigidBody.class)) {
-                        RigidBody rigidBody = entity1.getComponent(RigidBody.class);
-                        if (rigidBody == null || !rigidBody.isTrigger) {
+                    if (match0 && entity1.contains(PhysicsBody.class)) {
+                        PhysicsBody physicsBody = entity1.getComponent(PhysicsBody.class);
+                        if (physicsBody == null || !physicsBody.isTrigger) {
                             List<OnCollision> scripts = entity0.getComponents(OnCollision.class);
                             for (OnCollision script : scripts) {
                                 if (Component.isActive(script)) {
@@ -332,8 +232,8 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
                         }
                     }
                     if (match1) {
-                        RigidBody rigidBody = entity0.getComponent(RigidBody.class);
-                        if (rigidBody == null || !rigidBody.isTrigger) {
+                        PhysicsBody physicsBody = entity0.getComponent(PhysicsBody.class);
+                        if (physicsBody == null || !physicsBody.isTrigger) {
                             List<OnCollision> scripts = entity1.getComponents(OnCollision.class);
                             for (OnCollision script : scripts) {
                                 if (Component.isActive(script)) {

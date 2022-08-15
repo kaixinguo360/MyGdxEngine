@@ -1,14 +1,15 @@
 package com.my.world.enhanced.portal;
 
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.my.world.core.Config;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
 import com.my.world.enhanced.portal.render.PortalRenderScript;
 import com.my.world.gdx.Matrix4Pool;
 import com.my.world.module.common.Position;
+import com.my.world.module.physics.PhysicsBody;
 import com.my.world.module.physics.RigidBody;
-import com.my.world.module.physics.script.KinematicCharacterController;
 import com.my.world.module.script.ScriptSystem;
 
 public class Portal implements ScriptSystem.OnStart {
@@ -62,16 +63,14 @@ public class Portal implements ScriptSystem.OnStart {
         virtualTransform.set(realTransform).mulLeft(offsetTransform);
         position.setGlobalTransform(virtualTransform);
 
-        RigidBody body = entity.getComponent(RigidBody.class);
+        PhysicsBody body = entity.getComponent(PhysicsBody.class);
         if (body != null) {
-            body.body.proceedToTransform(virtualTransform);
-            body.body.setLinearVelocity(body.body.getLinearVelocity().rot(offsetTransform));
-            body.body.setAngularVelocity(body.body.getAngularVelocity().rot(offsetTransform));
-        }
-
-        KinematicCharacterController controller = entity.getComponent(KinematicCharacterController.class);
-        if (controller != null) {
-            controller.syncTransformFromEntity();
+            body.syncTransformFromEntity();
+            if (body instanceof RigidBody) {
+                btRigidBody btRigidBody = ((RigidBody) body).body;
+                btRigidBody.setLinearVelocity(btRigidBody.getLinearVelocity().rot(offsetTransform));
+                btRigidBody.setAngularVelocity(btRigidBody.getAngularVelocity().rot(offsetTransform));
+            }
         }
 
         Matrix4Pool.free(realTransform);

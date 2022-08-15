@@ -9,56 +9,30 @@ import com.badlogic.gdx.physics.bullet.collision.btPairCachingGhostObject;
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btKinematicCharacterController;
 import com.my.world.core.Config;
-import com.my.world.core.Entity;
-import com.my.world.core.Scene;
 import com.my.world.core.util.Disposable;
 import com.my.world.gdx.Matrix4Pool;
-import com.my.world.module.common.ActivatableComponent;
-import com.my.world.module.common.Position;
-import com.my.world.module.physics.PhysicsSystem;
+import com.my.world.module.physics.PhysicsBody;
 import com.my.world.module.physics.TemplateRigidBody;
-import com.my.world.module.script.ScriptSystem;
 
-public class KinematicCharacterController extends ActivatableComponent implements ScriptSystem.OnStart, ScriptSystem.OnRemoved, ScriptSystem.OnUpdate, Disposable {
+public class KinematicCharacterController extends PhysicsBody implements Disposable {
 
     @Config(type = Config.Type.Asset)
     public TemplateRigidBody shape;
 
     @Config public float stepHeight = 0.35f;
-    @Config public float velocity = 1f;
     @Config public float mass = 1f;
 
-    protected Position position;
-    protected PhysicsSystem physicsSystem;
-    protected btDynamicsWorld dynamicsWorld;
+    public btPairCachingGhostObject ghostObject;
+    public btKinematicCharacterController characterController;
 
-    protected btPairCachingGhostObject ghostObject;
-    protected btKinematicCharacterController characterController;
-
-    @Config public final Vector3 currentVelocity = new Vector3();
-
-    public void syncTransformFromEntity() {
-        ghostObject.setWorldTransform(position.getLocalTransform());
-    }
-
-    public void syncTransformFromDynamicsWorld() {
-        ghostObject.getWorldTransform(position.getLocalTransform());
-    }
-
-    @Override
-    public void start(Scene scene, Entity entity) {
+    protected void createGhostObject() {
         Matrix4 tmp = Matrix4Pool.obtain();
-
-        position = entity.getComponent(Position.class);
-        physicsSystem = scene.getSystemManager().getSystem(PhysicsSystem.class);
-        dynamicsWorld = physicsSystem.getDynamicsWorld();
 
         ghostObject = new btPairCachingGhostObject();
 //        ghostObject.setWorldTransform(position.getGlobalTransform()); // Fix Bug #5017
         ghostObject.setCollisionShape(shape.shape);
         ghostObject.setCollisionFlags(btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK | btCollisionObject.CollisionFlags.CF_CHARACTER_OBJECT);
         ghostObject.userData = entity;
-        position.setDisableInherit(true);
 
         characterController = new btKinematicCharacterController(ghostObject, (btConvexShape) shape.shape, stepHeight, Vector3.Y);
         characterController.setGravity(new Vector3(0, -30f * mass, 0));
@@ -70,26 +44,39 @@ public class KinematicCharacterController extends ActivatableComponent implement
         // Reference: https://github.com/libgdx/libgdx/issues/5017
         ghostObject.setWorldTransform(position.getGlobalTransform()); // Fix Bug #5017
 
-        dynamicsWorld.addCollisionObject(ghostObject,
-                (short) btBroadphaseProxy.CollisionFilterGroups.CharacterFilter,
-                (short) btBroadphaseProxy.CollisionFilterGroups.AllFilter);
-        dynamicsWorld.addAction(characterController);
-
         Matrix4Pool.free(tmp);
     }
 
     @Override
-    public void removed(Scene scene, Entity entity) {
-        dynamicsWorld.removeAction(characterController);
-        dynamicsWorld.removeCollisionObject(ghostObject);
+    public void addToWorld(btDynamicsWorld dynamicsWorld) {
+        super.addToWorld(dynamicsWorld);
+        if (!position.isDisableInherit()) {
+            position.disableInherit();
+        }
+        if (ghostObject == null) {
+            createGhostObject();
+        }
+        dynamicsWorld.addCollisionObject(ghostObject,
+                (short) btBroadphaseProxy.CollisionFilterGroups.CharacterFilter | group,
+                mask);
+        dynamicsWorld.addAction(characterController);
     }
 
     @Override
-    public void update(Scene scene, Entity entity) {
-        float deltaTime = scene.getTimeManager().getDeltaTime();
-        characterController.setWalkDirection(currentVelocity.rot(position.getGlobalTransform()).scl(deltaTime));
-        currentVelocity.setZero();
-        position.getLocalTransform().set(ghostObject.getWorldTransform());
+    public void removeFromWorld(btDynamicsWorld dynamicsWorld) {
+        dynamicsWorld.removeAction(characterController);
+        dynamicsWorld.removeCollisionObject(ghostObject);
+        super.removeFromWorld(dynamicsWorld);
+    }
+
+    @Override
+    public void syncTransformFromEntity() {
+        ghostObject.setWorldTransform(position.getGlobalTransform());
+    }
+
+    @Override
+    public void syncTransformFromWorld() {
+        position.setGlobalTransform(ghostObject.getWorldTransform());
     }
 
     @Override
@@ -106,4 +93,5 @@ public class KinematicCharacterController extends ActivatableComponent implement
             characterController = null;
         }
     }
+
 }
