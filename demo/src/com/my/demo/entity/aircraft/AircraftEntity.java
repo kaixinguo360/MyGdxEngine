@@ -6,6 +6,7 @@ import com.my.demo.entity.object.RotateEntity;
 import com.my.demo.entity.weapon.BombEntity;
 import com.my.demo.entity.weapon.BulletEntity;
 import com.my.world.enhanced.entity.EnhancedEntity;
+import com.my.world.enhanced.physics.HingeConstraintController;
 import com.my.world.module.common.Position;
 import com.my.world.module.physics.constraint.HingeConstraint;
 
@@ -14,13 +15,13 @@ public class AircraftEntity extends EnhancedEntity {
     public final AircraftScript aircraftScript;
     public final BodyEntity body;
     public final EngineEntity engine;
-    public final RotateEntity<AircraftController> rotate_L;
+    public final RotateEntity<HingeConstraintController> rotate_L;
     public final WingEntity wing_L1;
     public final WingEntity wing_L2;
-    public final RotateEntity<AircraftController> rotate_R;
+    public final RotateEntity<HingeConstraintController> rotate_R;
     public final WingEntity wing_R1;
     public final WingEntity wing_R2;
-    public final RotateEntity<AircraftController> rotate_T;
+    public final RotateEntity<HingeConstraintController> rotate_T;
     public final WingEntity wing_TL;
     public final WingEntity wing_TR;
     public final WingEntity wing_VL;
@@ -49,7 +50,7 @@ public class AircraftEntity extends EnhancedEntity {
 
         // Left
         Matrix4 transform_L = new Matrix4().translate(-1, 0.5f, -5).rotate(Vector3.Z, 90);
-        rotate_L = new RotateEntity<>(body, new AircraftController(-0.15f, 0.2f, 0.5f));
+        rotate_L = new RotateEntity<>(body, new HingeConstraintController(-0.15f, 0.2f, 0.5f));
         rotate_L.setName("rotate_L");
         rotate_L.setParent(this);
         rotate_L.position.setLocalTransform(transform_L);
@@ -70,7 +71,7 @@ public class AircraftEntity extends EnhancedEntity {
 
         // Right
         Matrix4 transform_R = new Matrix4().translate(1, 0.5f, -5).rotate(Vector3.Z, 90);
-        rotate_R = new RotateEntity<>(body, new AircraftController(-0.15f, 0.2f, 0.5f));
+        rotate_R = new RotateEntity<>(body, new HingeConstraintController(-0.15f, 0.2f, 0.5f));
         rotate_R.setName("rotate_R");
         rotate_R.setParent(this);
         rotate_R.position.setLocalTransform(transform_R);
@@ -91,7 +92,7 @@ public class AircraftEntity extends EnhancedEntity {
 
         // Horizontal Tail
         Matrix4 transform_T = new Matrix4().translate(0, 0.5f, 0.1f).rotate(Vector3.Z, 90);
-        rotate_T = new RotateEntity<>(body, new AircraftController(-0.2f, 0.2f, 1f));
+        rotate_T = new RotateEntity<>(body, new HingeConstraintController(-0.2f, 0.2f, 1f));
         rotate_T.setName("rotate_T");
         rotate_T.setParent(this);
         rotate_T.position.setLocalTransform(transform_T);
@@ -122,7 +123,7 @@ public class AircraftEntity extends EnhancedEntity {
                 new Matrix4().translate(0, -0.1f, -0.5f).rotate(Vector3.Y, 90),
                 false
         ));
-        wing_VL.addComponent(new AircraftController(0, 0.2f, 1f));
+        wing_VL.addComponent(new HingeConstraintController(0, 0.2f, 1f));
         addEntity(wing_VL);
 
         Matrix4 transform_VR = new Matrix4().translate(0.6f, 1f, -1).rotate(Vector3.Z, 90);
@@ -136,7 +137,7 @@ public class AircraftEntity extends EnhancedEntity {
                 new Matrix4().translate(0, 0.1f, -0.5f).rotate(Vector3.Y, 90),
                 false
         ));
-        wing_VR.addComponent(new AircraftController(-0.2f, 0, 1f));
+        wing_VR.addComponent(new HingeConstraintController(-0.2f, 0, 1f));
         addEntity(wing_VR);
     }
 }

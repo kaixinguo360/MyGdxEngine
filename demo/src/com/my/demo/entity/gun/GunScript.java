@@ -8,6 +8,7 @@ import com.my.world.core.Config;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
 import com.my.world.enhanced.builder.EntityBuilder;
+import com.my.world.enhanced.physics.HingeConstraintController;
 import com.my.world.module.camera.Camera;
 import com.my.world.module.camera.script.EnhancedThirdPersonCameraController;
 import com.my.world.module.input.InputSystem;
@@ -15,8 +16,8 @@ import com.my.world.module.script.ScriptSystem;
 
 public class GunScript extends EmitterScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, InputSystem.OnKeyDown {
 
-    private GunController controllerY;
-    private GunController controllerX;
+    private HingeConstraintController controllerY;
+    private HingeConstraintController controllerX;
 
     @Config(type = Config.Type.Asset) public EntityBuilder bulletBuilder;
     @Config public Vector3 bulletVelocity = new Vector3(0, 0, -2000);
@@ -36,8 +37,8 @@ public class GunScript extends EmitterScript implements ScriptSystem.OnStart, Sc
         parts.add(rotate_X);
         parts.add(rotate_Y);
 
-        if (rotate_Y.contains(GunController.class)) controllerY = rotate_Y.getComponent(GunController.class);
-        if (rotate_X.contains(GunController.class)) controllerX = rotate_X.getComponent(GunController.class);
+        if (rotate_Y.contains(HingeConstraintController.class)) controllerY = rotate_Y.getComponent(HingeConstraintController.class);
+        if (rotate_X.contains(HingeConstraintController.class)) controllerX = rotate_X.getComponent(HingeConstraintController.class);
         Entity cameraEntity = entity.findChildByName("camera");
         if (cameraEntity != null) {
             camera = cameraEntity.getComponent(Camera.class);
@@ -52,19 +53,19 @@ public class GunScript extends EmitterScript implements ScriptSystem.OnStart, Sc
         if (controllerY != null && controllerX != null) {
             if (Gdx.input.isKeyPressed(Input.Keys.W)) {
                 getMainBody().activate();
-                controllerX.target -= v;
+                controllerX.rotate(-v);
             }
             if (Gdx.input.isKeyPressed(Input.Keys.S)) {
                 getMainBody().activate();
-                controllerX.target += v;
+                controllerX.rotate(v);
             }
             if (Gdx.input.isKeyPressed(Input.Keys.A)) {
                 getMainBody().activate();
-                controllerY.target += v;
+                controllerY.rotate(v);
             }
             if (Gdx.input.isKeyPressed(Input.Keys.D)) {
                 getMainBody().activate();
-                controllerY.target -= v;
+                controllerY.rotate(-v);
             }
         }
         if (Gdx.input.isKeyPressed(Input.Keys.J)) fire(bulletBuilder, bulletVelocity, bulletOffset, (float) Math.random());

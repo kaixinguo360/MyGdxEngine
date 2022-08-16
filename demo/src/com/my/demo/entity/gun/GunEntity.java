@@ -7,13 +7,14 @@ import com.my.demo.entity.weapon.BombEntity;
 import com.my.demo.entity.weapon.BulletEntity;
 import com.my.world.core.Entity;
 import com.my.world.enhanced.entity.EnhancedEntity;
+import com.my.world.enhanced.physics.HingeConstraintController;
 import com.my.world.module.common.Position;
 
 public class GunEntity extends EnhancedEntity {
 
     public final GunScript gunScript;
-    public final RotateEntity<GunController> rotateY;
-    public final RotateEntity<GunController> rotateX;
+    public final RotateEntity<HingeConstraintController> rotateY;
+    public final RotateEntity<HingeConstraintController> rotateX;
     public final BarrelEntity barrel;
 
     public GunEntity() {
@@ -28,14 +29,14 @@ public class GunEntity extends EnhancedEntity {
 
         Matrix4 transform = new Matrix4().translate(0, 1.5f, 0).rotate(Vector3.Z, 90);
 
-        rotateY = new RotateEntity<>(baseEntity, new GunController());
+        rotateY = new RotateEntity<>(baseEntity, new HingeConstraintController());
         rotateY.setName("rotate_Y");
         rotateY.setParent(this);
         rotateY.transform.translate(0, 0.5f, 0);
         rotateY.decompose();
         addEntity(rotateY);
 
-        rotateX = new RotateEntity<>(rotateY, new GunController(-90,  0));
+        rotateX = new RotateEntity<>(rotateY, new HingeConstraintController((float) Math.toRadians(-90),  0));
         rotateX.setName("rotate_X");
         rotateX.setParent(this);
         rotateX.transform.set(transform);

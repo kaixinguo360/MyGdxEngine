@@ -9,6 +9,7 @@ import com.my.world.core.Entity;
 import com.my.world.core.Scene;
 import com.my.world.core.util.EnhancedStateManager;
 import com.my.world.enhanced.builder.EntityBuilder;
+import com.my.world.enhanced.physics.HingeConstraintController;
 import com.my.world.module.camera.Camera;
 import com.my.world.module.camera.script.EnhancedThirdPersonCameraController;
 import com.my.world.module.input.InputSystem;
@@ -16,11 +17,11 @@ import com.my.world.module.script.ScriptSystem;
 
 public class AircraftScript extends EmitterScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate, InputSystem.OnKeyDown {
 
-    private AircraftController aircraftController_L;
-    private AircraftController aircraftController_R;
-    private AircraftController aircraftController_T;
-    private AircraftController aircraftController_VL;
-    private AircraftController aircraftController_VR;
+    private HingeConstraintController rotationController_L;
+    private HingeConstraintController rotationController_R;
+    private HingeConstraintController rotationController_T;
+    private HingeConstraintController rotationController_VL;
+    private HingeConstraintController rotationController_VR;
 
     @Config(type = Config.Type.Asset) public EntityBuilder bulletBuilder;
     @Config public Vector3 bulletVelocity = new Vector3(0, 0, -2000);
@@ -86,16 +87,16 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
         parts.add(entity.findChildByName("wing_VL"));
         parts.add(entity.findChildByName("wing_VR"));
 
-        if (rotate_L.contains(AircraftController.class))
-            aircraftController_L = rotate_L.getComponent(AircraftController.class);
-        if (rotate_R.contains(AircraftController.class))
-            aircraftController_R = rotate_R.getComponent(AircraftController.class);
-        if (rotate_T.contains(AircraftController.class))
-            aircraftController_T = rotate_T.getComponent(AircraftController.class);
-        if (wing_VL.contains(AircraftController.class))
-            aircraftController_VL = wing_VL.getComponent(AircraftController.class);
-        if (wing_VR.contains(AircraftController.class))
-            aircraftController_VR = wing_VR.getComponent(AircraftController.class);
+        if (rotate_L.contains(HingeConstraintController.class))
+            rotationController_L = rotate_L.getComponent(HingeConstraintController.class);
+        if (rotate_R.contains(HingeConstraintController.class))
+            rotationController_R = rotate_R.getComponent(HingeConstraintController.class);
+        if (rotate_T.contains(HingeConstraintController.class))
+            rotationController_T = rotate_T.getComponent(HingeConstraintController.class);
+        if (wing_VL.contains(HingeConstraintController.class))
+            rotationController_VL = wing_VL.getComponent(HingeConstraintController.class);
+        if (wing_VR.contains(HingeConstraintController.class))
+            rotationController_VR = wing_VR.getComponent(HingeConstraintController.class);
         Entity cameraEntity = entity.findChildByName("camera");
         if (cameraEntity != null) {
             camera = cameraEntity.getComponent(Camera.class);
@@ -108,7 +109,7 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
         float deltaTime = scene.getTimeManager().getDeltaTime();
         float v1 = 1f * deltaTime * 50f;
         float v2 = 0.5f * deltaTime * 50f;
-        if (aircraftController_L != null && aircraftController_R != null) {
+        if (rotationController_L != null && rotationController_R != null) {
 
             if (Gdx.input.isKeyPressed(Input.Keys.J)) {
                 stateManager.doAction(Action.Fire);
@@ -122,18 +123,18 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
                 stateManager.doAction(Action.StopBomb);
             }
 
-            if (Gdx.input.isKeyPressed(Input.Keys.W)) aircraftController_T.rotate(v1);
-            if (Gdx.input.isKeyPressed(Input.Keys.S)) aircraftController_T.rotate(-v1);
+            if (Gdx.input.isKeyPressed(Input.Keys.W)) rotationController_T.rotate(v1);
+            if (Gdx.input.isKeyPressed(Input.Keys.S)) rotationController_T.rotate(-v1);
             if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-                aircraftController_L.rotate(v2);
-                aircraftController_R.rotate(-v2);
+                rotationController_L.rotate(v2);
+                rotationController_R.rotate(-v2);
             }
             if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-                aircraftController_L.rotate(-v2);
-                aircraftController_R.rotate(v2);
+                rotationController_L.rotate(-v2);
+                rotationController_R.rotate(v2);
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.Q)) aircraftController_VL.rotate(v1);
-            if (Gdx.input.isKeyPressed(Input.Keys.E)) aircraftController_VR.rotate(-v1);
+            if (Gdx.input.isKeyPressed(Input.Keys.Q)) rotationController_VL.rotate(v1);
+            if (Gdx.input.isKeyPressed(Input.Keys.E)) rotationController_VR.rotate(-v1);
         }
         if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) explode();
     }
