@@ -12,7 +12,7 @@ import java.util.Map;
 public class EnhancedRenderSystem extends RenderSystem implements Configurable.OnLoad, Configurable.OnDump {
 
     public EnhancedRenderSystem() {
-        this(30, 10, 10, 24);
+        this(5, 3, 1, 0);
     }
 
     public EnhancedRenderSystem(int numPointLights, int numDirectionalLights, int numSpotLights, int numBones) {
