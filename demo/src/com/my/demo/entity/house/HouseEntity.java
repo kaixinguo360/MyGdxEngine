@@ -1,5 +1,6 @@
 package com.my.demo.entity.house;
 
+import com.badlogic.gdx.math.Vector3;
 import com.my.world.enhanced.EnhancedContext;
 import com.my.world.enhanced.entity.EnhancedEntity;
 
@@ -23,6 +24,7 @@ public class HouseEntity extends EnhancedEntity {
         c.set("房间高度", floorHeight);
         c.set("房间宽度", width);
         c.set("房间长度", length);
+        c.set("楼梯高度", floorHeight);
 
         for (int i = 1; i <= floorsNum; i++) {
 
@@ -34,6 +36,16 @@ public class HouseEntity extends EnhancedEntity {
             singleFloor.setParent(this);
             addEntity(singleFloor);
             floors.add(singleFloor);
+
+            StairsEntity stairs = new StairsEntity(c);
+            stairs.transform.setToTranslation(
+                    -stairs.stairsLength / 2 + stairs.stairsPlatformSize / 2,
+                    singleFloorY,
+                    -length / 2 - stairs.stairsWidth / 2
+            ).rotate(Vector3.Y, -90);
+            stairs.decompose();
+            stairs.setParent(this);
+            addEntity(stairs);
 
             singleFloorY += singleFloor.render.roomHeight;
         }
