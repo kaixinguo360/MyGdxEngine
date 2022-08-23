@@ -3,7 +3,6 @@ package com.my.world.module.physics;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.CollisionConstants;
-import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
 import com.my.world.core.Config;
@@ -13,6 +12,15 @@ import static com.badlogic.gdx.physics.bullet.collision.btCollisionObject.Collis
 
 @NoArgsConstructor
 public class RigidBody extends PhysicsBody {
+
+    @Config
+    public boolean isEnableCallback = false;
+
+    @Config
+    public int callbackFlag = NORMAL_FLAG;
+
+    @Config
+    public int callbackFilter = ALL_FLAG;
 
     @Config
     public Integer collisionFlags;
@@ -44,8 +52,8 @@ public class RigidBody extends PhysicsBody {
     }
 
     @Override
-    public void addToWorld(btDynamicsWorld dynamicsWorld) {
-        super.addToWorld(dynamicsWorld);
+    public void enterWorld() {
+        super.enterWorld();
 
         // Set userData
         body.userData = entity;
@@ -91,10 +99,9 @@ public class RigidBody extends PhysicsBody {
         body.setMotionState(new MotionState());
 
         // Set OnCollision Callback
-        if (entity.contain(Collision.class)) {
-            Collision c = entity.getComponent(Collision.class);
-            body.setContactCallbackFlag(c.callbackFlag);
-            body.setContactCallbackFilter(c.callbackFilter);
+        if (isEnableCallback) {
+            body.setContactCallbackFlag(callbackFlag);
+            body.setContactCallbackFilter(callbackFilter);
             body.setCollisionFlags(body.getCollisionFlags() | CF_CUSTOM_MATERIAL_CALLBACK);
         }
 
@@ -106,7 +113,7 @@ public class RigidBody extends PhysicsBody {
     }
 
     @Override
-    public void removeFromWorld(btDynamicsWorld dynamicsWorld) {
+    public void leaveWorld() {
         if (isTrigger) {
             dynamicsWorld.removeCollisionObject(body);
         } else {
@@ -118,7 +125,7 @@ public class RigidBody extends PhysicsBody {
                 position.enableInherit();
             }
         }
-        super.removeFromWorld(dynamicsWorld);
+        super.leaveWorld();
     }
 
     @Override

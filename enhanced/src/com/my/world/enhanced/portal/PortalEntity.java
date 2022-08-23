@@ -8,7 +8,6 @@ import com.my.world.enhanced.entity.EnhancedEntity;
 import com.my.world.enhanced.portal.render.PortalRenderScript;
 import com.my.world.enhanced.portal.transfer.PortalTransferScript;
 import com.my.world.enhanced.portal.transfer.UniversalPortalTransferScript;
-import com.my.world.module.physics.Collision;
 import com.my.world.module.physics.RigidBody;
 import com.my.world.module.physics.rigidbody.SphereBody;
 import com.my.world.module.render.Render;
@@ -19,7 +18,6 @@ public class PortalEntity extends EnhancedEntity {
 
     public final Render render;
     public final RigidBody rigidBody;
-    public final Collision collision;
     public final Portal portal;
     public final PortalRenderScript renderScript;
     public final PortalTransferScript transferScript;
@@ -30,7 +28,7 @@ public class PortalEntity extends EnhancedEntity {
         render = addComponent(new Sphere(2 * radius, 2 * radius, 2 * radius, 16, 16, material, VertexAttributes.Usage.Position));
         rigidBody = addComponent(new SphereBody(radius, 500f));
         rigidBody.isTrigger = true;
-        collision = addComponent(new Collision(Collision.NORMAL_FLAG, Collision.ALL_FLAG));
+        rigidBody.isEnableCallback = true;
         portal = addComponent(new Portal());
         portal.targetTransform = new Matrix4();
         renderScript = addComponent(new PortalRenderScript());

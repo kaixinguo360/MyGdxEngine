@@ -8,7 +8,6 @@ import com.my.world.enhanced.builder.EntityBuilder;
 import com.my.world.enhanced.builder.EntityGenerator;
 import com.my.world.enhanced.entity.EnhancedEntity;
 import com.my.world.enhanced.script.RemoveByPositionScript;
-import com.my.world.module.physics.Collision;
 import com.my.world.module.physics.PresetTemplateRigidBody;
 import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.force.DragForce;
@@ -31,7 +30,6 @@ public class BombEntity extends EnhancedEntity {
 
     public final GLTFModelInstance render;
     public final PresetTemplateRigidBody rigidBody;
-    public final Collision collision;
     public final RemoveByPositionScript removeByPositionScript;
     public final BombScript bombScript;
     public final DragForce dragForce1;
@@ -41,7 +39,7 @@ public class BombEntity extends EnhancedEntity {
         setName("Bomb");
         render = addComponent(new GLTFModelInstance(model));
         rigidBody = addComponent(new PresetTemplateRigidBody(body));
-        collision = addComponent(new Collision(Collision.NORMAL_FLAG, Collision.ALL_FLAG));
+        rigidBody.isEnableCallback = true;
         removeByPositionScript = addComponent(new RemoveByPositionScript());
         bombScript = addComponent(new BombScript());
         bombScript.explosionBuilder = ExplosionEntity.builder;

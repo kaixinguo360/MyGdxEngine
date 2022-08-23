@@ -8,7 +8,6 @@ import com.my.world.enhanced.builder.EntityBuilder;
 import com.my.world.enhanced.builder.EntityGenerator;
 import com.my.world.enhanced.entity.EnhancedEntity;
 import com.my.world.enhanced.script.RemoveByPositionScript;
-import com.my.world.module.physics.Collision;
 import com.my.world.module.physics.PresetTemplateRigidBody;
 import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.rigidbody.CapsuleBody;
@@ -31,7 +30,6 @@ public class BulletEntity extends EnhancedEntity {
 
     public final GLTFModelInstance render;
     public final PresetTemplateRigidBody rigidBody;
-    public final Collision collision;
     public final RemoveByPositionScript removeByPositionScript;
     public final GLTFPointLight light;
 
@@ -39,7 +37,7 @@ public class BulletEntity extends EnhancedEntity {
         setName("Bullet");
         render = addComponent(new GLTFModelInstance(model));
         rigidBody = addComponent(new PresetTemplateRigidBody(body));
-        collision = addComponent(new Collision(Collision.NORMAL_FLAG, Collision.ALL_FLAG));
+        rigidBody.isEnableCallback = true;
         removeByPositionScript = addComponent(new RemoveByPositionScript());
         light = addComponent(new GLTFPointLight(Color.YELLOW.cpy(), 20f, 30f));
     }

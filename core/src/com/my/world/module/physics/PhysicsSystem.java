@@ -101,7 +101,8 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
     @Override
     public void afterEntityAdded(Entity entity) {
         PhysicsBody physicsBody = entity.getComponent(PhysicsBody.class);
-        physicsBody.addToWorld(dynamicsWorld);
+        physicsBody.registerToPhysicsSystem(scene, entity, this);
+        physicsBody.enterWorld();
         PhysicsSystem.this.physicsBodies.put(entity, physicsBody);
     }
 
@@ -109,7 +110,8 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
     public void afterEntityRemoved(Entity entity) {
         PhysicsBody physicsBody = physicsBodies.get(entity);
         if (physicsBody != null) {
-            physicsBody.removeFromWorld(dynamicsWorld);
+            physicsBody.leaveWorld();
+            physicsBody.unregisterFromPhysicsSystem(scene, entity, this);
         }
         physicsBodies.remove(entity);
     }

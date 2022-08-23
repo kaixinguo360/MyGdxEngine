@@ -124,7 +124,7 @@ public class RagdollEntity extends EnhancedEntity {
                     for (EnhancedEntity entity1 : bones) {
                         RigidBody rigidBody = entity1.getComponent(RigidBody.class);
                         rigidBody.isKinematic = false;
-                        rigidBody.reset();
+                        rigidBody.reenterWorld();
                         rigidBody.body.setActivationState(CollisionConstants.WANTS_DEACTIVATION);
                         rigidBody.body.activate();
                     }
@@ -136,7 +136,7 @@ public class RagdollEntity extends EnhancedEntity {
                     for (EnhancedEntity entity1 : bones) {
                         RigidBody rigidBody = entity1.getComponent(RigidBody.class);
                         rigidBody.isKinematic = true;
-                        rigidBody.reset();
+                        rigidBody.reenterWorld();
                         rigidBody.body.setActivationState(CollisionConstants.DISABLE_DEACTIVATION);
                     }
                     isKinematic = true;

@@ -2,8 +2,11 @@ package com.my.world.module.physics;
 
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.my.world.core.Config;
+import com.my.world.core.Entity;
+import com.my.world.core.Scene;
 import com.my.world.module.common.BaseActivatableComponent;
 import com.my.world.module.common.Position;
+import lombok.Getter;
 
 public abstract class PhysicsBody extends BaseActivatableComponent {
 
@@ -21,30 +24,54 @@ public abstract class PhysicsBody extends BaseActivatableComponent {
     @Config
     public boolean isTrigger;
 
-    public Position position;
-    public PhysicsSystem physicsSystem;
-    public btDynamicsWorld dynamicsWorld;
+    protected Scene scene;
+    protected PhysicsSystem physicsSystem;
+    protected btDynamicsWorld dynamicsWorld;
 
-    public void addToWorld(btDynamicsWorld dynamicsWorld) {
+    @Getter protected Entity entity;
+    @Getter protected Position position;
+
+    @Getter protected boolean registeredToPhysicsSystem = false;
+    @Getter protected boolean enteredWorld = false;
+
+    // ----- Physics System ----- //
+
+    public void registerToPhysicsSystem(Scene scene, Entity entity, PhysicsSystem physicsSystem) {
+        this.scene = scene;
+        this.physicsSystem = physicsSystem;
+        this.dynamicsWorld = physicsSystem.getDynamicsWorld();
+        this.entity = entity;
         this.position = entity.getComponent(Position.class);
-        this.dynamicsWorld = dynamicsWorld;
+        this.registeredToPhysicsSystem = true;
     }
 
-    public void removeFromWorld(btDynamicsWorld dynamicsWorld) {
+    public void unregisterFromPhysicsSystem(Scene scene, Entity entity, PhysicsSystem physicsSystem) {
+        this.registeredToPhysicsSystem = false;
         this.position = null;
+        this.entity = null;
         this.dynamicsWorld = null;
+        this.physicsSystem = null;
+        this.scene = null;
     }
 
-    public boolean isAddedToWorld() {
-        return dynamicsWorld != null;
+    // ----- Dynamics World ----- //
+
+    public void enterWorld() {
+        this.enteredWorld = true;
     }
 
-    public void reset() {
-        if (!isAddedToWorld()) throw new RuntimeException("This component not attached to a PhysicsSystem: " + this);
-        btDynamicsWorld currentWorld = dynamicsWorld;
-        removeFromWorld(currentWorld);
-        addToWorld(currentWorld);
+    public void leaveWorld() {
+        this.enteredWorld = false;
+    }
+
+    public void reenterWorld() {
+        if (!registeredToPhysicsSystem) throw new RuntimeException("This component not attached to a PhysicsSystem: " + this);
+        if (!enteredWorld) throw new RuntimeException("This component not entered DynamicsWorld: " + this);
+        leaveWorld();
+        enterWorld();
     };
+
+    // ----- Sync Transform ----- //
 
     public abstract void syncTransformFromEntity();
 

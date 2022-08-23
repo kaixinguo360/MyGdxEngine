@@ -6,7 +6,6 @@ import com.badlogic.gdx.physics.bullet.collision.btBroadphaseProxy;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.collision.btConvexShape;
 import com.badlogic.gdx.physics.bullet.collision.btPairCachingGhostObject;
-import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btKinematicCharacterController;
 import com.my.world.core.Config;
 import com.my.world.core.util.Disposable;
@@ -48,8 +47,8 @@ public class KinematicCharacterController extends PhysicsBody implements Disposa
     }
 
     @Override
-    public void addToWorld(btDynamicsWorld dynamicsWorld) {
-        super.addToWorld(dynamicsWorld);
+    public void enterWorld() {
+        super.enterWorld();
         if (!position.isDisableInherit()) {
             position.disableInherit();
         }
@@ -63,10 +62,10 @@ public class KinematicCharacterController extends PhysicsBody implements Disposa
     }
 
     @Override
-    public void removeFromWorld(btDynamicsWorld dynamicsWorld) {
+    public void leaveWorld() {
         dynamicsWorld.removeAction(characterController);
         dynamicsWorld.removeCollisionObject(ghostObject);
-        super.removeFromWorld(dynamicsWorld);
+        super.leaveWorld();
     }
 
     @Override

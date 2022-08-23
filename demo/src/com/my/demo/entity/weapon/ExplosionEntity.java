@@ -10,7 +10,6 @@ import com.my.world.enhanced.builder.EntityGenerator;
 import com.my.world.enhanced.entity.EnhancedEntity;
 import com.my.world.enhanced.script.RemoveByTimeScript;
 import com.my.world.module.animation.*;
-import com.my.world.module.physics.Collision;
 import com.my.world.module.physics.PresetTemplateRigidBody;
 import com.my.world.module.physics.TemplateRigidBody;
 import com.my.world.module.physics.rigidbody.SphereBody;
@@ -45,8 +44,7 @@ public class ExplosionEntity extends EnhancedEntity {
         explosionScriptEntity = new EnhancedEntity();
         explosionScriptEntity.setParent(this);
         explosionScriptEntity.setName("Explosion");
-        explosionScriptEntity.addComponent(new PresetTemplateRigidBody(body, true));
-        explosionScriptEntity.addComponent(new Collision(Collision.NORMAL_FLAG, Collision.ALL_FLAG));
+        explosionScriptEntity.addComponent(new PresetTemplateRigidBody(body, true)).isEnableCallback = true;
         explosionScriptEntity.addComponent(new ExplosionScript());
         addEntity(explosionScriptEntity);
 
