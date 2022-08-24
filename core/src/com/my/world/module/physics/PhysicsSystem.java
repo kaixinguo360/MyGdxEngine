@@ -18,7 +18,6 @@ import com.my.world.module.common.Script;
 import lombok.Getter;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Disposable, EntityListener {
@@ -217,33 +216,13 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
 
     private static class ContactListener extends com.badlogic.gdx.physics.bullet.collision.ContactListener {
         @Override
-        public boolean onContactAdded(btCollisionObject colObj0, int partId0, int index0, boolean match0, btCollisionObject colObj1, int partId1, int index1, boolean match1) {
+        public boolean onContactAdded(btCollisionObject colObj0, int partId0, int index0, btCollisionObject colObj1, int partId1, int index1) {
             try {
-                if(colObj0.userData instanceof Entity && colObj1.userData instanceof Entity) {
-                    Entity entity0 = (Entity) colObj0.userData;
-                    Entity entity1 = (Entity) colObj1.userData;
-                    if (match0 && entity1.contains(PhysicsBody.class)) {
-                        PhysicsBody physicsBody = entity1.getComponent(PhysicsBody.class);
-                        if (physicsBody == null || !physicsBody.isTrigger) {
-                            List<OnCollision> scripts = entity0.getComponents(OnCollision.class);
-                            for (OnCollision script : scripts) {
-                                if (Component.isActive(script)) {
-                                    script.collision(entity1);
-                                }
-                            }
-                        }
-                    }
-                    if (match1) {
-                        PhysicsBody physicsBody = entity0.getComponent(PhysicsBody.class);
-                        if (physicsBody == null || !physicsBody.isTrigger) {
-                            List<OnCollision> scripts = entity1.getComponents(OnCollision.class);
-                            for (OnCollision script : scripts) {
-                                if (Component.isActive(script)) {
-                                    script.collision(entity0);
-                                }
-                            }
-                        }
-                    }
+                if(colObj0.userData instanceof PhysicsBody && colObj1.userData instanceof PhysicsBody) {
+                    PhysicsBody body0 = (PhysicsBody) colObj0.userData;
+                    PhysicsBody body1 = (PhysicsBody) colObj1.userData;
+                    body0.collision(body1);
+                    body1.collision(body0);
                 }
                 return true;
             } catch (Throwable e) {
