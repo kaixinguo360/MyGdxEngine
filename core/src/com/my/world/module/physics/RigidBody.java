@@ -56,7 +56,7 @@ public class RigidBody extends PhysicsBody {
         super.enterWorld();
 
         // Set userData
-        body.userData = entity;
+        body.userData = this;
 
         if (collisionFlags != null) {
             body.setCollisionFlags(collisionFlags);

@@ -1,12 +1,15 @@
 package com.my.world.module.physics;
 
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
+import com.my.world.core.Component;
 import com.my.world.core.Config;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
 import com.my.world.module.common.BaseActivatableComponent;
 import com.my.world.module.common.Position;
 import lombok.Getter;
+
+import java.util.List;
 
 public abstract class PhysicsBody extends BaseActivatableComponent {
 
@@ -76,4 +79,19 @@ public abstract class PhysicsBody extends BaseActivatableComponent {
     public abstract void syncTransformFromEntity();
 
     public abstract void syncTransformFromWorld();
+
+    // ----- Collision ----- //
+
+    public void collision(PhysicsBody targetBody) {
+        if (!registeredToPhysicsSystem) throw new RuntimeException("This component not attached to a PhysicsSystem: " + this);
+        if (!enteredWorld) throw new RuntimeException("This component not entered DynamicsWorld: " + this);
+        if (!isTrigger) {
+            List<PhysicsSystem.OnCollision> scripts = entity.getComponents(PhysicsSystem.OnCollision.class);
+            for (PhysicsSystem.OnCollision script : scripts) {
+                if (Component.isActive(script)) {
+                    script.collision(targetBody.entity);
+                }
+            }
+        }
+    }
 }

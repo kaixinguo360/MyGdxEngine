@@ -31,7 +31,7 @@ public class KinematicCharacterController extends PhysicsBody implements Disposa
 //        ghostObject.setWorldTransform(position.getGlobalTransform()); // Fix Bug #5017
         ghostObject.setCollisionShape(shape.shape);
         ghostObject.setCollisionFlags(btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK | btCollisionObject.CollisionFlags.CF_CHARACTER_OBJECT);
-        ghostObject.userData = entity;
+        ghostObject.userData = this;
 
         characterController = new btKinematicCharacterController(ghostObject, (btConvexShape) shape.shape, stepHeight, Vector3.Y);
         characterController.setGravity(new Vector3(0, -30f * mass, 0));
