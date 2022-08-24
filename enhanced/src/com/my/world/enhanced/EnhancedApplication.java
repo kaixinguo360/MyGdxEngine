@@ -4,7 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.my.world.core.*;
 import com.my.world.enhanced.entity.EnhancedEntitySerializer;
-import com.my.world.enhanced.render.EnhancedRenderSystem;
+import com.my.world.enhanced.render.DelayLightingRenderSystem;
 import com.my.world.gdx.*;
 import com.my.world.module.camera.CameraSystem;
 import com.my.world.module.input.InputSystem;
@@ -37,7 +37,7 @@ public class EnhancedApplication extends GdxApplication {
         // Render Module
         systemManager.addSystem(new EnvironmentSystem());
         systemManager.addSystem(new CameraSystem());
-        systemManager.addSystem(new EnhancedRenderSystem());
+        systemManager.addSystem(new DelayLightingRenderSystem());
         return scene;
     }
 
