@@ -1,99 +1,77 @@
 package com.my.world.enhanced.render;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.g3d.Renderable;
-import com.badlogic.gdx.graphics.g3d.Shader;
+import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.g3d.*;
+import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
 import com.badlogic.gdx.graphics.g3d.utils.RenderableSorter;
 import com.badlogic.gdx.graphics.g3d.utils.ShaderProvider;
-import com.badlogic.gdx.graphics.glutils.FrameBuffer;
+import com.badlogic.gdx.graphics.glutils.GLFrameBuffer;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.BufferUtils;
 import com.badlogic.gdx.utils.FlushablePool;
 import com.my.world.module.render.Render;
+import net.mgsx.gltf.scene3d.attributes.PBRColorAttribute;
 
-import java.nio.IntBuffer;
-
-import static com.badlogic.gdx.graphics.GL20.*;
-import static com.badlogic.gdx.graphics.GL30.*;
+import static com.badlogic.gdx.graphics.GL20.GL_DEPTH_TEST;
+import static com.badlogic.gdx.graphics.GL20.GL_TRIANGLES;
 
 public class DelayLightingRenderSystem extends EnhancedRenderSystem {
 
+    public static final long ATTRIBUTES = VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal;
+    public static final Material MATERIAL = new Material(PBRColorAttribute.createDiffuse(Color.WHITE));
+
     protected final EnhancedFrameBuffer fbo;
-    protected final IntBuffer attachments1;
-    protected final IntBuffer attachments2;
+    protected final PreLightingPassShaderProvider preLightingPassShaderProvider;
+    protected final LightingPassShaderProvider lightingPassShaderProvider;
+
+    protected final Array<Renderable> allRenderables = new Array<>();
+    protected final Array<Renderable> delayRenderables = new Array<>();
+    protected final Array<Renderable> forwardsRenderables = new Array<>();
+    protected final Array<Renderable> lightRenderables = new Array<>();
+    protected final FlushablePool<Renderable> renderablesPool = new RenderablePool();
+
+    protected final Model sphereModel;
+    protected final Model rectModel;
+    protected final ModelInstance sphereInstance;
+    protected final ModelInstance rectInstance;
 
     public DelayLightingRenderSystem() {
         int windowWidth = Gdx.graphics.getWidth();
         int windowHeight = Gdx.graphics.getHeight();
-        fbo = new EnhancedFrameBuffer(Pixmap.Format.RGBA8888, windowWidth, windowHeight, true, true);
-        fbo.bind();
 
-        // 手动创建颜色附件1
-        int gPosition = Gdx.gl.glGenTexture();
-        Gdx.gl.glBindTexture(GL_TEXTURE_2D, gPosition);
-        Gdx.gl.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, null);
-        Gdx.gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        Gdx.gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        Gdx.gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        Gdx.gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        Gdx.gl.glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
+        GLFrameBuffer.FrameBufferBuilder frameBufferBuilder = new GLFrameBuffer.FrameBufferBuilder(windowWidth, windowHeight);
+        frameBufferBuilder.addColorTextureAttachment(GL30.GL_RGB16F, GL30.GL_RGB, GL30.GL_FLOAT);
+        frameBufferBuilder.addColorTextureAttachment(GL30.GL_RGB16F, GL30.GL_RGB, GL30.GL_FLOAT);
+        frameBufferBuilder.addBasicColorTextureAttachment(Pixmap.Format.RGBA8888);
+        frameBufferBuilder.addBasicColorTextureAttachment(Pixmap.Format.RGBA8888);
+        frameBufferBuilder.addBasicDepthRenderBuffer();
+        frameBufferBuilder.addBasicStencilRenderBuffer();
+        fbo = new EnhancedFrameBuffer(frameBufferBuilder);
 
-        // 手动创建颜色附件2
-        int gNormal = Gdx.gl.glGenTexture();
-        Gdx.gl.glBindTexture(GL_TEXTURE_2D, gNormal);
-        Gdx.gl.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, null);
-        Gdx.gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        Gdx.gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        Gdx.gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        Gdx.gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        Gdx.gl.glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
+        preLightingPassShaderProvider = new PreLightingPassShaderProvider(PreLightingPassShaderProvider.createPreLightingPassShaderConfig());
+        lightingPassShaderProvider = new LightingPassShaderProvider(LightingPassShaderProvider.createLightingPassShaderConfig());
 
-        // 手动创建颜色附件3
-        int gAlbedoSpec = Gdx.gl.glGenTexture();
-        Gdx.gl.glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
-        Gdx.gl.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, windowWidth, windowHeight, 0, GL_RGBA, GL_FLOAT, null);
-        Gdx.gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        Gdx.gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        Gdx.gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        Gdx.gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        Gdx.gl.glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpec, 0);
+        Environment environment = new Environment();
+        environment.set(GBufferAttribute.createGBuffer0(fbo.getTextureAttachments().get(0)));
+        environment.set(GBufferAttribute.createGBuffer1(fbo.getTextureAttachments().get(1)));
+        environment.set(GBufferAttribute.createGBuffer2(fbo.getTextureAttachments().get(2)));
+        environment.set(GBufferAttribute.createGBuffer3(fbo.getTextureAttachments().get(3)));
 
-        attachments1 = BufferUtils.newIntBuffer(3);
-        attachments1.put(new int[] {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2});
+        ModelBuilder mBuilder = new ModelBuilder();
 
-        attachments2 = BufferUtils.newIntBuffer(1);
-        attachments2.put(new int[] {GL_COLOR_ATTACHMENT0});
+        sphereModel = mBuilder.createSphere(1, 1, 1, 16, 16, GL_TRIANGLES, MATERIAL, ATTRIBUTES);
+        sphereInstance = new ModelInstance(sphereModel);
+//        sphereInstance.getRenderables(lights, renderablesPool);
 
-        // 手动绑定颜色附件到帧缓冲
-        if (Gdx.gl.glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            throw new RuntimeException("Gdx.gl.glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE");
+        rectModel = mBuilder.createRect(-1, -1, -10, 1, -1, -10, 1, 1, -10, -1, 1, -10, 0, 0, 0, MATERIAL, ATTRIBUTES);
+        rectInstance = new ModelInstance(rectModel);
+        rectInstance.getRenderables(lightRenderables, renderablesPool);
+
+        for (Renderable renderable : lightRenderables) {
+            renderable.environment = environment;
         }
-        FrameBuffer.unbind();
     }
-
-    protected final FlushablePool<Renderable> renderablesPool = new FlushablePool<Renderable>() {
-
-        @Override
-        protected Renderable newObject() {
-            return new Renderable();
-        }
-
-        @Override
-        public Renderable obtain() {
-            Renderable renderable = super.obtain();
-            renderable.environment = null;
-            renderable.material = null;
-            renderable.meshPart.set("", null, 0, 0, 0);
-            renderable.shader = null;
-            renderable.userData = null;
-            return renderable;
-        }
-    };
-
-    protected final Array<Renderable> renderables = new Array<>();
 
     // ----- RenderBatch ----- //
 
@@ -106,11 +84,30 @@ public class DelayLightingRenderSystem extends EnhancedRenderSystem {
     @Override
     public void endBatch() {
         if (currentCamera == null) throw new RuntimeException("Current camera is null");
+        classification();
         lightingRender();
-        forwardRender();
+//        forwardRender();
         renderablesPool.flush();
-        renderables.clear();
+        allRenderables.clear();
+        delayRenderables.clear();
+        forwardsRenderables.clear();
         currentCamera = null;
+    }
+
+    protected void classification() {
+        for (int i = 0; i < allRenderables.size; i++) {
+            final Renderable renderable = allRenderables.get(i);
+            if (canDelayRender(renderable)) {
+                delayRenderables.add(renderable);
+            } else {
+                forwardsRenderables.add(renderable);
+            }
+        }
+    }
+
+    protected boolean canDelayRender(Renderable renderable) {
+        Shader shader = preLightingPassShaderProvider.getShader(renderable);
+        return shader instanceof LightingPassShader;
     }
 
     @Override
@@ -119,10 +116,10 @@ public class DelayLightingRenderSystem extends EnhancedRenderSystem {
         if (!render.isVisible(currentCamera)) {
             return;
         }
-        final int offset = renderables.size;
-        render.getRenderables(renderables, renderablesPool);
-        for (int i = offset; i < renderables.size; i++) {
-            Renderable renderable = renderables.get(i);
+        final int offset = allRenderables.size;
+        render.getRenderables(allRenderables, renderablesPool);
+        for (int i = offset; i < allRenderables.size; i++) {
+            Renderable renderable = allRenderables.get(i);
             if (currentEnvironment != null && render.includeEnv) {
                 renderable.environment = currentEnvironment;
             }
@@ -134,24 +131,23 @@ public class DelayLightingRenderSystem extends EnhancedRenderSystem {
 
     // ----- Render ----- //
 
-    protected ShaderProvider lightingShaderProvider = new ShaderProvider() {
-        public final Shader lightingShader = new DefaultPreLightingPassShader();
-        public Shader getShader(Renderable renderable) { return lightingShader; }
-        public void dispose() {}
-    };
-
     protected void lightingRender() {
         fbo.begin();
-
-        Gdx.gl30.glDrawBuffers(3, attachments1);
-        render(renderables, batch.getRenderContext(), batch.getRenderableSorter(), lightingShaderProvider, currentCamera);
-        Gdx.gl30.glDrawBuffers(1, attachments2);
-
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+        render(delayRenderables, batch.getRenderContext(), batch.getRenderableSorter(), preLightingPassShaderProvider, currentCamera);
         fbo.end();
+
+        for (Renderable light : lightRenderables) {
+            light.material.set(light.environment);
+            light.material.set(currentEnvironment);
+        }
+        Gdx.gl.glDisable(GL_DEPTH_TEST);
+        render(lightRenderables, batch.getRenderContext(), batch.getRenderableSorter(), lightingPassShaderProvider, currentCamera);
+        Gdx.gl.glEnable(GL_DEPTH_TEST);
     }
 
     protected void forwardRender() {
-        render(renderables, batch.getRenderContext(), batch.getRenderableSorter(), batch.getShaderProvider(), currentCamera);
+        render(forwardsRenderables, batch.getRenderContext(), batch.getRenderableSorter(), batch.getShaderProvider(), currentCamera);
     }
 
     public static void render(Array<Renderable> renderables, RenderContext context, RenderableSorter sorter, ShaderProvider shaderProvider, Camera camera) {
@@ -170,5 +166,24 @@ public class DelayLightingRenderSystem extends EnhancedRenderSystem {
         }
         if (currentShader != null) currentShader.end();
         if (context != null) context.end();
+    }
+
+    public static class RenderablePool extends FlushablePool<Renderable> {
+
+        @Override
+        protected Renderable newObject() {
+            return new Renderable();
+        }
+
+        @Override
+        public Renderable obtain() {
+            Renderable renderable = super.obtain();
+            renderable.environment = null;
+            renderable.material = null;
+            renderable.meshPart.set("", null, 0, 0, 0);
+            renderable.shader = null;
+            renderable.userData = null;
+            return renderable;
+        }
     }
 }
