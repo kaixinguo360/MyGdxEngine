@@ -16,10 +16,43 @@ import net.mgsx.gltf.scene3d.shaders.PBRShaderProvider;
 
 class LightingPassShaderProvider extends PBRShaderProvider {
 
-    public static PBRShaderConfig createLightingPassShaderConfig() {
+    public static PBRShaderConfig createAnyLightingPassShaderConfig() {
         PBRShaderConfig config = new PBRShaderConfig();
         config.numPointLights = 5;
         config.numDirectionalLights = 3;
+        config.numSpotLights = 1;
+        config.numBones = 0;
+        config.vertexShader = Gdx.files.classpath("com/my/world/enhanced/render/lighting-pass.vs.glsl").readString();
+        config.fragmentShader = Gdx.files.classpath("com/my/world/enhanced/render/lighting-pass.fs.glsl").readString();
+        return config;
+    }
+
+    public static PBRShaderConfig createDirectionalLightingPassShaderConfig() {
+        PBRShaderConfig config = new PBRShaderConfig();
+        config.numPointLights = 0;
+        config.numDirectionalLights = 1;
+        config.numSpotLights = 0;
+        config.numBones = 0;
+        config.vertexShader = Gdx.files.classpath("com/my/world/enhanced/render/lighting-pass.vs.glsl").readString();
+        config.fragmentShader = Gdx.files.classpath("com/my/world/enhanced/render/lighting-pass.fs.glsl").readString();
+        return config;
+    }
+
+    public static PBRShaderConfig creatPointLightingPassShaderConfig() {
+        PBRShaderConfig config = new PBRShaderConfig();
+        config.numPointLights = 1;
+        config.numDirectionalLights = 0;
+        config.numSpotLights = 0;
+        config.numBones = 0;
+        config.vertexShader = Gdx.files.classpath("com/my/world/enhanced/render/lighting-pass.vs.glsl").readString();
+        config.fragmentShader = Gdx.files.classpath("com/my/world/enhanced/render/lighting-pass.fs.glsl").readString();
+        return config;
+    }
+
+    public static PBRShaderConfig creatSpotLightingPassShaderConfig() {
+        PBRShaderConfig config = new PBRShaderConfig();
+        config.numPointLights = 0;
+        config.numDirectionalLights = 0;
         config.numSpotLights = 1;
         config.numBones = 0;
         config.vertexShader = Gdx.files.classpath("com/my/world/enhanced/render/lighting-pass.vs.glsl").readString();

@@ -3,6 +3,8 @@ package com.my.world.enhanced.render;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.*;
+import com.badlogic.gdx.graphics.g3d.attributes.PointLightsAttribute;
+import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
 import com.badlogic.gdx.graphics.g3d.utils.RenderableSorter;
@@ -23,7 +25,10 @@ public class DelayLightingRenderSystem extends EnhancedRenderSystem {
 
     protected final EnhancedFrameBuffer fbo;
     protected final PreLightingPassShaderProvider preLightingPassShaderProvider;
-    protected final LightingPassShaderProvider lightingPassShaderProvider;
+    protected final LightingPassShaderProvider anyLightingPassShaderProvider;
+    protected final LightingPassShaderProvider pointLightingPassShaderProvider;
+    protected final LightingPassShaderProvider directionalLightingPassShaderProvider;
+    protected final LightingPassShaderProvider spotLightingPassShaderProvider;
 
     protected final Array<Renderable> allRenderables = new Array<>();
     protected final Array<Renderable> delayRenderables = new Array<>();
@@ -50,7 +55,10 @@ public class DelayLightingRenderSystem extends EnhancedRenderSystem {
         fbo = new EnhancedFrameBuffer(frameBufferBuilder);
 
         preLightingPassShaderProvider = new PreLightingPassShaderProvider(PreLightingPassShaderProvider.createPreLightingPassShaderConfig());
-        lightingPassShaderProvider = new LightingPassShaderProvider(LightingPassShaderProvider.createLightingPassShaderConfig());
+        anyLightingPassShaderProvider = new LightingPassShaderProvider(LightingPassShaderProvider.createAnyLightingPassShaderConfig());
+        pointLightingPassShaderProvider = new LightingPassShaderProvider(LightingPassShaderProvider.creatPointLightingPassShaderConfig());
+        directionalLightingPassShaderProvider = new LightingPassShaderProvider(LightingPassShaderProvider.createDirectionalLightingPassShaderConfig());
+        spotLightingPassShaderProvider = new LightingPassShaderProvider(LightingPassShaderProvider.creatSpotLightingPassShaderConfig());
 
         Environment environment = new Environment();
         environment.set(GBufferAttribute.createGBuffer0(fbo.getTextureAttachments().get(0)));
@@ -91,6 +99,7 @@ public class DelayLightingRenderSystem extends EnhancedRenderSystem {
         allRenderables.clear();
         delayRenderables.clear();
         forwardsRenderables.clear();
+        lightRenderables.clear();
         currentCamera = null;
     }
 
@@ -137,12 +146,23 @@ public class DelayLightingRenderSystem extends EnhancedRenderSystem {
         render(delayRenderables, batch.getRenderContext(), batch.getRenderableSorter(), preLightingPassShaderProvider, currentCamera);
         fbo.end();
 
-        for (Renderable light : lightRenderables) {
-            light.material.set(light.environment);
-            light.material.set(currentEnvironment);
+        PointLightsAttribute pointLights = currentEnvironment.get(PointLightsAttribute.class, PointLightsAttribute.Type);
+        if (pointLights != null) {
+            for (PointLight light : pointLights.lights) {
+                float range = 50;
+                sphereInstance.transform.setToTranslation(light.position).scl(range);
+                sphereInstance.getRenderables(lightRenderables, renderablesPool);
+
+                Renderable lightRenderable = lightRenderables.peek();
+                lightRenderable.material.set(lightRenderable.environment);
+                PointLightsAttribute lightsAttribute = new PointLightsAttribute();
+                lightsAttribute.lights.add(light);
+                lightRenderable.material.set(lightsAttribute);
+            }
         }
+
         Gdx.gl.glDisable(GL_DEPTH_TEST);
-        render(lightRenderables, batch.getRenderContext(), batch.getRenderableSorter(), lightingPassShaderProvider, currentCamera);
+        render(lightRenderables, batch.getRenderContext(), batch.getRenderableSorter(), anyLightingPassShaderProvider, currentCamera);
         Gdx.gl.glEnable(GL_DEPTH_TEST);
     }
 
