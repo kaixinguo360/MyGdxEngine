@@ -6,5 +6,5 @@ uniform mat4 u_projViewTrans;
 uniform mat4 u_worldTrans;
 
 void main() {
-    gl_Position = u_projViewTrans * u_worldTrans * vec4(a_position, 1.0);
+    gl_Position = vec4(a_position.xy, 1, 1.0);
 }

@@ -3,7 +3,9 @@ package com.my.world.enhanced.render;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.*;
+import com.badlogic.gdx.graphics.g3d.attributes.DirectionalLightsAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.PointLightsAttribute;
+import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
@@ -15,8 +17,7 @@ import com.badlogic.gdx.utils.FlushablePool;
 import com.my.world.module.render.Render;
 import net.mgsx.gltf.scene3d.attributes.PBRColorAttribute;
 
-import static com.badlogic.gdx.graphics.GL20.GL_DEPTH_TEST;
-import static com.badlogic.gdx.graphics.GL20.GL_TRIANGLES;
+import static com.badlogic.gdx.graphics.GL20.*;
 
 public class DelayLightingRenderSystem extends EnhancedRenderSystem {
 
@@ -36,14 +37,17 @@ public class DelayLightingRenderSystem extends EnhancedRenderSystem {
     protected final Array<Renderable> lightRenderables = new Array<>();
     protected final FlushablePool<Renderable> renderablesPool = new RenderablePool();
 
+    protected final int windowWidth;
+    protected final int windowHeight;
+    protected final Environment environment;
     protected final Model sphereModel;
     protected final Model rectModel;
     protected final ModelInstance sphereInstance;
     protected final ModelInstance rectInstance;
 
     public DelayLightingRenderSystem() {
-        int windowWidth = Gdx.graphics.getWidth();
-        int windowHeight = Gdx.graphics.getHeight();
+        windowWidth = Gdx.graphics.getWidth();
+        windowHeight = Gdx.graphics.getHeight();
 
         GLFrameBuffer.FrameBufferBuilder frameBufferBuilder = new GLFrameBuffer.FrameBufferBuilder(windowWidth, windowHeight);
         frameBufferBuilder.addColorTextureAttachment(GL30.GL_RGB16F, GL30.GL_RGB, GL30.GL_FLOAT);
@@ -60,7 +64,7 @@ public class DelayLightingRenderSystem extends EnhancedRenderSystem {
         directionalLightingPassShaderProvider = new LightingPassShaderProvider(LightingPassShaderProvider.createDirectionalLightingPassShaderConfig());
         spotLightingPassShaderProvider = new LightingPassShaderProvider(LightingPassShaderProvider.creatSpotLightingPassShaderConfig());
 
-        Environment environment = new Environment();
+        environment = new Environment();
         environment.set(GBufferAttribute.createGBuffer0(fbo.getTextureAttachments().get(0)));
         environment.set(GBufferAttribute.createGBuffer1(fbo.getTextureAttachments().get(1)));
         environment.set(GBufferAttribute.createGBuffer2(fbo.getTextureAttachments().get(2)));
@@ -72,13 +76,8 @@ public class DelayLightingRenderSystem extends EnhancedRenderSystem {
         sphereInstance = new ModelInstance(sphereModel);
 //        sphereInstance.getRenderables(lights, renderablesPool);
 
-        rectModel = mBuilder.createRect(-1, -1, -10, 1, -1, -10, 1, 1, -10, -1, 1, -10, 0, 0, 0, MATERIAL, ATTRIBUTES);
+        rectModel = mBuilder.createRect(-1, -1, 0, 1, -1, 0, 1, 1, 0, -1, 1, 0, 0, 0, 0, MATERIAL, ATTRIBUTES);
         rectInstance = new ModelInstance(rectModel);
-        rectInstance.getRenderables(lightRenderables, renderablesPool);
-
-        for (Renderable renderable : lightRenderables) {
-            renderable.environment = environment;
-        }
     }
 
     // ----- RenderBatch ----- //
@@ -94,7 +93,7 @@ public class DelayLightingRenderSystem extends EnhancedRenderSystem {
         if (currentCamera == null) throw new RuntimeException("Current camera is null");
         classification();
         lightingRender();
-//        forwardRender();
+        forwardRender();
         renderablesPool.flush();
         allRenderables.clear();
         delayRenderables.clear();
@@ -148,22 +147,49 @@ public class DelayLightingRenderSystem extends EnhancedRenderSystem {
 
         PointLightsAttribute pointLights = currentEnvironment.get(PointLightsAttribute.class, PointLightsAttribute.Type);
         if (pointLights != null) {
+            System.out.println("pointLights: " + pointLights.lights.size);
             for (PointLight light : pointLights.lights) {
                 float range = 50;
                 sphereInstance.transform.setToTranslation(light.position).scl(range);
                 sphereInstance.getRenderables(lightRenderables, renderablesPool);
 
                 Renderable lightRenderable = lightRenderables.peek();
-                lightRenderable.material.set(lightRenderable.environment);
+                lightRenderable.environment = environment;
+                lightRenderable.material.set(environment);
                 PointLightsAttribute lightsAttribute = new PointLightsAttribute();
                 lightsAttribute.lights.add(light);
                 lightRenderable.material.set(lightsAttribute);
+                lightRenderable.shader = pointLightingPassShaderProvider.getShader(lightRenderable);
+            }
+        }
+
+        DirectionalLightsAttribute directionalLights = currentEnvironment.get(DirectionalLightsAttribute.class, DirectionalLightsAttribute.Type);
+        if (directionalLights != null) {
+            System.out.println("directionalLights: " + directionalLights.lights.size);
+            for (DirectionalLight light : directionalLights.lights) {
+                rectInstance.getRenderables(lightRenderables, renderablesPool);
+
+                Renderable lightRenderable = lightRenderables.peek();
+                lightRenderable.environment = environment;
+                lightRenderable.material.set(environment);
+                DirectionalLightsAttribute lightsAttribute = new DirectionalLightsAttribute();
+                lightsAttribute.lights.add(light);
+                lightRenderable.material.set(lightsAttribute);
+                lightRenderable.shader = directionalLightingPassShaderProvider.getShader(lightRenderable);
             }
         }
 
         Gdx.gl.glDisable(GL_DEPTH_TEST);
-        render(lightRenderables, batch.getRenderContext(), batch.getRenderableSorter(), anyLightingPassShaderProvider, currentCamera);
+        Gdx.gl.glEnable(GL_BLEND);
+        Gdx.gl.glBlendEquation(GL_FUNC_ADD);
+        Gdx.gl.glBlendFunc(GL_ONE, GL_ONE);
+        render(lightRenderables, batch.getRenderContext(), batch.getRenderableSorter(), anyLightingPassShaderProvider, currentCamera, false);
         Gdx.gl.glEnable(GL_DEPTH_TEST);
+
+        Gdx.gl.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, fbo.getDepthBufferHandle());
+        Gdx.gl.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, 0);
+        Gdx.gl30.glBlitFramebuffer(0, 0, windowWidth, windowHeight, 0, 0, windowWidth, windowHeight, GL30.GL_DEPTH_BUFFER_BIT, GL30.GL_NEAREST);
+        Gdx.gl.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
     }
 
     protected void forwardRender() {
@@ -171,7 +197,11 @@ public class DelayLightingRenderSystem extends EnhancedRenderSystem {
     }
 
     public static void render(Array<Renderable> renderables, RenderContext context, RenderableSorter sorter, ShaderProvider shaderProvider, Camera camera) {
-        if (context != null) context.begin();
+        render(renderables, context, sorter, shaderProvider, camera, true);
+    }
+
+    public static void render(Array<Renderable> renderables, RenderContext context, RenderableSorter sorter, ShaderProvider shaderProvider, Camera camera, boolean ownContext) {
+        if (ownContext) context.begin();
         if (sorter != null) sorter.sort(camera, renderables);
         Shader currentShader = null;
         for (int i = 0; i < renderables.size; i++) {
@@ -185,7 +215,7 @@ public class DelayLightingRenderSystem extends EnhancedRenderSystem {
             currentShader.render(renderable);
         }
         if (currentShader != null) currentShader.end();
-        if (context != null) context.end();
+        if (ownContext) context.end();
     }
 
     public static class RenderablePool extends FlushablePool<Renderable> {

@@ -462,5 +462,6 @@ void main() {
 #else
 	out_FragColor.a = 1.0;
 #endif
+    out_FragColor.a = 1.0;
 
 }
