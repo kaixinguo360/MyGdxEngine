@@ -1,18 +1,5 @@
 #line 1
 
-// Extensions required for WebGL and some Android versions
-
-#ifdef GLSL3
-#define textureCubeLodEXT textureLod
-#else
-#ifdef USE_TEXTURE_LOD_EXT
-#extension GL_EXT_shader_texture_lod: enable
-#else
-// Note : "textureCubeLod" is used for compatibility but should be "textureLod" for GLSL #version 130 (OpenGL 3.0+)
-#define textureCubeLodEXT textureCubeLod
-#endif
-#endif
-
 // required to have same precision in both shader for light structure
 #ifdef GL_ES
 #define LOWP lowp
@@ -28,24 +15,12 @@ precision highp float;
 #ifdef GLSL3
 #define varying in
 out vec4 out_FragColor;
-#define textureCube texture
-#define texture2D texture
 #else
 #define out_FragColor gl_FragColor
 #endif
 
 // Utilities
 #define saturate(_v) clamp((_v), 0.0, 1.0)
-
-#ifdef textureFlag
-varying MED vec2 v_texCoord0;
-#endif // textureFlag
-
-// texCoord unit mapping
-
-#ifndef v_emissiveUV
-#define v_emissiveUV v_texCoord0
-#endif
 
 // #################### My Code Begin #################### //
 
@@ -57,71 +32,12 @@ uniform sampler2D u_gBuffer3;
 
 // #################### My Code End #################### //
 
-#ifdef fogFlag
-uniform vec4 u_fogColor;
-
-#ifdef fogEquationFlag
-uniform vec3 u_fogEquation;
-#endif
-
-#endif // fogFlag
-
-
-#ifdef ambientLightFlag
-uniform vec3 u_ambientLight;
-#endif // ambientLightFlag
-
-
-#ifdef USE_IBL
-uniform samplerCube u_DiffuseEnvSampler;
-
-#ifdef diffuseSpecularEnvSeparateFlag
-uniform samplerCube u_SpecularEnvSampler;
-#else
-#define u_SpecularEnvSampler u_DiffuseEnvSampler
-#endif
-
-#ifdef brdfLUTTexture
-uniform sampler2D u_brdfLUT;
-#endif
-
-#ifdef USE_TEX_LOD
-uniform float u_mipmapScale; // = 9.0 for resolution of 512x512
-#endif
-
-#endif
-
-#if numDirectionalLights > 0
 struct DirectionalLight
 {
-	vec3 color;
-	vec3 direction;
+    vec3 color;
+    vec3 direction;
 };
-uniform DirectionalLight u_dirLights[numDirectionalLights];
-#endif // numDirectionalLights
-
-
-#if numPointLights > 0
-struct PointLight
-{
-	vec3 color;
-	vec3 position;
-};
-uniform PointLight u_pointLights[numPointLights];
-#endif // numPointLights
-
-#if numSpotLights > 0
-struct SpotLight
-{
-	vec3 color;
-	vec3 position;
-	vec3 direction;
-	float cutoffAngle;
-	float exponent;
-};
-uniform SpotLight u_spotLights[numSpotLights];
-#endif // numSpotLights
-
+uniform DirectionalLight u_dirLights[1];
 
 uniform vec4 u_cameraPosition;
 
@@ -170,35 +86,6 @@ vec4 SRGBtoLINEAR(vec4 srgbIn)
     return srgbIn;
     #endif //MANUAL_SRGB
 }
-
-// Calculation of the lighting contribution from an optional Image Based Light source.
-// Precomputed Environment Maps are required uniform inputs and are computed as outlined in [1].
-// See our README.md on Environment Maps [3] for additional discussion.
-#ifdef USE_IBL
-vec3 getIBLContribution(PBRSurfaceInfo pbrSurface, vec3 n, vec3 reflection)
-{
-    // retrieve a scale and bias to F0. See [1], Figure 3
-#ifdef brdfLUTTexture
-	vec2 brdf = SRGBtoLINEAR(texture2D(u_brdfLUT, vec2(pbrSurface.NdotV, 1.0 - pbrSurface.perceptualRoughness))).xy;
-#else // TODO not sure about how to compute it ...
-	vec2 brdf = vec2(pbrSurface.NdotV, pbrSurface.perceptualRoughness);
-#endif
-    
-    vec3 diffuseLight = SRGBtoLINEAR(textureCube(u_DiffuseEnvSampler, n)).rgb;
-
-#ifdef USE_TEX_LOD
-    float lod = (pbrSurface.perceptualRoughness * u_mipmapScale);
-    vec3 specularLight = SRGBtoLINEAR(textureCubeLodEXT(u_SpecularEnvSampler, reflection, lod)).rgb;
-#else
-    vec3 specularLight = SRGBtoLINEAR(textureCube(u_SpecularEnvSampler, reflection)).rgb;
-#endif
-
-    vec3 diffuse = diffuseLight * pbrSurface.diffuseColor;
-    vec3 specular = specularLight * (pbrSurface.specularColor * brdf.x + brdf.y);
-
-    return diffuse + specular;
-}
-#endif
 
 // Basic Lambertian diffuse
 // Implementation from Lambert's Photometria https://archive.org/details/lambertsphotome00lambgoog
@@ -273,48 +160,11 @@ vec3 getLightContribution(PBRSurfaceInfo pbrSurface, vec3 l)
 	return NdotL * (diffuseContrib + specContrib);
 }
 
-#if numDirectionalLights > 0
 vec3 getDirectionalLightContribution(PBRSurfaceInfo pbrSurface, DirectionalLight light)
 {
     vec3 l = normalize(-light.direction);  // Vector from surface point to light
     return getLightContribution(pbrSurface, l) * light.color;
 }
-#endif
-
-#if numPointLights > 0
-vec3 getPointLightContribution(PBRSurfaceInfo pbrSurface, PointLight light)
-{
-	// light direction and distance
-	vec3 d = light.position - v_position.xyz;
-	float dist2 = dot(d, d);
-	d *= inversesqrt(dist2);
-
-	return getLightContribution(pbrSurface, d) * light.color / (1.0 + dist2);
-}
-#endif
-
-#if numSpotLights > 0
-vec3 getSpotLightContribution(PBRSurfaceInfo pbrSurface, SpotLight light)
-{
-	// light distance
-	vec3 d = light.position - v_position.xyz;
-	float dist2 = dot(d, d);
-	d *= inversesqrt(dist2);
-
-	// light direction
-	vec3 l = normalize(-light.direction);  // Vector from surface point to light
-
-	// from https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md#inner-and-outer-cone-angles
-	float lightAngleOffset = light.cutoffAngle;
-	float lightAngleScale = light.exponent;
-
-	float cd = dot(l, d);
-	float angularAttenuation = saturate(cd * lightAngleScale + lightAngleOffset);
-	angularAttenuation *= angularAttenuation;
-
-	return getLightContribution(pbrSurface, d) * light.color * (angularAttenuation / (1.0 + dist2));
-}
-#endif
 
 void main() {
 
@@ -370,79 +220,14 @@ void main() {
 		specularColor
     );
 
-    vec3 color = vec3(0.0);
-
-#if (numDirectionalLights > 0)
     // Directional lights calculation
-    for(int i=0 ; i<numDirectionalLights ; i++){
-    	color += getDirectionalLightContribution(pbrSurface, u_dirLights[i]);
-    }
-#endif
+    vec3 color = getDirectionalLightContribution(pbrSurface, u_dirLights[0]);
 
-    // Calculate lighting contribution from image based lighting source (IBL)
-#if defined(USE_IBL) && defined(ambientLightFlag)
-    vec3 ambientColor = getIBLContribution(pbrSurface, n, reflection) * u_ambientLight;
-#elif defined(USE_IBL)
-    vec3 ambientColor = getIBLContribution(pbrSurface, n, reflection);
-#elif defined(ambientLightFlag)
-    vec3 ambientColor = u_ambientLight;
-#else
-    vec3 ambientColor = vec3(0.0, 0.0, 0.0);
-#endif
-
-    color += ambientColor;
-
-#if (numPointLights > 0)
-    // Point lights calculation
-    for(int i=0 ; i<numPointLights ; i++){
-    	color += getPointLightContribution(pbrSurface, u_pointLights[i]);
-    }
-#endif // numPointLights
-
-#if (numSpotLights > 0)
-    // Spot lights calculation
-    for(int i=0 ; i<numSpotLights ; i++){
-    	color += getSpotLightContribution(pbrSurface, u_spotLights[i]);
-    }
-#endif // numSpotLights
-
-
-    // Apply optional PBR terms for additional (optional) shading
-#ifdef occlusionTextureFlag
-    float ao = gBuffer3.b;
-    color = mix(color, color * ao, gBuffer3.a);
-#endif
-
-    // Add emissive
-#if defined(emissiveTextureFlag) && defined(emissiveColorFlag)
-    vec3 emissive = SRGBtoLINEAR(texture2D(u_emissiveTexture, v_emissiveUV)).rgb * u_emissiveColor.rgb;
-#elif defined(emissiveTextureFlag)
-    vec3 emissive = SRGBtoLINEAR(texture2D(u_emissiveTexture, v_emissiveUV)).rgb;
-#elif defined(emissiveColorFlag)
-    vec3 emissive = u_emissiveColor.rgb;
-#endif
-
-#if defined(emissiveTextureFlag) || defined(emissiveColorFlag)
-    color += emissive;
-#endif
-
-    
     // final frag color
 #ifdef MANUAL_SRGB
     out_FragColor = vec4(pow(color,vec3(1.0/2.2)), baseColor.a);
 #else
     out_FragColor = vec4(color, baseColor.a);
-#endif
-    
-#ifdef fogFlag
-#ifdef fogEquationFlag
-    float fog = (eyeDistance - u_fogEquation.x) / (u_fogEquation.y - u_fogEquation.x);
-    fog = clamp(fog, 0.0, 1.0);
-    fog = pow(fog, u_fogEquation.z);
-#else
-	float fog = min(1.0, eyeDistance * eyeDistance * u_cameraPosition.w);
-#endif
-	out_FragColor.rgb = mix(out_FragColor.rgb, u_fogColor.rgb, fog * u_fogColor.a);
 #endif
 
     out_FragColor.a = 1.0;

@@ -34,7 +34,7 @@ class LightingPassShaderProvider extends PBRShaderProvider {
         config.numSpotLights = 0;
         config.numBones = 0;
         config.vertexShader = Gdx.files.classpath("com/my/world/enhanced/render/dir-lighting-pass.vs.glsl").readString();
-        config.fragmentShader = Gdx.files.classpath("com/my/world/enhanced/render/lighting-pass.fs.glsl").readString();
+        config.fragmentShader = Gdx.files.classpath("com/my/world/enhanced/render/dir-lighting-pass.fs.glsl").readString();
         return config;
     }
 
@@ -45,7 +45,7 @@ class LightingPassShaderProvider extends PBRShaderProvider {
         config.numSpotLights = 0;
         config.numBones = 0;
         config.vertexShader = Gdx.files.classpath("com/my/world/enhanced/render/lighting-pass.vs.glsl").readString();
-        config.fragmentShader = Gdx.files.classpath("com/my/world/enhanced/render/lighting-pass.fs.glsl").readString();
+        config.fragmentShader = Gdx.files.classpath("com/my/world/enhanced/render/point-lighting-pass.fs.glsl").readString();
         return config;
     }
 

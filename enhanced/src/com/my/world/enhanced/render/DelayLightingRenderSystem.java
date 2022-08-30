@@ -3,6 +3,7 @@ package com.my.world.enhanced.render;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.*;
+import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.DirectionalLightsAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.PointLightsAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
@@ -155,7 +156,9 @@ public class DelayLightingRenderSystem extends EnhancedRenderSystem {
 
                 Renderable lightRenderable = lightRenderables.peek();
                 lightRenderable.environment = environment;
+                lightRenderable.material.clear();
                 lightRenderable.material.set(environment);
+                lightRenderable.material.set(new BlendingAttribute(GL_ONE, GL_ONE));
                 PointLightsAttribute lightsAttribute = new PointLightsAttribute();
                 lightsAttribute.lights.add(light);
                 lightRenderable.material.set(lightsAttribute);
@@ -172,6 +175,7 @@ public class DelayLightingRenderSystem extends EnhancedRenderSystem {
                 Renderable lightRenderable = lightRenderables.peek();
                 lightRenderable.environment = environment;
                 lightRenderable.material.set(environment);
+                lightRenderable.material.set(new BlendingAttribute(GL_ONE, GL_ONE));
                 DirectionalLightsAttribute lightsAttribute = new DirectionalLightsAttribute();
                 lightsAttribute.lights.add(light);
                 lightRenderable.material.set(lightsAttribute);
@@ -180,9 +184,6 @@ public class DelayLightingRenderSystem extends EnhancedRenderSystem {
         }
 
         Gdx.gl.glDisable(GL_DEPTH_TEST);
-        Gdx.gl.glEnable(GL_BLEND);
-        Gdx.gl.glBlendEquation(GL_FUNC_ADD);
-        Gdx.gl.glBlendFunc(GL_ONE, GL_ONE);
         render(lightRenderables, batch.getRenderContext(), batch.getRenderableSorter(), anyLightingPassShaderProvider, currentCamera, false);
         Gdx.gl.glEnable(GL_DEPTH_TEST);
 
