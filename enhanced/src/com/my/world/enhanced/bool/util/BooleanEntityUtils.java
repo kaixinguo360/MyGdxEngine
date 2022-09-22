@@ -41,7 +41,10 @@ public class BooleanEntityUtils {
 
         if (bool.skip) {
             // 无相交的meshPart, 或出错, 直接返回
+            MyLogger.log(0, "无相交的meshPart, 或出错, 直接返回!");
             return null;
+        } else {
+            MyLogger.log(0, "有相交的meshPart");
         }
 
         // 获取相交的部分
