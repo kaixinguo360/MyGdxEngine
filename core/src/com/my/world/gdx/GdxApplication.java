@@ -6,6 +6,7 @@ import com.badlogic.gdx.physics.bullet.Bullet;
 import com.my.world.core.*;
 import com.my.world.module.camera.CameraSystem;
 import com.my.world.module.input.InputSystem;
+import com.my.world.module.particle.ParticlesSystem;
 import com.my.world.module.physics.ConstraintSystem;
 import com.my.world.module.physics.PhysicsSystem;
 import com.my.world.module.render.EnvironmentSystem;
@@ -47,6 +48,7 @@ public class GdxApplication extends ApplicationAdapter {
         systemManager.addSystem(new PhysicsSystem());
         systemManager.addSystem(new ConstraintSystem());
         // Render Module
+        systemManager.addSystem(new ParticlesSystem());
         systemManager.addSystem(new EnvironmentSystem());
         systemManager.addSystem(new CameraSystem());
         systemManager.addSystem(new RenderSystem());
