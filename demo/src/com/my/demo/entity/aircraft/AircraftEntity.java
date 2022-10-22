@@ -1,16 +1,30 @@
 package com.my.demo.entity.aircraft;
 
+import com.badlogic.gdx.graphics.g3d.particles.ParticleEffect;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.demo.entity.object.RotateEntity;
 import com.my.demo.entity.weapon.BombEntity;
 import com.my.demo.entity.weapon.BulletEntity;
+import com.my.world.core.AssetsManager;
+import com.my.world.core.Engine;
+import com.my.world.core.Scene;
 import com.my.world.enhanced.entity.EnhancedEntity;
 import com.my.world.enhanced.physics.HingeConstraintController;
 import com.my.world.module.common.Position;
+import com.my.world.module.particle.ParticlesEffect;
+import com.my.world.module.particle.ParticlesSystem;
 import com.my.world.module.physics.constraint.HingeConstraint;
 
 public class AircraftEntity extends EnhancedEntity {
+
+    public static String effectPath = "effect/smoke.pfx";
+    public static ParticleEffect particleEffect;
+
+    public static void init(Engine engine, Scene scene) {
+        AssetsManager assetsManager = engine.getAssetsManager();
+        particleEffect = assetsManager.addAsset("smokeEffect", ParticleEffect.class, ParticlesSystem.loadParticleEffect(effectPath));
+    }
 
     public final AircraftScript aircraftScript;
     public final BodyEntity body;
@@ -18,9 +32,11 @@ public class AircraftEntity extends EnhancedEntity {
     public final RotateEntity<HingeConstraintController> rotate_L;
     public final WingEntity wing_L1;
     public final WingEntity wing_L2;
+    public final ParticlesEffect smoke_L;
     public final RotateEntity<HingeConstraintController> rotate_R;
     public final WingEntity wing_R1;
     public final WingEntity wing_R2;
+    public final ParticlesEffect smoke_R;
     public final RotateEntity<HingeConstraintController> rotate_T;
     public final WingEntity wing_TL;
     public final WingEntity wing_TR;
@@ -67,6 +83,9 @@ public class AircraftEntity extends EnhancedEntity {
         wing_L2.setName("wing_L2");
         wing_L2.setParent(this);
         wing_L2.transform.idt().translate(-4.5f, 0.5f, -5).rotate(Vector3.X, 14);
+        smoke_L = wing_L2.addComponent(new ParticlesEffect());
+        smoke_L.particleEffect = particleEffect.copy();
+        smoke_L.transform = new Matrix4().translate(-0.5f, 0, 0).rotate(Vector3.X, 90);
         addEntity(wing_L2);
 
         // Right
@@ -88,6 +107,9 @@ public class AircraftEntity extends EnhancedEntity {
         wing_R2.setName("wing_R2");
         wing_R2.setParent(this);
         wing_R2.transform.idt().translate(4.5f, 0.5f, -5).rotate(Vector3.X, 14);
+        smoke_R = wing_R2.addComponent(new ParticlesEffect());
+        smoke_R.particleEffect = particleEffect.copy();
+        smoke_R.transform = new Matrix4().translate(0.5f, 0, 0).rotate(Vector3.X, 90);
         addEntity(wing_R2);
 
         // Horizontal Tail
