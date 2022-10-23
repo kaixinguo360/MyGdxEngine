@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.particles.ParticleSystem;
 import com.badlogic.gdx.graphics.g3d.particles.batches.BillboardParticleBatch;
+import com.badlogic.gdx.graphics.g3d.particles.batches.ParticleBatch;
 import com.badlogic.gdx.graphics.g3d.particles.batches.PointSpriteParticleBatch;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
@@ -15,19 +16,10 @@ import lombok.Getter;
 
 public abstract class BaseParticlesSystem extends Render implements System.OnUpdate, System.AfterAdded {
 
-    @Getter protected ParticleSystem particleSystem;
-    @Getter protected BillboardParticleBatch billboardParticleBatch;
-    @Getter protected PointSpriteParticleBatch pointSpriteBatch;
+    @Getter
+    protected ParticleSystem particleSystem = new ParticleSystem();
 
     // ----- System ----- //
-
-    public BaseParticlesSystem() {
-        particleSystem = new ParticleSystem();
-        billboardParticleBatch = new BillboardParticleBatch();
-        pointSpriteBatch = new PointSpriteParticleBatch();
-        particleSystem.add(billboardParticleBatch);
-        particleSystem.add(pointSpriteBatch);
-    }
 
     @Override
     public void update(float deltaTime) {
@@ -51,8 +43,14 @@ public abstract class BaseParticlesSystem extends Render implements System.OnUpd
 
     @Override
     public boolean isVisible(Camera cam) {
-        billboardParticleBatch.setCamera(cam);
-        pointSpriteBatch.setCamera(cam);
+        for (ParticleBatch<?> batch : particleSystem.getBatches()) {
+            if (batch instanceof BillboardParticleBatch) {
+                ((BillboardParticleBatch) batch).setCamera(cam);
+            }
+            if (batch instanceof PointSpriteParticleBatch) {
+                ((PointSpriteParticleBatch) batch).setCamera(cam);
+            }
+        }
         return true;
     }
 
