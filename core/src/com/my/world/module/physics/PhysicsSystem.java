@@ -102,7 +102,7 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
         PhysicsBody physicsBody = entity.getComponent(PhysicsBody.class);
         physicsBody.registerToPhysicsSystem(scene, entity, this);
         physicsBody.enterWorld();
-        PhysicsSystem.this.physicsBodies.put(entity, physicsBody);
+        physicsBodies.put(entity, physicsBody);
     }
 
     @Override
@@ -145,16 +145,16 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
         debugDrawer.setDebugMode(debugMode);
     }
 
-    // Get Instance Name From PickRay
-    public Entity pick(Camera cam, int X, int Y, float maxLength) {
-        Ray ray = cam.getPickRay(X, Y);
+    // Get Entity From PickRay
+    public Entity pick(Camera camera, float screenX, float screenY, float maxLength) {
+        Ray ray = camera.getPickRay((int) screenX, (int) screenY);
 
         Vector3 rayFrom = Vector3Pool.obtain();
         Vector3 rayTo = Vector3Pool.obtain();
         Vector3 tmpV = Vector3Pool.obtain();
 
         rayFrom.set(ray.origin);
-        rayTo.set(ray.origin).add(tmpV.set(ray.direction).scl(maxLength)); // 50 meters max from the origin
+        rayTo.set(ray.origin).add(tmpV.set(ray.direction).nor().scl(maxLength));
 
         // Because we reuse the ClosestRayResultCallback, we need reset it's values
         rayTestCB.setCollisionObject(null);
@@ -170,8 +170,10 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
 
         if (rayTestCB.hasHit()) {
             final btCollisionObject obj = rayTestCB.getCollisionObject();
-            assert obj.userData instanceof Entity;
-            return (Entity) obj.userData;
+            assert obj.userData instanceof PhysicsBody;
+            PhysicsBody physicsBody = (PhysicsBody) obj.userData;
+            assert physicsBody.entity != null;
+            return physicsBody.entity;
         } else {
             return null;
         }
