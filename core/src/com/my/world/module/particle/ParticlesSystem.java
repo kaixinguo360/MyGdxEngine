@@ -1,18 +1,17 @@
 package com.my.world.module.particle;
 
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g3d.particles.ParallelArray;
-import com.badlogic.gdx.graphics.g3d.particles.ParticleChannels;
-import com.badlogic.gdx.graphics.g3d.particles.ParticleController;
-import com.badlogic.gdx.graphics.g3d.particles.ParticleShader;
+import com.badlogic.gdx.graphics.g3d.Renderable;
+import com.badlogic.gdx.graphics.g3d.particles.ParticleEffect;
+import com.badlogic.gdx.graphics.g3d.particles.ParticleEffectLoader;
 import com.badlogic.gdx.graphics.g3d.particles.batches.BillboardParticleBatch;
 import com.badlogic.gdx.graphics.g3d.particles.batches.ModelInstanceParticleBatch;
 import com.badlogic.gdx.graphics.g3d.particles.batches.ParticleBatch;
 import com.badlogic.gdx.graphics.g3d.particles.batches.PointSpriteParticleBatch;
-import com.badlogic.gdx.graphics.g3d.particles.renderers.BillboardRenderer;
-import com.badlogic.gdx.graphics.g3d.particles.renderers.ModelInstanceRenderer;
-import com.badlogic.gdx.graphics.g3d.particles.renderers.ParticleControllerControllerRenderer;
-import com.badlogic.gdx.graphics.g3d.particles.renderers.PointSpriteRenderer;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Pool;
 import com.my.world.core.Entity;
 import com.my.world.core.EntityListener;
 import lombok.Getter;
@@ -26,6 +25,10 @@ public class ParticlesSystem extends BaseParticlesSystem implements EntityListen
     @Getter
     protected Texture defaultParticleTexture;
 
+    public ParticlesSystem() {
+        batches.forEach(particleSystem::add);
+    }
+
     @Override
     protected boolean canHandle(Entity entity) {
         return entity.contain(ParticlesEffect.class) && entity.getComponent(ParticlesEffect.class).isActive();
@@ -38,55 +41,6 @@ public class ParticlesSystem extends BaseParticlesSystem implements EntityListen
             particlesEffect.particleEffect.init();
             particlesEffect.particleEffect.start();
             particleSystem.add(particlesEffect.particleEffect);
-            Texture texture = particlesEffect.particleTexture;
-            if (texture == null) {
-                texture = defaultParticleTexture;
-            }
-            for (ParticleController controller : particlesEffect.particleEffect.getControllers()) {
-                addController(texture, controller);
-            }
-        }
-    }
-
-    private void addController(Texture texture, ParticleController controller) {
-        boolean foundCompatible = false;
-        for (ParticleBatch<?> batch : particleSystem.getBatches()) {
-            if (controller.renderer.isCompatible(batch)) {
-                if (batch instanceof BillboardParticleBatch && ((BillboardParticleBatch) batch).getTexture() != texture) {
-                    continue;
-                }
-                if (batch instanceof PointSpriteParticleBatch && ((PointSpriteParticleBatch) batch).getTexture() != texture) {
-                    continue;
-                }
-                controller.renderer.setBatch(batch);
-                foundCompatible = true;
-                break;
-            }
-        }
-        if (!foundCompatible) {
-            ParticleBatch<?> batch = null;
-            if (controller.renderer instanceof BillboardRenderer) {
-                batch = new BillboardParticleBatch();
-                ((BillboardParticleBatch) batch).setUseGpu(true);
-                ((BillboardParticleBatch) batch).setAlignMode(ParticleShader.AlignMode.Screen);
-                ((BillboardParticleBatch) batch).setTexture(texture);
-            }
-            if (controller.renderer instanceof PointSpriteRenderer) {
-                batch = new PointSpriteParticleBatch();
-                ((PointSpriteParticleBatch) batch).setTexture(texture);
-            }
-            if (controller.renderer instanceof ModelInstanceRenderer) {
-                batch = new ModelInstanceParticleBatch();
-            }
-            if (controller.renderer instanceof ParticleControllerControllerRenderer) {
-                ParallelArray.ObjectChannel<ParticleController> channel = controller.particles.getChannel(ParticleChannels.ParticleController);
-                for (int i = 0, c = channel.data.length; i < c; ++i) {
-                    addController(texture, channel.data[i]);
-                }
-            }
-            if (batch != null && controller.renderer.setBatch(batch)) {
-                particleSystem.add(batch);
-            }
         }
     }
 
@@ -96,5 +50,32 @@ public class ParticlesSystem extends BaseParticlesSystem implements EntityListen
         for (ParticlesEffect particlesEffect : particlesEffects) {
             particleSystem.remove(particlesEffect.particleEffect);
         }
+    }
+
+    @Override
+    public void getRenderables(Array<Renderable> renderables, Pool<Renderable> pool) {
+        billboardParticleBatch.setUseGpu(true); // Avoid a bug in BillboardParticleBatch
+        super.getRenderables(renderables, pool);
+    }
+
+    @Getter protected static BillboardParticleBatch billboardParticleBatch = new BillboardParticleBatch();
+    @Getter protected static PointSpriteParticleBatch pointSpriteParticleBatch = new PointSpriteParticleBatch();
+    @Getter protected static ModelInstanceParticleBatch modelInstanceParticleBatch = new ModelInstanceParticleBatch();
+
+    @Getter protected static Array<ParticleBatch<?>> batches = new Array<>();
+    @Getter protected static ParticleEffectLoader.ParticleEffectLoadParameter loadParam = new ParticleEffectLoader.ParticleEffectLoadParameter(batches);
+    @Getter protected static AssetManager assetManager = new AssetManager();
+
+    static {
+        batches.add(billboardParticleBatch);
+        batches.add(pointSpriteParticleBatch);
+        batches.add(modelInstanceParticleBatch);
+        assetManager.setLoader(ParticleEffect.class, new ParticleEffectLoader(new InternalFileHandleResolver()));
+    }
+
+    public static ParticleEffect loadParticleEffect(String fileName) {
+        assetManager.load(fileName, ParticleEffect.class, loadParam);
+        assetManager.finishLoading();
+        return assetManager.get(fileName, true);
     }
 }
