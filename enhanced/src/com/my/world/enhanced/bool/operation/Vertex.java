@@ -15,6 +15,7 @@ import java.util.ArrayList;
  * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  */
 public class Vertex implements Cloneable {
+
     /**
      * vertex status if it is still unknown
      */
@@ -31,6 +32,7 @@ public class Vertex implements Cloneable {
      * vertex status if it on the boundary of a solid
      */
     public static final int BOUNDARY = 4;
+
     /**
      * tolerance value to test equalities
      */
@@ -50,7 +52,7 @@ public class Vertex implements Cloneable {
     /**
      * references to vertices conected to it by an edge
      */
-    private ArrayList adjacentVertices;
+    private final ArrayList<Vertex> adjacentVertices = new ArrayList<>();
     /**
      * vertex status relative to other object
      */
@@ -69,14 +71,7 @@ public class Vertex implements Cloneable {
      * @param data     vertex data
      */
     public Vertex(VectorD position, VertexData data) {
-        this.data = (VertexData) data.clone();
-
-        x = position.x;
-        y = position.y;
-        z = position.z;
-
-        adjacentVertices = new ArrayList();
-        status = UNKNOWN;
+        this(position.x, position.y, position.z, data, UNKNOWN);
     }
 
     /**
@@ -88,14 +83,7 @@ public class Vertex implements Cloneable {
      * @param data vertex data
      */
     public Vertex(double x, double y, double z, VertexData data) {
-        this.data = (VertexData) data.clone();
-
-        this.x = x;
-        this.y = y;
-        this.z = z;
-
-        adjacentVertices = new ArrayList();
-        status = UNKNOWN;
+        this(x, y, z, data, UNKNOWN);
     }
 
     /**
@@ -106,14 +94,7 @@ public class Vertex implements Cloneable {
      * @param status   vertex status - UNKNOWN, BOUNDARY, INSIDE or OUTSIDE
      */
     public Vertex(VectorD position, VertexData data, int status) {
-        this.data = (VertexData) data.clone();
-
-        x = position.x;
-        y = position.y;
-        z = position.z;
-
-        adjacentVertices = new ArrayList();
-        this.status = status;
+        this(position.x, position.y, position.z, data, status);
     }
 
     /**
@@ -127,12 +108,9 @@ public class Vertex implements Cloneable {
      */
     public Vertex(double x, double y, double z, VertexData data, int status) {
         this.data = (VertexData) data.clone();
-
         this.x = x;
         this.y = y;
         this.z = z;
-
-        adjacentVertices = new ArrayList();
         this.status = status;
     }
 
@@ -151,9 +129,8 @@ public class Vertex implements Cloneable {
             clone.z = z;
             clone.data = (VertexData) data.clone();
             clone.status = status;
-            clone.adjacentVertices = new ArrayList();
             for (int i = 0; i < adjacentVertices.size(); i++) {
-                clone.adjacentVertices.add(((Vertex) adjacentVertices.get(i)).clone());
+                clone.adjacentVertices.add((Vertex) adjacentVertices.get(i).clone());
             }
 
             return clone;
@@ -267,9 +244,9 @@ public class Vertex implements Cloneable {
 
         // mark adjacent vertices
         Vertex[] adjacentVerts = getAdjacentVertices();
-        for (int i = 0; i < adjacentVerts.length; i++) {
-            if (adjacentVerts[i].getStatus() == Vertex.UNKNOWN) {
-                adjacentVerts[i].mark(status);
+        for (Vertex adjacentVert : adjacentVerts) {
+            if (adjacentVert.getStatus() == Vertex.UNKNOWN) {
+                adjacentVert.mark(status);
             }
         }
     }
@@ -280,7 +257,7 @@ public class Vertex implements Cloneable {
         return vector3.set((float) x, (float) y, (float) z);
     }
 
-    public Vertex setFromVector3(Vector3 vector3) {
+    public Vertex set(Vector3 vector3) {
         x = vector3.x;
         y = vector3.y;
         z = vector3.z;

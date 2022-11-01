@@ -4,40 +4,17 @@ import com.badlogic.gdx.graphics.Mesh;
 
 public class VertexData {
 
-    private float[] data = null;
-    private Mesh mesh = null;
+    public float[] data;
+    public Mesh mesh;
 
     public VertexData(float[] data, Mesh mesh) {
         this.data = data;
         this.mesh = mesh;
     }
 
-
-    //---------------------------------- Getter --------------------------------------//
-
-    public float[] getData() {
-        return data;
-    }
-
-    public Mesh getMesh() {
-        return mesh;
-    }
-
-
-    //---------------------------------- Setter --------------------------------------//
-
-    public void setData(float[] data, Mesh mesh) {
-        this.data = data;
-        this.mesh = mesh;
-    }
-
-
-    //---------------------------------- Override --------------------------------------//
-
     @Override
     public Object clone() {
-        float[] data = this.data.clone();
-        return new VertexData(data, this.mesh);
+        return new VertexData(data.clone(), mesh);
     }
 
     @Override

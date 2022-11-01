@@ -41,7 +41,7 @@ public class Line implements Cloneable {
         direction.cross(normalFace1, normalFace2);
 
         // if direction lenght is not zero (the planes aren't parallel )...
-        if (!(direction.length() < TOL)) {
+        if (!(direction.len() < TOL)) {
             // getting a line point, zero is set to a coordinate whose direction
             // component isn't zero (line intersecting its origin plan)
             point = new VectorD();
@@ -62,7 +62,7 @@ public class Line implements Cloneable {
             }
         }
 
-        direction.normalize();
+        direction.nor();
     }
 
     /**
@@ -72,9 +72,9 @@ public class Line implements Cloneable {
      * @param point     beginning of the ray
      */
     public Line(VectorD direction, VectorD point) {
-        this.direction = (VectorD) direction.clone();
-        this.point = (VectorD) point.clone();
-        direction.normalize();
+        this.direction = (VectorD) direction.copy();
+        this.point = (VectorD) point.copy();
+        direction.nor();
     }
 
     //---------------------------------OVERRIDES------------------------------------//
@@ -87,8 +87,8 @@ public class Line implements Cloneable {
     public Object clone() {
         try {
             Line clone = (Line) super.clone();
-            clone.direction = (VectorD) direction.clone();
-            clone.point = (VectorD) point.clone();
+            clone.direction = (VectorD) direction.copy();
+            clone.point = (VectorD) point.copy();
             return clone;
         } catch (CloneNotSupportedException e) {
             return null;
@@ -112,7 +112,7 @@ public class Line implements Cloneable {
      * @return point used to represent the line
      */
     public VectorD getPoint() {
-        return (VectorD) point.clone();
+        return (VectorD) point.copy();
     }
 
     /**
@@ -121,7 +121,7 @@ public class Line implements Cloneable {
      * @param point new point
      */
     public void setPoint(VectorD point) {
-        this.point = (VectorD) point.clone();
+        this.point = (VectorD) point.copy();
     }
 
     //-----------------------------------SETS---------------------------------------//
@@ -132,7 +132,7 @@ public class Line implements Cloneable {
      * @return line direction
      */
     public VectorD getDirection() {
-        return (VectorD) direction.clone();
+        return (VectorD) direction.copy();
     }
 
     /**
@@ -141,7 +141,7 @@ public class Line implements Cloneable {
      * @param direction new direction
      */
     public void setDirection(VectorD direction) {
-        this.direction = (VectorD) direction.clone();
+        this.direction = (VectorD) direction.copy();
     }
 
     //--------------------------------OTHERS----------------------------------------//
@@ -155,9 +155,9 @@ public class Line implements Cloneable {
      * distance is negative
      */
     public double computePointToPointDistance(VectorD otherPoint) {
-        double distance = otherPoint.distance(point);
+        double distance = otherPoint.dst(point);
         VectorD vec = new VectorD(otherPoint.x - point.x, otherPoint.y - point.y, otherPoint.z - point.z);
-        vec.normalize();
+        vec.nor();
         if (vec.dot(direction) < 0) {
             return -distance;
         } else {
@@ -223,7 +223,7 @@ public class Line implements Cloneable {
         if (Math.abs(denominator) < TOL) {
             // if line is contained in the plane...
             if (Math.abs(numerator) < TOL) {
-                return (VectorD) point.clone();
+                return (VectorD) point.copy();
             } else {
                 return null;
             }

@@ -69,7 +69,7 @@ public class ModelInstanceBoolOperation {
     /**
      * 参考BoolNodePart
      */
-    private final MeshPart referenceMeshPart; // TODO: 直接使用MeshGroup而不是MeshPart到来创建参考Object3D
+    private final MeshPart referenceMeshPart; // TODO: 直接使用MeshGroup而不是MeshPart到来创建参考Solid
 
     //--------------------------------CONSTRUCTORS----------------------------------//
 
@@ -100,8 +100,8 @@ public class ModelInstanceBoolOperation {
         Matrix4 m2 = transform2.cpy();
 
         // 创建参考物体object2
-        Object3D object2Base = new Object3D(referenceMeshPart, m2);
-        Bound bound2 = object2Base.getBound();
+        Solid solid2Base = new Solid(referenceMeshPart, m2);
+        Bound bound2 = solid2Base.getBound();
 
         // 开始遍历meshGroups
         int id = 0;
@@ -126,28 +126,28 @@ public class ModelInstanceBoolOperation {
                     continue;
                 }
 
-                LoggerUtil.log(0, " -> 正在创建Object3D");
-                Object3D object1 = new Object3D(boolNodePart.meshPart, m1);
-                Object3D object2 = (Object3D) object2Base.clone();
+                LoggerUtil.log(0, " -> 正在创建Solid");
+                Solid solid1 = new Solid(boolNodePart.meshPart, m1);
+                Solid solid2 = (Solid) solid2Base.clone();
 
                 // split the faces so that none of them intercepts each other
                 LoggerUtil.log(0, " -> 正在分割面1");
                 boolean isSplit1, isSplit2;
-                isSplit1 = object1.splitFaces(object2);
+                isSplit1 = solid1.splitFaces(solid2);
                 LoggerUtil.log(0, " -> 正在分割面2");
-                isSplit2 = object2.splitFaces(object1);
+                isSplit2 = solid2.splitFaces(solid1);
 
                 if (isSplit1 || isSplit2) {
 
                     // classify faces as being inside or outside the other solid
 
                     LoggerUtil.log(0, " -> 正在分类面1");
-                    object1.classifyFaces(object2);
+                    solid1.classifyFaces(solid2);
 
                     LoggerUtil.log(0, " -> 正在分类面2");
-                    object2.classifyFaces(object1);
+                    solid2.classifyFaces(solid1);
 
-                    MyPair pair = new MyPair(object1, object2);
+                    BoolPair pair = new BoolPair(solid1, solid2);
                     pair.m1 = m1.inv();
                     boolNodePart.userObject = pair;
 
@@ -227,7 +227,7 @@ public class ModelInstanceBoolOperation {
 
 
     /**
-     * Do union operation between the input MeshGroups, save the results to each MyPair.
+     * Do union operation between the input MeshGroups, save the results to each BoolPair.
      */
     public boolean doUnion() {
         type = UNION;
@@ -241,10 +241,10 @@ public class ModelInstanceBoolOperation {
         for (MeshGroup.BoolNodePart boolNodePart : boolNodeParts) {
             if (boolNodePart.userObject == null) continue;
 
-            MyPair pair = (MyPair) boolNodePart.userObject;
-            Object3D object1 = pair.object1;
-            Object3D object2 = pair.object2;
-            pair.verData = composeMesh(object1, object2, Face.OUTSIDE, Face.SAME, Face.OUTSIDE);
+            BoolPair pair = (BoolPair) boolNodePart.userObject;
+            Solid solid1 = pair.solid1;
+            Solid solid2 = pair.solid2;
+            pair.verData = composeMesh(solid1, solid2, Face.OUTSIDE, Face.SAME, Face.OUTSIDE);
         }
 
         return true;
@@ -252,7 +252,7 @@ public class ModelInstanceBoolOperation {
 
 
     /**
-     * Do intersection operation between the input MeshGroups, save the results to each MyPair.
+     * Do intersection operation between the input MeshGroups, save the results to each BoolPair.
      */
     public boolean doIntersection() {
         type = INTER;
@@ -266,17 +266,17 @@ public class ModelInstanceBoolOperation {
         for (MeshGroup.BoolNodePart boolNodePart : boolNodeParts) {
             if (boolNodePart.userObject == null) continue;
 
-            MyPair pair = (MyPair) boolNodePart.userObject;
-            Object3D object1 = pair.object1;
-            Object3D object2 = pair.object2;
-            pair.verData = composeMesh(object1, object2, Face.INSIDE, Face.SAME, Face.INSIDE);
+            BoolPair pair = (BoolPair) boolNodePart.userObject;
+            Solid solid1 = pair.solid1;
+            Solid solid2 = pair.solid2;
+            pair.verData = composeMesh(solid1, solid2, Face.INSIDE, Face.SAME, Face.INSIDE);
         }
 
         return true;
     }
 
     /**
-     * Do difference operation between the input MeshGroups, save the results to each MyPair.
+     * Do difference operation between the input MeshGroups, save the results to each BoolPair.
      */
     public boolean doDifference() {
         type = DIFF;
@@ -290,13 +290,13 @@ public class ModelInstanceBoolOperation {
         for (MeshGroup.BoolNodePart boolNodePart : boolNodeParts) {
             if (boolNodePart.userObject == null) continue;
 
-            MyPair pair = (MyPair) boolNodePart.userObject;
-            Object3D object1 = pair.object1;
-            Object3D object2 = pair.object2;
+            BoolPair pair = (BoolPair) boolNodePart.userObject;
+            Solid solid1 = pair.solid1;
+            Solid solid2 = pair.solid2;
 
-            object2.invertInsideFaces();
-            pair.verData = composeMesh(object1, object2, Face.OUTSIDE, Face.OPPOSITE, Face.INSIDE);
-            object2.invertInsideFaces();
+            solid2.invertInsideFaces();
+            pair.verData = composeMesh(solid1, solid2, Face.OUTSIDE, Face.OPPOSITE, Face.INSIDE);
+            solid2.invertInsideFaces();
         }
 
         return true;
@@ -327,7 +327,7 @@ public class ModelInstanceBoolOperation {
         for (MeshGroup.BoolNodePart boolNodePart : boolNodeParts) {
             if (boolNodePart.userObject == null) continue;
 
-            MyVerData verData = ((MyPair) boolNodePart.userObject).verData;
+            BoolVerData verData = ((BoolPair) boolNodePart.userObject).verData;
             // 如果verData为空
             if (verData == null) {
                 continue;
@@ -349,8 +349,8 @@ public class ModelInstanceBoolOperation {
         for (MeshGroup.BoolNodePart boolNodePart : boolNodeParts) {
             if (boolNodePart.userObject == null) continue;
 
-            MyPair pair = (MyPair) boolNodePart.userObject;
-            MyVerData verData = pair.verData;
+            BoolPair pair = (BoolPair) boolNodePart.userObject;
+            BoolVerData verData = pair.verData;
 
             // 如果verData为空
             if (verData == null) {
@@ -383,7 +383,7 @@ public class ModelInstanceBoolOperation {
         for (MeshGroup.BoolNodePart boolNodePart : boolNodeParts) {
             if (boolNodePart.userObject == null) continue;
 
-            MyVerData verData = ((MyPair) boolNodePart.userObject).verData;
+            BoolVerData verData = ((BoolPair) boolNodePart.userObject).verData;
 
             // 如果verData为空
             if (verData == null) {
@@ -472,7 +472,7 @@ public class ModelInstanceBoolOperation {
      *                    (expected a status for the faces coincident with second solid faces)
      * @param faceStatus3 status expected for the second solid faces
      */
-    private MyVerData composeMesh(Object3D object1, Object3D object2, int faceStatus1, int faceStatus2, int faceStatus3) {
+    private BoolVerData composeMesh(Solid solid1, Solid solid2, int faceStatus1, int faceStatus2, int faceStatus3) {
         LoggerUtil.log(0, "运行composeMesh...");
 
         ArrayList<Vertex> vertices = new ArrayList<>();
@@ -480,35 +480,35 @@ public class ModelInstanceBoolOperation {
         ArrayList<VertexData> datas = new ArrayList<>();
 
         // group the elements of the two solids whose faces fit with the desired status
-        groupObjectComponents(object1, vertices, indices, datas, faceStatus1, faceStatus2);
-        groupObjectComponents(object2, vertices, indices, datas, faceStatus3, faceStatus3);
+        groupObjectComponents(solid1, vertices, indices, datas, faceStatus1, faceStatus2);
+        groupObjectComponents(solid2, vertices, indices, datas, faceStatus3, faceStatus3);
 
         if (indices.size() == 0) {
             return null;
         }
 
         // returns the solid containing the grouped elements
-        return new MyVerData(vertices, indices, datas);
+        return new BoolVerData(vertices, indices, datas);
     }
 
     /**
      * Fills solid arrays with data about faces of an object generated whose status
      * is as required
      *
-     * @param object      solid object used to fill the arrays
+     * @param solid      solid object used to fill the arrays
      * @param vertices    vertices array to be filled
      * @param indices     indices array to be filled
      * @param datas       datas array to be filled
      * @param faceStatus1 a status expected for the faces used to to fill the data arrays
      * @param faceStatus2 a status expected for the faces used to to fill the data arrays
      */
-    private void groupObjectComponents(Object3D object, ArrayList<Vertex> vertices, ArrayList<Integer> indices, ArrayList<VertexData> datas, int faceStatus1, int faceStatus2) {
+    private void groupObjectComponents(Solid solid, ArrayList<Vertex> vertices, ArrayList<Integer> indices, ArrayList<VertexData> datas, int faceStatus1, int faceStatus2) {
         LoggerUtil.log(0, "运行groupObjectComponents...");
 
         Face face;
         // for each face..
-        for (int i = 0; i < object.getNumFaces(); i++) {
-            face = object.getFace(i);
+        for (int i = 0; i < solid.getNumFaces(); i++) {
+            face = solid.getFace(i);
             // if the face status fits with the desired status...
             if (face.getStatus() == faceStatus1 || face.getStatus() == faceStatus2) {
                 // adds the face elements into the arrays
@@ -549,30 +549,28 @@ public class ModelInstanceBoolOperation {
     /**
      * Class to store the operation data in each boolean operation pairs.
      */
-    private class MyPair {
-        private final Object3D object1, object2;
+    private class BoolPair {
+        private final Solid solid1, solid2;
         private Matrix4 m1, m2;
-        private MyVerData verData;
-        private float[] vs;
-        private short[] is;
+        private BoolVerData verData;
 
-        private MyPair(Object3D object1, Object3D object2) {
-            this.object1 = object1;
-            this.object2 = object2;
+        private BoolPair(Solid solid1, Solid solid2) {
+            this.solid1 = solid1;
+            this.solid2 = solid2;
         }
     }
 
     /**
      * Class to store the vertex data and index data.
      */
-    private class MyVerData {
+    private class BoolVerData {
         private final ArrayList<Vertex> vertices;
         private final ArrayList<Integer> indexs;
         private final ArrayList<VertexData> datas;
         private final int vertexNum;
         private final int indexNum;
 
-        private MyVerData(ArrayList<Vertex> vertices, ArrayList<Integer> indexs, ArrayList<VertexData> datas) {
+        private BoolVerData(ArrayList<Vertex> vertices, ArrayList<Integer> indexs, ArrayList<VertexData> datas) {
             assert (vertices.size() == datas.size()) : "vertices.vertexNum() != datas.vertexNum()";
             assert (vertices.size() < Short.MAX_VALUE) : "Too Many Vertices!"; // TODO: 解决输出顶点太多, 超出short类型最大值问题
 
@@ -593,11 +591,11 @@ public class ModelInstanceBoolOperation {
                 tmpV.mul(transform);
                 VertexData data = datas.get(i);
 
-                Mesh mesh = data.getMesh();
-                if (mesh != null && mapIds.containsKey(data.getMesh())) {
-                    int id = mapIds.get(data.getMesh());
+                Mesh mesh = data.mesh;
+                if (mesh != null && mapIds.containsKey(data.mesh)) {
+                    int id = mapIds.get(data.mesh);
                     if (id >= 0)
-                        vertexMixer.addVertex(id, data.getData(), tmpV);
+                        vertexMixer.addVertex(id, data.data, tmpV);
                     else
                         vertexMixer.addVertex(tmpV);
                 } else {
