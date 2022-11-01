@@ -80,7 +80,7 @@ public class BooleanUtil {
             if (MeshUtil.hasMesh(intersectionInstance)) {
                 List<ModelInstance> instances = MeshSplitter.splitModeInstances(intersectionInstance);
                 for (ModelInstance newInstance : instances) {
-                    System.out.println("相交的部分: " + instances.size());
+                    LoggerUtil.log(0, "相交的部分: " + instances.size());
                     newEntities.add(toEntity(targetEntity, entityTransform, newInstance, 10f));
                 }
             }
@@ -92,7 +92,7 @@ public class BooleanUtil {
             ModelInstance differenceInstance = bool.getNewModelInstance();
             if (MeshUtil.hasMesh(differenceInstance)) {
                 List<ModelInstance> instances = MeshSplitter.splitModeInstances(differenceInstance);
-                System.out.println("不相交的部分: " + instances.size());
+                LoggerUtil.log(0, "不相交的部分: " + instances.size());
                 for (ModelInstance newInstance : instances) {
                     newEntities.add(toEntity(targetEntity, entityTransform, newInstance, 10f));
                 }

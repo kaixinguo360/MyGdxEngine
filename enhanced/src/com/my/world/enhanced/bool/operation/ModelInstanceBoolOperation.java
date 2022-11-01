@@ -84,7 +84,7 @@ public class ModelInstanceBoolOperation {
     public ModelInstanceBoolOperation(ModelInstance instance,
                                       MeshPart reference,
                                       Matrix4 transform2) throws BooleanOperationException {
-        LoggerUtil.log(0, "\n*** 开始创建ModelInstanceBoolUtil ***");
+        LoggerUtil.log(0, "*** 开始创建ModelInstanceBoolUtil ***");
 
         // 保存ModelInstance
         this.instance = instance;
@@ -155,9 +155,9 @@ public class ModelInstanceBoolOperation {
                 } else {
                     LoggerUtil.log(0, " ->| 终止 (没有相交面)");
                 }
-                LoggerUtil.log(0, "MeshPart[" + boolNodePart.meshPart.id + "] 处理完毕!\n");
+                LoggerUtil.log(0, "MeshPart[" + boolNodePart.meshPart.id + "] 处理完毕!");
             }
-            LoggerUtil.log(0, "Mesh[" + meshGroup.mesh + "] 处理完毕!\n");
+            LoggerUtil.log(0, "Mesh[" + meshGroup.mesh + "] 处理完毕!");
             id++;
         }
         LoggerUtil.log(1, "处理Mesh[" + id + "]个, MeshPart[" + count + "]个");
@@ -170,7 +170,7 @@ public class ModelInstanceBoolOperation {
             skip = true;
         }
 
-        LoggerUtil.log(0, "*** 输入设置完毕 ***\n");
+        LoggerUtil.log(0, "*** 输入设置完毕 ***");
     }
 
     private void addMesh(Mesh mesh) {
@@ -318,7 +318,7 @@ public class ModelInstanceBoolOperation {
      * Apply the results of boolean operation to the input MeshGroup.
      */
     public void apply() {
-        LoggerUtil.log(0, "\n*** 开始创建输出 ***");
+        LoggerUtil.log(0, "*** 开始创建输出 ***");
 
         // 获取总顶点数, 总索引数, 目标顶点大小
         int allVerNum = 0;
@@ -403,14 +403,14 @@ public class ModelInstanceBoolOperation {
         }
 
         // 完毕
-        LoggerUtil.log(0, "*** 输出创建完毕 ***\n");
+        LoggerUtil.log(0, "*** 输出创建完毕 ***");
     }
 
     /**
      * Apply the results of boolean operation to the input MeshGroup.
      */
     public ModelInstance getNewModelInstance() {
-        LoggerUtil.log(0, "\n*** 开始创建输出 ***");
+        LoggerUtil.log(0, "*** 开始创建输出 ***");
 
         // 临时保存原变量
         ModelInstance instance_old = this.instance;
