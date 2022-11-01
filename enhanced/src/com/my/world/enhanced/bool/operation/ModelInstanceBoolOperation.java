@@ -535,6 +535,7 @@ public class ModelInstanceBoolOperation {
      * @return is overlapped or not
      */
     private boolean isOverlap(MeshPart meshPart, Matrix4 transform, Bound bound) {
+        meshPart.update();
         float radius = meshPart.radius;
         Vector3 center = new Vector3(meshPart.center).mul(transform);
 

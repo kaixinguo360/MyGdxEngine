@@ -75,10 +75,7 @@ public class Object3D implements Cloneable {
         VectorD[] verticesPoints = new VectorD[numVertices];
         ArrayList verticesTemp = new ArrayList();
         for (int i = 0; i < numVertices; i++) {
-            int offsetVertex = i * vertexSize,
-                    x = offsetVertex + offsetPosition,
-                    y = offsetVertex + offsetPosition + 1,
-                    z = offsetVertex + offsetPosition + 2;
+            int offsetVertex = i * vertexSize, x = offsetVertex + offsetPosition, y = offsetVertex + offsetPosition + 1, z = offsetVertex + offsetPosition + 2;
 
             // 获取顶点xyz坐标
             tmpV.set(vers[x], vers[y], vers[z]).mul(transform);
@@ -152,10 +149,7 @@ public class Object3D implements Cloneable {
         VectorD[] verticesPoints = new VectorD[numVertices];
         ArrayList verticesTemp = new ArrayList();
         for (int i = 0; i < numVertices; i++) {
-            int offsetVertex = i * vertexSize,
-                    x = offsetVertex + offsetPosition,
-                    y = offsetVertex + offsetPosition + 1,
-                    z = offsetVertex + offsetPosition + 2;
+            int offsetVertex = i * vertexSize, x = offsetVertex + offsetPosition, y = offsetVertex + offsetPosition + 1, z = offsetVertex + offsetPosition + 2;
 
             // 获取顶点xyz坐标
             tmpV.set(vers[x], vers[y], vers[z]).mul(transform);
@@ -313,123 +307,100 @@ public class Object3D implements Cloneable {
      * @param object the other object 3d used to make the split
      */
     public boolean splitFaces(Object3D object) {
-        Line line;
-        Face face1, face2;
-        Segment[] segments;
-        Segment segment1;
-        Segment segment2;
-        double distFace1Vert1, distFace1Vert2, distFace1Vert3, distFace2Vert1, distFace2Vert2, distFace2Vert3;
-        int signFace1Vert1, signFace1Vert2, signFace1Vert3, signFace2Vert1, signFace2Vert2, signFace2Vert3;
-        int numFacesBefore = getNumFaces();
-        int numFacesStart = getNumFaces();
-        int numFacesMax = (numFacesStart > object.getNumFaces()) ? numFacesStart : object.getNumFaces();
-        int facesIgnored = 0;
-        int repeat = 0; // 防止死循环
-        boolean isChanged = false;
+        // 防止死循环
+        int repeat = 0;
+        int numFacesMax = 3 * Math.max(getNumFaces(), object.getNumFaces());
 
-        // if the objects bounds overlap...
-        if (getBound().overlap(object.getBound())) {
-            isChanged = true;
+        // if the objects bounds not overlap...
+        if (!getBound().overlap(object.getBound())) return false;
 
-            // for each object1 face...
-            for (int i = 0; i < getNumFaces(); i++) {
-                // if object1 face bound and object2 bound overlap ...
-                face1 = getFace(i);
+        // for each object1 face...
+        for (int i = 0; i < getNumFaces(); i++) {
 
-                numFacesBefore = getNumFaces(); // 防止死循环
+            // 防止死循环
+            int numFacesBefore = getNumFaces();
 
-                if (face1.getBound().overlap(object.getBound())) {
-                    // for each object2 face...
-                    for (int j = 0; j < object.getNumFaces(); j++) {
-                        // if object1 face bound and object2 face bound overlap...
-                        face2 = object.getFace(j);
-                        if (face1.getBound().overlap(face2.getBound())) {
-                            // PART I - DO TWO POLIGONS INTERSECT?
-                            // POSSIBLE RESULTS: INTERSECT, NOT_INTERSECT, COPLANAR
+            // if object1 face bound and object2 bound not overlap ...
+            Face face1 = getFace(i);
+            if (!face1.getBound().overlap(object.getBound())) continue;
 
-                            // distance from the face1 vertices to the face2 plane
-                            distFace1Vert1 = computeDistance(face1.v1, face2);
-                            distFace1Vert2 = computeDistance(face1.v2, face2);
-                            distFace1Vert3 = computeDistance(face1.v3, face2);
+            // for each object2 face...
+            for (int j = 0; j < object.getNumFaces(); j++) {
+                // if object1 face bound and object2 face bound not overlap...
+                Face face2 = object.getFace(j);
+                if (!face1.getBound().overlap(face2.getBound())) {
+                    continue;
+                }
 
-                            // distances signs from the face1 vertices to the face2 plane
-                            signFace1Vert1 = (distFace1Vert1 > TOL ? 1 : (distFace1Vert1 < -TOL ? -1 : 0));
-                            signFace1Vert2 = (distFace1Vert2 > TOL ? 1 : (distFace1Vert2 < -TOL ? -1 : 0));
-                            signFace1Vert3 = (distFace1Vert3 > TOL ? 1 : (distFace1Vert3 < -TOL ? -1 : 0));
+                // PART I - DO TWO POLIGONS INTERSECT?
+                // POSSIBLE RESULTS: INTERSECT, NOT_INTERSECT, COPLANAR
 
-                            // if all the signs are zero, the planes are coplanar
-                            // if all the signs are positive or negative, the planes do not intersect
-                            // if the signs are not equal...
-                            if (!(signFace1Vert1 == signFace1Vert2 && signFace1Vert2 == signFace1Vert3)) {
-                                // distance from the face2 vertices to the face1 plane
-                                distFace2Vert1 = computeDistance(face2.v1, face1);
-                                distFace2Vert2 = computeDistance(face2.v2, face1);
-                                distFace2Vert3 = computeDistance(face2.v3, face1);
+                // distances signs from the face1 vertices to the face2 plane
+                int signFace1Vert1 = getSign(computeDistance(face1.v1, face2));
+                int signFace1Vert2 = getSign(computeDistance(face1.v2, face2));
+                int signFace1Vert3 = getSign(computeDistance(face1.v3, face2));
+                // if all the signs are zero, the planes are coplanar
+                // if all the signs are positive or negative, the planes do not intersect
+                // if the signs are equal...
+                if (signFace1Vert1 == signFace1Vert2 && signFace1Vert2 == signFace1Vert3) continue;
 
-                                // distances signs from the face2 vertices to the face1 plane
-                                signFace2Vert1 = (distFace2Vert1 > TOL ? 1 : (distFace2Vert1 < -TOL ? -1 : 0));
-                                signFace2Vert2 = (distFace2Vert2 > TOL ? 1 : (distFace2Vert2 < -TOL ? -1 : 0));
-                                signFace2Vert3 = (distFace2Vert3 > TOL ? 1 : (distFace2Vert3 < -TOL ? -1 : 0));
+                // distances signs from the face2 vertices to the face1 plane
+                int signFace2Vert1 = getSign(computeDistance(face2.v1, face1));
+                int signFace2Vert2 = getSign(computeDistance(face2.v2, face1));
+                int signFace2Vert3 = getSign(computeDistance(face2.v3, face1));
+                // if the signs are equal...
+                if (signFace2Vert1 == signFace2Vert2 && signFace2Vert2 == signFace2Vert3) continue;
 
-                                // if the signs are not equal...
-                                if (!(signFace2Vert1 == signFace2Vert2 && signFace2Vert2 == signFace2Vert3)) {
-                                    line = new Line(face1, face2);
+                Line line = new Line(face1, face2);
+                // intersection of the face1 and the plane of face2
+                Segment segment1 = new Segment(line, face1, signFace1Vert1, signFace1Vert2, signFace1Vert3);
+                // intersection of the face2 and the plane of face1
+                Segment segment2 = new Segment(line, face2, signFace2Vert1, signFace2Vert2, signFace2Vert3);
+                // if the two segments not intersect...
+                if (!segment1.intersect(segment2)) continue;
 
-                                    // intersection of the face1 and the plane of face2
-                                    segment1 = new Segment(line, face1, signFace1Vert1, signFace1Vert2, signFace1Vert3);
+                // PART II - SUBDIVIDING NON-COPLANAR POLYGONS
+                this.splitFace(i, segment1, segment2);
 
-                                    // intersection of the face2 and the plane of face1
-                                    segment2 = new Segment(line, face2, signFace2Vert1, signFace2Vert2, signFace2Vert3);
+                // prevent from infinite loop (with a loss of faces...)
+                // 防止死循环
+                if (getNumFaces() > numFacesMax) {
+                    LoggerUtil.log(2, "possible infinite loop situation: terminating faces split - Too Many Face: " + getNumFaces() + " (Max: " + numFacesMax + ")");
+                    return true;
+                }
 
-                                    // if the two segments intersect...
-                                    if (segment1.intersect(segment2)) {
-                                        // PART II - SUBDIVIDING NON-COPLANAR POLYGONS
-                                        int lastNumFaces = getNumFaces();
-                                        this.splitFace(i, segment1, segment2);
+                // if the face in the position is the same, there was not a break
+                if (face1 == getFace(i)) continue;
 
-                                        // prevent from infinite loop (with a loss of faces...)
-                                        if (numFacesMax * 3 < getNumFaces()) // 防止死循环
-                                        {
-                                            LoggerUtil.log(2, "possible infinite loop situation: terminating faces split - Too Many Face: " + getNumFaces() + " (Start: " + numFacesMax + ")");
-                                            return isChanged;
-                                        }
-
-                                        // if the face in the position isn't the same, there was a break
-                                        if (face1 != getFace(i)) {
-                                            // if the generated solid is equal the origin...
-                                            if (face1.equals(getFace(getNumFaces() - 1))) {
-                                                // return it to its position and jump it
-                                                if (i != (getNumFaces() - 1)) {
-                                                    faces.remove(getNumFaces() - 1);
-                                                    faces.add(i, face1);
-                                                } else {
-                                                    continue;
-                                                }
-                                            }
-                                            // else: test next face
-                                            else {
-                                                if (numFacesBefore == getNumFaces()) { // 防止死循环
-                                                    repeat++;
-                                                    if (repeat >= 100) {
-                                                        // 重复循环次数超出忍耐, 直接跳出
-                                                        LoggerUtil.log(2, "possible infinite loop situation: terminating faces split - Too Many Repeat");
-                                                        return isChanged;
-                                                    }
-                                                }
-                                                i--;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                // if the generated solid is equal the origin...
+                if (face1.equals(getFace(getNumFaces() - 1))) {
+                    // return it to its position and jump it
+                    if (i != (getNumFaces() - 1)) {
+                        faces.remove(getNumFaces() - 1);
+                        faces.add(i, face1);
+                    }
+                } else {
+                    // else: test next face
+                    i--;
+                    // 防止死循环
+                    if (numFacesBefore == getNumFaces()) {
+                        repeat++;
+                        if (repeat >= 100) {
+                            // 重复循环次数超出忍耐, 直接跳出
+                            LoggerUtil.log(2, "possible infinite loop situation: terminating faces split - Too Many Repeat");
+                            return true;
                         }
                     }
+                    break;
                 }
             }
         }
 
-        return isChanged;
+        return true;
+    }
+
+    private static int getSign(double distFace2Vert1) {
+        return distFace2Vert1 > TOL ? 1 : (distFace2Vert1 < -TOL ? -1 : 0);
     }
 
     /**
