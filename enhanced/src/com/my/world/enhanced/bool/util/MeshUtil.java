@@ -10,7 +10,7 @@ import com.badlogic.gdx.utils.Array;
 
 import java.util.Map;
 
-public class MeshUtils {
+public class MeshUtil {
 
     public static float[] getVertices(Mesh mesh) {
         return mesh.getVertices(new float[
@@ -36,18 +36,18 @@ public class MeshUtils {
     }
 
     public static void mergeMeshPart(ModelInstance instance) {
-        Map<Mesh, MeshGroup> meshGroups = MeshGroup.getMeshGroupsFromModelInstance(instance);
-        Array<MeshGroup.MyNodePart> myNodeParts = new Array<>();
+        Map<Mesh, MeshGroup> meshGroups = MeshGroup.getMeshGroups(instance);
+        Array<MeshGroup.BoolNodePart> boolNodeParts = new Array<>();
 
         for (Map.Entry<Mesh, MeshGroup> entry : meshGroups.entrySet()) {
-            MeshGroup.MyNodePart firstNodePart = entry.getValue().myNodeParts.first();
-            myNodeParts.add(firstNodePart);
+            MeshGroup.BoolNodePart firstNodePart = entry.getValue().boolNodeParts.first();
+            boolNodeParts.add(firstNodePart);
         }
 
         instance.nodes.clear();
 
-        for (MeshGroup.MyNodePart myNodePart : myNodeParts) {
-            Node node = myNodePart.node;
+        for (MeshGroup.BoolNodePart boolNodePart : boolNodeParts) {
+            Node node = boolNodePart.node;
             node.detach();
 
             node.translation.setZero();
@@ -57,9 +57,9 @@ public class MeshUtils {
             node.calculateLocalTransform();
 
             node.parts.clear();
-            node.parts.add(myNodePart.nodePart);
+            node.parts.add(boolNodePart.nodePart);
 
-            MeshPart meshPart = myNodePart.meshPart;
+            MeshPart meshPart = boolNodePart.meshPart;
             meshPart.set(meshPart.id, meshPart.mesh, 0, meshPart.mesh.getNumIndices(), meshPart.primitiveType);
 
             instance.nodes.add(node);
@@ -67,11 +67,11 @@ public class MeshUtils {
     }
 
     public static boolean isOneMeshPart(ModelInstance instance) {
-        Map<Mesh, MeshGroup> meshGroups = MeshGroup.getMeshGroupsFromModelInstance(instance);
+        Map<Mesh, MeshGroup> meshGroups = MeshGroup.getMeshGroups(instance);
 
         if (meshGroups.size() == 1) {
             for (MeshGroup meshGroup : meshGroups.values()) {
-                if (meshGroup.myNodeParts.size != 1)
+                if (meshGroup.boolNodeParts.size != 1)
                     return false;
             }
             return true;
@@ -81,7 +81,7 @@ public class MeshUtils {
 
     public static boolean hasMesh(ModelInstance instance) {
         if (instance.nodes.size == 0) return false;
-        Map<Mesh, MeshGroup> meshGroups = MeshGroup.getMeshGroupsFromModelInstance(instance);
+        Map<Mesh, MeshGroup> meshGroups = MeshGroup.getMeshGroups(instance);
         return (meshGroups.size() > 0);
     }
 }

@@ -6,7 +6,7 @@ import com.my.world.core.Entity;
 import com.my.world.core.EntityManager;
 import com.my.world.core.Scene;
 import com.my.world.enhanced.bool.operation.BooleanOperationException;
-import com.my.world.enhanced.bool.util.BooleanEntityUtils;
+import com.my.world.enhanced.bool.util.BooleanUtil;
 import com.my.world.gdx.Matrix4Pool;
 import com.my.world.module.common.Position;
 import com.my.world.module.physics.PhysicsSystem;
@@ -25,7 +25,7 @@ public class CutterScript implements ScriptSystem.OnStart, PhysicsSystem.OnColli
     public ModelRender cutter;
 
     @Config
-    public BooleanEntityUtils.Type type = BooleanEntityUtils.Type.BOTH;
+    public BooleanUtil.Type type = BooleanUtil.Type.UNION;
 
     @Config
     public Matrix4 offset = new Matrix4();
@@ -73,7 +73,7 @@ public class CutterScript implements ScriptSystem.OnStart, PhysicsSystem.OnColli
         List<Entity> newEntities = null;
 
         try {
-            newEntities = BooleanEntityUtils.cut(entity, cutter.model, transform, type);
+            newEntities = BooleanUtil.cut(entity, cutter.model, transform, type);
         } catch (BooleanOperationException e) {
             e.printStackTrace();
         } finally {

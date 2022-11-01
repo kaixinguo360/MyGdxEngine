@@ -13,7 +13,7 @@ import com.badlogic.gdx.utils.Array;
 
 import java.util.Map;
 
-public class BoneUtils {
+public class BoneUtil {
 
     public static void applyBoneTransform(ModelInstance instance) {
         applyBoneTransform(instance, true);
@@ -31,7 +31,7 @@ public class BoneUtils {
             vertexMixer.disallowChange();
         }
 
-        Map<Mesh, MeshGroup> meshes = MeshGroup.getMeshGroupsFromModelInstance(instance);
+        Map<Mesh, MeshGroup> meshes = MeshGroup.getMeshGroups(instance);
 
         for (Map.Entry<Mesh, MeshGroup> entry : meshes.entrySet()) {
             Vector3 tmpV = new Vector3(); // 临时变量
@@ -62,8 +62,8 @@ public class BoneUtils {
             }
 
             MeshGroup NodeParts = entry.getValue(); // 初始化NodeParts数组
-            for (MeshGroup.MyNodePart myNodePart : entry.getValue().myNodeParts) { // 遍历NodeParts数组
-                NodePart nodePart = myNodePart.nodePart;
+            for (MeshGroup.BoolNodePart boolNodePart : entry.getValue().boolNodeParts) { // 遍历NodeParts数组
+                NodePart nodePart = boolNodePart.nodePart;
                 MeshPart meshPart = nodePart.meshPart;
 
                 short[] indices = new short[meshPart.size]; // 获取索引数组 - MeshPart
@@ -113,7 +113,7 @@ public class BoneUtils {
 //                            tmpV.y + ", " +
 //                            tmpV.z + ") ");
                         if (!mergeMeshPart) {
-                            tmpM.set(myNodePart.node.localTransform);
+                            tmpM.set(boolNodePart.node.localTransform);
                             tmpV.mul(tmpM.inv());
                         }
                         tmpV.mul(transform);
@@ -194,8 +194,8 @@ public class BoneUtils {
             newMesh.setIndices(tmpS);
 
             // 应用新Mesh到每个MeshPart
-            for (MeshGroup.MyNodePart myNodePart : entry.getValue().myNodeParts) { // 遍历NodeParts数组
-                NodePart nodePart = myNodePart.nodePart;
+            for (MeshGroup.BoolNodePart boolNodePart : entry.getValue().boolNodeParts) { // 遍历NodeParts数组
+                NodePart nodePart = boolNodePart.nodePart;
                 MeshPart meshPart = nodePart.meshPart;
                 meshPart.set(meshPart.id, newMesh, meshPart.offset, meshPart.size, meshPart.primitiveType);
                 meshPart.update();
@@ -203,7 +203,7 @@ public class BoneUtils {
         }
 
         if (mergeMeshPart) {
-            MeshUtils.mergeMeshPart(instance);
+            MeshUtil.mergeMeshPart(instance);
         }
 
         clearBones(instance);

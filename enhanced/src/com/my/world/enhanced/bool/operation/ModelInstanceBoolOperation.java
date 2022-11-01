@@ -8,8 +8,8 @@ import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
+import com.my.world.enhanced.bool.util.LoggerUtil;
 import com.my.world.enhanced.bool.util.MeshGroup;
-import com.my.world.enhanced.bool.util.MyLogger;
 import com.my.world.enhanced.bool.util.VertexMixer;
 
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ import java.util.Map;
  *
  * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  */
-public class ModelInstanceBoolOperation implements Cloneable {
+public class ModelInstanceBoolOperation {
     public final static short UNKNOWN = 0;
     public final static short DIFF = 1;
     public final static short INTER = 2;
@@ -51,9 +51,9 @@ public class ModelInstanceBoolOperation implements Cloneable {
      */
     private Map<Mesh, MeshGroup> meshGroups;
     /**
-     * 待操作MyNodeParts
+     * 待操作BoolNodeParts
      */
-    private Array<MeshGroup.MyNodePart> myNodeParts = new Array<>();
+    private Array<MeshGroup.BoolNodePart> boolNodeParts = new Array<>();
     /**
      * 待操作Mesh序号
      */
@@ -67,7 +67,7 @@ public class ModelInstanceBoolOperation implements Cloneable {
      **/
     private int count = 0;
     /**
-     * 参考MyNodePart
+     * 参考BoolNodePart
      */
     private final MeshPart referenceMeshPart; // TODO: 直接使用MeshGroup而不是MeshPart到来创建参考Object3D
 
@@ -84,17 +84,17 @@ public class ModelInstanceBoolOperation implements Cloneable {
     public ModelInstanceBoolOperation(ModelInstance instance,
                                       MeshPart reference,
                                       Matrix4 transform2) throws BooleanOperationException {
-        MyLogger.log(0, "\n*** 开始创建ModelInstanceBoolUtil ***");
+        LoggerUtil.log(0, "\n*** 开始创建ModelInstanceBoolUtil ***");
 
         // 保存ModelInstance
         this.instance = instance;
 
         // 获取ModelInstance的MeshGroup
-        this.meshGroups = MeshGroup.getMeshGroupsFromModelInstance(instance);
+        this.meshGroups = MeshGroup.getMeshGroups(instance);
 
         // 获取参考物体的NodePart
         referenceMeshPart = reference;
-        MyLogger.log(0, "参考物体MeshPart: " + referenceMeshPart.id);
+        LoggerUtil.log(0, "参考物体MeshPart: " + referenceMeshPart.id);
 
         // 获取参考物体变换m2
         Matrix4 m2 = transform2.cpy();
@@ -106,61 +106,61 @@ public class ModelInstanceBoolOperation implements Cloneable {
         // 开始遍历meshGroups
         int id = 0;
         for (MeshGroup meshGroup : meshGroups.values()) {
-            MyLogger.log(0, "设置meshGroup" + 1);
+            LoggerUtil.log(0, "设置meshGroup" + 1);
 
-            MyLogger.log(0, "设置输出属性...");
+            LoggerUtil.log(0, "设置输出属性...");
             addMesh(meshGroup.mesh);
 
             // representation to apply boolean operations
-            MyLogger.log(0, "设置待操作meshPart...");
-            for (MeshGroup.MyNodePart myNodePart : meshGroup.myNodeParts) {
-                myNodeParts.add(myNodePart);
+            LoggerUtil.log(0, "设置待操作meshPart...");
+            for (MeshGroup.BoolNodePart boolNodePart : meshGroup.boolNodeParts) {
+                boolNodeParts.add(boolNodePart);
 
-                MyLogger.log(0, "处理meshPart: " + myNodePart.meshPart.id);
+                LoggerUtil.log(0, "处理meshPart: " + boolNodePart.meshPart.id);
 
-                Matrix4 m1 = instance.transform.cpy().mul(myNodePart.node.calculateLocalTransform());
+                Matrix4 m1 = instance.transform.cpy().mul(boolNodePart.node.calculateLocalTransform());
 
-                myNodePart.meshPart.update();
-                if (!isOverlap(myNodePart.meshPart, m1, bound2)) {
-                    MyLogger.log(0, " ->| 终止 (边界盒未覆盖)"); // TODO: 会错误的略过未相交的meshPart
+                boolNodePart.meshPart.update();
+                if (!isOverlap(boolNodePart.meshPart, m1, bound2)) {
+                    LoggerUtil.log(0, " ->| 终止 (边界盒未覆盖)"); // TODO: 会错误的略过未相交的meshPart
                     continue;
                 }
 
-                MyLogger.log(0, " -> 正在创建Object3D");
-                Object3D object1 = new Object3D(myNodePart.meshPart, m1);
+                LoggerUtil.log(0, " -> 正在创建Object3D");
+                Object3D object1 = new Object3D(boolNodePart.meshPart, m1);
                 Object3D object2 = (Object3D) object2Base.clone();
 
                 // split the faces so that none of them intercepts each other
-                MyLogger.log(0, " -> 正在分割面1");
+                LoggerUtil.log(0, " -> 正在分割面1");
                 boolean isSplit1, isSplit2;
                 isSplit1 = object1.splitFaces(object2);
-                MyLogger.log(0, " -> 正在分割面2");
+                LoggerUtil.log(0, " -> 正在分割面2");
                 isSplit2 = object2.splitFaces(object1);
 
                 if (isSplit1 || isSplit2) {
 
                     // classify faces as being inside or outside the other solid
 
-                    MyLogger.log(0, " -> 正在分类面1");
+                    LoggerUtil.log(0, " -> 正在分类面1");
                     object1.classifyFaces(object2);
 
-                    MyLogger.log(0, " -> 正在分类面2");
+                    LoggerUtil.log(0, " -> 正在分类面2");
                     object2.classifyFaces(object1);
 
                     MyPair pair = new MyPair(object1, object2);
                     pair.m1 = m1.inv();
-                    myNodePart.userObject = pair;
+                    boolNodePart.userObject = pair;
 
                     count++;
                 } else {
-                    MyLogger.log(0, " ->| 终止 (没有相交面)");
+                    LoggerUtil.log(0, " ->| 终止 (没有相交面)");
                 }
-                MyLogger.log(0, "MeshPart[" + myNodePart.meshPart.id + "] 处理完毕!\n");
+                LoggerUtil.log(0, "MeshPart[" + boolNodePart.meshPart.id + "] 处理完毕!\n");
             }
-            MyLogger.log(0, "Mesh[" + meshGroup.mesh + "] 处理完毕!\n");
+            LoggerUtil.log(0, "Mesh[" + meshGroup.mesh + "] 处理完毕!\n");
             id++;
         }
-        MyLogger.log(1, "处理Mesh[" + id + "]个, MeshPart[" + count + "]个");
+        LoggerUtil.log(1, "处理Mesh[" + id + "]个, MeshPart[" + count + "]个");
 
         // 设置AttrProvider
         setAttrProvider();
@@ -170,7 +170,7 @@ public class ModelInstanceBoolOperation implements Cloneable {
             skip = true;
         }
 
-        MyLogger.log(0, "*** 输入设置完毕 ***\n");
+        LoggerUtil.log(0, "*** 输入设置完毕 ***\n");
     }
 
     private void addMesh(Mesh mesh) {
@@ -231,17 +231,17 @@ public class ModelInstanceBoolOperation implements Cloneable {
      */
     public boolean doUnion() {
         type = UNION;
-        MyLogger.log(0, "运行doUnion...");
+        LoggerUtil.log(0, "运行doUnion...");
 
         if (count == 0) {
-            MyLogger.log(0, "待操作MeshPart为0, 直接跳过");
+            LoggerUtil.log(0, "待操作MeshPart为0, 直接跳过");
             return false;
         }
 
-        for (MeshGroup.MyNodePart myNodePart : myNodeParts) {
-            if (myNodePart.userObject == null) continue;
+        for (MeshGroup.BoolNodePart boolNodePart : boolNodeParts) {
+            if (boolNodePart.userObject == null) continue;
 
-            MyPair pair = (MyPair) myNodePart.userObject;
+            MyPair pair = (MyPair) boolNodePart.userObject;
             Object3D object1 = pair.object1;
             Object3D object2 = pair.object2;
             pair.verData = composeMesh(object1, object2, Face.OUTSIDE, Face.SAME, Face.OUTSIDE);
@@ -256,17 +256,17 @@ public class ModelInstanceBoolOperation implements Cloneable {
      */
     public boolean doIntersection() {
         type = INTER;
-        MyLogger.log(0, "运行doIntersection...");
+        LoggerUtil.log(0, "运行doIntersection...");
 
         if (count == 0) {
-            MyLogger.log(0, "待操作MeshPart为0, 直接跳过");
+            LoggerUtil.log(0, "待操作MeshPart为0, 直接跳过");
             return false;
         }
 
-        for (MeshGroup.MyNodePart myNodePart : myNodeParts) {
-            if (myNodePart.userObject == null) continue;
+        for (MeshGroup.BoolNodePart boolNodePart : boolNodeParts) {
+            if (boolNodePart.userObject == null) continue;
 
-            MyPair pair = (MyPair) myNodePart.userObject;
+            MyPair pair = (MyPair) boolNodePart.userObject;
             Object3D object1 = pair.object1;
             Object3D object2 = pair.object2;
             pair.verData = composeMesh(object1, object2, Face.INSIDE, Face.SAME, Face.INSIDE);
@@ -280,17 +280,17 @@ public class ModelInstanceBoolOperation implements Cloneable {
      */
     public boolean doDifference() {
         type = DIFF;
-        MyLogger.log(0, "运行doDifference...");
+        LoggerUtil.log(0, "运行doDifference...");
 
         if (count == 0) {
-            MyLogger.log(0, "待操作MeshPart为0, 直接跳过");
+            LoggerUtil.log(0, "待操作MeshPart为0, 直接跳过");
             return false;
         }
 
-        for (MeshGroup.MyNodePart myNodePart : myNodeParts) {
-            if (myNodePart.userObject == null) continue;
+        for (MeshGroup.BoolNodePart boolNodePart : boolNodeParts) {
+            if (boolNodePart.userObject == null) continue;
 
-            MyPair pair = (MyPair) myNodePart.userObject;
+            MyPair pair = (MyPair) boolNodePart.userObject;
             Object3D object1 = pair.object1;
             Object3D object2 = pair.object2;
 
@@ -318,16 +318,16 @@ public class ModelInstanceBoolOperation implements Cloneable {
      * Apply the results of boolean operation to the input MeshGroup.
      */
     public void apply() {
-        MyLogger.log(0, "\n*** 开始创建输出 ***");
+        LoggerUtil.log(0, "\n*** 开始创建输出 ***");
 
         // 获取总顶点数, 总索引数, 目标顶点大小
         int allVerNum = 0;
         int allIndexNum = 0;
         int verSize = vertexMixer.getTargetVertexSize();
-        for (MeshGroup.MyNodePart myNodePart : myNodeParts) {
-            if (myNodePart.userObject == null) continue;
+        for (MeshGroup.BoolNodePart boolNodePart : boolNodeParts) {
+            if (boolNodePart.userObject == null) continue;
 
-            MyVerData verData = ((MyPair) myNodePart.userObject).verData;
+            MyVerData verData = ((MyPair) boolNodePart.userObject).verData;
             // 如果verData为空
             if (verData == null) {
                 continue;
@@ -338,18 +338,18 @@ public class ModelInstanceBoolOperation implements Cloneable {
 
         // 新建对应数组
         // TODO: 如果输出顶点数大于short类型最大值, 则划分成多个Mesh
-        MyLogger.log(0, "总顶点数: " + allVerNum);
-        MyLogger.log(0, "总索引数: " + allIndexNum);
+        LoggerUtil.log(0, "总顶点数: " + allVerNum);
+        LoggerUtil.log(0, "总索引数: " + allIndexNum);
         assert ((allVerNum) < Short.MAX_VALUE) : "Too Many Vertexes!: " + allVerNum;
         float[] vs = new float[verSize * allVerNum];
         short[] is = new short[allIndexNum];
 
         int vsOffset = 0;
         int isOffset = 0;
-        for (MeshGroup.MyNodePart myNodePart : myNodeParts) {
-            if (myNodePart.userObject == null) continue;
+        for (MeshGroup.BoolNodePart boolNodePart : boolNodeParts) {
+            if (boolNodePart.userObject == null) continue;
 
-            MyPair pair = (MyPair) myNodePart.userObject;
+            MyPair pair = (MyPair) boolNodePart.userObject;
             MyVerData verData = pair.verData;
 
             // 如果verData为空
@@ -362,12 +362,12 @@ public class ModelInstanceBoolOperation implements Cloneable {
             vsOffset += verData.vertexNum;
             isOffset += verData.indexNum;
 
-            MyLogger.log(0, "meshPart[" + myNodePart.meshPart.id + "]: 顶点: " + verData.vertexNum + ", 索引: " + verData.indexNum);
-            MyLogger.log(0, "meshPart[" + myNodePart.meshPart.id + "]: vsOffset: " + vsOffset + ", isOffset: " + isOffset);
+            LoggerUtil.log(0, "meshPart[" + boolNodePart.meshPart.id + "]: 顶点: " + verData.vertexNum + ", 索引: " + verData.indexNum);
+            LoggerUtil.log(0, "meshPart[" + boolNodePart.meshPart.id + "]: vsOffset: " + vsOffset + ", isOffset: " + isOffset);
 
 
-//            myNodePart.node.localTransform.set(pair.m1.inv());
-//            myNodePart.node.isAnimated = true;
+//            boolNodePart.node.localTransform.set(pair.m1.inv());
+//            boolNodePart.node.isAnimated = true;
         }
 
         assert (vsOffset == allVerNum) : "顶点数不符合!";
@@ -380,74 +380,74 @@ public class ModelInstanceBoolOperation implements Cloneable {
 
         // 令每一个MeshPart使用新Mesh
         int tmpOffset = 0;
-        for (MeshGroup.MyNodePart myNodePart : myNodeParts) {
-            if (myNodePart.userObject == null) continue;
+        for (MeshGroup.BoolNodePart boolNodePart : boolNodeParts) {
+            if (boolNodePart.userObject == null) continue;
 
-            MyVerData verData = ((MyPair) myNodePart.userObject).verData;
+            MyVerData verData = ((MyPair) boolNodePart.userObject).verData;
 
             // 如果verData为空
             if (verData == null) {
-                MyLogger.log(0, "删除meshPart: " + myNodePart.meshPart.id);
-                myNodePart.node.parts.removeValue(myNodePart.nodePart, true);
+                LoggerUtil.log(0, "删除meshPart: " + boolNodePart.meshPart.id);
+                boolNodePart.node.parts.removeValue(boolNodePart.nodePart, true);
             } else {
-                MyLogger.log(0, "更新meshPart: " + myNodePart.meshPart.id);
-                MeshPart meshPart = myNodePart.meshPart;
-                MyLogger.log(0, "tmpOffset: " + tmpOffset);
-                MyLogger.log(0, "indexNum: " + verData.indexNum);
+                LoggerUtil.log(0, "更新meshPart: " + boolNodePart.meshPart.id);
+                MeshPart meshPart = boolNodePart.meshPart;
+                LoggerUtil.log(0, "tmpOffset: " + tmpOffset);
+                LoggerUtil.log(0, "indexNum: " + verData.indexNum);
                 meshPart.set(meshPart.id, mesh, tmpOffset, verData.indexNum, meshPart.primitiveType);
                 meshPart.update();
-//            myNodePart.node.localTransform.translate(meshPart.center.cpy().scl(-1));
+//            boolNodePart.node.localTransform.translate(meshPart.center.cpy().scl(-1));
 //            meshPart.center.set(0, 0, 0);
                 tmpOffset += verData.indexNum;
             }
         }
 
         // 完毕
-        MyLogger.log(0, "*** 输出创建完毕 ***\n");
+        LoggerUtil.log(0, "*** 输出创建完毕 ***\n");
     }
 
     /**
      * Apply the results of boolean operation to the input MeshGroup.
      */
     public ModelInstance getNewModelInstance() {
-        MyLogger.log(0, "\n*** 开始创建输出 ***");
+        LoggerUtil.log(0, "\n*** 开始创建输出 ***");
 
         // 临时保存原变量
         ModelInstance instance_old = this.instance;
         Map<Mesh, MeshGroup> meshGroups_old = this.meshGroups;
-        Array<MeshGroup.MyNodePart> myNodeParts_old = this.myNodeParts;
+        Array<MeshGroup.BoolNodePart> boolNodeParts_old = this.boolNodeParts;
 
         // 覆盖原变量
         this.instance = instance.copy();
-        this.meshGroups = MeshGroup.getMeshGroupsFromModelInstance(instance);
+        this.meshGroups = MeshGroup.getMeshGroups(instance);
         for (MeshGroup meshGroup : meshGroups_old.values()) {
             MeshGroup newMeshGroup = meshGroups.get(meshGroup.mesh);
             assert (newMeshGroup != null);
             boolean isCopied;
-            for (MeshGroup.MyNodePart myNodePart : meshGroup.myNodeParts) {
+            for (MeshGroup.BoolNodePart boolNodePart : meshGroup.boolNodeParts) {
                 isCopied = false;
-                for (MeshGroup.MyNodePart newMyNodePart : newMeshGroup.myNodeParts) {
-                    if (!myNodePart.meshPart.id.equals(newMyNodePart.meshPart.id))
+                for (MeshGroup.BoolNodePart newBoolNodePart : newMeshGroup.boolNodeParts) {
+                    if (!boolNodePart.meshPart.id.equals(newBoolNodePart.meshPart.id))
                         continue;
-                    newMyNodePart.userObject = myNodePart.userObject;
+                    newBoolNodePart.userObject = boolNodePart.userObject;
                     isCopied = true;
                     break;
                 }
                 assert (isCopied);
             }
         }
-        this.myNodeParts = new Array<>();
-        for (MeshGroup.MyNodePart myNodePart : myNodeParts_old) {
+        this.boolNodeParts = new Array<>();
+        for (MeshGroup.BoolNodePart boolNodePart : boolNodeParts_old) {
             for (MeshGroup newMeshGroup : meshGroups.values()) {
-                for (MeshGroup.MyNodePart newMyNodePart : newMeshGroup.myNodeParts) {
-                    if (!myNodePart.meshPart.id.equals(newMyNodePart.meshPart.id))
+                for (MeshGroup.BoolNodePart newBoolNodePart : newMeshGroup.boolNodeParts) {
+                    if (!boolNodePart.meshPart.id.equals(newBoolNodePart.meshPart.id))
                         continue;
-                    myNodeParts.add(newMyNodePart);
+                    boolNodeParts.add(newBoolNodePart);
                     break;
                 }
             }
         }
-        assert (myNodeParts.size == this.myNodeParts.size);
+        assert (boolNodeParts.size == this.boolNodeParts.size);
 
         // 调用原apply函数
         apply();
@@ -456,7 +456,7 @@ public class ModelInstanceBoolOperation implements Cloneable {
         // 还原临时保存的原变量
         this.instance = instance_old;
         this.meshGroups = meshGroups_old;
-        this.myNodeParts = myNodeParts_old;
+        this.boolNodeParts = boolNodeParts_old;
 
         return newInstance;
     }
@@ -473,7 +473,7 @@ public class ModelInstanceBoolOperation implements Cloneable {
      * @param faceStatus3 status expected for the second solid faces
      */
     private MyVerData composeMesh(Object3D object1, Object3D object2, int faceStatus1, int faceStatus2, int faceStatus3) {
-        MyLogger.log(0, "运行composeMesh...");
+        LoggerUtil.log(0, "运行composeMesh...");
 
         ArrayList<Vertex> vertices = new ArrayList<>();
         ArrayList<Integer> indices = new ArrayList<>();
@@ -503,7 +503,7 @@ public class ModelInstanceBoolOperation implements Cloneable {
      * @param faceStatus2 a status expected for the faces used to to fill the data arrays
      */
     private void groupObjectComponents(Object3D object, ArrayList<Vertex> vertices, ArrayList<Integer> indices, ArrayList<VertexData> datas, int faceStatus1, int faceStatus2) {
-        MyLogger.log(0, "运行groupObjectComponents...");
+        LoggerUtil.log(0, "运行groupObjectComponents...");
 
         Face face;
         // for each face..
@@ -616,7 +616,7 @@ public class ModelInstanceBoolOperation implements Cloneable {
                 if (indexs.get(i) > max) max = indexs.get(i);
                 is[isOffset + i] = (short) (indexs.get(i) + vsOffset);
             }
-            MyLogger.log(0, "MIN: " + (min + vsOffset) + ", MAX: " + (max + vsOffset));
+            LoggerUtil.log(0, "MIN: " + (min + vsOffset) + ", MAX: " + (max + vsOffset));
         }
     }
 

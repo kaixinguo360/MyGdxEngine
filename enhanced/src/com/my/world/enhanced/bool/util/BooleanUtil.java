@@ -20,59 +20,81 @@ import com.my.world.module.render.Render;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BooleanEntityUtils {
+public class BooleanUtil {
 
     private static final BoundingBox bounds = new BoundingBox();
     private static final Vector3 tmpV = new Vector3();
     private static final Matrix4 tmpM = new Matrix4();
 
-    public static List<Entity> cut(Entity entity, Model cutter, Matrix4 transform, Type type) throws BooleanOperationException {
+    public static void cut(ModelInstance targetModelInstance, Model cutter, Matrix4 transform, Type type) throws BooleanOperationException {
+        if (targetModelInstance == null || cutter == null) return;
 
         Node node = cutter.nodes.first();
         MeshPart reference = node.parts.first().meshPart;
-        ModelInstance instance = entity.getComponent(BaseRender.class).modelInstance.copy();
+
+        ModelInstanceBoolOperation boolOperation = new ModelInstanceBoolOperation(targetModelInstance, reference, transform);
+        switch (type) {
+            case UNION:
+                boolOperation.doUnion();
+                break;
+            case DIFF:
+                boolOperation.doDifference();
+                break;
+            case INTER:
+                boolOperation.doIntersection();
+                break;
+        }
+        boolOperation.apply();
+    }
+
+    public static List<Entity> cut(Entity targetEntity, Model cutter, Matrix4 transform, Type type) throws BooleanOperationException {
+        if (targetEntity == null || cutter == null) return null;
+
+        Node node = cutter.nodes.first();
+        MeshPart reference = node.parts.first().meshPart;
+        ModelInstance instance = targetEntity.getComponent(BaseRender.class).modelInstance.copy();
         List<Entity> newEntities = new ArrayList<>();
-        Matrix4 entityTransform = new Matrix4(entity.getComponent(Position.class).getGlobalTransform());
+        Matrix4 entityTransform = new Matrix4(targetEntity.getComponent(Position.class).getGlobalTransform());
 
         // 创建BoolOperation
         ModelInstanceBoolOperation bool;
         try {
             bool = new ModelInstanceBoolOperation(instance, reference, transform.cpy().mul(node.localTransform));
         } catch (BooleanOperationException e) {
-            MyLogger.log(3, "Error Occurs In Boolean Cut Operation!");
+            LoggerUtil.log(3, "Error Occurs In Boolean Cut Operation!");
             return null;
         }
 
         if (bool.skip) {
             // 无相交的meshPart, 或出错, 直接返回
-            MyLogger.log(0, "无相交的meshPart, 或出错, 直接返回!");
+            LoggerUtil.log(0, "无相交的meshPart, 或出错, 直接返回!");
             return null;
         } else {
-            MyLogger.log(0, "有相交的meshPart");
+            LoggerUtil.log(0, "有相交的meshPart");
         }
 
         // 获取相交的部分
-        if (type == Type.BOTH || type == Type.INTER) {
+        if (type == Type.UNION || type == Type.INTER) {
             bool.doIntersection();
             ModelInstance intersectionInstance = bool.getNewModelInstance();
-            if (MeshUtils.hasMesh(intersectionInstance)) {
+            if (MeshUtil.hasMesh(intersectionInstance)) {
                 List<ModelInstance> instances = MeshSplitter.splitModeInstances(intersectionInstance);
                 for (ModelInstance newInstance : instances) {
                     System.out.println("相交的部分: " + instances.size());
-                    newEntities.add(toEntity(entity, entityTransform, newInstance, 10f));
+                    newEntities.add(toEntity(targetEntity, entityTransform, newInstance, 10f));
                 }
             }
         }
 
         // 获取不相交的部分
-        if (type == Type.BOTH || type == Type.DIFF) {
+        if (type == Type.UNION || type == Type.DIFF) {
             bool.doDifference();
             ModelInstance differenceInstance = bool.getNewModelInstance();
-            if (MeshUtils.hasMesh(differenceInstance)) {
+            if (MeshUtil.hasMesh(differenceInstance)) {
                 List<ModelInstance> instances = MeshSplitter.splitModeInstances(differenceInstance);
                 System.out.println("不相交的部分: " + instances.size());
                 for (ModelInstance newInstance : instances) {
-                    newEntities.add(toEntity(entity, entityTransform, newInstance, 10f));
+                    newEntities.add(toEntity(targetEntity, entityTransform, newInstance, 10f));
                 }
             }
         }
@@ -101,7 +123,7 @@ public class BooleanEntityUtils {
         Render render = new BaseRender(instance);
         render.includeEnv = true;
 
-        btConvexHullShape shape = BulletUtils.getConvexHullShape(instance);
+        btConvexHullShape shape = BulletUtil.getConvexHullShape(instance.nodes);
         RigidBody rigidBody = new TemplateRigidBody(shape, mass);
         rigidBody.group = originalRigidBody.group;
         rigidBody.mask = originalRigidBody.mask;
@@ -116,6 +138,6 @@ public class BooleanEntityUtils {
     }
 
     public enum Type {
-        DIFF, INTER, BOTH
+        DIFF, INTER, UNION
     }
 }

@@ -1,6 +1,6 @@
 package com.my.world.enhanced.bool.util;
 
-public class MyLogger {
+public class LoggerUtil {
 
     public static int debugLevel = 0;
 

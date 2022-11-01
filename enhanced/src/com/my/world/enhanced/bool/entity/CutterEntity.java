@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.my.world.enhanced.bool.util.BooleanEntityUtils;
+import com.my.world.enhanced.bool.util.BooleanUtil;
 import com.my.world.enhanced.entity.EnhancedEntity;
 import com.my.world.module.physics.RigidBody;
 import com.my.world.module.physics.rigidbody.BoxBody;
@@ -36,6 +36,6 @@ public class CutterEntity extends EnhancedEntity {
         cutterScript = addComponent(new CutterScript());
         cutterScript.cutter = this.render;
         if (offset != null) cutterScript.offset.set(offset);
-        cutterScript.type = BooleanEntityUtils.Type.BOTH;
+        cutterScript.type = BooleanUtil.Type.UNION;
     }
 }

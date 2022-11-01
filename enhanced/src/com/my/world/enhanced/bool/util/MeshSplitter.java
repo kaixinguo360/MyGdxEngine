@@ -14,19 +14,19 @@ import java.util.List;
 public class MeshSplitter {
 
     // 原始Mesh
-    Mesh mesh;
+    private final Mesh mesh;
     // 原始顶点数组
-    float[] verticesOrigin;
+    private final float[] verticesOrigin;
 
     // 面数组
-    Array<Face> faces = new Array<>();
+    private final Array<Face> faces = new Array<>();
     // Face计数
-    int faceNum = 0;
+    private int faceNum = 0;
     // 非重复顶点数组
-    Array<Vertex> vertices = new Array<>();
+    private final Array<Vertex> vertices = new Array<>();
 
     // 分类后的面数组
-    Array<Array<Face>> parts = new Array<>();
+    private final Array<Array<Face>> parts = new Array<>();
     // 是否已经split
     private boolean hasSplit = false;
 
@@ -41,7 +41,7 @@ public class MeshSplitter {
         Vertex v1, v2, v3, vertex;
 
         // 获取顶点位置偏移
-        int offsetPosition = MeshUtils.getPositionOffset(mesh);
+        int offsetPosition = MeshUtil.getPositionOffset(mesh);
 
         // 获取原始顶点数组
         int vertexSize = mesh.getVertexSize() / 4; // 顶点大小
@@ -93,7 +93,7 @@ public class MeshSplitter {
     // Split Input ModelInstance To Disconnected Parts
     public static List<ModelInstance> splitModeInstances(ModelInstance instance) {
         List<ModelInstance> out = new ArrayList<>();
-        if (MeshUtils.isOneMeshPart(instance)) {  // TODO: 只能处理只有一个MeshPart的ModelInstance
+        if (MeshUtil.isOneMeshPart(instance)) {  // TODO: 只能处理只有一个MeshPart的ModelInstance
             MeshSplitter separator = new MeshSplitter(instance.nodes.first().parts.first().meshPart.mesh);
             if (separator.split()) {
                 Mesh mesh = separator.getMesh();
@@ -190,9 +190,9 @@ public class MeshSplitter {
             }
         }
         assert (parts.size == tag);
-        MyLogger.log(0, "Vertices:" + vertices.size);
-        MyLogger.log(0, "Face:" + faces.size);
-        MyLogger.log(0, "PartsNum:" + tag);
+        LoggerUtil.log(0, "Vertices:" + vertices.size);
+        LoggerUtil.log(0, "Face:" + faces.size);
+        LoggerUtil.log(0, "PartsNum:" + tag);
     }
 
     // 遍历相连的顶点并标记
@@ -215,7 +215,7 @@ public class MeshSplitter {
 
     // 删除无用的顶点(默认输入的是没有链接别的顶点的)
     private void removeVertex(Vertex v) {
-        MyLogger.log(4, "!!!");
+        LoggerUtil.log(4, "!!!");
         vertices.removeValue(v, true);
     }
 

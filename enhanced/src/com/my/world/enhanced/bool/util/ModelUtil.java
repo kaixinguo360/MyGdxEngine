@@ -15,7 +15,7 @@ import com.badlogic.gdx.utils.ArrayMap;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ModelUtils {
+public class ModelUtil {
 
     public static Array<Mesh> getMeshesFromModelInstance(ModelInstance modelInstance) {
         Array<Mesh> meshes = new Array<>();

@@ -1,6 +1,6 @@
 package com.my.world.enhanced.bool.operation;
 
-import com.my.world.enhanced.bool.util.MyLogger;
+import com.my.world.enhanced.bool.util.LoggerUtil;
 
 /**
  * Representation of a 3D face (triangle).
@@ -352,7 +352,7 @@ public class Face implements Cloneable {
                     // if ray lies in plane...
                     if (Math.abs(distance) < TOL && Math.abs(dotProduct) < TOL) {
                         if (repeat > 50000) {  // TODO: 以重复多少次为失败标准
-                            MyLogger.log(2, "possible infinite loop situation: terminating rayTraceClassify - Too Many Repeat");
+                            LoggerUtil.log(2, "possible infinite loop situation: terminating rayTraceClassify - Too Many Repeat");
                             success = true;
                             throw new BooleanOperationException("possible infinite loop situation: terminating rayTraceClassify - Too Many Repeat");
                         }

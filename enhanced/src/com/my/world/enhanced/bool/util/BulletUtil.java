@@ -4,45 +4,26 @@ import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.model.MeshPart;
+import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btConvexHullShape;
+import com.badlogic.gdx.utils.Array;
 
 import java.util.Map;
 
-public class BulletUtils {
+public class BulletUtil {
 
     public static btConvexHullShape getConvexHullShape(ModelInstance instance) {
-        Map<Mesh, MeshGroup> meshes = MeshGroup.getMeshGroupsFromModelInstance(instance);
-
-        if (meshes.size() == 0) {
-            return null;
-        }
-
-        btConvexHullShape shape = new btConvexHullShape();
-
-        for (Map.Entry<Mesh, MeshGroup> entry : meshes.entrySet()) {
-
-            float[] vertices = MeshUtils.getVertices(entry.getKey());
-            short[] indices = MeshUtils.getIndices(entry.getKey());
-            int vertexSize = entry.getKey().getVertexSize() / 4;
-            int offsetPosition = MeshUtils.getPositionOffset(entry.getKey());
-
-            for (MeshGroup.MyNodePart nodePart : entry.getValue().myNodeParts) {
-                MeshPart meshPart = nodePart.meshPart;
-                addVerticesToConvexHullShape(shape, nodePart.node.calculateLocalTransform(), indices, meshPart.offset, meshPart.size, vertices, vertexSize, offsetPosition);
-            }
-        }
-
-        shape.initializePolyhedralFeatures();
-        shape.recalcLocalAabb();
-        shape.optimizeConvexHull();
-
-        return shape;
+        return getConvexHullShape(instance.nodes);
     }
 
     public static btConvexHullShape getConvexHullShape(Model model) {
-        Map<Mesh, MeshGroup> meshes = MeshGroup.getMeshGroupsFromModel(model);
+        return getConvexHullShape(model.nodes);
+    }
+
+    public static btConvexHullShape getConvexHullShape(Array<Node> nodes) {
+        Map<Mesh, MeshGroup> meshes = MeshGroup.getMeshGroups(nodes);
 
         if (meshes.size() == 0) {
             return null;
@@ -52,12 +33,12 @@ public class BulletUtils {
 
         for (Map.Entry<Mesh, MeshGroup> entry : meshes.entrySet()) {
 
-            float[] vertices = MeshUtils.getVertices(entry.getKey());
-            short[] indices = MeshUtils.getIndices(entry.getKey());
+            float[] vertices = MeshUtil.getVertices(entry.getKey());
+            short[] indices = MeshUtil.getIndices(entry.getKey());
             int vertexSize = entry.getKey().getVertexSize() / 4;
-            int offsetPosition = MeshUtils.getPositionOffset(entry.getKey());
+            int offsetPosition = MeshUtil.getPositionOffset(entry.getKey());
 
-            for (MeshGroup.MyNodePart nodePart : entry.getValue().myNodeParts) {
+            for (MeshGroup.BoolNodePart nodePart : entry.getValue().boolNodeParts) {
                 MeshPart meshPart = nodePart.meshPart;
                 addVerticesToConvexHullShape(shape, nodePart.node.calculateLocalTransform(), indices, meshPart.offset, meshPart.size, vertices, vertexSize, offsetPosition);
             }

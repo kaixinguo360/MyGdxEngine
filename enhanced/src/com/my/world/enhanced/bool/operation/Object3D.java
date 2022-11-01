@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.my.world.enhanced.bool.util.MyLogger;
+import com.my.world.enhanced.bool.util.LoggerUtil;
 
 import java.util.ArrayList;
 
@@ -390,7 +390,7 @@ public class Object3D implements Cloneable {
                                         // prevent from infinite loop (with a loss of faces...)
                                         if (numFacesMax * 3 < getNumFaces()) // 防止死循环
                                         {
-                                            MyLogger.log(2, "possible infinite loop situation: terminating faces split - Too Many Face: " + getNumFaces() + " (Start: " + numFacesMax + ")");
+                                            LoggerUtil.log(2, "possible infinite loop situation: terminating faces split - Too Many Face: " + getNumFaces() + " (Start: " + numFacesMax + ")");
                                             return isChanged;
                                         }
 
@@ -412,7 +412,7 @@ public class Object3D implements Cloneable {
                                                     repeat++;
                                                     if (repeat >= 100) {
                                                         // 重复循环次数超出忍耐, 直接跳出
-                                                        MyLogger.log(2, "possible infinite loop situation: terminating faces split - Too Many Repeat");
+                                                        LoggerUtil.log(2, "possible infinite loop situation: terminating faces split - Too Many Repeat");
                                                         return isChanged;
                                                     }
                                                 }
