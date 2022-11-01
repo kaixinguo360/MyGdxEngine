@@ -296,6 +296,12 @@ public class Solid implements Cloneable {
 
     }
 
+    private Vertex addVertex(VectorD pos, Face face, int status) {
+        Vertex vertex = addVertex(pos, face.v1.getData(), status);
+        vertex.avg(face.v1, face.v2, face.v3);
+        return vertex;
+    }
+
     //-------------------------FACES_SPLITTING_METHODS------------------------------//
 
     /**
@@ -591,7 +597,7 @@ public class Solid implements Cloneable {
         Face face = faces.get(facePos);
         faces.remove(facePos);
 
-        Vertex vertex = addVertex(newPos, face.v1.getData(), Vertex.BOUNDARY);
+        Vertex vertex = addVertex(newPos, face, Vertex.BOUNDARY);
 
         if (splitEdge == 1) {
             addFace(face.v1, vertex, face.v3);
@@ -616,7 +622,7 @@ public class Solid implements Cloneable {
         Face face = faces.get(facePos);
         faces.remove(facePos);
 
-        Vertex vertex = addVertex(newPos, face.v1.getData(), Vertex.BOUNDARY);
+        Vertex vertex = addVertex(newPos, face, Vertex.BOUNDARY);
 
         if (endVertex.equals(face.v1)) {
             addFace(face.v1, vertex, face.v3);
@@ -642,8 +648,8 @@ public class Solid implements Cloneable {
         Face face = faces.get(facePos);
         faces.remove(facePos);
 
-        Vertex vertex1 = addVertex(newPos1, face.v1.getData(), Vertex.BOUNDARY);
-        Vertex vertex2 = addVertex(newPos2, face.v1.getData(), Vertex.BOUNDARY);
+        Vertex vertex1 = addVertex(newPos1, face, Vertex.BOUNDARY);
+        Vertex vertex2 = addVertex(newPos2, face, Vertex.BOUNDARY);
 
         if (splitEdge == 1) {
             addFace(face.v1, vertex1, face.v3);
@@ -671,7 +677,7 @@ public class Solid implements Cloneable {
         Face face = faces.get(facePos);
         faces.remove(facePos);
 
-        Vertex vertex = addVertex(newPos, face.v1.getData(), Vertex.BOUNDARY);
+        Vertex vertex = addVertex(newPos, face, Vertex.BOUNDARY);
 
         if (endVertex.equals(face.v1)) {
             addFace(face.v1, face.v2, vertex);
@@ -701,8 +707,8 @@ public class Solid implements Cloneable {
         Face face = faces.get(facePos);
         faces.remove(facePos);
 
-        Vertex vertex1 = addVertex(newPos1, face.v1.getData(), Vertex.BOUNDARY);
-        Vertex vertex2 = addVertex(newPos2, face.v1.getData(), Vertex.BOUNDARY);
+        Vertex vertex1 = addVertex(newPos1, face, Vertex.BOUNDARY);
+        Vertex vertex2 = addVertex(newPos2, face, Vertex.BOUNDARY);
 
         if (startVertex.equals(face.v1) && endVertex.equals(face.v2)) {
             addFace(face.v1, vertex1, vertex2);
@@ -741,7 +747,7 @@ public class Solid implements Cloneable {
         Face face = faces.get(facePos);
         faces.remove(facePos);
 
-        Vertex vertex = addVertex(newPos, face.v1.getData(), Vertex.BOUNDARY);
+        Vertex vertex = addVertex(newPos, face, Vertex.BOUNDARY);
 
         addFace(face.v1, face.v2, vertex);
         addFace(face.v2, face.v3, vertex);
@@ -760,8 +766,8 @@ public class Solid implements Cloneable {
         Face face = faces.get(facePos);
         faces.remove(facePos);
 
-        Vertex vertex1 = addVertex(newPos1, face.v1.getData(), Vertex.BOUNDARY);
-        Vertex vertex2 = addVertex(newPos2, face.v1.getData(), Vertex.BOUNDARY);
+        Vertex vertex1 = addVertex(newPos1, face, Vertex.BOUNDARY);
+        Vertex vertex2 = addVertex(newPos2, face, Vertex.BOUNDARY);
 
         if (endVertex.equals(face.v1)) {
             addFace(face.v1, vertex1, vertex2);
@@ -793,8 +799,8 @@ public class Solid implements Cloneable {
         Face face = faces.get(facePos);
         faces.remove(facePos);
 
-        Vertex vertex1 = addVertex(newPos1, face.v1.getData(), Vertex.BOUNDARY);
-        Vertex vertex2 = addVertex(newPos2, face.v1.getData(), Vertex.BOUNDARY);
+        Vertex vertex1 = addVertex(newPos1, face, Vertex.BOUNDARY);
+        Vertex vertex2 = addVertex(newPos2, face, Vertex.BOUNDARY);
 
         double cont = 0;
         if (linedVertex == 1) {
