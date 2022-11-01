@@ -190,9 +190,6 @@ public class MeshSplitter {
             }
         }
         assert (parts.size == tag);
-        LoggerUtil.log(0, "Vertices:" + vertices.size);
-        LoggerUtil.log(0, "Face:" + faces.size);
-        LoggerUtil.log(0, "PartsNum:" + tag);
     }
 
     // 遍历相连的顶点并标记

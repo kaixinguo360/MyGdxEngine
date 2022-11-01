@@ -150,8 +150,8 @@ public class Segment implements Cloneable {
             clone.endType = endType;
             clone.startVertex = (Vertex) startVertex.clone();
             clone.endVertex = (Vertex) endVertex.clone();
-            clone.startPos = (VectorD) startPos.clone();
-            clone.endPos = (VectorD) endPos.clone();
+            clone.startPos = (VectorD) startPos.copy();
+            clone.endPos = (VectorD) endPos.copy();
 
             return clone;
         } catch (CloneNotSupportedException e) {

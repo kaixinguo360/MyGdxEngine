@@ -38,7 +38,7 @@ public class BulletUtil {
             int vertexSize = entry.getKey().getVertexSize() / 4;
             int offsetPosition = MeshUtil.getPositionOffset(entry.getKey());
 
-            for (MeshGroup.BoolNodePart nodePart : entry.getValue().boolNodeParts) {
+            for (MeshGroup.MeshNodePart nodePart : entry.getValue().meshNodeParts) {
                 MeshPart meshPart = nodePart.meshPart;
                 addVerticesToConvexHullShape(shape, nodePart.node.calculateLocalTransform(), indices, meshPart.offset, meshPart.size, vertices, vertexSize, offsetPosition);
             }

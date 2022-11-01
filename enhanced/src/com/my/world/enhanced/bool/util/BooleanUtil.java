@@ -67,32 +67,32 @@ public class BooleanUtil {
 
         if (bool.skip) {
             // 无相交的meshPart, 或出错, 直接返回
-            LoggerUtil.log(0, "无相交的meshPart, 或出错, 直接返回!");
+            LoggerUtil.log(0, "无相交网格或出错, 终止并返回");
             return null;
         } else {
-            LoggerUtil.log(0, "有相交的meshPart");
+            LoggerUtil.log(0, "有相交网格, 执行网格构建");
         }
 
-        // 获取相交的部分
+        // 获取交集
         if (type == Type.UNION || type == Type.INTER) {
             bool.doIntersection();
             ModelInstance intersectionInstance = bool.getNewModelInstance();
             if (MeshUtil.hasMesh(intersectionInstance)) {
                 List<ModelInstance> instances = MeshSplitter.splitModeInstances(intersectionInstance);
                 for (ModelInstance newInstance : instances) {
-                    LoggerUtil.log(0, "相交的部分: " + instances.size());
+                    LoggerUtil.log(0, "交集个数: " + instances.size());
                     newEntities.add(toEntity(targetEntity, entityTransform, newInstance, 10f));
                 }
             }
         }
 
-        // 获取不相交的部分
+        // 获取非集
         if (type == Type.UNION || type == Type.DIFF) {
             bool.doDifference();
             ModelInstance differenceInstance = bool.getNewModelInstance();
             if (MeshUtil.hasMesh(differenceInstance)) {
                 List<ModelInstance> instances = MeshSplitter.splitModeInstances(differenceInstance);
-                LoggerUtil.log(0, "不相交的部分: " + instances.size());
+                LoggerUtil.log(0, "非集个数: " + instances.size());
                 for (ModelInstance newInstance : instances) {
                     newEntities.add(toEntity(targetEntity, entityTransform, newInstance, 10f));
                 }
