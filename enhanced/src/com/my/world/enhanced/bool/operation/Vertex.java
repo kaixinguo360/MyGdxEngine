@@ -1,9 +1,13 @@
 package com.my.world.enhanced.bool.operation;
 
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
+import com.my.world.enhanced.bool.util.LoggerUtil;
 import com.my.world.enhanced.bool.util.NumberUtil;
 
 import java.util.ArrayList;
+
+import static com.badlogic.gdx.math.Matrix4.*;
 
 /**
  * Represents of a 3d face vertex.
@@ -259,5 +263,44 @@ public class Vertex implements Cloneable {
         y = vector3.y;
         z = vector3.z;
         return this;
+    }
+
+    private static final Vector3 tmpV = new Vector3();
+    private static final Matrix4 tmpM = new Matrix4();
+
+    public void avg(Vertex v1, Vertex v2, Vertex v3) {
+        float[] data = this.data.data;
+        float[] data1 = v1.data.data;
+        float[] data2 = v2.data.data;
+        float[] data3 = v3.data.data;
+        if (data.length != data1.length || data1.length != data2.length || data2.length != data3.length) {
+            LoggerUtil.log(1, "顶点大小不同, 跳过混合");
+        }
+
+        tmpM.idt();
+        tmpM.val[M00] = (float) v1.x;
+        tmpM.val[M10] = (float) v1.y;
+        tmpM.val[M20] = (float) v1.z;
+        tmpM.val[M01] = (float) v2.x;
+        tmpM.val[M11] = (float) v2.y;
+        tmpM.val[M21] = (float) v2.z;
+        tmpM.val[M02] = (float) v3.x;
+        tmpM.val[M12] = (float) v3.y;
+        tmpM.val[M22] = (float) v3.z;
+        try {
+            tmpM.inv();
+        } catch (Exception e) {
+            LoggerUtil.log(1, "计算顶点权重出错");
+            return;
+        }
+        this.toVector3(tmpV).mul(tmpM).nor();
+        float scale = 1 / (tmpV.x + tmpV.y + tmpV.z);
+        float p1 = tmpV.x * scale;
+        float p2 = tmpV.y * scale;
+        float p3 = tmpV.z * scale;
+
+        for (int i = 0; i < data.length; i++) {
+            data[i] = p1 * data1[i] + p2 * data2[i] + p3 * data3[i];
+        }
     }
 }
