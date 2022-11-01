@@ -5,7 +5,7 @@ public class MyLogger {
     public static int debugLevel = 0;
 
     public static void log(int level, String text) {
-        if(level >= debugLevel) {
+        if (level >= debugLevel) {
             System.out.println(text);
         }
     }

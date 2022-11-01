@@ -26,19 +26,19 @@ public class BooleanModelInstanceUtils {
     }
 
     private static void booleanOperation(ModelInstance target, MeshPart reference, Matrix4 transform, int type) throws BooleanOperationException {
-        if(target == null || reference == null) return;
+        if (target == null || reference == null) return;
 
         ModelInstanceBoolOperation boolOperation = new ModelInstanceBoolOperation(target, reference, transform);
         switch (type) {
-            case UNION : {
+            case UNION: {
                 boolOperation.doUnion();
                 break;
             }
-            case DIFF : {
+            case DIFF: {
                 boolOperation.doDifference();
                 break;
             }
-            case INTER : {
+            case INTER: {
                 boolOperation.doIntersection();
                 break;
             }

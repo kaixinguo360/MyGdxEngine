@@ -45,9 +45,8 @@ public class VertexData {
         if (this == obj) return true;
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
-        VertexData other = (VertexData)obj;
+        VertexData other = (VertexData) obj;
         if (this.mesh != other.mesh) return false;
-        if (this.data != other.data) return false; //TODO: 两个MyData怎么才算相等?
-        return true;
+        return this.data == other.data; // TODO: 两个MyData怎么才算相等?
     }
 }

@@ -25,7 +25,7 @@ public class BoneUtils {
 
     public static void applyBoneTransform(ModelInstance instance, boolean mergeMeshPart, VertexAttributes attributes) {
         VertexMixer vertexMixer = null;
-        if(attributes != null && attributes.size() != 0) {
+        if (attributes != null && attributes.size() != 0) {
             vertexMixer = new VertexMixer();
             vertexMixer.addAttributes(attributes);
             vertexMixer.disallowChange();
@@ -33,23 +33,23 @@ public class BoneUtils {
 
         Map<Mesh, MeshGroup> meshes = MeshGroup.getMeshGroupsFromModelInstance(instance);
 
-        for(Map.Entry<Mesh, MeshGroup> entry : meshes.entrySet()) {
-            Vector3 tmpV = new Vector3(); //临时变量
+        for (Map.Entry<Mesh, MeshGroup> entry : meshes.entrySet()) {
+            Vector3 tmpV = new Vector3(); // 临时变量
             Matrix4 tmpM = new Matrix4();
             Vector3 pos0 = new Vector3();
 
-            Mesh mesh = entry.getKey(); //初始化Mesh
-            int vertexSize = mesh.getVertexSize() / 4; //顶点大小 - Mesh
-            int numVertices = mesh.getNumVertices(); //顶点数量 - Mesh
+            Mesh mesh = entry.getKey(); // 初始化Mesh
+            int vertexSize = mesh.getVertexSize() / 4; // 顶点大小 - Mesh
+            int numVertices = mesh.getNumVertices(); // 顶点数量 - Mesh
 
-            float[] vertices = new float[vertexSize * numVertices]; //读取全部顶点数组 - Mesh
+            float[] vertices = new float[vertexSize * numVertices]; // 读取全部顶点数组 - Mesh
             mesh.getVertices(vertices);
 
-            boolean[] usedIndices = new boolean[numVertices]; //使用过的索引数组 - Mesh
+            boolean[] usedIndices = new boolean[numVertices]; // 使用过的索引数组 - Mesh
 
-            int offsetPosition = 0; //获取顶点属性偏移 - 位置 - Mesh
-            Array<Integer> offsetBoneWeights = new Array<>(); //获取顶点属性偏移 - 骨骼权重 - Mesh
-            for(VertexAttribute attribute : mesh.getVertexAttributes()) {
+            int offsetPosition = 0; // 获取顶点属性偏移 - 位置 - Mesh
+            Array<Integer> offsetBoneWeights = new Array<>(); // 获取顶点属性偏移 - 骨骼权重 - Mesh
+            for (VertexAttribute attribute : mesh.getVertexAttributes()) {
                 int offset = attribute.offset / 4;
                 switch (attribute.usage) {
                     case VertexAttributes.Usage.Position:
@@ -61,21 +61,21 @@ public class BoneUtils {
                 }
             }
 
-            MeshGroup NodeParts = entry.getValue(); //初始化NodeParts数组
-            for(MeshGroup.MyNodePart myNodePart : entry.getValue().myNodeParts) { //遍历NodeParts数组
+            MeshGroup NodeParts = entry.getValue(); // 初始化NodeParts数组
+            for (MeshGroup.MyNodePart myNodePart : entry.getValue().myNodeParts) { // 遍历NodeParts数组
                 NodePart nodePart = myNodePart.nodePart;
                 MeshPart meshPart = nodePart.meshPart;
 
-                short[] indices = new short[meshPart.size]; //获取索引数组 - MeshPart
+                short[] indices = new short[meshPart.size]; // 获取索引数组 - MeshPart
                 mesh.getIndices(meshPart.offset, meshPart.size, indices, 0);
 
-                boolean[] tmpIndices = new boolean[numVertices]; //使用过的索引数组 - MeshPart
-                for(int i=0; i<meshPart.size; i++) {
-                    tmpIndices[indices[i]] = !usedIndices[indices[i]]; //在tmpIndices中标记此MeshPart中出现过的索引
+                boolean[] tmpIndices = new boolean[numVertices]; // 使用过的索引数组 - MeshPart
+                for (int i = 0; i < meshPart.size; i++) {
+                    tmpIndices[indices[i]] = !usedIndices[indices[i]]; // 在tmpIndices中标记此MeshPart中出现过的索引
                 }
 
                 for (int i = 0; i < tmpIndices.length; i++) {
-                    if(!tmpIndices[i]) //在tmpIndices中没有标记过的索引不参与计算
+                    if (!tmpIndices[i]) // 在tmpIndices中没有标记过的索引不参与计算
                         continue;
                     int offsetVertex = i * vertexSize,
                             x = offsetVertex + offsetPosition,
@@ -94,7 +94,7 @@ public class BoneUtils {
                         float weight = vertices[offsetVertex + offsetBoneWeight + 1];
                         if (weight == 0) continue;
                         weight0 -= weight;
-                        if(index >= nodePart.bones.length) continue;
+                        if (index >= nodePart.bones.length) continue;
                         Matrix4 transform = nodePart.bones[index];
 
 //                    System.out.print("[" + j + ":" + nodePart.invBoneBindTransforms.keys[index].id + "]: ");
@@ -112,7 +112,7 @@ public class BoneUtils {
 //                            tmpV.x + ", " +
 //                            tmpV.y + ", " +
 //                            tmpV.z + ") ");
-                        if(!mergeMeshPart) {
+                        if (!mergeMeshPart) {
                             tmpM.set(myNodePart.node.localTransform);
                             tmpV.mul(tmpM.inv());
                         }
@@ -134,7 +134,7 @@ public class BoneUtils {
 //                    System.out.print("\n");
                     }
 
-                    if (false && weight0 != 0) { //权重相加不为1时
+                    if (false) { // 权重相加不为1时
 //                    System.out.print("[Weight0]: ");
 //                    System.out.print("W=[" + weight0 + "] ");
                         tmpV.set(pos0);
@@ -164,22 +164,22 @@ public class BoneUtils {
 //                        vertices[z] + ") \n\n");
                 }
 
-                for(int i=0; i<meshPart.size; i++) {
+                for (int i = 0; i < meshPart.size; i++) {
                     usedIndices[indices[i]] = tmpIndices[indices[i]] || usedIndices[indices[i]];
                 }
             }
 //            mesh.setVertices(vertices);
 
-            //设置新Mesh的顶点
+            // 设置新Mesh的顶点
             Mesh newMesh;
-            if(vertexMixer != null) {
-                int meshId = vertexMixer.addAttributes(mesh.getVertexAttributes()); //添加属性到vertexMixer
-                float[] tmpF = new float[vertexSize]; //创建数组临时储存单个顶点数据
+            if (vertexMixer != null) {
+                int meshId = vertexMixer.addAttributes(mesh.getVertexAttributes()); // 添加属性到vertexMixer
+                float[] tmpF = new float[vertexSize]; // 创建数组临时储存单个顶点数据
                 vertexMixer.begin(numVertices);
-                for(int i=0; i<numVertices; i++) {
+                for (int i = 0; i < numVertices; i++) {
                     int offsetVertex = i * vertexSize;
                     System.arraycopy(vertices, offsetVertex, tmpF, 0, vertexSize);
-                    vertexMixer.addVertex(meshId, tmpF);  //添加顶点到VertexMixer
+                    vertexMixer.addVertex(meshId, tmpF);  // 添加顶点到VertexMixer
                 }
                 newMesh = new Mesh(false, mesh.getNumVertices(), mesh.getNumIndices(), vertexMixer.getTargetAttr());
                 newMesh.setVertices(vertexMixer.build());
@@ -188,13 +188,13 @@ public class BoneUtils {
                 newMesh.setVertices(vertices);
             }
 
-            //设置新Mesh的索引
+            // 设置新Mesh的索引
             short[] tmpS = new short[mesh.getNumIndices()];
             mesh.getIndices(tmpS);
             newMesh.setIndices(tmpS);
 
-            //应用新Mesh到每个MeshPart
-            for(MeshGroup.MyNodePart myNodePart : entry.getValue().myNodeParts) { //遍历NodeParts数组
+            // 应用新Mesh到每个MeshPart
+            for (MeshGroup.MyNodePart myNodePart : entry.getValue().myNodeParts) { // 遍历NodeParts数组
                 NodePart nodePart = myNodePart.nodePart;
                 MeshPart meshPart = nodePart.meshPart;
                 meshPart.set(meshPart.id, newMesh, meshPart.offset, meshPart.size, meshPart.primitiveType);
@@ -202,7 +202,7 @@ public class BoneUtils {
             }
         }
 
-        if(mergeMeshPart) {
+        if (mergeMeshPart) {
             MeshUtils.mergeMeshPart(instance);
         }
 
@@ -210,19 +210,19 @@ public class BoneUtils {
     }
 
     public static void clearBones(ModelInstance instance) {
-        for(Node node : instance.nodes) {
+        for (Node node : instance.nodes) {
             clearBones(node);
         }
         instance.calculateTransforms();
     }
 
     private static void clearBones(Node node) {
-        for(NodePart nodePart : node.parts) {
+        for (NodePart nodePart : node.parts) {
             nodePart.invBoneBindTransforms = null;
             nodePart.bones = null;
         }
 
-        for(Node child : node.getChildren()) {
+        for (Node child : node.getChildren()) {
             clearBones(child);
         }
     }

@@ -25,13 +25,11 @@ public class MeshUtils {
     }
 
     public static int getPositionOffset(Mesh mesh) {
-        int offsetPosition = 0; //获取顶点属性偏移 - 位置 - Mesh
-        for(VertexAttribute attribute : mesh.getVertexAttributes()) {
+        int offsetPosition = 0; // 获取顶点属性偏移 - 位置 - Mesh
+        for (VertexAttribute attribute : mesh.getVertexAttributes()) {
             int offset = attribute.offset / 4;
-            switch (attribute.usage) {
-                case VertexAttributes.Usage.Position:
-                    offsetPosition = offset;
-                    break;
+            if (attribute.usage == VertexAttributes.Usage.Position) {
+                offsetPosition = offset;
             }
         }
         return offsetPosition;
@@ -41,14 +39,14 @@ public class MeshUtils {
         Map<Mesh, MeshGroup> meshGroups = MeshGroup.getMeshGroupsFromModelInstance(instance);
         Array<MeshGroup.MyNodePart> myNodeParts = new Array<>();
 
-        for(Map.Entry<Mesh, MeshGroup> entry : meshGroups.entrySet()) {
+        for (Map.Entry<Mesh, MeshGroup> entry : meshGroups.entrySet()) {
             MeshGroup.MyNodePart firstNodePart = entry.getValue().myNodeParts.first();
             myNodeParts.add(firstNodePart);
         }
 
         instance.nodes.clear();
 
-        for(MeshGroup.MyNodePart myNodePart : myNodeParts) {
+        for (MeshGroup.MyNodePart myNodePart : myNodeParts) {
             Node node = myNodePart.node;
             node.detach();
 
@@ -71,9 +69,9 @@ public class MeshUtils {
     public static boolean isOneMeshPart(ModelInstance instance) {
         Map<Mesh, MeshGroup> meshGroups = MeshGroup.getMeshGroupsFromModelInstance(instance);
 
-        if(meshGroups.size() == 1) {
-            for(MeshGroup meshGroup : meshGroups.values()) {
-                if(meshGroup.myNodeParts.size != 1)
+        if (meshGroups.size() == 1) {
+            for (MeshGroup meshGroup : meshGroups.values()) {
+                if (meshGroup.myNodeParts.size != 1)
                     return false;
             }
             return true;
@@ -82,7 +80,7 @@ public class MeshUtils {
     }
 
     public static boolean hasMesh(ModelInstance instance) {
-        if(instance.nodes.size == 0) return false;
+        if (instance.nodes.size == 0) return false;
         Map<Mesh, MeshGroup> meshGroups = MeshGroup.getMeshGroupsFromModelInstance(instance);
         return (meshGroups.size() > 0);
     }

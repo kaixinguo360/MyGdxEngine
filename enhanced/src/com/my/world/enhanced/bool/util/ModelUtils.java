@@ -19,39 +19,41 @@ public class ModelUtils {
 
     public static Array<Mesh> getMeshesFromModelInstance(ModelInstance modelInstance) {
         Array<Mesh> meshes = new Array<>();
-        for(Node node : modelInstance.nodes) {
+        for (Node node : modelInstance.nodes) {
             addNode(node, meshes);
         }
         return meshes;
     }
+
     private static void addNode(Node node, Array<Mesh> meshes) {
-        for(NodePart nodePart : node.parts) {
+        for (NodePart nodePart : node.parts) {
             MeshPart meshPart = nodePart.meshPart;
-            if(!meshes.contains(meshPart.mesh, true))
+            if (!meshes.contains(meshPart.mesh, true))
                 meshes.add(meshPart.mesh);
         }
-        for(Node child : node.getChildren()) {
+        for (Node child : node.getChildren()) {
             addNode(child, meshes);
         }
     }
 
     public static Map<Mesh, Array<NodePart>> getMeshMapFromModelInstance(ModelInstance modelInstance) {
         Map<Mesh, Array<NodePart>> meshMap = new HashMap<>();
-        for(Node node : modelInstance.nodes) {
+        for (Node node : modelInstance.nodes) {
             addNode(node, meshMap);
         }
         return meshMap;
     }
+
     private static void addNode(Node node, Map<Mesh, Array<NodePart>> meshMap) {
-        for(NodePart nodePart : node.parts) {
+        for (NodePart nodePart : node.parts) {
             MeshPart meshPart = nodePart.meshPart;
-            if(!meshMap.containsKey(meshPart.mesh))
+            if (!meshMap.containsKey(meshPart.mesh))
                 meshMap.put(meshPart.mesh, new Array<NodePart>());
             Array<NodePart> nodeParts = meshMap.get(meshPart.mesh);
-            if(!nodeParts.contains(nodePart, true))
+            if (!nodeParts.contains(nodePart, true))
                 nodeParts.add(nodePart);
         }
-        for(Node child : node.getChildren()) {
+        for (Node child : node.getChildren()) {
             addNode(child, meshMap);
         }
     }
@@ -62,31 +64,31 @@ public class ModelUtils {
 
         Model model = new Model();
 
-        for(Material material : other.materials) {
+        for (Material material : other.materials) {
             model.materials.add(material.copy());
         }
 
-        for(Animation animation : other.animations) {
+        for (Animation animation : other.animations) {
             model.animations.add(animation);
         }
 
-        for(Mesh mesh : other.meshes) {
+        for (Mesh mesh : other.meshes) {
             model.meshes.add(copyMesh(mesh));
             model.manageDisposable(mesh);
         }
 
-        for(MeshPart meshPart : other.meshParts) {
+        for (MeshPart meshPart : other.meshParts) {
             model.meshParts.add(copyMeshPart(meshPart, other, model));
         }
 
-        for(Node node : other.nodes) {
+        for (Node node : other.nodes) {
             model.nodes.add(copyNode(node, other, model));
         }
 
         return model;
     }
 
-    public static Node copyNode(final Node other, Model from,  Model target) {
+    public static Node copyNode(final Node other, Model from, Model target) {
         Node node = new Node();
 
         node.id = other.id;
@@ -107,12 +109,12 @@ public class ModelUtils {
         return node;
     }
 
-    public static NodePart copyNodePart(final NodePart other, Model from,  Model target) {
+    public static NodePart copyNodePart(final NodePart other, Model from, Model target) {
         NodePart nodePart = new NodePart();
 
-        if(from != null && target != null) {
+        if (from != null && target != null) {
             int index = from.meshParts.indexOf(other.meshPart, true);
-            if(index != -1 && index < target.meshParts.size)
+            if (index != -1 && index < target.meshParts.size)
                 nodePart.meshPart = target.meshParts.get(index);
             else {
                 nodePart.meshPart = copyMeshPart(other.meshPart, from, target);
@@ -120,7 +122,7 @@ public class ModelUtils {
             }
         } else {
             nodePart.meshPart = copyMeshPart(other.meshPart, from, target);
-            if(target != null) target.meshParts.add(nodePart.meshPart);
+            if (target != null) target.meshParts.add(nodePart.meshPart);
         }
 
         nodePart.meshPart = copyMeshPart(other.meshPart, from, target);
@@ -147,12 +149,12 @@ public class ModelUtils {
         return nodePart;
     }
 
-    public static MeshPart copyMeshPart(final MeshPart other, Model from,  Model target) {
+    public static MeshPart copyMeshPart(final MeshPart other, Model from, Model target) {
         MeshPart meshPart = new MeshPart();
 
-        if(from != null && target != null) {
+        if (from != null && target != null) {
             int index = from.meshes.indexOf(other.mesh, true);
-            if(index != -1 && index < target.meshes.size)
+            if (index != -1 && index < target.meshes.size)
                 meshPart.mesh = target.meshes.get(index);
             else {
                 meshPart.mesh = copyMesh(other.mesh);
@@ -160,7 +162,7 @@ public class ModelUtils {
             }
         } else {
             meshPart.mesh = copyMesh(other.mesh);
-            if(target != null) target.meshes.add(meshPart.mesh);
+            if (target != null) target.meshes.add(meshPart.mesh);
         }
 
         meshPart.id = other.id;

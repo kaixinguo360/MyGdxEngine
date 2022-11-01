@@ -22,6 +22,10 @@ import java.util.List;
 
 public class BooleanEntityUtils {
 
+    private static final BoundingBox bounds = new BoundingBox();
+    private static final Vector3 tmpV = new Vector3();
+    private static final Matrix4 tmpM = new Matrix4();
+
     public static List<Entity> cut(Entity entity, Model cutter, Matrix4 transform, Type type) throws BooleanOperationException {
 
         Node node = cutter.nodes.first();
@@ -30,7 +34,7 @@ public class BooleanEntityUtils {
         List<Entity> newEntities = new ArrayList<>();
         Matrix4 entityTransform = new Matrix4(entity.getComponent(Position.class).getGlobalTransform());
 
-        //创建BoolOperation
+        // 创建BoolOperation
         ModelInstanceBoolOperation bool;
         try {
             bool = new ModelInstanceBoolOperation(instance, reference, transform.cpy().mul(node.localTransform));
@@ -51,9 +55,9 @@ public class BooleanEntityUtils {
         if (type == Type.BOTH || type == Type.INTER) {
             bool.doIntersection();
             ModelInstance intersectionInstance = bool.getNewModelInstance();
-            if(MeshUtils.hasMesh(intersectionInstance)) {
+            if (MeshUtils.hasMesh(intersectionInstance)) {
                 List<ModelInstance> instances = MeshSplitter.splitModeInstances(intersectionInstance);
-                for(ModelInstance newInstance : instances) {
+                for (ModelInstance newInstance : instances) {
                     System.out.println("相交的部分: " + instances.size());
                     newEntities.add(toEntity(entity, entityTransform, newInstance, 10f));
                 }
@@ -110,10 +114,6 @@ public class BooleanEntityUtils {
 
         return newEntity;
     }
-
-    private static final BoundingBox bounds = new BoundingBox();
-    private static final Vector3 tmpV = new Vector3();
-    private static final Matrix4 tmpM = new Matrix4();
 
     public enum Type {
         DIFF, INTER, BOTH

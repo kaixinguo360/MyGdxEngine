@@ -29,48 +29,55 @@ import java.util.Map;
  *
  * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  */
-public class ModelBoolOperation implements Cloneable
-{
+public class ModelBoolOperation implements Cloneable {
     public final static short UNKNOWN = 0;
     public final static short DIFF = 1;
     public final static short INTER = 2;
     public final static short UNION = 4;
-
-    /** 待操作ModelInstance */
-    private ModelInstance instance;
-
-    /** 待操作MeshGroups */
-    private Map<Mesh, MeshGroup> meshGroups;
-
-    /** 待操作MyNodeParts */
-    private Array<MeshGroup.MyNodePart> myNodeParts = new Array<>();
-
-    /** 待操作Mesh序号 */
-    private Map<Mesh, Integer> mapIds = new HashMap<>();
-
-    /** 操作类型 **/
-    private int type = UNKNOWN;
-
-    /** 待操作MeshPart计数 **/
-    private int count = 0;
-
-    /** 参考MyNodePart */
-    private MeshPart referenceMeshPart; //TODO: 直接使用MeshGroup而不是MeshPart到来创建参考Object3D
-
-    /** 初始化attrUtils **/
+    /**
+     * 初始化attrUtils
+     **/
     VertexMixer vertexMixer = new VertexMixer();
+    /**
+     * 待操作ModelInstance
+     */
+    private ModelInstance instance;
+    /**
+     * 待操作MeshGroups
+     */
+    private Map<Mesh, MeshGroup> meshGroups;
+    /**
+     * 待操作MyNodeParts
+     */
+    private Array<MeshGroup.MyNodePart> myNodeParts = new Array<>();
+    /**
+     * 待操作Mesh序号
+     */
+    private final Map<Mesh, Integer> mapIds = new HashMap<>();
+    /**
+     * 操作类型
+     **/
+    private int type = UNKNOWN;
+    /**
+     * 待操作MeshPart计数
+     **/
+    private int count = 0;
+    /**
+     * 参考MyNodePart
+     */
+    private final MeshPart referenceMeshPart; //TODO: 直接使用MeshGroup而不是MeshPart到来创建参考Object3D
 
-	//--------------------------------CONSTRUCTORS----------------------------------//
+    //--------------------------------CONSTRUCTORS----------------------------------//
 
-	/**
-	 * Constructs a MeshGroupBoolOperation object to apply boolean operation in two solids.
-	 * Makes preliminary calculations
-	 *
-	 * @param instance ModelInstance where boolean operations will be applied
-	 * @param reference refer MeshPart where boolean operations will be applied
-	 * @param transform2 transform of the second mesh
-	 */
-	public ModelBoolOperation(ModelInstance instance,
+    /**
+     * Constructs a MeshGroupBoolOperation object to apply boolean operation in two solids.
+     * Makes preliminary calculations
+     *
+     * @param instance   ModelInstance where boolean operations will be applied
+     * @param reference  refer MeshPart where boolean operations will be applied
+     * @param transform2 transform of the second mesh
+     */
+    public ModelBoolOperation(ModelInstance instance,
                               MeshPart reference,
                               Matrix4 transform2) throws BooleanOperationException {
         MyLogger.log(0, "\n*** 开始创建ModelInstanceBoolUtil ***");
@@ -94,7 +101,7 @@ public class ModelBoolOperation implements Cloneable
 
         //开始遍历meshGroups
         int id = 0;
-        for(MeshGroup meshGroup : meshGroups.values()) {
+        for (MeshGroup meshGroup : meshGroups.values()) {
             MyLogger.log(0, "设置meshGroup" + 1);
 
             MyLogger.log(0, "设置输出属性...");
@@ -102,7 +109,7 @@ public class ModelBoolOperation implements Cloneable
 
             //representation to apply boolean operations
             MyLogger.log(0, "设置待操作meshPart...");
-            for(MeshGroup.MyNodePart myNodePart : meshGroup.myNodeParts) {
+            for (MeshGroup.MyNodePart myNodePart : meshGroup.myNodeParts) {
                 myNodeParts.add(myNodePart);
 
                 MyLogger.log(0, "处理meshPart: " + myNodePart.meshPart.id);
@@ -110,7 +117,7 @@ public class ModelBoolOperation implements Cloneable
                 Matrix4 m1 = instance.transform.cpy().mul(myNodePart.node.calculateLocalTransform());
 
                 myNodePart.meshPart.update();
-                if(!isOverlap(myNodePart.meshPart, m1, bound2)) {
+                if (!isOverlap(myNodePart.meshPart, m1, bound2)) {
                     MyLogger.log(0, " ->| 终止 (边界盒未覆盖)");
                     continue;
                 }
@@ -126,17 +133,17 @@ public class ModelBoolOperation implements Cloneable
                 MyLogger.log(0, " -> 正在分割面2");
                 isSplit2 = object2.splitFaces(object1);
 
-                if(isSplit1 || isSplit2) {
+                if (isSplit1 || isSplit2) {
 
                     //classify faces as being inside or outside the other solid
 
                     MyLogger.log(0, " -> 正在分类面1");
-                    if(!object1.classifyFaces(object2)) {
+                    if (!object1.classifyFaces(object2)) {
                         throw new BooleanOperationException("Error!", myNodePart.meshPart, referenceMeshPart);
                     }
 
                     MyLogger.log(0, " -> 正在分类面2");
-                    if(!object2.classifyFaces(object1)) {
+                    if (!object2.classifyFaces(object1)) {
                         throw new BooleanOperationException("Error!", referenceMeshPart, myNodePart.meshPart);
                     }
 
@@ -160,9 +167,9 @@ public class ModelBoolOperation implements Cloneable
         addMesh(referenceMeshPart.mesh);
 
         MyLogger.log(0, "*** 输入设置完毕 ***\n");
-	}
+    }
 
-	private void addMesh(Mesh mesh) {
+    private void addMesh(Mesh mesh) {
         mapIds.put(mesh, mapIds.size());
         vertexMixer.addAttributes(mesh.getVertexAttributes());
     }
@@ -170,7 +177,7 @@ public class ModelBoolOperation implements Cloneable
     /**
      * Set AttrProvider of VertexMixer
      */
-	private void setAttrProvider() {
+    private void setAttrProvider() {
         vertexMixer.setAttrProvider(new VertexMixer.AttrProvider() {
             @Override
             public void setAttr(VertexAttribute v, float x, float y, float z, float[] attrs) {
@@ -212,71 +219,68 @@ public class ModelBoolOperation implements Cloneable
         });
     }
 
-	//-------------------------------BOOLEAN_OPERATIONS-----------------------------//
+    //-------------------------------BOOLEAN_OPERATIONS-----------------------------//
 
 
     /**
      * Do union operation between the input MeshGroups, save the results to each MyPair.
      */
-	public void doUnion()
-	{
+    public void doUnion() {
         type = UNION;
         MyLogger.log(0, "运行doUnion...");
 
-        if(count == 0){
+        if (count == 0) {
             MyLogger.log(0, "待操作MeshPart为0, 直接跳过");
             return;
         }
 
-	    for(MeshGroup.MyNodePart myNodePart : myNodeParts) {
-            if(myNodePart.userObject == null) continue;
+        for (MeshGroup.MyNodePart myNodePart : myNodeParts) {
+            if (myNodePart.userObject == null) continue;
 
             MyPair pair = (MyPair) myNodePart.userObject;
             Object3D object1 = pair.object1;
             Object3D object2 = pair.object2;
             pair.verData = composeMesh(object1, object2, Face.OUTSIDE, Face.SAME, Face.OUTSIDE);
         }
-	}
+    }
 
 
     /**
      * Do intersection operation between the input MeshGroups, save the results to each MyPair.
      */
-	public void doIntersection()
-	{
+    public void doIntersection() {
         type = INTER;
         MyLogger.log(0, "运行doIntersection...");
 
-        if(count == 0){
+        if (count == 0) {
             MyLogger.log(0, "待操作MeshPart为0, 直接跳过");
             return;
         }
 
-        for(MeshGroup.MyNodePart myNodePart : myNodeParts) {
-            if(myNodePart.userObject == null) continue;
+        for (MeshGroup.MyNodePart myNodePart : myNodeParts) {
+            if (myNodePart.userObject == null) continue;
 
             MyPair pair = (MyPair) myNodePart.userObject;
             Object3D object1 = pair.object1;
             Object3D object2 = pair.object2;
             pair.verData = composeMesh(object1, object2, Face.INSIDE, Face.SAME, Face.INSIDE);
         }
-	}
+    }
 
-	/**
+    /**
      * Do difference operation between the input MeshGroups, save the results to each MyPair.
-	 */
-	public void doDifference()
-	{
+     */
+    public void doDifference() {
         type = DIFF;
         MyLogger.log(0, "运行doDifference...");
 
-        if(count == 0){
+        if (count == 0) {
             MyLogger.log(0, "待操作MeshPart为0, 直接跳过");
             return;
         }
 
-        for(MeshGroup.MyNodePart myNodePart : myNodeParts) {
-            if(myNodePart.userObject == null) continue;
+        for (MeshGroup.MyNodePart myNodePart : myNodeParts) {
+            if (myNodePart.userObject == null) continue;
 
             MyPair pair = (MyPair) myNodePart.userObject;
             Object3D object1 = pair.object1;
@@ -286,13 +290,14 @@ public class ModelBoolOperation implements Cloneable
             pair.verData = composeMesh(object1, object2, Face.OUTSIDE, Face.OPPOSITE, Face.INSIDE);
             object2.invertInsideFaces();
         }
-	}
+    }
 
 
     //-------------------------------OUTPUT-----------------------------//
 
     /**
      * Get the type of this boolean operation.
+     *
      * @return The type of this boolean operation
      */
     public int getType() {
@@ -309,12 +314,12 @@ public class ModelBoolOperation implements Cloneable
         int allVerNum = 0;
         int allIndexNum = 0;
         int verSize = vertexMixer.getTargetVertexSize();
-        for(MeshGroup.MyNodePart myNodePart : myNodeParts) {
-            if(myNodePart.userObject == null) continue;
+        for (MeshGroup.MyNodePart myNodePart : myNodeParts) {
+            if (myNodePart.userObject == null) continue;
 
             MyVerData verData = ((MyPair) myNodePart.userObject).verData;
             //如果verData为空
-            if(verData == null) {
+            if (verData == null) {
                 continue;
             }
             allVerNum += verData.vertexNum;
@@ -331,14 +336,14 @@ public class ModelBoolOperation implements Cloneable
 
         int vsOffset = 0;
         int isOffset = 0;
-        for(MeshGroup.MyNodePart myNodePart : myNodeParts) {
-            if(myNodePart.userObject == null) continue;
+        for (MeshGroup.MyNodePart myNodePart : myNodeParts) {
+            if (myNodePart.userObject == null) continue;
 
             MyPair pair = (MyPair) myNodePart.userObject;
             MyVerData verData = pair.verData;
 
             //如果verData为空
-            if(verData == null) {
+            if (verData == null) {
                 continue;
             }
 
@@ -365,13 +370,13 @@ public class ModelBoolOperation implements Cloneable
 
         //令每一个MeshPart使用新Mesh
         int tmpOffset = 0;
-        for(MeshGroup.MyNodePart myNodePart : myNodeParts) {
-            if(myNodePart.userObject == null) continue;
+        for (MeshGroup.MyNodePart myNodePart : myNodeParts) {
+            if (myNodePart.userObject == null) continue;
 
             MyVerData verData = ((MyPair) myNodePart.userObject).verData;
 
             //如果verData为空
-            if(verData == null) {
+            if (verData == null) {
                 MyLogger.log(0, "删除meshPart: " + myNodePart.meshPart.id);
                 myNodePart.node.parts.removeValue(myNodePart.nodePart, true);
             } else {
@@ -405,14 +410,14 @@ public class ModelBoolOperation implements Cloneable
         //覆盖原变量
         this.instance = instance.copy();
         this.meshGroups = MeshGroup.getMeshGroupsFromModelInstance(instance);
-        for(MeshGroup meshGroup : meshGroups_old.values()) {
+        for (MeshGroup meshGroup : meshGroups_old.values()) {
             MeshGroup newMeshGroup = meshGroups.get(meshGroup.mesh);
             assert (newMeshGroup != null);
             boolean isCopied;
-            for(MeshGroup.MyNodePart myNodePart : meshGroup.myNodeParts) {
-                isCopied = false;;
-                for(MeshGroup.MyNodePart newMyNodePart : newMeshGroup.myNodeParts) {
-                    if(!myNodePart.meshPart.id.equals(newMyNodePart.meshPart.id))
+            for (MeshGroup.MyNodePart myNodePart : meshGroup.myNodeParts) {
+                isCopied = false;
+                for (MeshGroup.MyNodePart newMyNodePart : newMeshGroup.myNodeParts) {
+                    if (!myNodePart.meshPart.id.equals(newMyNodePart.meshPart.id))
                         continue;
                     newMyNodePart.userObject = myNodePart.userObject;
                     isCopied = true;
@@ -422,10 +427,10 @@ public class ModelBoolOperation implements Cloneable
             }
         }
         this.myNodeParts = new Array<>();
-        for(MeshGroup.MyNodePart myNodePart : myNodeParts_old) {
-            for(MeshGroup newMeshGroup : meshGroups.values()) {
-                for(MeshGroup.MyNodePart newMyNodePart : newMeshGroup.myNodeParts) {
-                    if(!myNodePart.meshPart.id.equals(newMyNodePart.meshPart.id))
+        for (MeshGroup.MyNodePart myNodePart : myNodeParts_old) {
+            for (MeshGroup newMeshGroup : meshGroups.values()) {
+                for (MeshGroup.MyNodePart newMyNodePart : newMeshGroup.myNodeParts) {
+                    if (!myNodePart.meshPart.id.equals(newMyNodePart.meshPart.id))
                         continue;
                     myNodeParts.add(newMyNodePart);
                     break;
@@ -446,62 +451,58 @@ public class ModelBoolOperation implements Cloneable
         return newInstance;
     }
 
-	//--------------------------PRIVATES--------------------------------------------//
+    //--------------------------PRIVATES--------------------------------------------//
 
-	/**
-	 * Composes a Mesh based on the faces status of the two operators solids:
-	 * Face.INSIDE, Face.OUTSIDE, Face.SAME, Face.OPPOSITE
-	 *
-	 * @param faceStatus1 status expected for the first solid faces
-	 * @param faceStatus2 other status expected for the first solid faces
-	 * (expected a status for the faces coincident with second solid faces)
-	 * @param faceStatus3 status expected for the second solid faces
-	 */
-	private MyVerData composeMesh(Object3D object1, Object3D object2, int faceStatus1, int faceStatus2, int faceStatus3)
-	{
-	    MyLogger.log(0, "运行composeMesh...");
+    /**
+     * Composes a Mesh based on the faces status of the two operators solids:
+     * Face.INSIDE, Face.OUTSIDE, Face.SAME, Face.OPPOSITE
+     *
+     * @param faceStatus1 status expected for the first solid faces
+     * @param faceStatus2 other status expected for the first solid faces
+     *                    (expected a status for the faces coincident with second solid faces)
+     * @param faceStatus3 status expected for the second solid faces
+     */
+    private MyVerData composeMesh(Object3D object1, Object3D object2, int faceStatus1, int faceStatus2, int faceStatus3) {
+        MyLogger.log(0, "运行composeMesh...");
 
-		ArrayList<Vertex> vertices = new ArrayList<>();
-		ArrayList<Integer> indices = new ArrayList<>();
-		ArrayList<VertexData> datas = new ArrayList<>();
+        ArrayList<Vertex> vertices = new ArrayList<>();
+        ArrayList<Integer> indices = new ArrayList<>();
+        ArrayList<VertexData> datas = new ArrayList<>();
 
-		//group the elements of the two solids whose faces fit with the desired status
-		groupObjectComponents(object1, vertices, indices, datas, faceStatus1, faceStatus2);
-		groupObjectComponents(object2, vertices, indices, datas, faceStatus3, faceStatus3);
+        //group the elements of the two solids whose faces fit with the desired status
+        groupObjectComponents(object1, vertices, indices, datas, faceStatus1, faceStatus2);
+        groupObjectComponents(object2, vertices, indices, datas, faceStatus3, faceStatus3);
 
-        if(indices.size() == 0) {
+        if (indices.size() == 0) {
             return null;
         }
 
-		//returns the solid containing the grouped elements
-		return new MyVerData(vertices, indices, datas);
-	}
+        //returns the solid containing the grouped elements
+        return new MyVerData(vertices, indices, datas);
+    }
 
-	/**
-	 * Fills solid arrays with data about faces of an object generated whose status
-	 * is as required
-	 *
-	 * @param object solid object used to fill the arrays
-	 * @param vertices vertices array to be filled
-	 * @param indices indices array to be filled
-	 * @param datas datas array to be filled
-	 * @param faceStatus1 a status expected for the faces used to to fill the data arrays
-	 * @param faceStatus2 a status expected for the faces used to to fill the data arrays
-	 */
-	private void groupObjectComponents(Object3D object, ArrayList<Vertex> vertices, ArrayList<Integer> indices, ArrayList<VertexData> datas, int faceStatus1, int faceStatus2)
-	{
+    /**
+     * Fills solid arrays with data about faces of an object generated whose status
+     * is as required
+     *
+     * @param object      solid object used to fill the arrays
+     * @param vertices    vertices array to be filled
+     * @param indices     indices array to be filled
+     * @param datas       datas array to be filled
+     * @param faceStatus1 a status expected for the faces used to to fill the data arrays
+     * @param faceStatus2 a status expected for the faces used to to fill the data arrays
+     */
+    private void groupObjectComponents(Object3D object, ArrayList<Vertex> vertices, ArrayList<Integer> indices, ArrayList<VertexData> datas, int faceStatus1, int faceStatus2) {
         MyLogger.log(0, "运行groupObjectComponents...");
 
-		Face face;
-		//for each face..
-		for(int i=0;i<object.getNumFaces();i++)
-		{
-			face = object.getFace(i);
-			//if the face status fits with the desired status...
-			if(face.getStatus()==faceStatus1 || face.getStatus()==faceStatus2)
-			{
-				//adds the face elements into the arrays
-				Vertex[] faceVerts = {face.v1, face.v2, face.v3};
+        Face face;
+        //for each face..
+        for (int i = 0; i < object.getNumFaces(); i++) {
+            face = object.getFace(i);
+            //if the face status fits with the desired status...
+            if (face.getStatus() == faceStatus1 || face.getStatus() == faceStatus2) {
+                //adds the face elements into the arrays
+                Vertex[] faceVerts = {face.v1, face.v2, face.v3};
                 for (Vertex faceVert : faceVerts) {
                     if (vertices.contains(faceVert)) {
                         indices.add(vertices.indexOf(faceVert));
@@ -511,26 +512,25 @@ public class ModelBoolOperation implements Cloneable
                         datas.add(faceVert.getData());
                     }
                 }
-			}
-		}
-	}
+            }
+        }
+    }
 
     /**
      * Test the input MeshPart and Bound is overlapped or not
-     * @param meshPart input MeshPart
+     *
+     * @param meshPart  input MeshPart
      * @param transform transform of the input MeshPart
-     * @param bound input Bound
+     * @param bound     input Bound
      * @return is overlapped or not
      */
     private boolean isOverlap(MeshPart meshPart, Matrix4 transform, Bound bound) {
         float radius = meshPart.radius;
         Vector3 center = new Vector3(meshPart.center).mul(transform);
 
-        if(center.x > bound.xMax + radius || center.x < bound.xMin - radius) return false;
-        if(center.y > bound.yMax + radius || center.y < bound.yMin - radius) return false;
-        if(center.z > bound.zMax + radius || center.z < bound.zMin - radius) return false;
-
-        return true;
+        if (center.x > bound.xMax + radius || center.x < bound.xMin - radius) return false;
+        if (center.y > bound.yMax + radius || center.y < bound.yMin - radius) return false;
+        return !(center.z > bound.zMax + radius) && !(center.z < bound.zMin - radius);
     }
 
     //-------------------------- Inner Class --------------------------------------------//
@@ -577,15 +577,15 @@ public class ModelBoolOperation implements Cloneable
             //复制顶点数据
             Vector3 tmpV = new Vector3();
             vertexMixer.begin(vertexNum);
-            for(int i = 0; i< vertexNum; i++) {
+            for (int i = 0; i < vertexNum; i++) {
                 vertices.get(i).toVector3(tmpV);
                 tmpV.mul(transform);
                 VertexData data = datas.get(i);
 
                 Mesh mesh = data.getMesh();
-                if(mesh != null && mapIds.containsKey(data.getMesh())) {
+                if (mesh != null && mapIds.containsKey(data.getMesh())) {
                     int id = mapIds.get(data.getMesh());
-                    if(id >= 0)
+                    if (id >= 0)
                         vertexMixer.addVertex(id, data.getData(), tmpV);
                     else
                         vertexMixer.addVertex(tmpV);
@@ -598,12 +598,12 @@ public class ModelBoolOperation implements Cloneable
             //复制索引数据
             int max = 0,
                     min = Integer.MAX_VALUE;
-            for(int i=0; i<indexs.size(); i++) {
-                if(indexs.get(i) + vsOffset > Short.MAX_VALUE) {
+            for (int i = 0; i < indexs.size(); i++) {
+                if (indexs.get(i) + vsOffset > Short.MAX_VALUE) {
                     throw new RuntimeException("Index Is Too Bigger!");
                 }
-                if(indexs.get(i) < min) min = indexs.get(i);
-                if(indexs.get(i) > max) max = indexs.get(i);
+                if (indexs.get(i) < min) min = indexs.get(i);
+                if (indexs.get(i) > max) max = indexs.get(i);
                 is[isOffset + i] = (short) (indexs.get(i) + vsOffset);
             }
             MyLogger.log(0, "MIN: " + (min + vsOffset) + ", MAX: " + (max + vsOffset));
