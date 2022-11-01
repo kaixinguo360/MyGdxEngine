@@ -37,17 +37,17 @@ public class MeshUtil {
 
     public static void mergeMeshPart(ModelInstance instance) {
         Map<Mesh, MeshGroup> meshGroups = MeshGroup.getMeshGroups(instance);
-        Array<MeshGroup.BoolNodePart> boolNodeParts = new Array<>();
+        Array<MeshGroup.MeshNodePart> meshNodeParts = new Array<>();
 
         for (Map.Entry<Mesh, MeshGroup> entry : meshGroups.entrySet()) {
-            MeshGroup.BoolNodePart firstNodePart = entry.getValue().boolNodeParts.first();
-            boolNodeParts.add(firstNodePart);
+            MeshGroup.MeshNodePart firstNodePart = entry.getValue().meshNodeParts.first();
+            meshNodeParts.add(firstNodePart);
         }
 
         instance.nodes.clear();
 
-        for (MeshGroup.BoolNodePart boolNodePart : boolNodeParts) {
-            Node node = boolNodePart.node;
+        for (MeshGroup.MeshNodePart meshNodePart : meshNodeParts) {
+            Node node = meshNodePart.node;
             node.detach();
 
             node.translation.setZero();
@@ -57,9 +57,9 @@ public class MeshUtil {
             node.calculateLocalTransform();
 
             node.parts.clear();
-            node.parts.add(boolNodePart.nodePart);
+            node.parts.add(meshNodePart.nodePart);
 
-            MeshPart meshPart = boolNodePart.meshPart;
+            MeshPart meshPart = meshNodePart.meshPart;
             meshPart.set(meshPart.id, meshPart.mesh, 0, meshPart.mesh.getNumIndices(), meshPart.primitiveType);
 
             instance.nodes.add(node);
@@ -71,7 +71,7 @@ public class MeshUtil {
 
         if (meshGroups.size() == 1) {
             for (MeshGroup meshGroup : meshGroups.values()) {
-                if (meshGroup.boolNodeParts.size != 1)
+                if (meshGroup.meshNodeParts.size != 1)
                     return false;
             }
             return true;

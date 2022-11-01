@@ -62,8 +62,8 @@ public class BoneUtil {
             }
 
             MeshGroup NodeParts = entry.getValue(); // 初始化NodeParts数组
-            for (MeshGroup.BoolNodePart boolNodePart : entry.getValue().boolNodeParts) { // 遍历NodeParts数组
-                NodePart nodePart = boolNodePart.nodePart;
+            for (MeshGroup.MeshNodePart meshNodePart : entry.getValue().meshNodeParts) { // 遍历NodeParts数组
+                NodePart nodePart = meshNodePart.nodePart;
                 MeshPart meshPart = nodePart.meshPart;
 
                 short[] indices = new short[meshPart.size]; // 获取索引数组 - MeshPart
@@ -113,7 +113,7 @@ public class BoneUtil {
 //                            tmpV.y + ", " +
 //                            tmpV.z + ") ");
                         if (!mergeMeshPart) {
-                            tmpM.set(boolNodePart.node.localTransform);
+                            tmpM.set(meshNodePart.node.localTransform);
                             tmpV.mul(tmpM.inv());
                         }
                         tmpV.mul(transform);
@@ -194,8 +194,8 @@ public class BoneUtil {
             newMesh.setIndices(tmpS);
 
             // 应用新Mesh到每个MeshPart
-            for (MeshGroup.BoolNodePart boolNodePart : entry.getValue().boolNodeParts) { // 遍历NodeParts数组
-                NodePart nodePart = boolNodePart.nodePart;
+            for (MeshGroup.MeshNodePart meshNodePart : entry.getValue().meshNodeParts) { // 遍历NodeParts数组
+                NodePart nodePart = meshNodePart.nodePart;
                 MeshPart meshPart = nodePart.meshPart;
                 meshPart.set(meshPart.id, newMesh, meshPart.offset, meshPart.size, meshPart.primitiveType);
                 meshPart.update();

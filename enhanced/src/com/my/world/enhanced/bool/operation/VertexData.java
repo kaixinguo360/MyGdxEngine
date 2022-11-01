@@ -4,40 +4,17 @@ import com.badlogic.gdx.graphics.Mesh;
 
 public class VertexData {
 
-    private float[] data = null;
-    private Mesh mesh = null;
+    public float[] values;
+    public Mesh mesh;
 
-    public VertexData(float[] data, Mesh mesh) {
-        this.data = data;
+    public VertexData(float[] values, Mesh mesh) {
+        this.values = values;
         this.mesh = mesh;
     }
-
-
-    //---------------------------------- Getter --------------------------------------//
-
-    public float[] getData() {
-        return data;
-    }
-
-    public Mesh getMesh() {
-        return mesh;
-    }
-
-
-    //---------------------------------- Setter --------------------------------------//
-
-    public void setData(float[] data, Mesh mesh) {
-        this.data = data;
-        this.mesh = mesh;
-    }
-
-
-    //---------------------------------- Override --------------------------------------//
 
     @Override
     public Object clone() {
-        float[] data = this.data.clone();
-        return new VertexData(data, this.mesh);
+        return new VertexData(values.clone(), mesh);
     }
 
     @Override
@@ -47,6 +24,6 @@ public class VertexData {
         if (getClass() != obj.getClass()) return false;
         VertexData other = (VertexData) obj;
         if (this.mesh != other.mesh) return false;
-        return this.data == other.data; // TODO: 两个MyData怎么才算相等?
+        return this.values == other.values; // TODO: 两个MyData怎么才算相等?
     }
 }

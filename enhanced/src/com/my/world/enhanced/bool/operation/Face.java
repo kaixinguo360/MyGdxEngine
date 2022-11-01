@@ -245,7 +245,7 @@ public class Face implements Cloneable {
 
         normal = new VectorD();
         normal.cross(xy, xz);
-        normal.normalize();
+        normal.nor();
 
         return normal;
     }
@@ -274,8 +274,8 @@ public class Face implements Cloneable {
         VectorD xy = new VectorD(p2.x - p1.x, p2.y - p1.y, p2.z - p1.z);
         VectorD xz = new VectorD(p3.x - p1.x, p3.y - p1.y, p3.z - p1.z);
 
-        double a = p1.distance(p2);
-        double c = p1.distance(p3);
+        double a = p1.dst(p2);
+        double c = p1.dst(p3);
         double B = xy.angle(xz);
 
         return (a * c * Math.sin(B)) / 2d;
@@ -319,9 +319,9 @@ public class Face implements Cloneable {
     /**
      * Classifies the face based on the ray trace technique
      *
-     * @param object object3d used to compute the face status
+     * @param solid solid used to compute the face status
      */
-    public void rayTraceClassify(Object3D object) throws BooleanOperationException {
+    public void rayTraceClassify(Solid solid) throws BooleanOperationException {
         // creating a ray starting starting at the face baricenter going to the normal direction
         VectorD p0 = new VectorD();
         p0.x = (v1.x + v2.x + v3.x) / 3d;
@@ -340,8 +340,8 @@ public class Face implements Cloneable {
             success = true;
             closestDistance = Double.MAX_VALUE;
             // for each face from the other solid...
-            for (int i = 0; i < object.getNumFaces(); i++) {
-                Face face = object.getFace(i);
+            for (int i = 0; i < solid.getNumFaces(); i++) {
+                Face face = solid.getFace(i);
                 dotProduct = face.getNormal().dot(ray.getDirection());
                 intersectionPoint = ray.computePlaneIntersection(face.getNormal(), face.v1.getPosition());
 

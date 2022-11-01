@@ -59,7 +59,7 @@ public class Bound {
     }
 
     /**
-     * Bound constructor for a object 3d
+     * Bound constructor for a solid
      *
      * @param vertices the object vertices
      */

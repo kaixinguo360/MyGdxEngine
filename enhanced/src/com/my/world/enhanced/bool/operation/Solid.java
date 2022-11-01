@@ -14,7 +14,7 @@ import java.util.ArrayList;
 /**
  * Data structure about a 3d solid to apply boolean operations in it.
  *
- * <br><br>Tipically, two 'Object3d' objects are created to apply boolean operation. The
+ * <br><br>Tipically, two 'Solid' objects are created to apply boolean operation. The
  * methods splitFaces() and classifyFaces() are called in this sequence for both objects,
  * always using the other one as parameter. Then the faces from both objects are collected
  * according their status.
@@ -26,7 +26,7 @@ import java.util.ArrayList;
  *
  * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  */
-public class Object3D implements Cloneable {
+public class Solid implements Cloneable {
     /**
      * tolerance value to test equalities
      */
@@ -47,15 +47,15 @@ public class Object3D implements Cloneable {
     //----------------------------------CONSTRUCTOR---------------------------------//
 
     /**
-     * Constructs a Object3d object based on a mesh.
+     * Constructs a Solid object based on a mesh.
      *
-     * @param mesh      mesh used to construct the Object3d object
+     * @param mesh      mesh used to construct the Solid object
      * @param transform transform of the mesh
      */
-    public Object3D(Mesh mesh, Matrix4 transform) {
+    public Solid(Mesh mesh, Matrix4 transform) {
         Vector3 tmpV = new Vector3();
         Vertex v1, v2, v3, vertex;
-        vertices = new ArrayList();
+        vertices = new ArrayList<>();
 
         // 获取顶点属性
         int offsetPosition = 0; // 获取顶点偏移: 位置
@@ -73,7 +73,7 @@ public class Object3D implements Cloneable {
         float[] vers = new float[vertexSize * numVertices]; // 读取全部顶点数组 - Mesh
         mesh.getVertices(vers);
         VectorD[] verticesPoints = new VectorD[numVertices];
-        ArrayList verticesTemp = new ArrayList();
+        ArrayList<Vertex> verticesTemp = new ArrayList<>();
         for (int i = 0; i < numVertices; i++) {
             int offsetVertex = i * vertexSize,
                     x = offsetVertex + offsetPosition,
@@ -82,7 +82,7 @@ public class Object3D implements Cloneable {
 
             // 获取顶点xyz坐标
             tmpV.set(vers[x], vers[y], vers[z]).mul(transform);
-            VectorD pos = new VectorD().setFromVector3(tmpV);
+            VectorD pos = new VectorD().set(tmpV);
 
             // 复制顶点数据到MyData对象
             float[] dataArray = new float[vertexSize];
@@ -106,11 +106,11 @@ public class Object3D implements Cloneable {
         // indices数组获取完毕
 
         // create faces
-        faces = new ArrayList();
+        faces = new ArrayList<>();
         for (int i = 0; i < indices.length; i = i + 3) {
-            v1 = (Vertex) verticesTemp.get(indices[i]);
-            v2 = (Vertex) verticesTemp.get(indices[i + 1]);
-            v3 = (Vertex) verticesTemp.get(indices[i + 2]);
+            v1 = verticesTemp.get(indices[i]);
+            v2 = verticesTemp.get(indices[i + 1]);
+            v3 = verticesTemp.get(indices[i + 2]);
             addFace(v1, v2, v3);
         }
 
@@ -119,12 +119,12 @@ public class Object3D implements Cloneable {
     }
 
     /**
-     * Constructs a Object3d object based on a mesh.
+     * Constructs a Solid object based on a mesh.
      *
-     * @param meshPart  meshPart used to construct the Object3d object
+     * @param meshPart  meshPart used to construct the Solid object
      * @param transform transform of the mesh
      */
-    public Object3D(MeshPart meshPart, Matrix4 transform) {
+    public Solid(MeshPart meshPart, Matrix4 transform) {
         assert (meshPart.primitiveType == GL20.GL_TRIANGLES) : "meshPart.primitiveType Not Equals 'GL20.GL_TRIANGLES' !";
 
         Vector3 tmpV = new Vector3();
@@ -150,7 +150,7 @@ public class Object3D implements Cloneable {
         float[] vers = new float[vertexSize * numVertices]; // 读取全部顶点数组 - Mesh
         mesh.getVertices(vers);
         VectorD[] verticesPoints = new VectorD[numVertices];
-        ArrayList verticesTemp = new ArrayList();
+        ArrayList<Vertex> verticesTemp = new ArrayList<>();
         for (int i = 0; i < numVertices; i++) {
             int offsetVertex = i * vertexSize,
                     x = offsetVertex + offsetPosition,
@@ -159,7 +159,7 @@ public class Object3D implements Cloneable {
 
             // 获取顶点xyz坐标
             tmpV.set(vers[x], vers[y], vers[z]).mul(transform);
-            VectorD pos = new VectorD().setFromVector3(tmpV);
+            VectorD pos = new VectorD().set(tmpV);
 
             // 复制顶点数据到MyData对象
             float[] dataArray = new float[vertexSize];
@@ -184,11 +184,11 @@ public class Object3D implements Cloneable {
         // indices数组获取完毕
 
         // create faces
-        faces = new ArrayList();
+        faces = new ArrayList<>();
         for (int i = 0; i < indices.length; i = i + 3) {
-            v1 = (Vertex) verticesTemp.get(indices[i]);
-            v2 = (Vertex) verticesTemp.get(indices[i + 1]);
-            v3 = (Vertex) verticesTemp.get(indices[i + 2]);
+            v1 = verticesTemp.get(indices[i]);
+            v2 = verticesTemp.get(indices[i + 1]);
+            v3 = verticesTemp.get(indices[i + 2]);
             addFace(v1, v2, v3);
         }
 
@@ -199,18 +199,18 @@ public class Object3D implements Cloneable {
     //-----------------------------------OVERRIDES----------------------------------//
 
     /**
-     * Clones the Object3D object
+     * Clones the Solid object
      *
-     * @return cloned Object3D object
+     * @return cloned Solid object
      */
     public Object clone() {
         try {
-            Object3D clone = (Object3D) super.clone();
-            clone.vertices = new ArrayList();
+            Solid clone = (Solid) super.clone();
+            clone.vertices = new ArrayList<>();
             for (int i = 0; i < vertices.size(); i++) {
                 clone.vertices.add((Vertex) vertices.get(i).clone());
             }
-            clone.faces = new ArrayList();
+            clone.faces = new ArrayList<>();
             for (int i = 0; i < faces.size(); i++) {
                 clone.faces.add((Face) faces.get(i).clone());
             }
@@ -310,9 +310,9 @@ public class Object3D implements Cloneable {
     /**
      * Split faces so that none face is intercepted by a face of other object
      *
-     * @param object the other object 3d used to make the split
+     * @param solid the other solid used to make the split
      */
-    public boolean splitFaces(Object3D object) {
+    public boolean splitFaces(Solid solid) {
         Line line;
         Face face1, face2;
         Segment[] segments;
@@ -322,13 +322,13 @@ public class Object3D implements Cloneable {
         int signFace1Vert1, signFace1Vert2, signFace1Vert3, signFace2Vert1, signFace2Vert2, signFace2Vert3;
         int numFacesBefore = getNumFaces();
         int numFacesStart = getNumFaces();
-        int numFacesMax = (numFacesStart > object.getNumFaces()) ? numFacesStart : object.getNumFaces();
+        int numFacesMax = (numFacesStart > solid.getNumFaces()) ? numFacesStart : solid.getNumFaces();
         int facesIgnored = 0;
         int repeat = 0; // 防止死循环
         boolean isChanged = false;
 
         // if the objects bounds overlap...
-        if (getBound().overlap(object.getBound())) {
+        if (getBound().overlap(solid.getBound())) {
             isChanged = true;
 
             // for each object1 face...
@@ -338,11 +338,11 @@ public class Object3D implements Cloneable {
 
                 numFacesBefore = getNumFaces(); // 防止死循环
 
-                if (face1.getBound().overlap(object.getBound())) {
+                if (face1.getBound().overlap(solid.getBound())) {
                     // for each object2 face...
-                    for (int j = 0; j < object.getNumFaces(); j++) {
+                    for (int j = 0; j < solid.getNumFaces(); j++) {
                         // if object1 face bound and object2 face bound overlap...
-                        face2 = object.getFace(j);
+                        face2 = solid.getFace(j);
                         if (face1.getBound().overlap(face2.getBound())) {
                             // PART I - DO TWO POLIGONS INTERSECT?
                             // POSSIBLE RESULTS: INTERSECT, NOT_INTERSECT, COPLANAR
@@ -519,13 +519,11 @@ public class Object3D implements Cloneable {
             // VERTEX-EDGE-EDGE
             if (startType == Segment.VERTEX) {
                 breakFaceInTwo(facePos, endPos, splitEdge);
-                return;
             }
 
             // EDGE-EDGE-VERTEX
             else if (endType == Segment.VERTEX) {
                 breakFaceInTwo(facePos, startPos, splitEdge);
-                return;
             }
 
             // EDGE-EDGE-EDGE
@@ -584,13 +582,13 @@ public class Object3D implements Cloneable {
             int linedVertex;
             VectorD linedVertexPos;
             VectorD vertexVector = new VectorD(endPos.x - face.v1.x, endPos.y - face.v1.y, endPos.z - face.v1.z);
-            vertexVector.normalize();
+            vertexVector.nor();
             double dot1 = Math.abs(segmentVector.dot(vertexVector));
             vertexVector = new VectorD(endPos.x - face.v2.x, endPos.y - face.v2.y, endPos.z - face.v2.z);
-            vertexVector.normalize();
+            vertexVector.nor();
             double dot2 = Math.abs(segmentVector.dot(vertexVector));
             vertexVector = new VectorD(endPos.x - face.v3.x, endPos.y - face.v3.y, endPos.z - face.v3.z);
-            vertexVector.normalize();
+            vertexVector.nor();
             double dot3 = Math.abs(segmentVector.dot(vertexVector));
             if (dot1 > dot2 && dot1 > dot3) {
                 linedVertex = 1;
@@ -604,7 +602,7 @@ public class Object3D implements Cloneable {
             }
 
             // Now find which of the intersection endpoints is nearest to that vertex.
-            if (linedVertexPos.distance(startPos) > linedVertexPos.distance(endPos)) {
+            if (linedVertexPos.dst(startPos) > linedVertexPos.dst(endPos)) {
                 breakFaceInFive(facePos, startPos, endPos, linedVertex);
             } else {
                 breakFaceInFive(facePos, endPos, startPos, linedVertex);
@@ -855,9 +853,9 @@ public class Object3D implements Cloneable {
     /**
      * Classify faces as being inside, outside or on boundary of other object
      *
-     * @param object object 3d used for the comparison
+     * @param solid solid used for the comparison
      */
-    public boolean classifyFaces(Object3D object) throws BooleanOperationException {
+    public boolean classifyFaces(Solid solid) throws BooleanOperationException {
         // calculate adjacency information
         Face face;
         for (int i = 0; i < this.getNumFaces(); i++) {
@@ -877,7 +875,7 @@ public class Object3D implements Cloneable {
             // if the face vertices aren't classified to make the simple classify
             if (!face.simpleClassify()) {
                 // makes the ray trace classification
-                face.rayTraceClassify(object); // 可能死循环
+                face.rayTraceClassify(solid); // 可能死循环
 
                 // mark the vertices
                 if (face.v1.getStatus() == Vertex.UNKNOWN) {
