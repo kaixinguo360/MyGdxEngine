@@ -34,6 +34,10 @@ public class ModelInstanceBoolOperation {
     public final static short DIFF = 1;
     public final static short INTER = 2;
     public final static short UNION = 4;
+
+    private static final Vector3 tmpV = new Vector3();
+    private static final Matrix4 tmpM = new Matrix4();
+
     /**
      * 是否应该跳过
      **/
@@ -84,8 +88,8 @@ public class ModelInstanceBoolOperation {
 
         // Setup Reference Object
         LoggerUtil.log(0, "参考物体: " + reference.id);
-        Matrix4 referenceTransform = transform2.cpy();
-        Solid referenceSolid = new Solid(reference, referenceTransform);
+        Matrix4 referenceTransform = tmpM.set(transform2);
+        Solid referenceSolid = Solid.obtain(reference, referenceTransform);
         Bound referenceBound = referenceSolid.getBound();
 
         // Setup Target Object
@@ -111,7 +115,7 @@ public class ModelInstanceBoolOperation {
                 }
 
                 LoggerUtil.log(0, "      正在创建Solid...");
-                Solid solid1 = new Solid(meshNodePart.meshPart, meshNodePartTransform);
+                Solid solid1 = Solid.obtain(meshNodePart.meshPart, meshNodePartTransform);
                 Solid solid2 = (Solid) referenceSolid.clone();
 
                 // split the faces so that none of them intercepts each other
@@ -515,7 +519,7 @@ public class ModelInstanceBoolOperation {
     private boolean isOverlap(MeshPart meshPart, Matrix4 transform, Bound bound) {
         meshPart.update();
         float radius = meshPart.radius;
-        Vector3 center = new Vector3(meshPart.center).mul(transform);
+        Vector3 center = tmpV.set(meshPart.center).mul(transform);
 
         if (center.x > bound.xMax + radius || center.x < bound.xMin - radius) return false;
         if (center.y > bound.yMax + radius || center.y < bound.yMin - radius) return false;

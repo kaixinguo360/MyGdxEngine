@@ -63,7 +63,7 @@ public class MeshSplitter {
             // 复制顶点数据到MyData对象
             float[] dataArray = new float[vertexSize];
             System.arraycopy(vers, offsetVertex, dataArray, 0, vertexSize);
-            VertexData data = new VertexData(dataArray, mesh);
+            VertexData data = VertexData.obtain(dataArray, mesh);
 
             verticesPoints[i] = pos;
             vertex = addVertex(pos, data);
