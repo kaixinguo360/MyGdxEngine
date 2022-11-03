@@ -1,6 +1,7 @@
 package com.my.world.enhanced.bool.operation;
 
 import com.badlogic.gdx.math.Vector3;
+import com.my.world.enhanced.bool.util.NumberUtil;
 
 import java.util.ArrayList;
 
@@ -33,10 +34,6 @@ public class Vertex implements Cloneable {
      */
     public static final int BOUNDARY = 4;
 
-    /**
-     * tolerance value to test equalities
-     */
-    private static final double TOL = 1e-5f;
     /**
      * vertex coordinate in X
      */
@@ -160,8 +157,8 @@ public class Vertex implements Cloneable {
             return false;
         } else {
             Vertex vertex = (Vertex) anObject;
-            return Math.abs(x - vertex.x) < TOL && Math.abs(y - vertex.y) < TOL
-                    && Math.abs(z - vertex.z) < TOL && data.equals(vertex.data);
+            return Math.abs(x - vertex.x) < NumberUtil.fTOL && Math.abs(y - vertex.y) < NumberUtil.fTOL
+                    && Math.abs(z - vertex.z) < NumberUtil.fTOL && data.equals(vertex.data);
         }
     }
 

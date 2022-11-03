@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static com.my.world.enhanced.bool.util.NumberUtil.fTOL;
+
 public class MeshSplitter {
 
     // 原始Mesh
@@ -309,7 +311,6 @@ public class MeshSplitter {
     ////////////////////////////////
 
     private class Vertex {
-        private static final float TOL = 1e-5f;
         private final float x;
         private final float y;
         private final float z;
@@ -334,9 +335,9 @@ public class MeshSplitter {
                 float dz = other.z - this.z;
 
                 //                                && other.data.equals(this.data)
-                return (dx < TOL) && (dx > -TOL) &&
-                        (dy < TOL) && (dy > -TOL) &&
-                        (dz < TOL) && (dz > -TOL);
+                return (dx < fTOL) && (dx > -fTOL) &&
+                        (dy < fTOL) && (dy > -fTOL) &&
+                        (dz < fTOL) && (dz > -fTOL);
 
 //                if(
 //                        (dx < TOLL) && (dx > -TOLL) &&

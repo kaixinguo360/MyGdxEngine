@@ -11,6 +11,8 @@ import com.my.world.enhanced.bool.util.LoggerUtil;
 
 import java.util.ArrayList;
 
+import static com.my.world.enhanced.bool.util.NumberUtil.dTOL;
+
 /**
  * Data structure about a 3d solid to apply boolean operations in it.
  *
@@ -27,10 +29,6 @@ import java.util.ArrayList;
  * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  */
 public class Solid implements Cloneable {
-    /**
-     * tolerance value to test equalities
-     */
-    private static final double TOL = 1e-10f;
     /**
      * solid vertices
      */
@@ -268,7 +266,7 @@ public class Solid implements Cloneable {
     private Face addFace(Vertex v1, Vertex v2, Vertex v3) {
         if (!(v1.equals(v2) || v1.equals(v3) || v2.equals(v3))) {
             Face face = new Face(v1, v2, v3);
-            if (face.getArea() > TOL) {
+            if (face.getArea() > dTOL) {
                 faces.add(face);
                 return face;
             } else {
@@ -353,9 +351,9 @@ public class Solid implements Cloneable {
                             distFace1Vert3 = computeDistance(face1.v3, face2);
 
                             // distances signs from the face1 vertices to the face2 plane
-                            signFace1Vert1 = (distFace1Vert1 > TOL ? 1 : (distFace1Vert1 < -TOL ? -1 : 0));
-                            signFace1Vert2 = (distFace1Vert2 > TOL ? 1 : (distFace1Vert2 < -TOL ? -1 : 0));
-                            signFace1Vert3 = (distFace1Vert3 > TOL ? 1 : (distFace1Vert3 < -TOL ? -1 : 0));
+                            signFace1Vert1 = (distFace1Vert1 > dTOL ? 1 : (distFace1Vert1 < -dTOL ? -1 : 0));
+                            signFace1Vert2 = (distFace1Vert2 > dTOL ? 1 : (distFace1Vert2 < -dTOL ? -1 : 0));
+                            signFace1Vert3 = (distFace1Vert3 > dTOL ? 1 : (distFace1Vert3 < -dTOL ? -1 : 0));
 
                             // if all the signs are zero, the planes are coplanar
                             // if all the signs are positive or negative, the planes do not intersect
@@ -367,9 +365,9 @@ public class Solid implements Cloneable {
                                 distFace2Vert3 = computeDistance(face2.v3, face1);
 
                                 // distances signs from the face2 vertices to the face1 plane
-                                signFace2Vert1 = (distFace2Vert1 > TOL ? 1 : (distFace2Vert1 < -TOL ? -1 : 0));
-                                signFace2Vert2 = (distFace2Vert2 > TOL ? 1 : (distFace2Vert2 < -TOL ? -1 : 0));
-                                signFace2Vert3 = (distFace2Vert3 > TOL ? 1 : (distFace2Vert3 < -TOL ? -1 : 0));
+                                signFace2Vert1 = (distFace2Vert1 > dTOL ? 1 : (distFace2Vert1 < -dTOL ? -1 : 0));
+                                signFace2Vert2 = (distFace2Vert2 > dTOL ? 1 : (distFace2Vert2 < -dTOL ? -1 : 0));
+                                signFace2Vert3 = (distFace2Vert3 > dTOL ? 1 : (distFace2Vert3 < -dTOL ? -1 : 0));
 
                                 // if the signs are not equal...
                                 if (!(signFace2Vert1 == signFace2Vert2 && signFace2Vert2 == signFace2Vert3)) {
@@ -468,7 +466,7 @@ public class Solid implements Cloneable {
         Vertex endVertex = segment1.getEndVertex();
 
         // starting point: deeper starting point
-        if (segment2.getStartDistance() > segment1.getStartDistance() + TOL) {
+        if (segment2.getStartDistance() > segment1.getStartDistance() + dTOL) {
             startDist = segment2.getStartDistance();
             startType = segment1.getIntermediateType();
             startPos = segment2.getStartPosition();
@@ -479,7 +477,7 @@ public class Solid implements Cloneable {
         }
 
         // ending point: deepest ending point
-        if (segment2.getEndDistance() < segment1.getEndDistance() - TOL) {
+        if (segment2.getEndDistance() < segment1.getEndDistance() - dTOL) {
             endDist = segment2.getEndDistance();
             endType = segment1.getIntermediateType();
             endPos = segment2.getEndPosition();
@@ -573,7 +571,7 @@ public class Solid implements Cloneable {
             VectorD segmentVector = new VectorD(startPos.x - endPos.x, startPos.y - endPos.y, startPos.z - endPos.z);
 
             // if the intersection segment is a point only...
-            if (Math.abs(segmentVector.x) < TOL && Math.abs(segmentVector.y) < TOL && Math.abs(segmentVector.z) < TOL) {
+            if (Math.abs(segmentVector.x) < dTOL && Math.abs(segmentVector.y) < dTOL && Math.abs(segmentVector.z) < dTOL) {
                 breakFaceInThree(facePos, startPos);
                 return;
             }

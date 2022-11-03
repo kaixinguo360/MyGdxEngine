@@ -1,5 +1,7 @@
 package com.my.world.enhanced.bool.operation;
 
+import com.my.world.enhanced.bool.util.NumberUtil;
+
 /**
  * Represents a line segment resulting from a intersection of a face and a plane.
  *
@@ -23,10 +25,6 @@ public class Segment implements Cloneable {
      * define as edge one of the segment ends
      */
     public static final int EDGE = 3;
-    /**
-     * tolerance value to test equalities
-     */
-    private static final double TOL = 1e-10f;
     /**
      * line resulting from the two planes intersection
      */
@@ -260,7 +258,7 @@ public class Segment implements Cloneable {
      * @return true if the segments intersect, false otherwise
      */
     public boolean intersect(Segment segment) {
-        return !(endDist < segment.startDist + TOL) && !(segment.endDist < startDist + TOL);
+        return !(endDist < segment.startDist + NumberUtil.dTOL) && !(segment.endDist < startDist + NumberUtil.dTOL);
     }
 
     //---------------------------------PRIVATES-------------------------------------//

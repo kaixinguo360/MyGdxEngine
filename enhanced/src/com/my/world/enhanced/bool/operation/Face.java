@@ -1,6 +1,7 @@
 package com.my.world.enhanced.bool.operation;
 
 import com.my.world.enhanced.bool.util.LoggerUtil;
+import com.my.world.enhanced.bool.util.NumberUtil;
 
 /**
  * Representation of a 3D face (triangle).
@@ -50,10 +51,6 @@ public class Face implements Cloneable {
      */
     private static final int NONE = 9;
     /**
-     * tolerance value to test equalities
-     */
-    private static final double TOL = 1e-10f;
-    /**
      * first vertex
      */
     public Vertex v1;
@@ -99,13 +96,13 @@ public class Face implements Cloneable {
      */
     private static int linePositionInX(VectorD point, VectorD pointLine1, VectorD pointLine2) {
         double a, b, z;
-        if ((Math.abs(pointLine1.y - pointLine2.y) > TOL) && (((point.y >= pointLine1.y) && (point.y <= pointLine2.y)) || ((point.y <= pointLine1.y) && (point.y >= pointLine2.y)))) {
+        if ((Math.abs(pointLine1.y - pointLine2.y) > NumberUtil.dTOL) && (((point.y >= pointLine1.y) && (point.y <= pointLine2.y)) || ((point.y <= pointLine1.y) && (point.y >= pointLine2.y)))) {
             a = (pointLine2.z - pointLine1.z) / (pointLine2.y - pointLine1.y);
             b = pointLine1.z - a * pointLine1.y;
             z = a * point.y + b;
-            if (z > point.z + TOL) {
+            if (z > point.z + NumberUtil.dTOL) {
                 return UP;
-            } else if (z < point.z - TOL) {
+            } else if (z < point.z - NumberUtil.dTOL) {
                 return DOWN;
             } else {
                 return ON;
@@ -126,13 +123,13 @@ public class Face implements Cloneable {
 
     private static int linePositionInY(VectorD point, VectorD pointLine1, VectorD pointLine2) {
         double a, b, z;
-        if ((Math.abs(pointLine1.x - pointLine2.x) > TOL) && (((point.x >= pointLine1.x) && (point.x <= pointLine2.x)) || ((point.x <= pointLine1.x) && (point.x >= pointLine2.x)))) {
+        if ((Math.abs(pointLine1.x - pointLine2.x) > NumberUtil.dTOL) && (((point.x >= pointLine1.x) && (point.x <= pointLine2.x)) || ((point.x <= pointLine1.x) && (point.x >= pointLine2.x)))) {
             a = (pointLine2.z - pointLine1.z) / (pointLine2.x - pointLine1.x);
             b = pointLine1.z - a * pointLine1.x;
             z = a * point.x + b;
-            if (z > point.z + TOL) {
+            if (z > point.z + NumberUtil.dTOL) {
                 return UP;
-            } else if (z < point.z - TOL) {
+            } else if (z < point.z - NumberUtil.dTOL) {
                 return DOWN;
             } else {
                 return ON;
@@ -153,13 +150,13 @@ public class Face implements Cloneable {
 
     private static int linePositionInZ(VectorD point, VectorD pointLine1, VectorD pointLine2) {
         double a, b, y;
-        if ((Math.abs(pointLine1.x - pointLine2.x) > TOL) && (((point.x >= pointLine1.x) && (point.x <= pointLine2.x)) || ((point.x <= pointLine1.x) && (point.x >= pointLine2.x)))) {
+        if ((Math.abs(pointLine1.x - pointLine2.x) > NumberUtil.dTOL) && (((point.x >= pointLine1.x) && (point.x <= pointLine2.x)) || ((point.x <= pointLine1.x) && (point.x >= pointLine2.x)))) {
             a = (pointLine2.y - pointLine1.y) / (pointLine2.x - pointLine1.x);
             b = pointLine1.y - a * pointLine1.x;
             y = a * point.x + b;
-            if (y > point.y + TOL) {
+            if (y > point.y + NumberUtil.dTOL) {
                 return UP;
-            } else if (y < point.y - TOL) {
+            } else if (y < point.y - NumberUtil.dTOL) {
                 return DOWN;
             } else {
                 return ON;
@@ -350,10 +347,9 @@ public class Face implements Cloneable {
                     distance = ray.computePointToPointDistance(intersectionPoint);
 
                     // if ray lies in plane...
-                    if (Math.abs(distance) < TOL && Math.abs(dotProduct) < TOL) {
+                    if (Math.abs(distance) < NumberUtil.dTOL && Math.abs(dotProduct) < NumberUtil.dTOL) {
                         if (repeat > 50000) {  // TODO: 以重复多少次为失败标准
                             LoggerUtil.log(2, "possible infinite loop situation: terminating rayTraceClassify - Too Many Repeat");
-                            success = true;
                             throw new BooleanOperationException("possible infinite loop situation: terminating rayTraceClassify - Too Many Repeat");
                         }
                         repeat++;
@@ -364,7 +360,7 @@ public class Face implements Cloneable {
                     }
 
                     // if ray starts in plane...
-                    if (Math.abs(distance) < TOL && Math.abs(dotProduct) > TOL) {
+                    if (Math.abs(distance) < NumberUtil.dTOL && Math.abs(dotProduct) > NumberUtil.dTOL) {
                         // if ray intersects the face...
                         if (face.hasPoint(intersectionPoint)) {
                             // faces coincide
@@ -375,7 +371,7 @@ public class Face implements Cloneable {
                     }
 
                     // if ray intersects plane...
-                    else if (Math.abs(dotProduct) > TOL && distance > TOL) {
+                    else if (Math.abs(dotProduct) > NumberUtil.dTOL && distance > NumberUtil.dTOL) {
                         if (distance < closestDistance) {
                             // if ray intersects the face;
                             if (face.hasPoint(intersectionPoint)) {
@@ -398,21 +394,21 @@ public class Face implements Cloneable {
             dotProduct = closestFace.getNormal().dot(ray.getDirection());
 
             // distance = 0: coplanar faces
-            if (Math.abs(closestDistance) < TOL) {
-                if (dotProduct > TOL) {
+            if (Math.abs(closestDistance) < NumberUtil.dTOL) {
+                if (dotProduct > NumberUtil.dTOL) {
                     status = SAME;
-                } else if (dotProduct < -TOL) {
+                } else if (dotProduct < -NumberUtil.dTOL) {
                     status = OPPOSITE;
                 }
             }
 
             // dot product > 0 (same direction): inside face
-            else if (dotProduct > TOL) {
+            else if (dotProduct > NumberUtil.dTOL) {
                 status = INSIDE;
             }
 
             // dot product < 0 (opposite direction): outside face
-            else if (dotProduct < -TOL) {
+            else if (dotProduct < -NumberUtil.dTOL) {
                 status = OUTSIDE;
             }
         }
@@ -430,7 +426,7 @@ public class Face implements Cloneable {
         VectorD normal = getNormal();
 
         // if x is constant...
-        if (Math.abs(normal.x) > TOL) {
+        if (Math.abs(normal.x) > NumberUtil.dTOL) {
             // tests on the x plane
             result1 = linePositionInX(point, v1.getPosition(), v2.getPosition());
             result2 = linePositionInX(point, v2.getPosition(), v3.getPosition());
@@ -438,7 +434,7 @@ public class Face implements Cloneable {
         }
 
         // if y is constant...
-        else if (Math.abs(normal.y) > TOL) {
+        else if (Math.abs(normal.y) > NumberUtil.dTOL) {
             // tests on the y plane
             result1 = linePositionInY(point, v1.getPosition(), v2.getPosition());
             result2 = linePositionInY(point, v2.getPosition(), v3.getPosition());
