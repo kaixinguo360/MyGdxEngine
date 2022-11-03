@@ -61,7 +61,7 @@ public class Vertex implements Cloneable {
     /**
      * vertex data
      */
-    private VertexData data;
+    public VertexData data;
 
     //----------------------------------CONSTRUCTORS--------------------------------//
 
