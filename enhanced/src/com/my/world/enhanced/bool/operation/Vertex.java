@@ -269,10 +269,10 @@ public class Vertex implements Cloneable {
     private static final Matrix4 tmpM = new Matrix4();
 
     public void avg(Vertex v1, Vertex v2, Vertex v3) {
-        float[] data = this.data.data;
-        float[] data1 = v1.data.data;
-        float[] data2 = v2.data.data;
-        float[] data3 = v3.data.data;
+        float[] data = this.data.values;
+        float[] data1 = v1.data.values;
+        float[] data2 = v2.data.values;
+        float[] data3 = v3.data.values;
         if (data.length != data1.length || data1.length != data2.length || data2.length != data3.length) {
             LoggerUtil.log(1, "顶点大小不同, 跳过混合");
         }

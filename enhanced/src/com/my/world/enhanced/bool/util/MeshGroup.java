@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.model.NodePart;
 import com.badlogic.gdx.utils.Array;
+import com.my.world.enhanced.bool.operation.ModelInstanceBoolOperation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,24 +15,24 @@ import java.util.Map;
 public class MeshGroup {
 
     public final Mesh mesh;
-    public final Array<BoolNodePart> boolNodeParts = new Array<>();
+    public final Array<MeshNodePart> meshNodeParts = new Array<>();
 
     public MeshGroup(Mesh mesh) {
         this.mesh = mesh;
     }
 
-    public void add(BoolNodePart boolNodePart) {
-        boolNodeParts.add(boolNodePart);
+    public void add(MeshNodePart meshNodePart) {
+        meshNodeParts.add(meshNodePart);
     }
 
     public boolean contains(NodePart value, boolean identity) {
-        int i = boolNodeParts.size - 1;
+        int i = meshNodeParts.size - 1;
         if (identity || value == null) {
             while (i >= 0)
-                if (boolNodeParts.get(i--).nodePart == value) return true;
+                if (meshNodeParts.get(i--).nodePart == value) return true;
         } else {
             while (i >= 0)
-                if (value.equals(boolNodeParts.get(i--).nodePart)) return true;
+                if (value.equals(meshNodeParts.get(i--).nodePart)) return true;
         }
         return false;
     }
@@ -43,7 +44,7 @@ public class MeshGroup {
                 meshGroups.put(meshPart.mesh, new MeshGroup(meshPart.mesh));
             MeshGroup meshGroup = meshGroups.get(meshPart.mesh);
             if (!meshGroup.contains(nodePart, true))
-                meshGroup.add(new BoolNodePart(nodePart, node));
+                meshGroup.add(new MeshNodePart(nodePart, node));
         }
         for (Node child : node.getChildren()) {
             addNode(child, meshGroups);
@@ -70,13 +71,13 @@ public class MeshGroup {
 
     //---------------------------------- Inner Class --------------------------------------//
 
-    public static class BoolNodePart {
+    public static class MeshNodePart {
         public final NodePart nodePart;
         public final MeshPart meshPart;
         public final Node node;
-        public Object userObject;
+        public ModelInstanceBoolOperation.BoolPair userObject;
 
-        public BoolNodePart(NodePart nodePart, Node node) {
+        public MeshNodePart(NodePart nodePart, Node node) {
             this.nodePart = nodePart;
             this.meshPart = nodePart.meshPart;
             this.node = node;
