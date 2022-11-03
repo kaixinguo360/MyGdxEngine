@@ -1,5 +1,7 @@
 package com.my.world.enhanced.bool.operation;
 
+import com.my.world.enhanced.bool.util.NumberUtil;
+
 /**
  * Representation of a bound - the extremes of a 3d component for each coordinate.
  *
@@ -11,10 +13,6 @@ package com.my.world.enhanced.bool.operation;
  * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  */
 public class Bound {
-    /**
-     * tolerance value to test equalities
-     */
-    private static final double TOL = 1e-10f;
     /**
      * maximum from the x coordinate
      */
@@ -93,7 +91,7 @@ public class Bound {
      * @return true if they insersect, false otherwise
      */
     public boolean overlap(Bound bound) {
-        return (!(xMin > bound.xMax + TOL)) && (!(xMax < bound.xMin - TOL)) && (!(yMin > bound.yMax + TOL)) && (!(yMax < bound.yMin - TOL)) && (!(zMin > bound.zMax + TOL)) && (!(zMax < bound.zMin - TOL));
+        return (!(xMin > bound.xMax + NumberUtil.dTOL)) && (!(xMax < bound.xMin - NumberUtil.dTOL)) && (!(yMin > bound.yMax + NumberUtil.dTOL)) && (!(yMax < bound.yMin - NumberUtil.dTOL)) && (!(zMin > bound.zMax + NumberUtil.dTOL)) && (!(zMax < bound.zMin - NumberUtil.dTOL));
     }
 
     //-------------------------------------PRIVATES---------------------------------//

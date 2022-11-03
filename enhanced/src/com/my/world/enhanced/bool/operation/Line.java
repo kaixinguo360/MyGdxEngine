@@ -1,5 +1,7 @@
 package com.my.world.enhanced.bool.operation;
 
+import com.my.world.enhanced.bool.util.NumberUtil;
+
 /**
  * Representation of a 3d line or a ray (represented by a direction and a point).
  *
@@ -11,10 +13,6 @@ package com.my.world.enhanced.bool.operation;
  * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  */
 public class Line implements Cloneable {
-    /**
-     * tolerance value to test equalities
-     */
-    private static final double TOL = 1e-10f;
     /**
      * a line point
      */
@@ -41,17 +39,17 @@ public class Line implements Cloneable {
         direction.cross(normalFace1, normalFace2);
 
         // if direction lenght is not zero (the planes aren't parallel )...
-        if (!(direction.len() < TOL)) {
+        if (!(direction.len() < NumberUtil.dTOL)) {
             // getting a line point, zero is set to a coordinate whose direction
             // component isn't zero (line intersecting its origin plan)
             point = new VectorD();
             double d1 = -(normalFace1.x * face1.v1.x + normalFace1.y * face1.v1.y + normalFace1.z * face1.v1.z);
             double d2 = -(normalFace2.x * face2.v1.x + normalFace2.y * face2.v1.y + normalFace2.z * face2.v1.z);
-            if (Math.abs(direction.x) > TOL) {
+            if (Math.abs(direction.x) > NumberUtil.dTOL) {
                 point.x = 0;
                 point.y = (d2 * normalFace1.z - d1 * normalFace2.z) / direction.x;
                 point.z = (d1 * normalFace2.y - d2 * normalFace1.y) / direction.x;
-            } else if (Math.abs(direction.y) > TOL) {
+            } else if (Math.abs(direction.y) > NumberUtil.dTOL) {
                 point.x = (d1 * normalFace2.z - d2 * normalFace1.z) / direction.y;
                 point.y = 0;
                 point.z = (d2 * normalFace1.x - d1 * normalFace2.x) / direction.y;
@@ -181,11 +179,11 @@ public class Line implements Cloneable {
         VectorD lineDirection = otherLine.getDirection();
 
         double t;
-        if (Math.abs(direction.y * lineDirection.x - direction.x * lineDirection.y) > TOL) {
+        if (Math.abs(direction.y * lineDirection.x - direction.x * lineDirection.y) > NumberUtil.dTOL) {
             t = (-point.y * lineDirection.x + linePoint.y * lineDirection.x + lineDirection.y * point.x - lineDirection.y * linePoint.x) / (direction.y * lineDirection.x - direction.x * lineDirection.y);
-        } else if (Math.abs(-direction.x * lineDirection.z + direction.z * lineDirection.x) > TOL) {
+        } else if (Math.abs(-direction.x * lineDirection.z + direction.z * lineDirection.x) > NumberUtil.dTOL) {
             t = -(-lineDirection.z * point.x + lineDirection.z * linePoint.x + lineDirection.x * point.z - lineDirection.x * linePoint.z) / (-direction.x * lineDirection.z + direction.z * lineDirection.x);
-        } else if (Math.abs(-direction.z * lineDirection.y + direction.y * lineDirection.z) > TOL) {
+        } else if (Math.abs(-direction.z * lineDirection.y + direction.y * lineDirection.z) > NumberUtil.dTOL) {
             t = (point.z * lineDirection.y - linePoint.z * lineDirection.y - lineDirection.z * point.y + lineDirection.z * linePoint.y) / (-direction.z * lineDirection.y + direction.y * lineDirection.z);
         } else return null;
 
@@ -220,9 +218,9 @@ public class Line implements Cloneable {
         double denominator = A * direction.x + B * direction.y + C * direction.z;
 
         // if line is paralel to the plane...
-        if (Math.abs(denominator) < TOL) {
+        if (Math.abs(denominator) < NumberUtil.dTOL) {
             // if line is contained in the plane...
-            if (Math.abs(numerator) < TOL) {
+            if (Math.abs(numerator) < NumberUtil.dTOL) {
                 return (VectorD) point.copy();
             } else {
                 return null;

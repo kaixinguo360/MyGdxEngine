@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.world.enhanced.bool.util.LoggerUtil;
+import com.my.world.enhanced.bool.util.NumberUtil;
 
 import java.util.ArrayList;
 
@@ -27,10 +28,6 @@ import java.util.ArrayList;
  * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  */
 public class Solid implements Cloneable {
-    /**
-     * tolerance value to test equalities
-     */
-    private static final double TOL = 1e-10f;
     /**
      * solid vertices
      */
@@ -262,7 +259,7 @@ public class Solid implements Cloneable {
     private Face addFace(Vertex v1, Vertex v2, Vertex v3) {
         if (!(v1.equals(v2) || v1.equals(v3) || v2.equals(v3))) {
             Face face = new Face(v1, v2, v3);
-            if (face.getArea() > TOL) {
+            if (face.getArea() > NumberUtil.dTOL) {
                 faces.add(face);
                 return face;
             } else {
@@ -400,7 +397,7 @@ public class Solid implements Cloneable {
     }
 
     private static int getSign(double distFace2Vert1) {
-        return distFace2Vert1 > TOL ? 1 : (distFace2Vert1 < -TOL ? -1 : 0);
+        return distFace2Vert1 > NumberUtil.dTOL ? 1 : (distFace2Vert1 < -NumberUtil.dTOL ? -1 : 0);
     }
 
     /**
@@ -439,7 +436,7 @@ public class Solid implements Cloneable {
         Vertex endVertex = segment1.getEndVertex();
 
         // starting point: deeper starting point
-        if (segment2.getStartDistance() > segment1.getStartDistance() + TOL) {
+        if (segment2.getStartDistance() > segment1.getStartDistance() + NumberUtil.dTOL) {
             startDist = segment2.getStartDistance();
             startType = segment1.getIntermediateType();
             startPos = segment2.getStartPosition();
@@ -450,7 +447,7 @@ public class Solid implements Cloneable {
         }
 
         // ending point: deepest ending point
-        if (segment2.getEndDistance() < segment1.getEndDistance() - TOL) {
+        if (segment2.getEndDistance() < segment1.getEndDistance() - NumberUtil.dTOL) {
             endDist = segment2.getEndDistance();
             endType = segment1.getIntermediateType();
             endPos = segment2.getEndPosition();
@@ -546,7 +543,7 @@ public class Solid implements Cloneable {
             VectorD segmentVector = new VectorD(startPos.x - endPos.x, startPos.y - endPos.y, startPos.z - endPos.z);
 
             // if the intersection segment is a point only...
-            if (Math.abs(segmentVector.x) < TOL && Math.abs(segmentVector.y) < TOL && Math.abs(segmentVector.z) < TOL) {
+            if (Math.abs(segmentVector.x) < NumberUtil.dTOL && Math.abs(segmentVector.y) < NumberUtil.dTOL && Math.abs(segmentVector.z) < NumberUtil.dTOL) {
                 breakFaceInThree(facePos, startPos);
                 return;
             }

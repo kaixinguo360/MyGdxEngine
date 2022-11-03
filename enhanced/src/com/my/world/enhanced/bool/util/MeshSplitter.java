@@ -312,7 +312,6 @@ public class MeshSplitter {
     ////////////////////////////////
 
     private class Vertex {
-        private static final float TOL = 1e-5f;
         private final float x;
         private final float y;
         private final float z;
@@ -332,20 +331,9 @@ public class MeshSplitter {
         public boolean equals(Object obj) {
             if (obj instanceof Vertex) {
                 Vertex other = (Vertex) obj;
-                float dx = other.x - this.x;
-                float dy = other.y - this.y;
-                float dz = other.z - this.z;
-
-                //                                && other.data.equals(this.data)
-                return (dx < TOL) && (dx > -TOL) &&
-                        (dy < TOL) && (dy > -TOL) &&
-                        (dz < TOL) && (dz > -TOL);
-
-//                if(
-//                        (dx < TOLL) && (dx > -TOLL) &&
-//                                (dy < TOLL) && (dy > -TOLL) &&
-//                                (dz < TOLL) && (dz > -TOLL)
-//                ) connectVertices(this, other);
+                return (Math.abs(other.x - this.x) < NumberUtil.fTOL) &&
+                        (Math.abs(other.y - this.y) < NumberUtil.fTOL) &&
+                        (Math.abs(other.z - this.z) < NumberUtil.fTOL);
             }
             return false;
         }
