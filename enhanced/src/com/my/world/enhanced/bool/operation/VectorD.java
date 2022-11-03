@@ -2,26 +2,25 @@ package com.my.world.enhanced.bool.operation;
 
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.NumberUtils;
+import com.my.world.core.util.Disposable;
 
-public class VectorD {
+public class VectorD implements Disposable {
 
     public double x;
     public double y;
     public double z;
+
+    public static final EnhancedPool<VectorD> pool = new EnhancedPool<>(VectorD::new);
+
+    public static VectorD obtain() {
+        return pool.obtain();
+    }
 
     public VectorD() {
     }
 
     public VectorD(double x, double y, double z) {
         this.set(x, y, z);
-    }
-
-    public VectorD(final VectorD vector) {
-        this.set(vector);
-    }
-
-    public VectorD(final Vector3 vector3) {
-        this.set(vector3.x, vector3.y, vector3.z);
     }
 
     public Vector3 toVector3(Vector3 vector3) {
@@ -86,7 +85,7 @@ public class VectorD {
     }
 
     public Object copy() {
-        return new VectorD(this);
+        return VectorD.obtain().set(this);
     }
 
     @Override
@@ -113,5 +112,12 @@ public class VectorD {
         if (NumberUtils.doubleToLongBits(x) != NumberUtils.doubleToLongBits(other.x)) return false;
         if (NumberUtils.doubleToLongBits(y) != NumberUtils.doubleToLongBits(other.y)) return false;
         return NumberUtils.doubleToLongBits(z) == NumberUtils.doubleToLongBits(other.z);
+    }
+
+    @Override
+    public void dispose() {
+        this.x = 0;
+        this.y = 0;
+        this.z = 0;
     }
 }

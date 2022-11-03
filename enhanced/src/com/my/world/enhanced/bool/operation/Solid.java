@@ -7,8 +7,10 @@ import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
+import com.my.world.core.util.Disposable;
 import com.my.world.enhanced.bool.util.LoggerUtil;
 import com.my.world.enhanced.bool.util.NumberUtil;
+import lombok.var;
 
 import java.util.ArrayList;
 
@@ -27,7 +29,7 @@ import java.util.ArrayList;
  *
  * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  */
-public class Solid implements Cloneable {
+public class Solid implements Cloneable, Disposable {
     /**
      * solid vertices
      */
@@ -41,89 +43,18 @@ public class Solid implements Cloneable {
      */
     private Bound bound;
 
+    private static final Vector3 tmpV = new Vector3();
+
     //----------------------------------CONSTRUCTOR---------------------------------//
 
-    /**
-     * Constructs a Solid object based on a mesh.
-     *
-     * @param mesh      mesh used to construct the Solid object
-     * @param transform transform of the mesh
-     */
-    public Solid(Mesh mesh, Matrix4 transform) {
-        Vector3 tmpV = new Vector3();
-        Vertex v1, v2, v3, vertex;
-        vertices = new ArrayList<>();
+    public static final EnhancedPool<Solid> pool = new EnhancedPool<>(Solid::new);
 
-        // 获取顶点属性
-        int offsetPosition = 0; // 获取顶点偏移: 位置
-        for (VertexAttribute attribute : mesh.getVertexAttributes()) {
-            int offset = attribute.offset / 4;
-            if (attribute.usage == VertexAttributes.Usage.Position) {
-                offsetPosition = offset;
-            }
-        }
-        // 顶点属性获取完毕
-
-        // 获取顶点
-        int vertexSize = mesh.getVertexSize() / 4; // 顶点大小 - Mesh
-        int numVertices = mesh.getNumVertices(); // 顶点数量 - Mesh
-        float[] vers = new float[vertexSize * numVertices]; // 读取全部顶点数组 - Mesh
-        mesh.getVertices(vers);
-        VectorD[] verticesPoints = new VectorD[numVertices];
-        ArrayList<Vertex> verticesTemp = new ArrayList<>();
-        for (int i = 0; i < numVertices; i++) {
-            int offsetVertex = i * vertexSize, x = offsetVertex + offsetPosition, y = offsetVertex + offsetPosition + 1, z = offsetVertex + offsetPosition + 2;
-
-            // 获取顶点xyz坐标
-            tmpV.set(vers[x], vers[y], vers[z]).mul(transform);
-            VectorD pos = new VectorD().set(tmpV);
-
-            // 复制顶点数据到MyData对象
-            float[] dataArray = new float[vertexSize];
-            System.arraycopy(vers, offsetVertex, dataArray, 0, vertexSize);
-            VertexData data = new VertexData(dataArray, mesh.getVertexAttributes());
-
-            verticesPoints[i] = pos;
-            vertex = addVertex(pos, data, Vertex.UNKNOWN);
-            verticesTemp.add(vertex);
-        }
-        // 获取顶点完毕
-
-        // 获取索引
-        int numIndices = mesh.getNumIndices(); // 索引数量 - Mesh
-        short[] indicesFromMesh = new short[numIndices]; // 读取全部索引数组 - Mesh
-        mesh.getIndices(indicesFromMesh);
-        int[] indices = new int[indicesFromMesh.length];
-        for (int i = 0; i < indicesFromMesh.length; i++) {
-            indices[i] = indicesFromMesh[i];
-        }
-        // indices数组获取完毕
-
-        // create faces
-        faces = new ArrayList<>();
-        for (int i = 0; i < indices.length; i = i + 3) {
-            v1 = (Vertex) verticesTemp.get(indices[i]);
-            v2 = (Vertex) verticesTemp.get(indices[i + 1]);
-            v3 = (Vertex) verticesTemp.get(indices[i + 2]);
-            addFace(v1, v2, v3);
-        }
-
-        // create bound
-        bound = new Bound(verticesPoints);
-    }
-
-    /**
-     * Constructs a Solid object based on a mesh.
-     *
-     * @param meshPart  meshPart used to construct the Solid object
-     * @param transform transform of the mesh
-     */
-    public Solid(MeshPart meshPart, Matrix4 transform) {
+    public static Solid obtain(MeshPart meshPart, Matrix4 transform) {
+        var obtain = pool.obtain();
         assert (meshPart.primitiveType == GL20.GL_TRIANGLES) : "meshPart.primitiveType Not Equals 'GL20.GL_TRIANGLES' !";
 
-        Vector3 tmpV = new Vector3();
         Vertex v1, v2, v3, vertex;
-        vertices = new ArrayList<>();
+        obtain.vertices = new ArrayList<>();
 
         // 获取Mesh
         Mesh mesh = meshPart.mesh;
@@ -150,15 +81,15 @@ public class Solid implements Cloneable {
 
             // 获取顶点xyz坐标
             tmpV.set(vers[x], vers[y], vers[z]).mul(transform);
-            VectorD pos = new VectorD().set(tmpV);
+            VectorD pos = VectorD.obtain().set(tmpV);
 
             // 复制顶点数据到MyData对象
             float[] dataArray = new float[vertexSize];
             System.arraycopy(vers, offsetVertex, dataArray, 0, vertexSize);
-            VertexData data = new VertexData(dataArray, mesh.getVertexAttributes());
+            VertexData data = VertexData.obtain(dataArray, mesh.getVertexAttributes());
 
             verticesPoints[i] = pos;
-            vertex = addVertex(pos, data, Vertex.UNKNOWN);
+            vertex = obtain.addVertex(pos, data, Vertex.UNKNOWN);
             verticesTemp.add(vertex);
         }
         // 获取顶点完毕
@@ -175,16 +106,18 @@ public class Solid implements Cloneable {
         // indices数组获取完毕
 
         // create faces
-        faces = new ArrayList<>();
+        obtain.faces = new ArrayList<>();
         for (int i = 0; i < indices.length; i = i + 3) {
             v1 = (Vertex) verticesTemp.get(indices[i]);
             v2 = (Vertex) verticesTemp.get(indices[i + 1]);
             v3 = (Vertex) verticesTemp.get(indices[i + 2]);
-            addFace(v1, v2, v3);
+            obtain.addFace(v1, v2, v3);
         }
 
         // create bound
-        bound = new Bound(verticesPoints);
+        obtain.bound = Bound.obtain(verticesPoints);
+
+        return obtain;
     }
 
     //-----------------------------------OVERRIDES----------------------------------//
@@ -195,22 +128,17 @@ public class Solid implements Cloneable {
      * @return cloned Solid object
      */
     public Object clone() {
-        try {
-            Solid clone = (Solid) super.clone();
-            clone.vertices = new ArrayList<>();
-            for (int i = 0; i < vertices.size(); i++) {
-                clone.vertices.add((Vertex) vertices.get(i).clone());
-            }
-            clone.faces = new ArrayList<>();
-            for (int i = 0; i < faces.size(); i++) {
-                clone.faces.add((Face) faces.get(i).clone());
-            }
-            clone.bound = bound;
-
-            return clone;
-        } catch (CloneNotSupportedException e) {
-            return null;
+        Solid clone = pool.obtain();
+        clone.vertices = new ArrayList<>();
+        for (int i = 0; i < vertices.size(); i++) {
+            clone.vertices.add((Vertex) vertices.get(i).clone());
         }
+        clone.faces = new ArrayList<>();
+        for (int i = 0; i < faces.size(); i++) {
+            clone.faces.add((Face) faces.get(i).clone());
+        }
+        clone.bound = bound;
+        return clone;
     }
 
     //--------------------------------------GETS------------------------------------//
@@ -258,7 +186,7 @@ public class Solid implements Cloneable {
      */
     private Face addFace(Vertex v1, Vertex v2, Vertex v3) {
         if (!(v1.equals(v2) || v1.equals(v3) || v2.equals(v3))) {
-            Face face = new Face(v1, v2, v3);
+            Face face = Face.obtain(v1, v2, v3);
             if (face.getArea() > NumberUtil.fTOL) {
                 faces.add(face);
                 return face;
@@ -281,7 +209,7 @@ public class Solid implements Cloneable {
     private Vertex addVertex(VectorD pos, VertexData data, int status) {
         int i;
         // if already there is an equal vertex, it is not inserted
-        Vertex vertex = new Vertex(pos, data, status);
+        Vertex vertex = Vertex.obtain(pos, data, status);
         for (i = 0; i < vertices.size(); i++) {
             if (vertex.equals(vertices.get(i))) break;
         }
@@ -354,11 +282,11 @@ public class Solid implements Cloneable {
                 // if the signs are equal...
                 if (signFace2Vert1 == signFace2Vert2 && signFace2Vert2 == signFace2Vert3) continue;
 
-                Line line = new Line(face1, face2);
+                Line line = Line.obtain(face1, face2);
                 // intersection of the face1 and the plane of face2
-                Segment segment1 = new Segment(line, face1, signFace1Vert1, signFace1Vert2, signFace1Vert3);
+                Segment segment1 = Segment.obtain(line, face1, signFace1Vert1, signFace1Vert2, signFace1Vert3);
                 // intersection of the face2 and the plane of face1
-                Segment segment2 = new Segment(line, face2, signFace2Vert1, signFace2Vert2, signFace2Vert3);
+                Segment segment2 = Segment.obtain(line, face2, signFace2Vert1, signFace2Vert2, signFace2Vert3);
                 // if the two segments not intersect...
                 if (!segment1.intersect(segment2)) continue;
 
@@ -546,7 +474,7 @@ public class Solid implements Cloneable {
         }
         // FACE-FACE-FACE
         else if (startType == Segment.FACE && endType == Segment.FACE) {
-            VectorD segmentVector = new VectorD(startPos.x - endPos.x, startPos.y - endPos.y, startPos.z - endPos.z);
+            VectorD segmentVector = VectorD.obtain().set(startPos.x - endPos.x, startPos.y - endPos.y, startPos.z - endPos.z);
 
             // if the intersection segment is a point only...
             if (Math.abs(segmentVector.x) < NumberUtil.dTOL && Math.abs(segmentVector.y) < NumberUtil.dTOL && Math.abs(segmentVector.z) < NumberUtil.dTOL) {
@@ -557,13 +485,13 @@ public class Solid implements Cloneable {
             // gets the vertex more lined with the intersection segment
             int linedVertex;
             VectorD linedVertexPos;
-            VectorD vertexVector = new VectorD(endPos.x - face.v1.x, endPos.y - face.v1.y, endPos.z - face.v1.z);
+            VectorD vertexVector = VectorD.obtain().set(endPos.x - face.v1.x, endPos.y - face.v1.y, endPos.z - face.v1.z);
             vertexVector.nor();
             double dot1 = Math.abs(segmentVector.dot(vertexVector));
-            vertexVector = new VectorD(endPos.x - face.v2.x, endPos.y - face.v2.y, endPos.z - face.v2.z);
+            vertexVector = VectorD.obtain().set(endPos.x - face.v2.x, endPos.y - face.v2.y, endPos.z - face.v2.z);
             vertexVector.nor();
             double dot2 = Math.abs(segmentVector.dot(vertexVector));
-            vertexVector = new VectorD(endPos.x - face.v3.x, endPos.y - face.v3.y, endPos.z - face.v3.z);
+            vertexVector = VectorD.obtain().set(endPos.x - face.v3.x, endPos.y - face.v3.y, endPos.z - face.v3.z);
             vertexVector.nor();
             double dot3 = Math.abs(segmentVector.dot(vertexVector));
             if (dot1 > dot2 && dot1 > dot3) {
@@ -880,5 +808,12 @@ public class Solid implements Cloneable {
                 face.invert();
             }
         }
+    }
+
+    @Override
+    public void dispose() {
+        this.vertices = null;
+        this.faces = null;
+        this.bound = null;
     }
 }

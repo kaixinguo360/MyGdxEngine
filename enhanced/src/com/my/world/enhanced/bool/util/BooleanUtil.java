@@ -9,8 +9,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.physics.bullet.collision.btConvexHullShape;
 import com.my.world.core.Entity;
-import com.my.world.enhanced.bool.operation.BooleanOperationException;
-import com.my.world.enhanced.bool.operation.ModelInstanceBoolOperation;
+import com.my.world.enhanced.bool.operation.*;
 import com.my.world.module.common.Position;
 import com.my.world.module.physics.RigidBody;
 import com.my.world.module.physics.TemplateRigidBody;
@@ -98,6 +97,15 @@ public class BooleanUtil {
                 }
             }
         }
+
+        Bound.pool.dispose();
+        Face.pool.dispose();
+        Line.pool.dispose();
+        Segment.pool.dispose();
+        Solid.pool.dispose();
+        VectorD.pool.dispose();
+        Vertex.pool.dispose();
+        VertexData.pool.dispose();
 
         return newEntities;
     }

@@ -1,22 +1,28 @@
 package com.my.world.enhanced.bool.operation;
 
 import com.badlogic.gdx.graphics.VertexAttributes;
+import com.my.world.core.util.Disposable;
+import lombok.var;
 
 import java.util.Arrays;
 
-public class VertexData {
+public class VertexData implements Disposable {
 
     public float[] values;
     public VertexAttributes attributes;
 
-    public VertexData(float[] values, VertexAttributes attributes) {
-        this.values = values;
-        this.attributes = attributes;
+    public static final EnhancedPool<VertexData> pool = new EnhancedPool<>(VertexData::new);
+
+    public static VertexData obtain(float[] values, VertexAttributes attributes) {
+        var obtain = pool.obtain();
+        obtain.values = values;
+        obtain.attributes = attributes;
+        return obtain;
     }
 
     @Override
     public Object clone() {
-        return new VertexData(values.clone(), attributes);
+        return VertexData.obtain(values.clone(), attributes);
     }
 
     @Override
@@ -27,5 +33,11 @@ public class VertexData {
         VertexData other = (VertexData) obj;
         if (!this.attributes.equals(other.attributes)) return false;
         return Arrays.equals(this.values, other.values);
+    }
+
+    @Override
+    public void dispose() {
+        this.values = null;
+        this.attributes = null;
     }
 }

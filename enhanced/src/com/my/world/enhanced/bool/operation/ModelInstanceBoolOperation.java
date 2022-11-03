@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.model.MeshPart;
-import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
@@ -82,7 +81,7 @@ public class ModelInstanceBoolOperation {
         // Setup Reference Object
         LoggerUtil.log(0, "参考物体: " + reference.id);
         Matrix4 referenceTransform = tmpM.set(instance.transform).inv().mul(transform2);
-        Solid referenceSolid = new Solid(reference, referenceTransform);
+        Solid referenceSolid = Solid.obtain(reference, referenceTransform);
         Bound referenceBound = referenceSolid.getBound();
         for (VertexAttribute attribute : reference.mesh.getVertexAttributes()) {
             if (!attributes.containsKey(attribute.usage)) {
@@ -117,7 +116,7 @@ public class ModelInstanceBoolOperation {
                 }
 
                 LoggerUtil.log(0, "      正在创建Solid...");
-                Solid solid1 = new Solid(meshNodePart.meshPart, meshNodePartTransform);
+                Solid solid1 = Solid.obtain(meshNodePart.meshPart, meshNodePartTransform);
                 Solid solid2 = (Solid) referenceSolid.clone();
 
                 // split the faces so that none of them intercepts each other
@@ -157,7 +156,6 @@ public class ModelInstanceBoolOperation {
         LoggerUtil.log(0, "*** 创建布尔操作结束 ***");
     }
 
-    private final MeshBuilder meshBuilder = new MeshBuilder();
     private final Map<Integer, VertexAttribute> attributes = new HashMap<>();
 
     //-------------------------------BOOLEAN_OPERATIONS-----------------------------//
@@ -431,7 +429,7 @@ public class ModelInstanceBoolOperation {
      * Fills solid arrays with data about faces of an object generated whose status
      * is as required
      *
-     * @param solid      solid object used to fill the arrays
+     * @param solid       solid object used to fill the arrays
      * @param vertices    vertices array to be filled
      * @param indices     indices array to be filled
      * @param datas       datas array to be filled
