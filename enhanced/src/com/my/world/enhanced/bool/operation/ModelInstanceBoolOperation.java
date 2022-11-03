@@ -74,7 +74,7 @@ public class ModelInstanceBoolOperation {
         // Setup Reference Object
         LoggerUtil.log(0, "参考物体: " + reference.id);
         Matrix4 referenceTransform = tmpM.set(instance.transform).inv().mul(transform2);
-        Solid referenceSolid = new Solid(reference, referenceTransform);
+        Solid referenceSolid = Solid.obtain(reference, referenceTransform);
         Bound referenceBound = referenceSolid.getBound();
         for (VertexAttribute attribute : reference.mesh.getVertexAttributes()) {
             if (!attributes.containsKey(attribute.usage)) {
@@ -107,7 +107,7 @@ public class ModelInstanceBoolOperation {
                 }
 
                 LoggerUtil.log(0, "      正在创建Solid...");
-                Solid solid1 = new Solid(meshNodePart.meshPart, meshNodePartTransform);
+                Solid solid1 = Solid.obtain(meshNodePart.meshPart, meshNodePartTransform);
                 Solid solid2 = (Solid) referenceSolid.clone();
 
                 // split the faces so that none of them intercepts each other

@@ -1,20 +1,29 @@
 package com.my.world.enhanced.bool.operation;
 
 import com.badlogic.gdx.graphics.VertexAttributes;
+import com.my.world.core.util.Disposable;
+import com.my.world.enhanced.bool.util.EnhancedPool;
+import lombok.var;
 
-public class VertexData {
+import java.util.Arrays;
+
+public class VertexData implements Disposable {
 
     public float[] values;
     public VertexAttributes attributes;
 
-    public VertexData(float[] values, VertexAttributes attributes) {
-        this.values = values;
-        this.attributes = attributes;
+    public static final EnhancedPool<VertexData> pool = new EnhancedPool<>(VertexData::new);
+
+    public static VertexData obtain(float[] values, VertexAttributes attributes) {
+        var obtain = pool.obtain();
+        obtain.values = values;
+        obtain.attributes = attributes;
+        return obtain;
     }
 
     @Override
     public Object clone() {
-        return new VertexData(values.clone(), attributes);
+        return VertexData.obtain(values.clone(), attributes);
     }
 
     @Override
@@ -23,9 +32,13 @@ public class VertexData {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         VertexData other = (VertexData) obj;
-        if (this.attributes != other.attributes) return false;
-        return this.values == other.values; // TODO: 两个MyData怎么才算相等?
-//        if (!this.attributes.equals(other.attributes)) return false;
-//        return Arrays.equals(this.values, other.values);
+        if (!this.attributes.equals(other.attributes)) return false;
+        return Arrays.equals(this.values, other.values);
+    }
+
+    @Override
+    public void dispose() {
+        this.values = null;
+        this.attributes = null;
     }
 }

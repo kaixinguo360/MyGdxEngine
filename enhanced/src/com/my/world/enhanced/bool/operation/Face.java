@@ -1,7 +1,10 @@
 package com.my.world.enhanced.bool.operation;
 
+import com.my.world.core.util.Disposable;
+import com.my.world.enhanced.bool.util.EnhancedPool;
 import com.my.world.enhanced.bool.util.LoggerUtil;
 import com.my.world.enhanced.bool.util.NumberUtil;
+import lombok.var;
 
 /**
  * Representation of a 3D face (triangle).
@@ -13,7 +16,7 @@ import com.my.world.enhanced.bool.util.NumberUtil;
  *
  * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  */
-public class Face implements Cloneable {
+public class Face implements Cloneable, Disposable {
     /**
      * face status if it is still unknown
      */
@@ -69,19 +72,15 @@ public class Face implements Cloneable {
 
     //---------------------------------CONSTRUCTORS---------------------------------//
 
-    /**
-     * Constructs a face with unknown status.
-     *
-     * @param v1 a face vertex
-     * @param v2 a face vertex
-     * @param v3 a face vertex
-     */
-    public Face(Vertex v1, Vertex v2, Vertex v3) {
-        this.v1 = v1;
-        this.v2 = v2;
-        this.v3 = v3;
+    public static final EnhancedPool<Face> pool = new EnhancedPool<>(Face::new);
 
-        status = UNKNOWN;
+    public static Face obtain(Vertex v1, Vertex v2, Vertex v3) {
+        var obtain = pool.obtain();
+        obtain.v1 = v1;
+        obtain.v2 = v2;
+        obtain.v3 = v3;
+        obtain.status = UNKNOWN;
+        return obtain;
     }
 
     //-----------------------------------OVERRIDES----------------------------------//
@@ -174,16 +173,12 @@ public class Face implements Cloneable {
      * @return cloned face object
      */
     public Object clone() {
-        try {
-            Face clone = (Face) super.clone();
-            clone.v1 = (Vertex) v1.clone();
-            clone.v2 = (Vertex) v2.clone();
-            clone.v3 = (Vertex) v3.clone();
-            clone.status = status;
-            return clone;
-        } catch (CloneNotSupportedException e) {
-            return null;
-        }
+        Face clone = pool.obtain();;
+        clone.v1 = (Vertex) v1.clone();
+        clone.v2 = (Vertex) v2.clone();
+        clone.v3 = (Vertex) v3.clone();
+        clone.status = status;
+        return clone;
     }
 
     /**
@@ -221,7 +216,7 @@ public class Face implements Cloneable {
      * @return face bound
      */
     public Bound getBound() {
-        return new Bound(v1.getPosition(), v2.getPosition(), v3.getPosition());
+        return Bound.obtain(v1.getPosition(), v2.getPosition(), v3.getPosition());
     }
 
     //-------------------------------------OTHERS-----------------------------------//
@@ -237,10 +232,10 @@ public class Face implements Cloneable {
         VectorD p3 = v3.getPosition();
         VectorD xy, xz, normal;
 
-        xy = new VectorD(p2.x - p1.x, p2.y - p1.y, p2.z - p1.z);
-        xz = new VectorD(p3.x - p1.x, p3.y - p1.y, p3.z - p1.z);
+        xy = VectorD.obtain().set(p2.x - p1.x, p2.y - p1.y, p2.z - p1.z);
+        xz = VectorD.obtain().set(p3.x - p1.x, p3.y - p1.y, p3.z - p1.z);
 
-        normal = new VectorD();
+        normal = VectorD.obtain();
         normal.cross(xy, xz);
         normal.nor();
 
@@ -268,8 +263,8 @@ public class Face implements Cloneable {
         VectorD p1 = v1.getPosition();
         VectorD p2 = v2.getPosition();
         VectorD p3 = v3.getPosition();
-        VectorD xy = new VectorD(p2.x - p1.x, p2.y - p1.y, p2.z - p1.z);
-        VectorD xz = new VectorD(p3.x - p1.x, p3.y - p1.y, p3.z - p1.z);
+        VectorD xy = VectorD.obtain().set(p2.x - p1.x, p2.y - p1.y, p2.z - p1.z);
+        VectorD xz = VectorD.obtain().set(p3.x - p1.x, p3.y - p1.y, p3.z - p1.z);
 
         double a = p1.dst(p2);
         double c = p1.dst(p3);
@@ -320,11 +315,11 @@ public class Face implements Cloneable {
      */
     public void rayTraceClassify(Solid solid) throws BooleanOperationException {
         // creating a ray starting starting at the face baricenter going to the normal direction
-        VectorD p0 = new VectorD();
+        VectorD p0 = VectorD.obtain();
         p0.x = (v1.x + v2.x + v3.x) / 3d;
         p0.y = (v1.y + v2.y + v3.y) / 3d;
         p0.z = (v1.z + v2.z + v3.z) / 3d;
-        Line ray = new Line(getNormal(), p0);
+        Line ray = Line.obtain(getNormal(), p0);
 
         boolean success;
         double dotProduct, distance;
@@ -452,5 +447,13 @@ public class Face implements Cloneable {
         }
         // if the point is on of the lines...
         else return (result1 == ON) || (result2 == ON) || (result3 == ON);
+    }
+
+    @Override
+    public void dispose() {
+        this.v1 = null;
+        this.v2 = null;
+        this.v3 = null;
+        this.status = UNKNOWN;
     }
 }

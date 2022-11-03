@@ -52,9 +52,11 @@ public class CutterScript implements ScriptSystem.OnStart, PhysicsSystem.OnColli
 
     @Override
     public void removed(Scene scene, Entity entity) {
+        System.gc();
         for (Entity entity1 : entities) {
             cut(entity1);
         }
+        System.gc();
     }
 
     private void cut(Entity entity) {

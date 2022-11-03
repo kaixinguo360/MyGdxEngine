@@ -1,6 +1,9 @@
 package com.my.world.enhanced.bool.operation;
 
+import com.my.world.core.util.Disposable;
+import com.my.world.enhanced.bool.util.EnhancedPool;
 import com.my.world.enhanced.bool.util.NumberUtil;
+import lombok.var;
 
 /**
  * Representation of a 3d line or a ray (represented by a direction and a point).
@@ -12,7 +15,7 @@ import com.my.world.enhanced.bool.util.NumberUtil;
  *
  * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  */
-public class Line implements Cloneable {
+public class Line implements Cloneable, Disposable {
     /**
      * a line point
      */
@@ -24,55 +27,49 @@ public class Line implements Cloneable {
 
     //----------------------------------CONSTRUCTORS---------------------------------//
 
-    /**
-     * Constructor for a line. The line created is the intersection between two planes
-     *
-     * @param face1 face representing one of the planes
-     * @param face2 face representing one of the planes
-     */
-    public Line(Face face1, Face face2) {
+    public static final EnhancedPool<Line> pool = new EnhancedPool<>(Line::new);
+
+    public static Line obtain(VectorD direction, VectorD point) {
+        var obtain = pool.obtain();
+        obtain.direction = (VectorD) direction.copy();
+        obtain.point = (VectorD) point.copy();
+        obtain.direction.nor();
+        return obtain;
+    }
+
+    public static Line obtain(Face face1, Face face2) {
+        var obtain = pool.obtain();
         VectorD normalFace1 = face1.getNormal();
         VectorD normalFace2 = face2.getNormal();
 
         // direction: cross product of the faces normals
-        direction = new VectorD();
-        direction.cross(normalFace1, normalFace2);
+        obtain.direction = VectorD.obtain();
+        obtain.direction.cross(normalFace1, normalFace2);
 
         // if direction lenght is not zero (the planes aren't parallel )...
-        if (!(direction.len() < NumberUtil.dTOL)) {
+        if (!(obtain.direction.len() < NumberUtil.dTOL)) {
             // getting a line point, zero is set to a coordinate whose direction
             // component isn't zero (line intersecting its origin plan)
-            point = new VectorD();
+            obtain.point = VectorD.obtain();
             double d1 = -(normalFace1.x * face1.v1.x + normalFace1.y * face1.v1.y + normalFace1.z * face1.v1.z);
             double d2 = -(normalFace2.x * face2.v1.x + normalFace2.y * face2.v1.y + normalFace2.z * face2.v1.z);
-            if (Math.abs(direction.x) > NumberUtil.dTOL) {
-                point.x = 0;
-                point.y = (d2 * normalFace1.z - d1 * normalFace2.z) / direction.x;
-                point.z = (d1 * normalFace2.y - d2 * normalFace1.y) / direction.x;
-            } else if (Math.abs(direction.y) > NumberUtil.dTOL) {
-                point.x = (d1 * normalFace2.z - d2 * normalFace1.z) / direction.y;
-                point.y = 0;
-                point.z = (d2 * normalFace1.x - d1 * normalFace2.x) / direction.y;
+            if (Math.abs(obtain.direction.x) > NumberUtil.dTOL) {
+                obtain.point.x = 0;
+                obtain.point.y = (d2 * normalFace1.z - d1 * normalFace2.z) / obtain.direction.x;
+                obtain.point.z = (d1 * normalFace2.y - d2 * normalFace1.y) / obtain.direction.x;
+            } else if (Math.abs(obtain.direction.y) > NumberUtil.dTOL) {
+                obtain.point.x = (d1 * normalFace2.z - d2 * normalFace1.z) / obtain.direction.y;
+                obtain.point.y = 0;
+                obtain.point.z = (d2 * normalFace1.x - d1 * normalFace2.x) / obtain.direction.y;
             } else {
-                point.x = (d2 * normalFace1.y - d1 * normalFace2.y) / direction.z;
-                point.y = (d1 * normalFace2.x - d2 * normalFace1.x) / direction.z;
-                point.z = 0;
+                obtain.point.x = (d2 * normalFace1.y - d1 * normalFace2.y) / obtain.direction.z;
+                obtain.point.y = (d1 * normalFace2.x - d2 * normalFace1.x) / obtain.direction.z;
+                obtain.point.z = 0;
             }
         }
 
-        direction.nor();
-    }
-
-    /**
-     * Constructor for a ray
-     *
-     * @param direction direction ray
-     * @param point     beginning of the ray
-     */
-    public Line(VectorD direction, VectorD point) {
-        this.direction = (VectorD) direction.copy();
-        this.point = (VectorD) point.copy();
-        direction.nor();
+        obtain.direction.nor();
+        return obtain;
     }
 
     //---------------------------------OVERRIDES------------------------------------//
@@ -83,14 +80,10 @@ public class Line implements Cloneable {
      * @return cloned Line object
      */
     public Object clone() {
-        try {
-            Line clone = (Line) super.clone();
-            clone.direction = (VectorD) direction.copy();
-            clone.point = (VectorD) point.copy();
-            return clone;
-        } catch (CloneNotSupportedException e) {
-            return null;
-        }
+        Line clone = pool.obtain();;
+        clone.direction = (VectorD) direction.copy();
+        clone.point = (VectorD) point.copy();
+        return clone;
     }
 
     /**
@@ -154,7 +147,7 @@ public class Line implements Cloneable {
      */
     public double computePointToPointDistance(VectorD otherPoint) {
         double distance = otherPoint.dst(point);
-        VectorD vec = new VectorD(otherPoint.x - point.x, otherPoint.y - point.y, otherPoint.z - point.z);
+        VectorD vec = VectorD.obtain().set(otherPoint.x - point.x, otherPoint.y - point.y, otherPoint.z - point.z);
         vec.nor();
         if (vec.dot(direction) < 0) {
             return -distance;
@@ -191,7 +184,7 @@ public class Line implements Cloneable {
         double y = point.y + direction.y * t;
         double z = point.z + direction.z * t;
 
-        return new VectorD(x, y, z);
+        return VectorD.obtain().set(x, y, z);
     }
 
     /**
@@ -229,7 +222,7 @@ public class Line implements Cloneable {
         // if line intercepts the plane...
         else {
             double t = -numerator / denominator;
-            VectorD resultPoint = new VectorD();
+            VectorD resultPoint = VectorD.obtain();
             resultPoint.x = point.x + t * direction.x;
             resultPoint.y = point.y + t * direction.y;
             resultPoint.z = point.z + t * direction.z;
@@ -245,5 +238,11 @@ public class Line implements Cloneable {
         direction.x += 1e-5 * Math.random();
         direction.y += 1e-5 * Math.random();
         direction.z += 1e-5 * Math.random();
+    }
+
+    @Override
+    public void dispose() {
+        this.point = null;
+        this.direction = null;
     }
 }

@@ -1,6 +1,9 @@
 package com.my.world.enhanced.bool.operation;
 
+import com.my.world.core.util.Disposable;
+import com.my.world.enhanced.bool.util.EnhancedPool;
 import com.my.world.enhanced.bool.util.NumberUtil;
+import lombok.var;
 
 /**
  * Represents a line segment resulting from a intersection of a face and a plane.
@@ -12,7 +15,7 @@ import com.my.world.enhanced.bool.util.NumberUtil;
  *
  * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  */
-public class Segment implements Cloneable {
+public class Segment implements Cloneable, Disposable {
     /**
      * define as vertex one of the segment ends
      */
@@ -72,61 +75,58 @@ public class Segment implements Cloneable {
 
     //---------------------------------CONSTRUCTORS---------------------------------//
 
-    /**
-     * Constructs a Segment based on elements obtained from the two planes relations
-     *
-     * @param line  resulting from the two planes intersection
-     * @param face  face that intersects with the plane
-     * @param sign1 position of the face vertex1 relative to the plane (-1 behind, 1 front, 0 on)
-     * @param sign2 position of the face vertex1 relative to the plane (-1 behind, 1 front, 0 on)
-     * @param sign3 position of the face vertex1 relative to the plane (-1 behind, 1 front, 0 on)
-     */
-    public Segment(Line line, Face face, int sign1, int sign2, int sign3) {
-        this.line = line;
-        index = 0;
+    public static final EnhancedPool<Segment> pool = new EnhancedPool<>(Segment::new);
+
+    public static Segment obtain(Line line, Face face, int sign1, int sign2, int sign3) {
+        var obtain = pool.obtain();
+
+        obtain.line = line;
+        obtain.index = 0;
 
         // VERTEX is an end
         if (sign1 == 0) {
-            setVertex(face.v1);
+            obtain.setVertex(face.v1);
             // other vertices on the same side - VERTEX-VERTEX VERTEX
             if (sign2 == sign3) {
-                setVertex(face.v1);
+                obtain.setVertex(face.v1);
             }
         }
 
         // VERTEX is an end
         if (sign2 == 0) {
-            setVertex(face.v2);
+            obtain.setVertex(face.v2);
             // other vertices on the same side - VERTEX-VERTEX VERTEX
             if (sign1 == sign3) {
-                setVertex(face.v2);
+                obtain.setVertex(face.v2);
             }
         }
 
         // VERTEX is an end
         if (sign3 == 0) {
-            setVertex(face.v3);
+            obtain.setVertex(face.v3);
             // other vertices on the same side - VERTEX-VERTEX VERTEX
             if (sign1 == sign2) {
-                setVertex(face.v3);
+                obtain.setVertex(face.v3);
             }
         }
 
         // There are undefined ends - one or more edges cut the planes intersection line
-        if (getNumEndsSet() != 2) {
+        if (obtain.getNumEndsSet() != 2) {
             // EDGE is an end
             if ((sign1 == 1 && sign2 == -1) || (sign1 == -1 && sign2 == 1)) {
-                setEdge(face.v1, face.v2);
+                obtain.setEdge(face.v1, face.v2);
             }
             // EDGE is an end
             if ((sign2 == 1 && sign3 == -1) || (sign2 == -1 && sign3 == 1)) {
-                setEdge(face.v2, face.v3);
+                obtain.setEdge(face.v2, face.v3);
             }
             // EDGE is an end
             if ((sign3 == 1 && sign1 == -1) || (sign3 == -1 && sign1 == 1)) {
-                setEdge(face.v3, face.v1);
+                obtain.setEdge(face.v3, face.v1);
             }
         }
+
+        return obtain;
     }
 
     //-----------------------------------OVERRIDES----------------------------------//
@@ -137,24 +137,20 @@ public class Segment implements Cloneable {
      * @return cloned Segment object
      */
     public Object clone() {
-        try {
-            Segment clone = (Segment) super.clone();
-            clone.line = (Line) line.clone();
-            clone.index = index;
-            clone.startDist = startDist;
-            clone.endDist = endDist;
-            clone.startDist = startType;
-            clone.middleType = middleType;
-            clone.endType = endType;
-            clone.startVertex = (Vertex) startVertex.clone();
-            clone.endVertex = (Vertex) endVertex.clone();
-            clone.startPos = (VectorD) startPos.copy();
-            clone.endPos = (VectorD) endPos.copy();
+        Segment clone = pool.obtain();;
+        clone.line = (Line) line.clone();
+        clone.index = index;
+        clone.startDist = startDist;
+        clone.endDist = endDist;
+        clone.startType = startType;
+        clone.middleType = middleType;
+        clone.endType = endType;
+        clone.startVertex = (Vertex) startVertex.clone();
+        clone.endVertex = (Vertex) endVertex.clone();
+        clone.startPos = (VectorD) startPos.copy();
+        clone.endPos = (VectorD) endPos.copy();
 
-            return clone;
-        } catch (CloneNotSupportedException e) {
-            return null;
-        }
+        return clone;
     }
 
     //-------------------------------------GETS-------------------------------------//
@@ -318,8 +314,8 @@ public class Segment implements Cloneable {
     private boolean setEdge(Vertex vertex1, Vertex vertex2) {
         VectorD point1 = vertex1.getPosition();
         VectorD point2 = vertex2.getPosition();
-        VectorD edgeDirection = new VectorD(point2.x - point1.x, point2.y - point1.y, point2.z - point1.z);
-        Line edgeLine = new Line(edgeDirection, point1);
+        VectorD edgeDirection = VectorD.obtain().set(point2.x - point1.x, point2.y - point1.y, point2.z - point1.z);
+        Line edgeLine = Line.obtain(edgeDirection, point1);
 
         if (index == 0) {
             startVertex = vertex1;
@@ -367,5 +363,20 @@ public class Segment implements Cloneable {
         VectorD posTemp = startPos;
         startPos = endPos;
         endPos = posTemp;
+    }
+
+    @Override
+    public void dispose() {
+        this.line = null;
+        this.index = 0;
+        this.startDist = 0;
+        this.endDist = 0;
+        this.startType = 0;
+        this.middleType = 0;
+        this.endType = 0;
+        this.startVertex = null;
+        this.endVertex = null;
+        this.startPos = null;
+        this.endPos = null;
     }
 }

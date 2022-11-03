@@ -1,5 +1,7 @@
 package com.my.world.enhanced.bool.operation;
 
+import com.my.world.core.util.Disposable;
+import com.my.world.enhanced.bool.util.EnhancedPool;
 import com.my.world.enhanced.bool.util.NumberUtil;
 
 /**
@@ -12,7 +14,8 @@ import com.my.world.enhanced.bool.util.NumberUtil;
  *
  * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  */
-public class Bound {
+public class Bound implements Disposable {
+
     /**
      * maximum from the x coordinate
      */
@@ -40,35 +43,37 @@ public class Bound {
 
     //---------------------------------CONSTRUCTORS---------------------------------//
 
-    /**
-     * Bound constructor for a face
-     *
-     * @param p1 point relative to the first vertex
-     * @param p2 point relative to the second vertex
-     * @param p3 point relative to the third vertex
-     */
-    public Bound(VectorD p1, VectorD p2, VectorD p3) {
-        xMax = xMin = p1.x;
-        yMax = yMin = p1.y;
-        zMax = zMin = p1.z;
+    public static final EnhancedPool<Bound> pool = new EnhancedPool<>(Bound::new);
 
-        checkVertex(p2);
-        checkVertex(p3);
+    public static Bound obtain(VectorD[] vertices) {
+        Bound obtain = pool.obtain();
+        obtain.xMax = obtain.xMin = vertices[0].x;
+        obtain.yMax = obtain.yMin = vertices[0].y;
+        obtain.zMax = obtain.zMin = vertices[0].z;
+        for (int i = 1; i < vertices.length; i++) {
+            obtain.checkVertex(vertices[i]);
+        }
+        return obtain;
     }
 
-    /**
-     * Bound constructor for a solid
-     *
-     * @param vertices the object vertices
-     */
-    public Bound(VectorD[] vertices) {
-        xMax = xMin = vertices[0].x;
-        yMax = yMin = vertices[0].y;
-        zMax = zMin = vertices[0].z;
+    public static Bound obtain(VectorD p1, VectorD p2, VectorD p3) {
+        Bound obtain = pool.obtain();
+        obtain.xMax = obtain.xMin = p1.x;
+        obtain.yMax = obtain.yMin = p1.y;
+        obtain.zMax = obtain.zMin = p1.z;
+        obtain.checkVertex(p2);
+        obtain.checkVertex(p3);
+        return obtain;
+    }
 
-        for (int i = 1; i < vertices.length; i++) {
-            checkVertex(vertices[i]);
-        }
+    @Override
+    public void dispose() {
+        this.xMax = 0;
+        this.xMin = 0;
+        this.yMax = 0;
+        this.yMin = 0;
+        this.zMax = 0;
+        this.zMin = 0;
     }
 
     //----------------------------------OVERRIDES-----------------------------------//

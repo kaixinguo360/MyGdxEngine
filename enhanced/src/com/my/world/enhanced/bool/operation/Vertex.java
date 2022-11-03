@@ -4,8 +4,11 @@ import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
+import com.my.world.core.util.Disposable;
+import com.my.world.enhanced.bool.util.EnhancedPool;
 import com.my.world.enhanced.bool.util.LoggerUtil;
 import com.my.world.enhanced.bool.util.NumberUtil;
+import lombok.var;
 
 import java.util.ArrayList;
 
@@ -21,7 +24,7 @@ import static com.badlogic.gdx.math.Matrix4.*;
  *
  * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  */
-public class Vertex implements Cloneable {
+public class Vertex implements Cloneable, Disposable {
 
     /**
      * vertex status if it is still unknown
@@ -67,54 +70,16 @@ public class Vertex implements Cloneable {
 
     //----------------------------------CONSTRUCTORS--------------------------------//
 
-    /**
-     * Constructs a vertex with unknown status
-     *
-     * @param position vertex position
-     * @param data     vertex data
-     */
-    public Vertex(VectorD position, VertexData data) {
-        this(position.x, position.y, position.z, data, UNKNOWN);
-    }
+    public static final EnhancedPool<Vertex> pool = new EnhancedPool<>(Vertex::new);
 
-    /**
-     * Constructs a vertex with unknown status
-     *
-     * @param x    coordinate on the x axis
-     * @param y    coordinate on the y axis
-     * @param z    coordinate on the z axis
-     * @param data vertex data
-     */
-    public Vertex(double x, double y, double z, VertexData data) {
-        this(x, y, z, data, UNKNOWN);
-    }
-
-    /**
-     * Constructs a vertex with definite status
-     *
-     * @param position vertex position
-     * @param data     vertex data
-     * @param status   vertex status - UNKNOWN, BOUNDARY, INSIDE or OUTSIDE
-     */
-    public Vertex(VectorD position, VertexData data, int status) {
-        this(position.x, position.y, position.z, data, status);
-    }
-
-    /**
-     * Constructs a vertex with a definite status
-     *
-     * @param x      coordinate on the x axis
-     * @param y      coordinate on the y axis
-     * @param z      coordinate on the z axis
-     * @param data   vertex data
-     * @param status vertex status - UNKNOWN, BOUNDARY, INSIDE or OUTSIDE
-     */
-    public Vertex(double x, double y, double z, VertexData data, int status) {
-        this.data = (VertexData) data.clone();
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.status = status;
+    public static Vertex obtain(VectorD position, VertexData data, int status) {
+        var obtain = pool.obtain();
+        obtain.data = (VertexData) data.clone();
+        obtain.x = position.x;
+        obtain.y = position.y;
+        obtain.z = position.z;
+        obtain.status = status;
+        return obtain;
     }
 
     //-----------------------------------OVERRIDES----------------------------------//
@@ -125,21 +90,17 @@ public class Vertex implements Cloneable {
      * @return cloned vertex object
      */
     public Object clone() {
-        try {
-            Vertex clone = (Vertex) super.clone();
-            clone.x = x;
-            clone.y = y;
-            clone.z = z;
-            clone.data = (VertexData) data.clone();
-            clone.status = status;
-            for (int i = 0; i < adjacentVertices.size(); i++) {
-                clone.adjacentVertices.add((Vertex) adjacentVertices.get(i).clone());
-            }
-
-            return clone;
-        } catch (CloneNotSupportedException e) {
-            return null;
+        Vertex clone = pool.obtain();
+        clone.x = x;
+        clone.y = y;
+        clone.z = z;
+        clone.data = (VertexData) data.clone();
+        clone.status = status;
+        for (int i = 0; i < adjacentVertices.size(); i++) {
+            clone.adjacentVertices.add((Vertex) adjacentVertices.get(i).clone());
         }
+
+        return clone;
     }
 
     /**
@@ -176,7 +137,7 @@ public class Vertex implements Cloneable {
      * @return vertex position
      */
     public VectorD getPosition() {
-        return new VectorD(x, y, z);
+        return VectorD.obtain().set(x, y, z);
     }
 
     //--------------------------------------GETS------------------------------------//
@@ -319,5 +280,15 @@ public class Vertex implements Cloneable {
                 vs[offset + i] = w1 * vs1[offset1 + i] + w2 * vs2[offset2 + i] + w3 * vs3[offset3 + i];
             }
         }
+    }
+
+    @Override
+    public void dispose() {
+        this.x = 0;
+        this.y = 0;
+        this.z = 0;
+        this.status = 0;
+        this.adjacentVertices.clear();
+        this.data = null;
     }
 }
