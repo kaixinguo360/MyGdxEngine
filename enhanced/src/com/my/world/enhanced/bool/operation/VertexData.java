@@ -1,26 +1,28 @@
 package com.my.world.enhanced.bool.operation;
 
-import com.badlogic.gdx.graphics.Mesh;
+import com.badlogic.gdx.graphics.VertexAttributes;
 import com.my.world.core.util.Disposable;
 import lombok.var;
+
+import java.util.Arrays;
 
 public class VertexData implements Disposable {
 
     public float[] values;
-    public Mesh mesh;
+    public VertexAttributes attributes;
 
     public static final EnhancedPool<VertexData> pool = new EnhancedPool<>(VertexData::new);
 
-    public static VertexData obtain(float[] values, Mesh mesh) {
+    public static VertexData obtain(float[] values, VertexAttributes attributes) {
         var obtain = pool.obtain();
         obtain.values = values;
-        obtain.mesh = mesh;
+        obtain.attributes = attributes;
         return obtain;
     }
 
     @Override
     public Object clone() {
-        return VertexData.obtain(values.clone(), mesh);
+        return VertexData.obtain(values.clone(), attributes);
     }
 
     @Override
@@ -29,13 +31,13 @@ public class VertexData implements Disposable {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         VertexData other = (VertexData) obj;
-        if (this.mesh != other.mesh) return false;
-        return this.values == other.values; // TODO: 两个MyData怎么才算相等?
+        if (!this.attributes.equals(other.attributes)) return false;
+        return Arrays.equals(this.values, other.values);
     }
 
     @Override
     public void dispose() {
         this.values = null;
-        this.mesh = null;
+        this.attributes = null;
     }
 }

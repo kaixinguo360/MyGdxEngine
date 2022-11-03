@@ -86,7 +86,7 @@ public class Solid implements Cloneable, Disposable {
             // 复制顶点数据到MyData对象
             float[] dataArray = new float[vertexSize];
             System.arraycopy(vers, offsetVertex, dataArray, 0, vertexSize);
-            VertexData data = VertexData.obtain(dataArray, mesh);
+            VertexData data = VertexData.obtain(dataArray, mesh.getVertexAttributes());
 
             verticesPoints[i] = pos;
             vertex = obtain.addVertex(pos, data, Vertex.UNKNOWN);
