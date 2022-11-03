@@ -31,10 +31,15 @@ import java.util.Map;
  * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  */
 public class ModelInstanceBoolOperation {
+
     public final static short UNKNOWN = 0;
     public final static short DIFF = 1;
     public final static short INTER = 2;
     public final static short UNION = 4;
+
+    private static final Vector3 tmpV = new Vector3();
+    private static final Matrix4 tmpM = new Matrix4();
+
     /**
      * 是否应该跳过
      **/
@@ -77,8 +82,8 @@ public class ModelInstanceBoolOperation {
 
         // Setup Reference Object
         LoggerUtil.log(0, "参考物体: " + reference.id);
-        Matrix4 referenceTransform = new Matrix4().set(instance.transform).inv().mul(transform2);
-        Solid referenceSolid = new Solid(reference, referenceTransform);
+        Matrix4 referenceTransform = tmpM.set(instance.transform).inv().mul(transform2);
+        Solid referenceSolid = Solid.obtain(reference, referenceTransform);
         Bound referenceBound = referenceSolid.getBound();
         for (VertexAttribute attribute : reference.mesh.getVertexAttributes()) {
             if (!attributes.containsKey(attribute.usage)) {
@@ -113,7 +118,7 @@ public class ModelInstanceBoolOperation {
                 }
 
                 LoggerUtil.log(0, "      正在创建Solid...");
-                Solid solid1 = new Solid(meshNodePart.meshPart, meshNodePartTransform);
+                Solid solid1 = Solid.obtain(meshNodePart.meshPart, meshNodePartTransform);
                 Solid solid2 = (Solid) referenceSolid.clone();
 
                 // split the faces so that none of them intercepts each other
@@ -252,7 +257,6 @@ public class ModelInstanceBoolOperation {
      */
     public void apply() {
         LoggerUtil.log(0, "*** 开始创建输出 ***");
-        Vector3 tmpV = new Vector3();
         meshBuilder.begin(new VertexAttributes(attributes.values().toArray(new VertexAttribute[0])));
         for (MeshGroup.MeshNodePart meshNodePart : meshNodeParts) {
             if (meshNodePart.userObject == null) continue;
@@ -273,7 +277,6 @@ public class ModelInstanceBoolOperation {
                         case VertexAttributes.Usage.Normal:
                             info.setNor(vs[offset], vs[offset + 1], vs[offset + 2]); break;
                         case VertexAttributes.Usage.TextureCoordinates:
-                            LoggerUtil.log(4, "TextureCoordinates: " + attribute.alias);
                             info.setUV(vs[offset], vs[offset + 1]); break;
                         case VertexAttributes.Usage.ColorPacked:
                         case VertexAttributes.Usage.ColorUnpacked:
@@ -448,7 +451,7 @@ public class ModelInstanceBoolOperation {
     private boolean isOverlap(MeshPart meshPart, Matrix4 transform, Bound bound) {
         meshPart.update();
         float radius = meshPart.radius;
-        Vector3 center = new Vector3(meshPart.center).mul(transform);
+        Vector3 center = tmpV.set(meshPart.center).mul(transform);
 
         if (center.x > bound.xMax + radius || center.x < bound.xMin - radius) return false;
         if (center.y > bound.yMax + radius || center.y < bound.yMin - radius) return false;
