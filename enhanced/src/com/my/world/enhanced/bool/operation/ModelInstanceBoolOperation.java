@@ -7,14 +7,11 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.Array;
 import com.my.world.enhanced.bool.util.LoggerUtil;
 import com.my.world.enhanced.bool.util.MeshGroup;
 import com.my.world.enhanced.bool.util.VertexMixer;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Class used to apply boolean operations on ModelInstance.
@@ -30,10 +27,15 @@ import java.util.Map;
  * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  */
 public class ModelInstanceBoolOperation {
+
     public final static short UNKNOWN = 0;
     public final static short DIFF = 1;
     public final static short INTER = 2;
     public final static short UNION = 4;
+
+    private static final Vector3 tmpV = new Vector3();
+    private static final Matrix4 tmpM = new Matrix4();
+
     /**
      * 是否应该跳过
      **/
@@ -47,13 +49,9 @@ public class ModelInstanceBoolOperation {
      */
     private ModelInstance instance;
     /**
-     * 待操作MeshGroups
-     */
-    private Map<Mesh, MeshGroup> meshGroups;
-    /**
      * 待操作MeshNodeParts
      */
-    private Array<MeshGroup.MeshNodePart> meshNodeParts = new Array<>();
+    private List<MeshGroup.MeshNodePart> meshNodeParts = new ArrayList<>();
     /**
      * 待操作Mesh序号
      */
@@ -62,10 +60,6 @@ public class ModelInstanceBoolOperation {
      * 操作类型
      **/
     private int type = UNKNOWN;
-    /**
-     * 待操作MeshPart计数
-     **/
-    private int count = 0;
 
     //--------------------------------CONSTRUCTORS----------------------------------//
 
@@ -82,40 +76,34 @@ public class ModelInstanceBoolOperation {
                                       Matrix4 transform2) throws BooleanOperationException {
         LoggerUtil.log(0, "*** 创建布尔操作开始 ***");
 
-        // 获取目标物体
-        LoggerUtil.log(0, "目标物体: " + instance);
-        this.instance = instance;
-        this.meshGroups = MeshGroup.getMeshGroups(instance);
-
-        // 获取参考物体
+        // Setup Reference Object
         LoggerUtil.log(0, "参考物体: " + reference.id);
-        Matrix4 referenceTransform = transform2.cpy();
+        Matrix4 referenceTransform = tmpM.set(transform2);
         Solid referenceSolid = new Solid(reference, referenceTransform);
         Bound referenceBound = referenceSolid.getBound();
 
-        // 开始处理目标物体
+        // Setup Target Object
+        LoggerUtil.log(0, "目标物体: " + instance);
+        this.instance = instance;
+        Collection<MeshGroup> meshGroups = MeshGroup.getMeshGroups(instance).values();
         LoggerUtil.log(0, "开始处理目标物体");
-        for (MeshGroup meshGroup : meshGroups.values()) {
+        for (MeshGroup meshGroup : meshGroups) {
             LoggerUtil.log(0, "  开始处理 Mesh(" + meshGroup.mesh + ")");
 
             addMesh(meshGroup.mesh);
 
-            // representation to apply boolean operations
             for (MeshGroup.MeshNodePart meshNodePart : meshGroup.meshNodeParts) {
                 LoggerUtil.log(0, "    开始处理 MeshPart(" + meshNodePart.meshPart.id + ")");
 
-                meshNodeParts.add(meshNodePart);
-
-                Matrix4 m1 = instance.transform.cpy().mul(meshNodePart.node.calculateLocalTransform());
-
+                Matrix4 meshNodePartTransform = instance.transform.cpy().mul(meshNodePart.node.calculateLocalTransform());
                 meshNodePart.meshPart.update();
-                if (!isOverlap(meshNodePart.meshPart, m1, referenceBound)) {
+                if (!isOverlap(meshNodePart.meshPart, meshNodePartTransform, referenceBound)) {
                     LoggerUtil.log(0, "    边界盒未相交, 终止"); // TODO: 会错误的略过未相交的meshPart
                     continue;
                 }
 
                 LoggerUtil.log(0, "      正在创建Solid...");
-                Solid solid1 = new Solid(meshNodePart.meshPart, m1);
+                Solid solid1 = new Solid(meshNodePart.meshPart, meshNodePartTransform);
                 Solid solid2 = (Solid) referenceSolid.clone();
 
                 // split the faces so that none of them intercepts each other
@@ -127,33 +115,32 @@ public class ModelInstanceBoolOperation {
 
                 if (!isSplit1 && !isSplit2) {
                     LoggerUtil.log(0, "    无相交部分, 终止");
-                } else {
-
-                    // classify faces as being inside or outside the other solid
-
-                    LoggerUtil.log(0, "      正在分类目标网格...");
-                    solid1.classifyFaces(solid2);
-
-                    LoggerUtil.log(0, "      正在分类目标网格...");
-                    solid2.classifyFaces(solid1);
-
-                    BoolPair pair = new BoolPair(solid1, solid2);
-                    pair.m1 = m1.inv();
-                    meshNodePart.userObject = pair;
-
-                    count++;
-                    LoggerUtil.log(0, "    处理完成 MeshPart(" + meshNodePart.meshPart.id + ")");
+                    continue;
                 }
+                // classify faces as being inside or outside the other solid
+
+                LoggerUtil.log(0, "      正在分类目标网格...");
+                solid1.classifyFaces(solid2);
+
+                LoggerUtil.log(0, "      正在分类参考网格...");
+                solid2.classifyFaces(solid1);
+
+                BoolPair pair = new BoolPair(solid1, solid2);
+                pair.m1 = meshNodePartTransform.inv();
+                meshNodePart.userObject = pair;
+                meshNodeParts.add(meshNodePart);
+
+                LoggerUtil.log(0, "    处理完成 MeshPart(" + meshNodePart.meshPart.id + ")");
             }
             LoggerUtil.log(0, "  处理完成 Mesh(" + meshGroup.mesh + ")");
         }
-        LoggerUtil.log(1, "处理目标物体完成, MeshPart " + count + " 个");
+        LoggerUtil.log(1, "处理目标物体完成, MeshPart " + meshNodeParts.size() + " 个");
 
         // 设置AttrProvider
         setAttrProvider();
         addMesh(reference.mesh);
 
-        if (count == 0) {
+        if (meshNodeParts.size() == 0) {
             skip = true;
         }
 
@@ -220,7 +207,7 @@ public class ModelInstanceBoolOperation {
         type = UNION;
         LoggerUtil.log(0, "提取并集网格...");
 
-        if (count == 0) {
+        if (meshNodeParts.size() == 0) {
             LoggerUtil.log(0, "待操作MeshPart为0, 直接跳过");
             return false;
         }
@@ -245,7 +232,7 @@ public class ModelInstanceBoolOperation {
         type = INTER;
         LoggerUtil.log(0, "提取交集网格...");
 
-        if (count == 0) {
+        if (meshNodeParts.size() == 0) {
             LoggerUtil.log(0, "待操作MeshPart为0, 直接跳过");
             return false;
         }
@@ -269,7 +256,7 @@ public class ModelInstanceBoolOperation {
         type = DIFF;
         LoggerUtil.log(0, "提取非集网格...");
 
-        if (count == 0) {
+        if (meshNodeParts.size() == 0) {
             LoggerUtil.log(0, "待操作MeshPart为0, 直接跳过");
             return false;
         }
@@ -366,10 +353,9 @@ public class ModelInstanceBoolOperation {
         mesh.setIndices(is);
 
         // 令每一个MeshPart使用新Mesh
-        int tmpOffset = 0;
+        int offset = 0;
         for (MeshGroup.MeshNodePart meshNodePart : meshNodeParts) {
             if (meshNodePart.userObject == null) continue;
-
             BoolVerData verData = meshNodePart.userObject.verData;
 
             // 如果verData为空
@@ -377,9 +363,9 @@ public class ModelInstanceBoolOperation {
                 meshNodePart.node.parts.removeValue(meshNodePart.nodePart, true);
             } else {
                 MeshPart meshPart = meshNodePart.meshPart;
-                meshPart.set(meshPart.id, mesh, tmpOffset, verData.indexNum, meshPart.primitiveType);
+                meshPart.set(meshPart.id, mesh, offset, verData.indexNum, meshPart.primitiveType);
                 meshPart.update();
-                tmpOffset += verData.indexNum;
+                offset += verData.indexNum;
             }
         }
 
@@ -394,48 +380,34 @@ public class ModelInstanceBoolOperation {
 
         // 临时保存原变量
         ModelInstance instance_old = this.instance;
-        Map<Mesh, MeshGroup> meshGroups_old = this.meshGroups;
-        Array<MeshGroup.MeshNodePart> meshNodeParts_old = this.meshNodeParts;
+        List<MeshGroup.MeshNodePart> meshNodeParts_old = this.meshNodeParts;
 
         // 覆盖原变量
         this.instance = instance.copy();
-        this.meshGroups = MeshGroup.getMeshGroups(instance);
-        for (MeshGroup meshGroup : meshGroups_old.values()) {
-            MeshGroup newMeshGroup = meshGroups.get(meshGroup.mesh);
-            assert (newMeshGroup != null);
-            boolean isCopied;
-            for (MeshGroup.MeshNodePart meshNodePart : meshGroup.meshNodeParts) {
-                isCopied = false;
-                for (MeshGroup.MeshNodePart newMeshNodePart : newMeshGroup.meshNodeParts) {
-                    if (!meshNodePart.meshPart.id.equals(newMeshNodePart.meshPart.id))
-                        continue;
-                    newMeshNodePart.userObject = meshNodePart.userObject;
-                    isCopied = true;
-                    break;
-                }
-                assert (isCopied);
-            }
-        }
-        this.meshNodeParts = new Array<>();
+        this.meshNodeParts = new ArrayList<>();
+        Collection<MeshGroup> meshGroups = MeshGroup.getMeshGroups(instance).values();
         for (MeshGroup.MeshNodePart meshNodePart : meshNodeParts_old) {
-            for (MeshGroup newMeshGroup : meshGroups.values()) {
+            boolean isCopied = false;
+            for (MeshGroup newMeshGroup : meshGroups) {
                 for (MeshGroup.MeshNodePart newMeshNodePart : newMeshGroup.meshNodeParts) {
-                    if (!meshNodePart.meshPart.id.equals(newMeshNodePart.meshPart.id))
-                        continue;
-                    meshNodeParts.add(newMeshNodePart);
-                    break;
+                    if (meshNodePart.meshPart.id.equals(newMeshNodePart.meshPart.id)) {
+                        newMeshNodePart.userObject = meshNodePart.userObject;
+                        meshNodeParts.add(newMeshNodePart);
+                        isCopied = true;
+                        break;
+                    }
                 }
+                if (isCopied) break;
             }
+            assert (isCopied);
         }
-        assert (meshNodeParts.size == this.meshNodeParts.size);
 
         // 调用原apply函数
         apply();
-        ModelInstance newInstance = instance;
 
         // 还原临时保存的原变量
+        ModelInstance newInstance = instance;
         this.instance = instance_old;
-        this.meshGroups = meshGroups_old;
         this.meshNodeParts = meshNodeParts_old;
 
         return newInstance;
@@ -473,7 +445,7 @@ public class ModelInstanceBoolOperation {
      * Fills solid arrays with data about faces of an object generated whose status
      * is as required
      *
-     * @param solid      solid object used to fill the arrays
+     * @param solid       solid object used to fill the arrays
      * @param vertices    vertices array to be filled
      * @param indices     indices array to be filled
      * @param datas       datas array to be filled
@@ -511,8 +483,9 @@ public class ModelInstanceBoolOperation {
      * @return is overlapped or not
      */
     private boolean isOverlap(MeshPart meshPart, Matrix4 transform, Bound bound) {
+        meshPart.update();
         float radius = meshPart.radius;
-        Vector3 center = new Vector3(meshPart.center).mul(transform);
+        Vector3 center = tmpV.set(meshPart.center).mul(transform);
 
         if (center.x > bound.xMax + radius || center.x < bound.xMin - radius) return false;
         if (center.y > bound.yMax + radius || center.y < bound.yMin - radius) return false;
