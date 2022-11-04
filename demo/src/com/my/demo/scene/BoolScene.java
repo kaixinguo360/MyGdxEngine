@@ -1,6 +1,8 @@
 package com.my.demo.scene;
 
-import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.g3d.Model;
+import com.badlogic.gdx.math.Vector3;
 import com.my.demo.entity.common.GUIScript;
 import com.my.demo.entity.object.RunwayEntity;
 import com.my.demo.entity.object.TowerEntity;
@@ -9,6 +11,7 @@ import com.my.world.core.Scene;
 import com.my.world.enhanced.bool.entity.CutterEntity;
 import com.my.world.module.common.Position;
 import com.my.world.module.input.InputSystem;
+import com.my.world.module.render.model.GLTFModel;
 
 import java.util.Map;
 
@@ -29,18 +32,34 @@ public class BoolScene extends BaseScene<BoolScene> {
             }
         }
 
+        character.controller.velocity = 50f;
+        Model model = new GLTFModel("bool/cutter.gltf").sceneAsset.scene.model;
+
+        CutterEntity cutter1 = CutterEntity.get(model);
+        cutter1.cutterScript.filter = entity -> ("Box".equals(entity.getName()) || "Brick".equals(entity.getName()));
+        cutter1.setParent(character.camera);
+        cutter1.addToScene(scene);
+
+        CutterEntity cutter2 = CutterEntity.get(model);
+        cutter2.cutterScript.filter = entity -> ("Box".equals(entity.getName()) || "Brick".equals(entity.getName()));
+        cutter2.position.setLocalTransform(m -> m.rotate(Vector3.Z, 90));
+        cutter2.setParent(character.camera);
+        cutter2.addToScene(scene);
+
         Entity guiEntity = new Entity();
         guiEntity.setName("guiEntity");
         guiEntity.addComponent(new GUIScript()).targetEntity = scene.getEntityManager().findEntityByName("Aircraft-6");
-        scene.addEntity(guiEntity);
-
-        character.controller.velocity = 50f;
-        Matrix4 offset = new Matrix4().setToTranslation(-25, 0, 0);
-        character.addComponent((InputSystem.OnTouchDown) (int screenX, int screenY, int pointer, int button) -> {
-            CutterEntity cutter = new CutterEntity(50, 50, 50, offset);
-            cutter.position.setGlobalTransform(m -> character.position.getGlobalTransform(m));
-            cutter.addToScene(scene);
+        guiEntity.addComponent((InputSystem.OnTouchDown) (screenX, screenY, pointer, button) -> {
+            if (character.camera.camera.isActive()) {
+                if (button == Input.Buttons.LEFT) {
+                    cutter1.cutterScript.doCut();
+                }
+                if (button == Input.Buttons.RIGHT) {
+                    cutter2.cutterScript.doCut();
+                }
+            }
         });
+        scene.addEntity(guiEntity);
 
         return ground;
     }

@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.demo.entity.common.EnvironmentSetupScript;
-import com.my.demo.scene.AirportScene;
+import com.my.demo.scene.BoolScene;
 import com.my.world.core.Engine;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
@@ -44,7 +44,7 @@ public class SceneBuilder {
 
         // ----- Init Scene ----- //
 
-        builder.build(AirportScene.class);
+        builder.build(BoolScene.class);
 
         // ----- Init Scripts ----- //
 
