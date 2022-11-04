@@ -259,7 +259,7 @@ public class Solid implements Cloneable {
     private Face addFace(Vertex v1, Vertex v2, Vertex v3) {
         if (!(v1.equals(v2) || v1.equals(v3) || v2.equals(v3))) {
             Face face = new Face(v1, v2, v3);
-            if (face.getArea() > NumberUtil.dTOL) {
+            if (face.getArea() > NumberUtil.fTOL) {
                 faces.add(face);
                 return face;
             } else {
