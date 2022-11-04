@@ -1,5 +1,7 @@
 package com.my.world.enhanced.bool.operation;
 
+import com.badlogic.gdx.graphics.VertexAttribute;
+import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.world.core.util.Disposable;
@@ -229,14 +231,8 @@ public class Vertex implements Cloneable, Disposable {
     private static final Matrix4 tmpM = new Matrix4();
 
     public void avg(Vertex v1, Vertex v2, Vertex v3) {
-        float[] data = this.data.values;
-        float[] data1 = v1.data.values;
-        float[] data2 = v2.data.values;
-        float[] data3 = v3.data.values;
-        if (data.length != data1.length || data1.length != data2.length || data2.length != data3.length) {
-            LoggerUtil.log(1, "顶点大小不同, 跳过混合");
-        }
 
+        // 利用矩阵计算顶点权重
         tmpM.idt();
         tmpM.val[M00] = (float) v1.x;
         tmpM.val[M10] = (float) v1.y;
@@ -249,18 +245,39 @@ public class Vertex implements Cloneable, Disposable {
         tmpM.val[M22] = (float) v3.z;
         try {
             tmpM.inv();
+            this.toVector3(tmpV).mul(tmpM).nor();
         } catch (Exception e) {
-            LoggerUtil.log(1, "计算顶点权重出错");
-            return;
+            tmpV.set(1, 1, 1);
+            LoggerUtil.log(4, "[ERROR] 计算顶点权重出错, 设置为默认值");
         }
-        this.toVector3(tmpV).mul(tmpM).nor();
-        float scale = 1 / (tmpV.x + tmpV.y + tmpV.z);
-        float p1 = tmpV.x * scale;
-        float p2 = tmpV.y * scale;
-        float p3 = tmpV.z * scale;
 
-        for (int i = 0; i < data.length; i++) {
-            data[i] = p1 * data1[i] + p2 * data2[i] + p3 * data3[i];
+        float scale = 1 / (tmpV.x + tmpV.y + tmpV.z);
+        float w1 = tmpV.x * scale;
+        float w2 = tmpV.y * scale;
+        float w3 = tmpV.z * scale;
+        float[] vs = this.data.values;
+        float[] vs1 = v1.data.values;
+        float[] vs2 = v2.data.values;
+        float[] vs3 = v3.data.values;
+        VertexAttributes as = this.data.attributes;
+        VertexAttributes as1 = v1.data.attributes;
+        VertexAttributes as2 = v2.data.attributes;
+        VertexAttributes as3 = v3.data.attributes;
+
+        for (VertexAttribute a : as) {
+            VertexAttribute a1 = as1 == as ? a : as1.findByUsage(a.usage);
+            if (a1 == null) continue;
+            VertexAttribute a2 = as2 == as ? a : (as2 == as1 ? a1 : as2.findByUsage(a.usage));
+            if (a2 == null) continue;
+            VertexAttribute a3 = as3 == as ? a : (as3 == as1 ? a1 : (as3 == as2 ? a2 : as3.findByUsage(a.usage)));
+            if (a3 == null) continue;
+            int offset = a.offset / 4;
+            int offset1 = a1.offset / 4;
+            int offset2 = a2.offset / 4;
+            int offset3 = a3.offset / 4;
+            for (int i = 0; i < a.numComponents; i++) {
+                vs[offset + i] = w1 * vs1[offset1 + i] + w2 * vs2[offset2 + i] + w3 * vs3[offset3 + i];
+            }
         }
     }
 
