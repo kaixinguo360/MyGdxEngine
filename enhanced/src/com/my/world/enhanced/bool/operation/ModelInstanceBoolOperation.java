@@ -5,12 +5,12 @@ import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.model.MeshPart;
+import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.my.world.enhanced.bool.util.LoggerUtil;
 import com.my.world.enhanced.bool.util.MeshGroup;
-import com.my.world.enhanced.bool.util.VertexMixer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,18 +30,19 @@ import java.util.Map;
  * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  */
 public class ModelInstanceBoolOperation {
+
     public final static short UNKNOWN = 0;
     public final static short DIFF = 1;
     public final static short INTER = 2;
     public final static short UNION = 4;
+
+    private static final Vector3 tmpV = new Vector3();
+    private static final Matrix4 tmpM = new Matrix4();
+
     /**
      * 是否应该跳过
      **/
     public boolean skip = false;
-    /**
-     * 初始化attrUtils
-     **/
-    VertexMixer vertexMixer = new VertexMixer();
     /**
      * 待操作ModelInstance
      */
@@ -54,10 +55,6 @@ public class ModelInstanceBoolOperation {
      * 待操作MeshNodeParts
      */
     private Array<MeshGroup.MeshNodePart> meshNodeParts = new Array<>();
-    /**
-     * 待操作Mesh序号
-     */
-    private final Map<Mesh, Integer> mapIds = new HashMap<>();
     /**
      * 操作类型
      **/
@@ -84,9 +81,14 @@ public class ModelInstanceBoolOperation {
 
         // Setup Reference Object
         LoggerUtil.log(0, "参考物体: " + reference.id);
-        Matrix4 referenceTransform = transform2.cpy();
+        Matrix4 referenceTransform = tmpM.set(instance.transform).inv().mul(transform2);
         Solid referenceSolid = new Solid(reference, referenceTransform);
         Bound referenceBound = referenceSolid.getBound();
+        for (VertexAttribute attribute : reference.mesh.getVertexAttributes()) {
+            if (!attributes.containsKey(attribute.usage)) {
+                attributes.put(attribute.usage, attribute.copy());
+            }
+        }
 
         // Setup Target Object
         LoggerUtil.log(0, "目标物体: " + instance);
@@ -96,14 +98,18 @@ public class ModelInstanceBoolOperation {
         for (MeshGroup meshGroup : meshGroups.values()) {
             LoggerUtil.log(0, "  开始处理 Mesh(" + meshGroup.mesh + ")");
 
-            addMesh(meshGroup.mesh);
+            for (VertexAttribute attribute : meshGroup.mesh.getVertexAttributes()) {
+                if (!attributes.containsKey(attribute.usage)) {
+                    attributes.put(attribute.usage, attribute.copy());
+                }
+            }
 
             for (MeshGroup.MeshNodePart meshNodePart : meshGroup.meshNodeParts) {
                 LoggerUtil.log(0, "    开始处理 MeshPart(" + meshNodePart.meshPart.id + ")");
 
                 meshNodeParts.add(meshNodePart);
 
-                Matrix4 meshNodePartTransform = instance.transform.cpy().mul(meshNodePart.node.calculateLocalTransform());
+                Matrix4 meshNodePartTransform = meshNodePart.node.calculateLocalTransform();
                 meshNodePart.meshPart.update();
                 if (!isOverlap(meshNodePart.meshPart, meshNodePartTransform, referenceBound)) {
                     LoggerUtil.log(0, "    边界盒未相交, 终止"); // TODO: 会错误的略过未相交的meshPart
@@ -144,10 +150,6 @@ public class ModelInstanceBoolOperation {
         }
         LoggerUtil.log(1, "处理目标物体完成, MeshPart " + count + " 个");
 
-        // 设置AttrProvider
-        setAttrProvider();
-        addMesh(reference.mesh);
-
         if (count == 0) {
             skip = true;
         }
@@ -155,55 +157,8 @@ public class ModelInstanceBoolOperation {
         LoggerUtil.log(0, "*** 创建布尔操作结束 ***");
     }
 
-    private void addMesh(Mesh mesh) {
-        mapIds.put(mesh, mapIds.size());
-        vertexMixer.addAttributes(mesh.getVertexAttributes());
-    }
-
-    /**
-     * Set AttrProvider of VertexMixer
-     */
-    private void setAttrProvider() {
-        vertexMixer.setAttrProvider(new VertexMixer.AttrProvider() {
-            @Override
-            public void setAttr(VertexAttribute v, float x, float y, float z, float[] attrs) {
-                switch (v.usage) {
-                    case VertexAttributes.Usage.Position: {
-                        setPosition(attrs, 0, 0, 0);
-                        break;
-                    }
-                    case VertexAttributes.Usage.ColorUnpacked: {
-                        setColorUnpacked(attrs, 1, 0, 0, 1);
-                        break;
-                    }
-                    case VertexAttributes.Usage.ColorPacked: {
-                        setColorPacked(attrs, 1, 0, 0, 1);
-                        break;
-                    }
-                    case VertexAttributes.Usage.Normal: {
-                        setNormal(attrs, x, y, z);
-                        break;
-                    }
-                    case VertexAttributes.Usage.TextureCoordinates: {
-                        setTextureCoordinates(attrs, (float) Math.random(), (float) Math.random());
-                        break;
-                    }
-                    case VertexAttributes.Usage.Generic: {
-                        // No Thing In Here
-                        break;
-                    }
-                    case VertexAttributes.Usage.BoneWeight: {
-                        setBoneWeight(attrs, 0, 1);
-                        break;
-                    }
-                    case VertexAttributes.Usage.BiNormal: {
-                        setBiNormal(attrs, 0, 1, 0);
-                        break;
-                    }
-                }
-            }
-        });
-    }
+    private final MeshBuilder meshBuilder = new MeshBuilder();
+    private final Map<Integer, VertexAttribute> attributes = new HashMap<>();
 
     //-------------------------------BOOLEAN_OPERATIONS-----------------------------//
 
@@ -302,18 +257,15 @@ public class ModelInstanceBoolOperation {
     public void apply() {
         LoggerUtil.log(0, "*** 输出创建开始 ***");
 
+        VertexAttributes vertexAttributes = new VertexAttributes(attributes.values().toArray(new VertexAttribute[0]));
         // 获取总顶点数, 总索引数, 目标顶点大小
         int allVerNum = 0;
         int allIndexNum = 0;
-        int verSize = vertexMixer.getTargetVertexSize();
+        int verSize = vertexAttributes.vertexSize / 4;
         for (MeshGroup.MeshNodePart meshNodePart : meshNodeParts) {
             if (meshNodePart.userObject == null) continue;
-
             BoolVerData verData = meshNodePart.userObject.verData;
-            // 如果verData为空
-            if (verData == null) {
-                continue;
-            }
+            if (verData == null) continue;
             allVerNum += verData.vertexNum;
             allIndexNum += verData.indexNum;
         }
@@ -330,33 +282,45 @@ public class ModelInstanceBoolOperation {
         int isOffset = 0;
         for (MeshGroup.MeshNodePart meshNodePart : meshNodeParts) {
             if (meshNodePart.userObject == null) continue;
-
             BoolPair pair = meshNodePart.userObject;
             BoolVerData verData = pair.verData;
+            if (verData == null) continue;
 
-            // 如果verData为空
-            if (verData == null) {
-                continue;
+            for (int i = 0; i < verData.vertices.size(); i++) {
+                Vertex vertex = verData.vertices.get(i);
+                float[] values = vertex.data.values;
+                VertexAttributes as = vertex.data.attributes;
+                for (VertexAttribute a : vertexAttributes) {
+                    VertexAttribute a1 = as == vertexAttributes ? a : as.findByUsage(a.usage);
+                    if (a1 == null) continue;
+                    int offset = a.offset / 4;
+                    int offset1 = a1.offset / 4;
+                    System.arraycopy(values, offset1, vs, (vsOffset + i * verSize + offset), a.numComponents);
+                }
             }
 
-            verData.copyToArray(vs, vsOffset, is, isOffset, pair.m1);
+            // 复制索引数据
+            int max = 0;
+            int min = Integer.MAX_VALUE;
+            ArrayList<Integer> indexs = verData.indexs;
+            for (int i = 0; i < indexs.size(); i++) {
+                if (vsOffset + indexs.get(i) > Short.MAX_VALUE) {
+                    throw new RuntimeException("Index Is Too Bigger!");
+                }
+                if (indexs.get(i) < min) min = indexs.get(i);
+                if (indexs.get(i) > max) max = indexs.get(i);
+                is[isOffset + i] = (short) (vsOffset + indexs.get(i));
+            }
 
             vsOffset += verData.vertexNum;
             isOffset += verData.indexNum;
-
-            LoggerUtil.log(0, "meshPart[" + meshNodePart.meshPart.id + "]: 顶点: " + verData.vertexNum + ", 索引: " + verData.indexNum);
-            LoggerUtil.log(0, "meshPart[" + meshNodePart.meshPart.id + "]: vsOffset: " + vsOffset + ", isOffset: " + isOffset);
-
-
-//            meshNodePart.node.localTransform.set(pair.m1.inv());
-//            meshNodePart.node.isAnimated = true;
         }
 
         assert (vsOffset == allVerNum) : "顶点数不符合!";
         assert (isOffset == allIndexNum) : "索引数不符合!";
 
         // 使用对应数组创建Mesh
-        Mesh mesh = new Mesh(false, allVerNum, allIndexNum, vertexMixer.getTargetAttr());
+        Mesh mesh = new Mesh(false, allVerNum, allIndexNum, vertexAttributes);
         mesh.setVertices(vs);
         mesh.setIndices(is);
 
@@ -507,7 +471,7 @@ public class ModelInstanceBoolOperation {
     private boolean isOverlap(MeshPart meshPart, Matrix4 transform, Bound bound) {
         meshPart.update();
         float radius = meshPart.radius;
-        Vector3 center = new Vector3(meshPart.center).mul(transform);
+        Vector3 center = tmpV.set(meshPart.center).mul(transform);
 
         if (center.x > bound.xMax + radius || center.x < bound.xMin - radius) return false;
         if (center.y > bound.yMax + radius || center.y < bound.yMin - radius) return false;
@@ -533,7 +497,7 @@ public class ModelInstanceBoolOperation {
     /**
      * Class to store the vertex data and index data.
      */
-    private class BoolVerData {
+    private static class BoolVerData {
         private final ArrayList<Vertex> vertices;
         private final ArrayList<Integer> indexs;
         private final ArrayList<VertexData> datas;
@@ -550,42 +514,6 @@ public class ModelInstanceBoolOperation {
             this.vertices = vertices;
             this.indexs = indexs;
             this.datas = datas;
-        }
-
-        private void copyToArray(float[] vs, int vsOffset, short[] is, int isOffset, Matrix4 transform) {
-            // 复制顶点数据
-            Vector3 tmpV = new Vector3();
-            vertexMixer.begin(vertexNum);
-            for (int i = 0; i < vertexNum; i++) {
-                vertices.get(i).toVector3(tmpV);
-                tmpV.mul(transform);
-                VertexData data = datas.get(i);
-
-                Mesh mesh = data.mesh;
-                if (mesh != null && mapIds.containsKey(data.mesh)) {
-                    int id = mapIds.get(data.mesh);
-                    if (id >= 0)
-                        vertexMixer.addVertex(id, data.values, tmpV);
-                    else
-                        vertexMixer.addVertex(tmpV);
-                } else {
-                    vertexMixer.addVertex(tmpV);
-                }
-            }
-            vertexMixer.buildToArray(vs, vsOffset);
-
-            // 复制索引数据
-            int max = 0,
-                    min = Integer.MAX_VALUE;
-            for (int i = 0; i < indexs.size(); i++) {
-                if (indexs.get(i) + vsOffset > Short.MAX_VALUE) {
-                    throw new RuntimeException("Index Is Too Bigger!");
-                }
-                if (indexs.get(i) < min) min = indexs.get(i);
-                if (indexs.get(i) > max) max = indexs.get(i);
-                is[isOffset + i] = (short) (indexs.get(i) + vsOffset);
-            }
-            LoggerUtil.log(0, "MIN: " + (min + vsOffset) + ", MAX: " + (max + vsOffset));
         }
     }
 
