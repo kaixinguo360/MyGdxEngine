@@ -3,6 +3,7 @@ package com.my.demo.entity.common;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -13,12 +14,13 @@ import com.my.demo.entity.aircraft.AircraftScript;
 import com.my.world.core.Config;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
+import com.my.world.module.camera.CameraSystem;
 import com.my.world.module.script.ScriptSystem;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class GUIScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
+public class GUIScript implements ScriptSystem.OnStart, CameraSystem.AfterRender {
 
     @Config
     public Entity targetEntity;
@@ -66,7 +68,7 @@ public class GUIScript implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
     }
 
     @Override
-    public void update(Scene scene, Entity entity) {
+    public void afterRender(PerspectiveCamera cam) {
         float width = Gdx.graphics.getWidth();
         float height = Gdx.graphics.getHeight();
 
