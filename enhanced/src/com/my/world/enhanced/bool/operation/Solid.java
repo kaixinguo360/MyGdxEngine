@@ -85,7 +85,7 @@ public class Solid implements Cloneable {
             // 复制顶点数据到MyData对象
             float[] dataArray = new float[vertexSize];
             System.arraycopy(vers, offsetVertex, dataArray, 0, vertexSize);
-            VertexData data = new VertexData(dataArray, mesh);
+            VertexData data = new VertexData(dataArray, mesh.getVertexAttributes());
 
             verticesPoints[i] = pos;
             vertex = addVertex(pos, data, Vertex.UNKNOWN);
@@ -162,7 +162,7 @@ public class Solid implements Cloneable {
             // 复制顶点数据到MyData对象
             float[] dataArray = new float[vertexSize];
             System.arraycopy(vers, offsetVertex, dataArray, 0, vertexSize);
-            VertexData data = new VertexData(dataArray, mesh);
+            VertexData data = new VertexData(dataArray, mesh.getVertexAttributes());
 
             verticesPoints[i] = pos;
             vertex = addVertex(pos, data, Vertex.UNKNOWN);

@@ -55,7 +55,7 @@ public class ModelInstanceBoolOperation {
     /**
      * 待操作Mesh序号
      */
-    private final Map<Mesh, Integer> mapIds = new HashMap<>();
+    private final Map<VertexAttributes, Integer> mapIds = new HashMap<>();
     /**
      * 操作类型
      **/
@@ -148,7 +148,7 @@ public class ModelInstanceBoolOperation {
     }
 
     private void addMesh(Mesh mesh) {
-        mapIds.put(mesh, mapIds.size());
+        mapIds.put(mesh.getVertexAttributes(), mapIds.size());
         vertexMixer.addAttributes(mesh.getVertexAttributes());
     }
 
@@ -539,9 +539,9 @@ public class ModelInstanceBoolOperation {
                 tmpV.mul(transform);
                 VertexData data = datas.get(i);
 
-                Mesh mesh = data.mesh;
-                if (mesh != null && mapIds.containsKey(data.mesh)) {
-                    int id = mapIds.get(data.mesh);
+                VertexAttributes vertexAttributes = data.attributes;
+                if (vertexAttributes != null && mapIds.containsKey(data.attributes)) {
+                    int id = mapIds.get(data.attributes);
                     if (id >= 0)
                         vertexMixer.addVertex(id, data.values, tmpV);
                     else
