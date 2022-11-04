@@ -7,13 +7,10 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.Array;
 import com.my.world.enhanced.bool.util.LoggerUtil;
 import com.my.world.enhanced.bool.util.MeshGroup;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Class used to apply boolean operations on ModelInstance.
@@ -47,21 +44,17 @@ public class ModelInstanceBoolOperation {
      */
     private ModelInstance instance;
     /**
-     * 待操作MeshGroups
-     */
-    private Map<Mesh, MeshGroup> meshGroups;
-    /**
      * 待操作MeshNodeParts
      */
-    private Array<MeshGroup.MeshNodePart> meshNodeParts = new Array<>();
+    private List<MeshGroup.MeshNodePart> meshNodeParts = new ArrayList<>();
     /**
      * 操作类型
      **/
     private int type = UNKNOWN;
     /**
-     * 待操作MeshPart计数
+     * 顶点属性
      **/
-    private int count = 0;
+    private final Map<Integer, VertexAttribute> attributes = new HashMap<>();
 
     //--------------------------------CONSTRUCTORS----------------------------------//
 
@@ -92,9 +85,9 @@ public class ModelInstanceBoolOperation {
         // Setup Target Object
         LoggerUtil.log(0, "目标物体: " + instance);
         this.instance = instance;
-        this.meshGroups = MeshGroup.getMeshGroups(instance);
+        Collection<MeshGroup> meshGroups = MeshGroup.getMeshGroups(instance).values();
         LoggerUtil.log(0, "开始处理目标物体");
-        for (MeshGroup meshGroup : meshGroups.values()) {
+        for (MeshGroup meshGroup : meshGroups) {
             LoggerUtil.log(0, "  开始处理 Mesh(" + meshGroup.mesh + ")");
 
             for (VertexAttribute attribute : meshGroup.mesh.getVertexAttributes()) {
@@ -105,8 +98,6 @@ public class ModelInstanceBoolOperation {
 
             for (MeshGroup.MeshNodePart meshNodePart : meshGroup.meshNodeParts) {
                 LoggerUtil.log(0, "    开始处理 MeshPart(" + meshNodePart.meshPart.id + ")");
-
-                meshNodeParts.add(meshNodePart);
 
                 Matrix4 meshNodePartTransform = meshNodePart.node.calculateLocalTransform();
                 meshNodePart.meshPart.update();
@@ -141,22 +132,20 @@ public class ModelInstanceBoolOperation {
                 BoolPair pair = new BoolPair(solid1, solid2);
                 pair.m1 = meshNodePartTransform.inv();
                 meshNodePart.userObject = pair;
+                meshNodeParts.add(meshNodePart);
 
-                count++;
                 LoggerUtil.log(0, "    处理完成 MeshPart(" + meshNodePart.meshPart.id + ")");
             }
             LoggerUtil.log(0, "  处理完成 Mesh(" + meshGroup.mesh + ")");
         }
-        LoggerUtil.log(1, "处理目标物体完成, MeshPart " + count + " 个");
+        LoggerUtil.log(1, "处理目标物体完成, MeshPart " + meshNodeParts.size() + " 个");
 
-        if (count == 0) {
+        if (meshNodeParts.size() == 0) {
             skip = true;
         }
 
         LoggerUtil.log(0, "*** 创建布尔操作结束 ***");
     }
-
-    private final Map<Integer, VertexAttribute> attributes = new HashMap<>();
 
     //-------------------------------BOOLEAN_OPERATIONS-----------------------------//
 
@@ -168,7 +157,7 @@ public class ModelInstanceBoolOperation {
         type = UNION;
         LoggerUtil.log(0, "提取并集网格...");
 
-        if (count == 0) {
+        if (meshNodeParts.size() == 0) {
             LoggerUtil.log(0, "待操作MeshPart为0, 直接跳过");
             return false;
         }
@@ -193,7 +182,7 @@ public class ModelInstanceBoolOperation {
         type = INTER;
         LoggerUtil.log(0, "提取交集网格...");
 
-        if (count == 0) {
+        if (meshNodeParts.size() == 0) {
             LoggerUtil.log(0, "待操作MeshPart为0, 直接跳过");
             return false;
         }
@@ -217,7 +206,7 @@ public class ModelInstanceBoolOperation {
         type = DIFF;
         LoggerUtil.log(0, "提取非集网格...");
 
-        if (count == 0) {
+        if (meshNodeParts.size() == 0) {
             LoggerUtil.log(0, "待操作MeshPart为0, 直接跳过");
             return false;
         }
@@ -350,48 +339,29 @@ public class ModelInstanceBoolOperation {
 
         // 临时保存原变量
         ModelInstance instance_old = this.instance;
-        Map<Mesh, MeshGroup> meshGroups_old = this.meshGroups;
-        Array<MeshGroup.MeshNodePart> meshNodeParts_old = this.meshNodeParts;
+        List<MeshGroup.MeshNodePart> meshNodeParts_old = this.meshNodeParts;
 
         // 覆盖原变量
         this.instance = instance.copy();
-        this.meshGroups = MeshGroup.getMeshGroups(instance);
-        for (MeshGroup meshGroup : meshGroups_old.values()) {
-            MeshGroup newMeshGroup = meshGroups.get(meshGroup.mesh);
-            assert (newMeshGroup != null);
-            boolean isCopied;
-            for (MeshGroup.MeshNodePart meshNodePart : meshGroup.meshNodeParts) {
-                isCopied = false;
-                for (MeshGroup.MeshNodePart newMeshNodePart : newMeshGroup.meshNodeParts) {
-                    if (!meshNodePart.meshPart.id.equals(newMeshNodePart.meshPart.id))
-                        continue;
-                    newMeshNodePart.userObject = meshNodePart.userObject;
-                    isCopied = true;
-                    break;
-                }
-                assert (isCopied);
-            }
-        }
-        this.meshNodeParts = new Array<>();
-        for (MeshGroup.MeshNodePart meshNodePart : meshNodeParts_old) {
-            for (MeshGroup newMeshGroup : meshGroups.values()) {
-                for (MeshGroup.MeshNodePart newMeshNodePart : newMeshGroup.meshNodeParts) {
-                    if (!meshNodePart.meshPart.id.equals(newMeshNodePart.meshPart.id))
-                        continue;
-                    meshNodeParts.add(newMeshNodePart);
-                    break;
+        this.meshNodeParts = new ArrayList<>();
+        for (MeshGroup newMeshGroup : MeshGroup.getMeshGroups(instance).values()) {
+            for (MeshGroup.MeshNodePart newMeshNodePart : newMeshGroup.meshNodeParts) {
+                for (MeshGroup.MeshNodePart meshNodePart : meshNodeParts_old) {
+                    if (meshNodePart.meshPart.id.equals(newMeshNodePart.meshPart.id)) {
+                        newMeshNodePart.userObject = meshNodePart.userObject;
+                        meshNodeParts.add(newMeshNodePart);
+                        break;
+                    }
                 }
             }
         }
-        assert (meshNodeParts.size == this.meshNodeParts.size);
 
         // 调用原apply函数
         apply();
-        ModelInstance newInstance = instance;
 
         // 还原临时保存的原变量
+        ModelInstance newInstance = instance;
         this.instance = instance_old;
-        this.meshGroups = meshGroups_old;
         this.meshNodeParts = meshNodeParts_old;
 
         return newInstance;
