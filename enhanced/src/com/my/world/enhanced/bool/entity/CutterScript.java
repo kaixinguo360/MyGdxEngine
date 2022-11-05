@@ -8,17 +8,14 @@ import com.my.world.core.EntityManager;
 import com.my.world.core.Scene;
 import com.my.world.enhanced.bool.operation.BooleanOperationException;
 import com.my.world.enhanced.bool.util.BooleanUtil;
-import com.my.world.enhanced.physics.SimpleAntiShakeCollisionHandler;
 import com.my.world.gdx.Matrix4Pool;
 import com.my.world.module.common.Position;
 import com.my.world.module.script.ScriptSystem;
 
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
 
-public class CutterScript extends SimpleAntiShakeCollisionHandler implements ScriptSystem.OnStart {
+public class CutterScript implements ScriptSystem.OnStart {
 
     @Config(type = Config.Type.Asset)
     public Model cutter;
@@ -29,12 +26,8 @@ public class CutterScript extends SimpleAntiShakeCollisionHandler implements Scr
     @Config
     public Matrix4 offset = new Matrix4();
 
-    @Config
-    public Function<Entity, Boolean> filter;
-
-    private final Set<Entity> entities = new HashSet<>();
-    private EntityManager entityManager;
-    private Position position;
+    protected EntityManager entityManager;
+    protected Position position;
 
     @Override
     public void start(Scene scene, Entity entity) {
@@ -42,24 +35,11 @@ public class CutterScript extends SimpleAntiShakeCollisionHandler implements Scr
         position = entity.getComponent(Position.class);
     }
 
-    @Override
-    protected void onEnter(Entity entity, OverlappedEntityInfo info) {
-        if (filter == null || filter.apply(entity)) {
-            entities.add(entity);
-        }
-    }
-
-    @Override
-    protected void onLeave(Entity entity, OverlappedEntityInfo info) {
-        entities.remove(entity);
-    }
-
-    public void doCut() {
+    public void doCut(Collection<Entity> entities) {
         System.gc();
         for (Entity entity1 : entities) {
             cut(entity1);
         }
-        entities.clear();
         System.gc();
     }
 
