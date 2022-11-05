@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
-import com.my.world.enhanced.bool.operation.VertexData;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -51,7 +50,6 @@ public class MeshSplitter {
         float[] vers = new float[vertexSize * numVertices]; // 读取全部顶点数组
         verticesOrigin = vers;
         mesh.getVertices(vers);
-        Vector3[] verticesPoints = new Vector3[numVertices];
         Array<Vertex> verticesTmp = new Array<>();
         for (int i = 0; i < numVertices; i++) {
             int offsetVertex = i * vertexSize,
@@ -62,13 +60,7 @@ public class MeshSplitter {
             // 获取顶点xyz坐标
             pos.set(vers[x], vers[y], vers[z]);
 
-            // 复制顶点数据到MyData对象
-            float[] dataArray = new float[vertexSize];
-            System.arraycopy(vers, offsetVertex, dataArray, 0, vertexSize);
-            VertexData data = VertexData.obtain(dataArray, mesh.getVertexAttributes());
-
-            verticesPoints[i] = pos;
-            vertex = addVertex(pos, data);
+            vertex = addVertex(pos);
             verticesTmp.add(vertex);
         }
         // 原始顶点数组获取完毕
@@ -159,8 +151,8 @@ public class MeshSplitter {
     }
 
     // 添加顶点, 自动抛弃重复顶点
-    private Vertex addVertex(Vector3 pos, VertexData vd) {
-        Vertex vertex = new Vertex(pos, vd);
+    private Vertex addVertex(Vector3 pos) {
+        Vertex vertex = new Vertex(pos);
         if (!vertices.contains(vertex, false))
             vertices.add(vertex);
         return vertex;
@@ -314,13 +306,11 @@ public class MeshSplitter {
         private final float x;
         private final float y;
         private final float z;
-        private final VertexData data;
         private final Array<Vertex> cons = new Array<>();
         private int tag = -1;
 //        private static final float TOLL = 0.01f;
 
-        public Vertex(Vector3 position, VertexData data) {
-            this.data = (VertexData) data.clone();
+        public Vertex(Vector3 position) {
             x = position.x;
             y = position.y;
             z = position.z;

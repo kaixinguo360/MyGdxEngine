@@ -10,6 +10,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.my.world.core.util.Disposable;
 import com.my.world.enhanced.bool.util.EnhancedPool;
 import com.my.world.enhanced.bool.util.LoggerUtil;
+import com.my.world.enhanced.bool.util.MeshGroup;
 import com.my.world.enhanced.bool.util.NumberUtil;
 import lombok.var;
 
@@ -52,8 +53,9 @@ public class Solid implements Cloneable, Disposable {
 
     public static final EnhancedPool<Solid> pool = new EnhancedPool<>(Solid::new);
 
-    public static Solid obtain(MeshPart meshPart, Matrix4 transform) {
+    public static Solid obtain(MeshGroup.MeshNodePart meshNodePart, Matrix4 transform) {
         var obtain = pool.obtain();
+        MeshPart meshPart = meshNodePart.meshPart;
         assert (meshPart.primitiveType == GL20.GL_TRIANGLES) : "meshPart.primitiveType Not Equals 'GL20.GL_TRIANGLES' !";
 
         Vertex v1, v2, v3, vertex;
@@ -89,7 +91,7 @@ public class Solid implements Cloneable, Disposable {
             // 复制顶点数据到MyData对象
             float[] dataArray = new float[vertexSize];
             System.arraycopy(vers, offsetVertex, dataArray, 0, vertexSize);
-            VertexData data = VertexData.obtain(dataArray, mesh.getVertexAttributes());
+            VertexData data = VertexData.obtain(dataArray, mesh.getVertexAttributes(), meshNodePart);
 
             verticesPoints[i] = pos;
             vertex = obtain.addVertex(pos, data, Vertex.UNKNOWN);

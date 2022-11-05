@@ -3,6 +3,7 @@ package com.my.world.enhanced.bool.operation;
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 import com.badlogic.gdx.math.Matrix4;
@@ -63,20 +64,22 @@ public class ModelInstanceBoolOperation {
      * Makes preliminary calculations
      *
      * @param instance   ModelInstance where boolean operations will be applied
-     * @param reference  refer MeshPart where boolean operations will be applied
-     * @param transform2 transform of the second mesh
+     * @param referenceModel  refer Model where boolean operations will be applied
+     * @param transform transform of the second mesh
      */
     public ModelInstanceBoolOperation(ModelInstance instance,
-                                      MeshPart reference,
-                                      Matrix4 transform2) throws BooleanOperationException {
+                                      Model referenceModel,
+                                      Matrix4 transform) throws BooleanOperationException {
         LoggerUtil.log(0, "*** 创建布尔操作开始 ***");
 
         // Setup Reference Object
-        LoggerUtil.log(0, "参考物体: " + reference.id);
-        Matrix4 referenceTransform = tmpM.set(instance.transform).inv().mul(transform2);
-        Solid referenceSolid = Solid.obtain(reference, referenceTransform);
-        Bound referenceBound = referenceSolid.getBound();
-        for (VertexAttribute attribute : reference.mesh.getVertexAttributes()) {
+        LoggerUtil.log(0, "参考物体: " + referenceModel);
+        Collection<MeshGroup> referenceMeshGroups = MeshGroup.getMeshGroups(referenceModel).values();
+        MeshGroup.MeshNodePart referenceMeshNodePart = referenceMeshGroups.stream().findFirst().get().meshNodeParts.first();
+        Matrix4 referenceTransform = tmpM.set(instance.transform).inv().mul(transform).mul(referenceMeshNodePart.node.localTransform);
+        Solid baseReferenceSolid = Solid.obtain(referenceMeshNodePart, referenceTransform);
+        Bound referenceBound = baseReferenceSolid.getBound();
+        for (VertexAttribute attribute : referenceMeshNodePart.meshPart.mesh.getVertexAttributes()) {
             if (!attributes.containsKey(attribute.usage)) {
                 attributes.put(attribute.usage, attribute.copy());
             }
@@ -107,15 +110,15 @@ public class ModelInstanceBoolOperation {
                 }
 
                 LoggerUtil.log(0, "      正在创建Solid...");
-                Solid solid1 = Solid.obtain(meshNodePart.meshPart, meshNodePartTransform);
-                Solid solid2 = (Solid) referenceSolid.clone();
+                Solid targetSolid = Solid.obtain(meshNodePart, meshNodePartTransform);
+                Solid referenceSolid = (Solid) baseReferenceSolid.clone();
 
                 // split the faces so that none of them intercepts each other
                 LoggerUtil.log(0, "      正在分割目标网格...");
                 boolean isSplit1, isSplit2;
-                isSplit1 = solid1.splitFaces(solid2);
+                isSplit1 = targetSolid.splitFaces(referenceSolid);
                 LoggerUtil.log(0, "      正在分割参考网格...");
-                isSplit2 = solid2.splitFaces(solid1);
+                isSplit2 = referenceSolid.splitFaces(targetSolid);
 
                 if (!isSplit1 && !isSplit2) {
                     LoggerUtil.log(0, "    无相交部分, 终止");
@@ -124,13 +127,13 @@ public class ModelInstanceBoolOperation {
                 // classify faces as being inside or outside the other solid
 
                 LoggerUtil.log(0, "      正在分类目标网格...");
-                solid1.classifyFaces(solid2);
+                targetSolid.classifyFaces(referenceSolid);
 
                 LoggerUtil.log(0, "      正在分类参考网格...");
-                solid2.classifyFaces(solid1);
+                referenceSolid.classifyFaces(targetSolid);
 
-                BoolPair pair = new BoolPair(solid1, solid2);
-                pair.m1 = meshNodePartTransform.cpy().inv();
+                BoolPair pair = new BoolPair(targetSolid, referenceSolid);
+                pair.nodeTransform = meshNodePartTransform.cpy().inv();
                 meshNodePart.userObject = pair;
                 meshNodeParts.add(meshNodePart);
 
@@ -166,9 +169,9 @@ public class ModelInstanceBoolOperation {
             if (meshNodePart.userObject == null) continue;
 
             BoolPair pair = meshNodePart.userObject;
-            Solid solid1 = pair.solid1;
-            Solid solid2 = pair.solid2;
-            pair.verData = composeMesh(solid1, solid2, Face.OUTSIDE, Face.SAME, Face.OUTSIDE);
+            Solid targetSolid = pair.targetSolid;
+            Solid referenceSolid = pair.referenceSolid;
+            pair.verData = composeMesh(targetSolid, referenceSolid, Face.OUTSIDE, Face.SAME, Face.OUTSIDE);
         }
 
         return true;
@@ -191,9 +194,9 @@ public class ModelInstanceBoolOperation {
             if (meshNodePart.userObject == null) continue;
 
             BoolPair pair = meshNodePart.userObject;
-            Solid solid1 = pair.solid1;
-            Solid solid2 = pair.solid2;
-            pair.verData = composeMesh(solid1, solid2, Face.INSIDE, Face.SAME, Face.INSIDE);
+            Solid targetSolid = pair.targetSolid;
+            Solid referenceSolid = pair.referenceSolid;
+            pair.verData = composeMesh(targetSolid, referenceSolid, Face.INSIDE, Face.SAME, Face.INSIDE);
         }
 
         return true;
@@ -215,12 +218,12 @@ public class ModelInstanceBoolOperation {
             if (meshNodePart.userObject == null) continue;
 
             BoolPair pair = meshNodePart.userObject;
-            Solid solid1 = pair.solid1;
-            Solid solid2 = pair.solid2;
+            Solid targetSolid = pair.targetSolid;
+            Solid referenceSolid = pair.referenceSolid;
 
-            solid2.invertInsideFaces();
-            pair.verData = composeMesh(solid1, solid2, Face.OUTSIDE, Face.OPPOSITE, Face.INSIDE);
-            solid2.invertInsideFaces();
+            referenceSolid.invertInsideFaces();
+            pair.verData = composeMesh(targetSolid, referenceSolid, Face.OUTSIDE, Face.OPPOSITE, Face.INSIDE);
+            referenceSolid.invertInsideFaces();
         }
 
         return true;
@@ -253,8 +256,8 @@ public class ModelInstanceBoolOperation {
             if (meshNodePart.userObject == null) continue;
             BoolVerData verData = meshNodePart.userObject.verData;
             if (verData == null) continue;
-            allVerNum += verData.vertexNum;
-            allIndexNum += verData.indexNum;
+            allVerNum += verData.vertices.size();
+            allIndexNum += verData.indexs.size();
         }
 
         // 新建对应数组
@@ -282,13 +285,20 @@ public class ModelInstanceBoolOperation {
                     VertexAttribute a1 = as.findByUsage(a.usage);
                     if (a1 != null) {
                         int offset1 = a1.offset / 4;
+                        int vsOffset1 = vsOffset + i * verSize + offset;
                         if (a.usage == VertexAttributes.Usage.Position) {
-                            vertex.toVector3(tmpV).mul(pair.m1);
-                            values[offset1] = tmpV.x;
-                            values[offset1 + 1] = tmpV.y;
-                            values[offset1 + 2] = tmpV.z;
+                            vertex.toVector3(tmpV).mul(pair.nodeTransform);
+                            vs[vsOffset1] = tmpV.x;
+                            vs[vsOffset1 + 1] = tmpV.y;
+                            vs[vsOffset1 + 2] = tmpV.z;
+                        } else if (a.usage == VertexAttributes.Usage.Normal) {
+                            int sign = (vertex.data.part.meshPart.mesh == meshNodePart.meshPart.mesh) ? 1 : -1;
+                            vs[vsOffset1] = sign * values[offset1];
+                            vs[vsOffset1 + 1] = sign * values[offset1 + 1];
+                            vs[vsOffset1 + 2] = sign * values[offset1 + 2];
+                        } else {
+                            System.arraycopy(values, offset1, vs, vsOffset1, a.numComponents);
                         }
-                        System.arraycopy(values, offset1, vs, (vsOffset + i * verSize + offset), a.numComponents);
                     }
                 }
             }
@@ -306,8 +316,8 @@ public class ModelInstanceBoolOperation {
                 is[isOffset + i] = (short) (vsOffset + indexs.get(i));
             }
 
-            vsOffset += verData.vertexNum;
-            isOffset += verData.indexNum;
+            vsOffset += verData.vertices.size();
+            isOffset += verData.indexs.size();
         }
 
         assert (vsOffset == allVerNum) : "顶点数不符合!";
@@ -329,9 +339,9 @@ public class ModelInstanceBoolOperation {
                 meshNodePart.node.parts.removeValue(meshNodePart.nodePart, true);
             } else {
                 MeshPart meshPart = meshNodePart.meshPart;
-                meshPart.set(meshPart.id, mesh, offset, verData.indexNum, meshPart.primitiveType);
+                meshPart.set(meshPart.id, mesh, offset, verData.indexs.size(), meshPart.primitiveType);
                 meshPart.update();
-                offset += verData.indexNum;
+                offset += verData.indexs.size();
             }
         }
 
@@ -390,21 +400,20 @@ public class ModelInstanceBoolOperation {
      *                    (expected a status for the faces coincident with second solid faces)
      * @param faceStatus3 status expected for the second solid faces
      */
-    private BoolVerData composeMesh(Solid solid1, Solid solid2, int faceStatus1, int faceStatus2, int faceStatus3) {
+    private BoolVerData composeMesh(Solid targetSolid, Solid referenceSolid, int faceStatus1, int faceStatus2, int faceStatus3) {
         ArrayList<Vertex> vertices = new ArrayList<>();
         ArrayList<Integer> indices = new ArrayList<>();
-        ArrayList<VertexData> datas = new ArrayList<>();
 
         // group the elements of the two solids whose faces fit with the desired status
-        groupObjectComponents(solid1, vertices, indices, datas, faceStatus1, faceStatus2);
-        groupObjectComponents(solid2, vertices, indices, datas, faceStatus3, faceStatus3);
+        groupObjectComponents(targetSolid, vertices, indices, faceStatus1, faceStatus2);
+        groupObjectComponents(referenceSolid, vertices, indices, faceStatus3, faceStatus3);
 
         if (indices.size() == 0) {
             return null;
         }
 
         // returns the solid containing the grouped elements
-        return new BoolVerData(vertices, indices, datas);
+        return new BoolVerData(vertices, indices);
     }
 
     /**
@@ -414,11 +423,10 @@ public class ModelInstanceBoolOperation {
      * @param solid      solid object used to fill the arrays
      * @param vertices    vertices array to be filled
      * @param indices     indices array to be filled
-     * @param datas       datas array to be filled
      * @param faceStatus1 a status expected for the faces used to to fill the data arrays
      * @param faceStatus2 a status expected for the faces used to to fill the data arrays
      */
-    private void groupObjectComponents(Solid solid, ArrayList<Vertex> vertices, ArrayList<Integer> indices, ArrayList<VertexData> datas, int faceStatus1, int faceStatus2) {
+    private void groupObjectComponents(Solid solid, ArrayList<Vertex> vertices, ArrayList<Integer> indices, int faceStatus1, int faceStatus2) {
         Face face;
         // for each face..
         for (int i = 0; i < solid.getNumFaces(); i++) {
@@ -433,7 +441,6 @@ public class ModelInstanceBoolOperation {
                     } else {
                         indices.add(vertices.size());
                         vertices.add(faceVert);
-                        datas.add(faceVert.getData());
                     }
                 }
             }
@@ -463,14 +470,14 @@ public class ModelInstanceBoolOperation {
     /**
      * Class to store the operation data in each boolean operation pairs.
      */
-    public class BoolPair {
-        private final Solid solid1, solid2;
-        private Matrix4 m1, m2;
+    public static class BoolPair {
+        private final Solid targetSolid, referenceSolid;
+        private Matrix4 nodeTransform;
         private BoolVerData verData;
 
-        private BoolPair(Solid solid1, Solid solid2) {
-            this.solid1 = solid1;
-            this.solid2 = solid2;
+        private BoolPair(Solid targetSolid, Solid referenceSolid) {
+            this.targetSolid = targetSolid;
+            this.referenceSolid = referenceSolid;
         }
     }
 
@@ -480,20 +487,12 @@ public class ModelInstanceBoolOperation {
     private static class BoolVerData {
         private final ArrayList<Vertex> vertices;
         private final ArrayList<Integer> indexs;
-        private final ArrayList<VertexData> datas;
-        private final int vertexNum;
-        private final int indexNum;
 
-        private BoolVerData(ArrayList<Vertex> vertices, ArrayList<Integer> indexs, ArrayList<VertexData> datas) {
-            assert (vertices.size() == datas.size()) : "vertices.vertexNum() != datas.vertexNum()";
+        private BoolVerData(ArrayList<Vertex> vertices, ArrayList<Integer> indexs) {
             assert (vertices.size() < Short.MAX_VALUE) : "Too Many Vertices!"; // TODO: 解决输出顶点太多, 超出short类型最大值问题
-
-            this.vertexNum = vertices.size();
-            this.indexNum = indexs.size();
 
             this.vertices = vertices;
             this.indexs = indexs;
-            this.datas = datas;
         }
     }
 

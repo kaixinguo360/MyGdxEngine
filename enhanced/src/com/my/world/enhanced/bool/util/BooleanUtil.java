@@ -2,8 +2,6 @@ package com.my.world.enhanced.bool.util;
 
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
-import com.badlogic.gdx.graphics.g3d.model.MeshPart;
-import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
@@ -28,10 +26,7 @@ public class BooleanUtil {
     public static void cut(ModelInstance targetModelInstance, Model cutter, Matrix4 transform, Type type) throws BooleanOperationException {
         if (targetModelInstance == null || cutter == null) return;
 
-        Node node = cutter.nodes.first();
-        MeshPart reference = node.parts.first().meshPart;
-
-        ModelInstanceBoolOperation boolOperation = new ModelInstanceBoolOperation(targetModelInstance, reference, transform);
+        ModelInstanceBoolOperation boolOperation = new ModelInstanceBoolOperation(targetModelInstance, cutter, transform);
         switch (type) {
             case UNION:
                 boolOperation.doUnion();
@@ -49,8 +44,6 @@ public class BooleanUtil {
     public static List<Entity> cut(Entity targetEntity, Model cutter, Matrix4 transform, Type type) throws BooleanOperationException {
         if (targetEntity == null || cutter == null) return null;
 
-        Node node = cutter.nodes.first();
-        MeshPart reference = node.parts.first().meshPart;
         ModelInstance instance = targetEntity.getComponent(BaseRender.class).modelInstance.copy();
         List<Entity> newEntities = new ArrayList<>();
         Matrix4 entityTransform = new Matrix4(targetEntity.getComponent(Position.class).getGlobalTransform());
@@ -58,7 +51,7 @@ public class BooleanUtil {
         // 创建BoolOperation
         ModelInstanceBoolOperation bool;
         try {
-            bool = new ModelInstanceBoolOperation(instance, reference, transform.cpy().mul(node.localTransform));
+            bool = new ModelInstanceBoolOperation(instance, cutter, transform);
         } catch (BooleanOperationException e) {
             LoggerUtil.log(3, "Error Occurs In Boolean Cut Operation!");
             return null;
