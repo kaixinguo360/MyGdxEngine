@@ -1,5 +1,6 @@
 package com.my.world.enhanced.bool.entity;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.my.world.core.Config;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
@@ -17,14 +18,16 @@ public class ChoppingScript implements ScriptSystem.OnStart, ScriptSystem.OnUpda
     @Config public String cutterName = "Cutter";
     @Config public int choppingButton;
     @Config public float normalModeTimeScale = 1;
-    @Config public float choppingModeTimeScale = 0.05f;
+    @Config public float choppingModeTimeScale = 0.01f;
+    @Config public float enterTransitionTime = 0.2f;
+    @Config public float leaveTransitionTime = 2.5f;
 
     protected boolean isChopping = false;
     protected List<Entity> choppingEntities = new ArrayList<>();
     protected TimeManager timeManager;
     protected DetectorEntity detector;
     protected CutterEntity cutter;
-    protected Retarder retarder;
+    protected Retarder<Float> retarder;
 
     @Override
     public void start(Scene scene, Entity entity) {
@@ -37,7 +40,7 @@ public class ChoppingScript implements ScriptSystem.OnStart, ScriptSystem.OnUpda
         if (cutter == null) {
             throw new RuntimeException("No such child entity: name=" + cutterName);
         }
-        retarder = new Retarder(timeManager::getRealDeltaTime, timeManager::getTimeScale, timeManager::setTimeScale);
+        retarder = new Retarder<>(timeManager::getRealDeltaTime, timeManager::getTimeScale, timeManager::setTimeScale, MathUtils::lerp);
     }
 
     @Override
@@ -50,7 +53,7 @@ public class ChoppingScript implements ScriptSystem.OnStart, ScriptSystem.OnUpda
         if (button != choppingButton || isChopping) return;
 //        if (detector.detectorScript.isEmpty()) return;
         isChopping = true;
-        retarder.setValue(choppingModeTimeScale, 0.2f);
+        retarder.setValue(choppingModeTimeScale, enterTransitionTime);
 
         choppingEntities.clear();
         detector.detectorScript.getEntities(choppingEntities);
@@ -61,9 +64,10 @@ public class ChoppingScript implements ScriptSystem.OnStart, ScriptSystem.OnUpda
     public void touchUp(int screenX, int screenY, int pointer, int button) {
         if (button != choppingButton || !isChopping) return;
         isChopping = false;
-        retarder.setValue(normalModeTimeScale, 2f);
+        retarder.setValue(normalModeTimeScale, leaveTransitionTime);
 
         cutter.cutterScript.doCut(choppingEntities);
         choppingEntities.clear();
+        detector.detectorScript.clear();
     }
 }

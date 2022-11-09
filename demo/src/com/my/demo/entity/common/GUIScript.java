@@ -1,9 +1,9 @@
 package com.my.demo.entity.common;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -19,6 +19,9 @@ import com.my.world.module.script.ScriptSystem;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.badlogic.gdx.graphics.GL20.GL_ONE_MINUS_SRC_ALPHA;
+import static com.badlogic.gdx.graphics.GL20.GL_SRC_ALPHA;
 
 public class GUIScript implements ScriptSystem.OnStart, CameraSystem.AfterRender {
 
@@ -68,11 +71,12 @@ public class GUIScript implements ScriptSystem.OnStart, CameraSystem.AfterRender
     }
 
     @Override
-    public void afterRender(PerspectiveCamera cam) {
+    public void afterRender(Camera cam) {
         float width = Gdx.graphics.getWidth();
         float height = Gdx.graphics.getHeight();
 
         Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         // Reset ShapeRenderer
         shapeRenderer.setProjectionMatrix(new Matrix4().scl(2f / Gdx.graphics.getWidth(), -2f / Gdx.graphics.getHeight(), 0).translate(-Gdx.graphics.getWidth() / 2f, -Gdx.graphics.getHeight() / 2f, 0));

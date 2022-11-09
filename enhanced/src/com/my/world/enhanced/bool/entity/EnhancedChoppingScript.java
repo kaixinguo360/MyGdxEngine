@@ -1,8 +1,8 @@
 package com.my.world.enhanced.bool.entity;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
@@ -11,6 +11,9 @@ import com.my.world.core.Entity;
 import com.my.world.core.Scene;
 import com.my.world.module.camera.CameraSystem;
 import com.my.world.module.input.InputSystem;
+
+import static com.badlogic.gdx.graphics.GL20.GL_ONE_MINUS_SRC_ALPHA;
+import static com.badlogic.gdx.graphics.GL20.GL_SRC_ALPHA;
 
 public class EnhancedChoppingScript extends ChoppingScript implements InputSystem.OnTouchDragged, CameraSystem.AfterRender {
 
@@ -64,7 +67,7 @@ public class EnhancedChoppingScript extends ChoppingScript implements InputSyste
     }
 
     @Override
-    public void afterRender(PerspectiveCamera cam) {
+    public void afterRender(Camera cam) {
         if (isChopping) {
             float width = Gdx.graphics.getWidth();
             float height = Gdx.graphics.getHeight();
@@ -72,6 +75,7 @@ public class EnhancedChoppingScript extends ChoppingScript implements InputSyste
             float centerY = height / 2;
 
             Gdx.gl.glEnable(GL20.GL_BLEND);
+            Gdx.gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
             // Reset ShapeRenderer
             shapeRenderer.setProjectionMatrix(new Matrix4().scl(2f / Gdx.graphics.getWidth(), -2f / Gdx.graphics.getHeight(), 0).translate(-Gdx.graphics.getWidth() / 2f, -Gdx.graphics.getHeight() / 2f, 0));
