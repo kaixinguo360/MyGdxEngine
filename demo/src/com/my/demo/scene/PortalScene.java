@@ -11,7 +11,7 @@ import com.my.world.core.Scene;
 import com.my.world.enhanced.builder.BaseBuilder;
 import com.my.world.enhanced.depthmask.entity.EnhancedHoleSpaceEntity;
 import com.my.world.enhanced.portal.PortalEntity;
-import com.my.world.module.camera.Camera;
+import com.my.world.module.camera.PerspectiveCamera;
 import com.my.world.module.camera.script.EnhancedThirdPersonCameraController;
 import com.my.world.module.common.EnhancedPosition;
 import com.my.world.module.common.Position;
@@ -75,7 +75,7 @@ public class PortalScene extends BaseBuilder<PortalScene> {
         camera.setName("Camera");
         camera.setParent(box);
         camera.addComponent(new Position(new Matrix4()));
-        camera.addComponent(new Camera(0, 0, 1, 1, 0));
+        camera.addComponent(new PerspectiveCamera(0, 0, 1, 1, 0));
         EnhancedThirdPersonCameraController cameraController = camera.addComponent(new EnhancedThirdPersonCameraController());
         cameraController.center.set(0, -2f, 0);
         cameraController.translate.set(0, 0, 20);

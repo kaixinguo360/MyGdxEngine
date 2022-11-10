@@ -1,6 +1,7 @@
 package com.my.world.enhanced.portal.render;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -63,7 +64,7 @@ public class PortalRenderScript implements ScriptSystem.OnStart, CameraSystem.Af
     }
 
     @Override
-    public void afterRender(PerspectiveCamera cam) {
+    public void afterRender(Camera cam) {
         if (level <= 0 && cam != camera) {
             level++;
 
@@ -76,7 +77,7 @@ public class PortalRenderScript implements ScriptSystem.OnStart, CameraSystem.Af
         }
     }
 
-    protected boolean setCamera(PerspectiveCamera cam) {
+    protected boolean setCamera(Camera cam) {
         render.setTransform(portal.selfPosition);
 
         if (!render.isVisible(cam)) {
@@ -92,7 +93,8 @@ public class PortalRenderScript implements ScriptSystem.OnStart, CameraSystem.Af
 
         this.camera.far = cam.far;
         this.camera.near = cam.near;
-        this.camera.fieldOfView = cam.fieldOfView;
+        if (cam instanceof PerspectiveCamera)
+            this.camera.fieldOfView = ((PerspectiveCamera) cam).fieldOfView;
         this.camera.viewportWidth = cam.viewportWidth;
         this.camera.viewportHeight = cam.viewportHeight;
         this.camera.position.set(cam.position).mul(tmpM);
@@ -110,7 +112,7 @@ public class PortalRenderScript implements ScriptSystem.OnStart, CameraSystem.Af
         return true;
     }
 
-    protected void renderPortal(PerspectiveCamera cam) {
+    protected void renderPortal(Camera cam) {
 
         // 传送门外远程物体虚像
         if (showOuterVirtualEntities) {
@@ -166,7 +168,7 @@ public class PortalRenderScript implements ScriptSystem.OnStart, CameraSystem.Af
         Gdx.gl.glDisable(GL_STENCIL_TEST);
     }
 
-    protected void renderVirtualEntities(PerspectiveCamera camera, Map<Entity, VirtualEntityInfo> virtualEntities) {
+    protected void renderVirtualEntities(Camera camera, Map<Entity, VirtualEntityInfo> virtualEntities) {
         for (Map.Entry<Entity, VirtualEntityInfo> entry : virtualEntities.entrySet()) {
             renderSystem.beginBatch(camera);
 

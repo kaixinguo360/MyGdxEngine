@@ -2,6 +2,7 @@ package com.my.demo.entity.common;
 
 import com.my.world.core.*;
 import com.my.world.module.camera.Camera;
+import com.my.world.module.camera.PerspectiveCamera;
 import com.my.world.module.camera.script.EnhancedThirdPersonCameraController;
 import com.my.world.module.common.Script;
 import com.my.world.module.script.ScriptSystem;
@@ -39,7 +40,7 @@ public class CharacterSwitcherAgent implements ScriptSystem.OnStart, ScriptSyste
 
         Entity cameraEntity = entity.findChildByName(cameraName);
         if (cameraEntity != null) {
-            Camera camera = cameraEntity.getComponent(Camera.class);
+            Camera camera = cameraEntity.getComponent(PerspectiveCamera.class);
             EnhancedThirdPersonCameraController cameraController = cameraEntity.getComponent(EnhancedThirdPersonCameraController.class);
             if (camera != null) camera.setActive(active);
             if (cameraController != null) cameraController.setActive(active);
