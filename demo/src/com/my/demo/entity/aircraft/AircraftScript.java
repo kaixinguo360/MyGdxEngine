@@ -141,7 +141,7 @@ public class AircraftScript extends EmitterScript implements ScriptSystem.OnStar
 
     @Override
     public void keyDown(int keycode) {
-        if (keycode == Input.Keys.SHIFT_LEFT) switchCameraMode();
+//        if (keycode == Input.Keys.SHIFT_LEFT) switchCameraMode();
 //        if (keycode == Input.Keys.K) fire(bombBuilder, bombVelocity, AircraftScript.bombOffset, (float) Math.random());
     }
 
