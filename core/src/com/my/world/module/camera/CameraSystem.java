@@ -17,6 +17,8 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
 
     protected final EntityFilter beforeRenderFilter = entity -> entity.contain(BeforeRender.class);
     protected final EntityFilter afterRenderFilter = entity -> entity.contain(AfterRender.class);
+    protected final EntityFilter beforeAllRenderFilter = entity -> entity.contain(BeforeAllRender.class);
+    protected final EntityFilter afterAllRenderFilter = entity -> entity.contain(AfterAllRender.class);
     protected final Map<Entity, ArrayList<Camera>> cameras = new LinkedHashMap<>();
     protected final List<Camera> sortedCameras = new LinkedList<>();
     protected final Pool<ArrayList<Camera>> pool = new Pool<>(ArrayList::new);
@@ -31,6 +33,8 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
         super.afterAdded(scene);
         scene.getEntityManager().addFilter(beforeRenderFilter);
         scene.getEntityManager().addFilter(afterRenderFilter);
+        scene.getEntityManager().addFilter(beforeAllRenderFilter);
+        scene.getEntityManager().addFilter(afterAllRenderFilter);
     }
 
     @Override
@@ -72,6 +76,8 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
 
     @Override
     public void update(float deltaTime) {
+        callBeforeAllRenderScripts();
+
         renderSystem.begin();
 
         int width = Gdx.graphics.getWidth();
@@ -93,20 +99,42 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
         resetViewport(0, 0, width, height);
 
         renderSystem.end();
+
+        callAfterAllRenderScripts();
     }
 
     // ----- Protected ----- //
 
     protected void render(com.badlogic.gdx.graphics.Camera camera) {
-        callAllBeforeRenderScript(camera);
+        callBeforeRenderScripts(camera);
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         renderSystem.render(camera);
 
-        callAllAfterRenderScript(camera);
+        callAfterRenderScripts(camera);
     }
 
-    public void callAllAfterRenderScript(com.badlogic.gdx.graphics.Camera camera) {
+    public void callAfterAllRenderScripts() {
+        for (Entity entity : scene.getEntityManager().getEntitiesByFilter(afterAllRenderFilter)) {
+            for (AfterAllRender script : entity.getComponents(AfterAllRender.class)) {
+                if (Component.isActive(script)) {
+                    script.afterAllRender();
+                }
+            }
+        }
+    }
+
+    public void callBeforeAllRenderScripts() {
+        for (Entity entity : scene.getEntityManager().getEntitiesByFilter(beforeAllRenderFilter)) {
+            for (BeforeAllRender script : entity.getComponents(BeforeAllRender.class)) {
+                if (Component.isActive(script)) {
+                    script.beforeAllRender();
+                }
+            }
+        }
+    }
+
+    public void callAfterRenderScripts(com.badlogic.gdx.graphics.Camera camera) {
         for (Entity entity : scene.getEntityManager().getEntitiesByFilter(afterRenderFilter)) {
             for (AfterRender script : entity.getComponents(AfterRender.class)) {
                 if (Component.isActive(script)) {
@@ -116,7 +144,7 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
         }
     }
 
-    public void callAllBeforeRenderScript(com.badlogic.gdx.graphics.Camera camera) {
+    public void callBeforeRenderScripts(com.badlogic.gdx.graphics.Camera camera) {
         for (Entity entity : scene.getEntityManager().getEntitiesByFilter(beforeRenderFilter)) {
             for (BeforeRender script : entity.getComponents(BeforeRender.class)) {
                 if (Component.isActive(script)) {
@@ -137,6 +165,14 @@ public class CameraSystem extends BaseSystem implements EntityListener, System.O
 
     public interface AfterRender extends Script {
         void afterRender(com.badlogic.gdx.graphics.Camera cam);
+    }
+
+    public interface BeforeAllRender extends Script {
+        void beforeAllRender();
+    }
+
+    public interface AfterAllRender extends Script {
+        void afterAllRender();
     }
 
 }

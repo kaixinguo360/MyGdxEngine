@@ -139,7 +139,7 @@ public class PortalRenderScript implements ScriptSystem.OnStart, CameraSystem.Af
 
         // 渲染传送门内场景至帧缓冲
         fbo.begin();
-        cameraSystem.callAllBeforeRenderScript(camera);
+        cameraSystem.callBeforeRenderScripts(camera);
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         // 传送门内场景
@@ -148,7 +148,7 @@ public class PortalRenderScript implements ScriptSystem.OnStart, CameraSystem.Af
         if (showInnerVirtualEntities) {
             renderVirtualEntities(camera, innerVirtualEntities);
         }
-        cameraSystem.callAllAfterRenderScript(camera);
+        cameraSystem.callAfterRenderScripts(camera);
         fbo.end();
 
         // 渲染帧缓冲内容至传送门轮廓
