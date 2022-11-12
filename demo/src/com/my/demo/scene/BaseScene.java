@@ -18,6 +18,7 @@ import com.my.world.enhanced.builder.BaseBuilder;
 import com.my.world.enhanced.entity.EnhancedEntity;
 import com.my.world.enhanced.entity.RigidBodyEntity;
 import com.my.world.enhanced.render.CameraGroup;
+import com.my.world.enhanced.util.EntityMultiplexer;
 import com.my.world.module.common.Position;
 import com.my.world.module.input.InputSystem;
 import com.my.world.module.physics.rigidbody.BoxBody;
@@ -31,6 +32,7 @@ public class BaseScene<T extends BaseScene<T>> extends BaseBuilder<T> {
     public EnhancedEntity ground;
 
     public AircraftEntity aircraft;
+    public EntityMultiplexer entityMultiplexer;
     public CameraGroup cameraGroup;
     public CameraEntity aircraftCamera1;
     public CameraEntity aircraftCamera2;
@@ -62,12 +64,17 @@ public class BaseScene<T extends BaseScene<T>> extends BaseBuilder<T> {
         aircraft.setName("Aircraft-6");
         aircraft.transform.setToTranslation(0, 0, 200);
         aircraft.addComponent(new CharacterSwitcherAgent()).characterName = "aircraft";
+        entityMultiplexer = aircraft.addComponent(new EntityMultiplexer());
+        entityMultiplexer.add("camera1");
+        entityMultiplexer.add("camera2");
+        entityMultiplexer.add("camera3");
         cameraGroup = aircraft.addComponent(new CameraGroup());
         cameraGroup.cameras.add("camera1");
         cameraGroup.cameras.add("camera2");
         cameraGroup.cameras.add("camera3");
         aircraft.addComponent((InputSystem.OnKeyDown) keycode -> {
             if (keycode == Input.Keys.SHIFT_LEFT) {
+                entityMultiplexer.next();
                 cameraGroup.nextCamera();
             }
         });
@@ -76,13 +83,13 @@ public class BaseScene<T extends BaseScene<T>> extends BaseBuilder<T> {
         aircraftCamera1 = new CameraEntity();
         aircraftCamera1.setName("camera1");
         aircraftCamera1.setParent(aircraft.findChildByName("body"));
-        aircraftCamera1.controller.waitTime = 0f;
+        aircraftCamera1.position.setLocalTransform(m -> m.setToTranslation(0, 0.8f, -1.5f));
         aircraftCamera1.controller.translateTarget.set(0, 0.8f, -1.5f);
         aircraftCamera1.addToScene(scene);
         aircraftCamera2 = new CameraEntity();
         aircraftCamera2.setName("camera2");
         aircraftCamera2.setParent(aircraft.findChildByName("body"));
-        aircraftCamera2.controller.waitTime = 0f;
+        aircraftCamera1.position.setLocalTransform(m -> m.setToTranslation(0, 5.8f, 20 - 1.5f));
         aircraftCamera2.controller.translateTarget.set(0, 0, 20);
         aircraftCamera2.controller.localPitchTarget = 0;
         aircraftCamera2.controller.centerTarget.set(0, 5.8f, -1.5f);
@@ -90,7 +97,7 @@ public class BaseScene<T extends BaseScene<T>> extends BaseBuilder<T> {
         aircraftCamera3 = new CameraEntity();
         aircraftCamera3.setName("camera3");
         aircraftCamera3.setParent(aircraft.findChildByName("body"));
-        aircraftCamera3.controller.waitTime = 0f;
+        aircraftCamera1.position.setLocalTransform(m -> m.setToTranslation(0, -20, 50 - 1.5f));
         aircraftCamera3.controller.translateTarget.set(0, 0, 50);
         aircraftCamera3.controller.localPitchTarget = 0;
         aircraftCamera3.controller.centerTarget.set(0, -20, -1.5f);
