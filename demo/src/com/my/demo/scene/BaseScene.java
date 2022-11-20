@@ -1,10 +1,12 @@
 package com.my.demo.scene;
 
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.demo.entity.aircraft.AircraftEntity;
@@ -17,10 +19,15 @@ import com.my.demo.entity.object.CharacterEntity;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
 import com.my.world.enhanced.bool.entity.ChoppingEntity;
+import com.my.world.enhanced.bool.entity.RigidBodyCutterEntity;
+import com.my.world.enhanced.bool.util.BooleanUtil;
 import com.my.world.enhanced.builder.BaseBuilder;
 import com.my.world.enhanced.entity.EnhancedEntity;
 import com.my.world.enhanced.entity.RenderEntity;
 import com.my.world.enhanced.entity.RigidBodyEntity;
+import com.my.world.module.animation.Animation;
+import com.my.world.module.animation.AnimationChannel;
+import com.my.world.module.common.EnhancedPosition;
 import com.my.world.module.common.Position;
 import com.my.world.module.input.InputSystem;
 import com.my.world.module.physics.rigidbody.BoxBody;
@@ -28,6 +35,7 @@ import com.my.world.module.render.model.Box;
 import com.my.world.module.render.model.GLTFModel;
 import net.mgsx.gltf.scene3d.attributes.PBRColorAttribute;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 public class BaseScene<T extends BaseScene<T>> extends BaseBuilder<T> {
@@ -120,6 +128,7 @@ public class BaseScene<T extends BaseScene<T>> extends BaseBuilder<T> {
         switcher = character.addComponent(new WeaponSwitcher());
         switcher.setActive(false);
         switcher.add(buildChoppingEntity(scene));
+        switcher.add(buildRigidBodyCutterEntity(scene));
 
         return ground;
     }
@@ -156,5 +165,39 @@ public class BaseScene<T extends BaseScene<T>> extends BaseBuilder<T> {
         cutterRenderEntity.addToScene(scene);
 
         return choppingEntity.getName();
+    }
+
+    private String buildRigidBodyCutterEntity(Scene scene) {
+        RigidBodyCutterEntity entity = RigidBodyCutterEntity.sphere(10, 10, 12);
+        entity.setName("RigidBodyCutterEntity");
+        entity.position.setLocalTransform(m -> m.setToTranslation(0, 0, -10));
+        entity.detectorScript.filter = e -> ("Box".equals(e.getName()) || "Brick".equals(e.getName()));
+        entity.cutterScript.type = BooleanUtil.Type.DIFF;
+        entity.render.setActive(false);
+        Animation animation = entity.addComponent(new Animation(new AnimationChannel() {{
+            Vector3 targetV = new Vector3(1, 1, 1);
+            Vector3 currentV = new Vector3();
+            float duration = 2;
+            component = EnhancedPosition.class;
+            field = "scale";
+            values = time -> currentV.setZero().lerp(targetV, MathUtils.clamp(time / duration, 0.01f, 1));
+        }}));
+        entity.addComponent((InputSystem.OnTouchDown) (screenX, screenY, pointer, button) -> {
+            if (button == Input.Buttons.LEFT) {
+                animation.setCurrentTime(0);
+                animation.setActive(true);
+                entity.render.setActive(true);
+            }
+        });
+        entity.addComponent((InputSystem.OnTouchUp) (screenX, screenY, pointer, button) -> {
+            if (button == Input.Buttons.LEFT) {
+                animation.setActive(false);
+                entity.render.setActive(false);
+                entity.cutterScript.doCut(entity.detectorScript.getEntities(new ArrayList<>()));
+            }
+        });
+        entity.setParent(character.camera);
+        entity.addToScene(scene);
+        return entity.getName();
     }
 }
