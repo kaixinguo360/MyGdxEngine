@@ -115,6 +115,7 @@ public class InputSystem implements System, System.AfterAdded, System.OnStart, I
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
+        mouseMoved(screenX, screenY);
         for (Entity entity : getEntities(touchDraggedFilter)) {
             for (OnTouchDragged script : entity.getComponents(OnTouchDragged.class)) {
                 if (Component.isActive(script)) {

@@ -4,6 +4,8 @@ import com.my.world.core.*;
 import com.my.world.module.common.ActivatableComponent;
 import com.my.world.module.common.SyncComponent;
 import com.my.world.module.script.ScriptSystem;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.*;
 
@@ -13,28 +15,35 @@ public class Animation extends ActivatableComponent implements ScriptSystem.OnSt
     public AnimationController animationController;
 
     @Config
-    public boolean useLocalTime;
+    public boolean useGlobalTime;
 
     @Config
-    private float createTime;
+    @Setter
+    @Getter
+    private float currentTime;
+
+    public Animation() {}
+
+    public Animation(Playable playable) {
+        addPlayable("default", playable);
+    }
 
     @Override
     public void start(Scene scene, Entity entity) {
         this.scene = scene;
         this.entity = entity;
-        this.createTime = scene.getTimeManager().getCurrentTime();
+        if (useGlobalTime) {
+            currentTime = scene.getTimeManager().getCurrentTime();
+        } else {
+            currentTime = 0;
+        }
     }
 
     @Override
     public void update(Scene scene, Entity entity) {
 
-        // Get currentTime
-        float currentTime;
-        if (useLocalTime) {
-            currentTime = scene.getTimeManager().getCurrentTime() - createTime;
-        } else {
-            currentTime = scene.getTimeManager().getCurrentTime();
-        }
+        // Update currentTime
+        currentTime += scene.getTimeManager().getDeltaTime();
 
         // Update playable
         if (animationController != null) {
@@ -55,7 +64,7 @@ public class Animation extends ActivatableComponent implements ScriptSystem.OnSt
 
     public final Map<String, Playable> playables = new LinkedHashMap<>();
 
-    public Playable addPlayable(String name, Playable playable) {
+    public <T extends Playable> T addPlayable(String name, T playable) {
         if (playables.containsKey(name)) throw new RuntimeException("Duplicate playable: " + name);
         playables.put(name, playable);
         return playable;
@@ -69,6 +78,10 @@ public class Animation extends ActivatableComponent implements ScriptSystem.OnSt
     public Playable getPlayable(String name) {
         if (!playables.containsKey(name)) throw new RuntimeException("No such playable: " + name);
         return playables.get(name);
+    }
+
+    public <T extends Playable> T getPlayable(String name, Class<T> type) {
+        return (T) getPlayable(name);
     }
 
     // ----- Load & Dump ----- //

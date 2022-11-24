@@ -19,7 +19,6 @@ public class GdxAnimationUtil {
         Animation animation = new Animation();
         GdxAnimationController controller = new GdxAnimationController();
 
-        animation.useLocalTime = true;
         animation.animationController = controller;
 
         for (com.badlogic.gdx.graphics.g3d.model.Animation gdxAnimation : gdxAnimations) {

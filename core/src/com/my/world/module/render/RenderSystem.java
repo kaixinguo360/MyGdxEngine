@@ -1,7 +1,6 @@
 package com.my.world.module.render;
 
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.Renderable;
@@ -95,7 +94,7 @@ public class RenderSystem extends BaseSystem implements System.OnStart, Disposab
         currentEnvironment = environmentSystem.getEnvironment();
     }
 
-    public void render(PerspectiveCamera cam) {
+    public void render(com.badlogic.gdx.graphics.Camera cam) {
         beginBatch(cam);
         for (Entity entity : getEntities()) {
             Position position = entity.getComponent(Position.class);

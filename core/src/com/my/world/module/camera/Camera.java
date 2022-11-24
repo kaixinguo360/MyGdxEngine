@@ -1,37 +1,29 @@
 package com.my.world.module.camera;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
-import com.my.world.core.Config;
-import com.my.world.core.Configurable;
-import com.my.world.module.common.ActivatableComponent;
-import lombok.NoArgsConstructor;
+import com.my.world.core.Component;
+import com.my.world.core.Entity;
+import com.my.world.core.Scene;
 
-@NoArgsConstructor
-public class Camera extends ActivatableComponent implements Configurable {
+public interface Camera extends Component, Component.Activatable, Comparable<Camera> {
 
-    @Config public float startX;
-    @Config public float startY;
+    void registerToCameraSystem(Scene scene, Entity entity, CameraSystem cameraSystem);
 
-    @Config public float endX;
-    @Config public float endY;
+    void unregisterFromCameraSystem(Scene scene, Entity entity, CameraSystem cameraSystem);
 
-    @Config public int layer;
+    float getStartX();
 
-    @Config(name = "camera", fields = { "far", "near", "up", "direction", "fieldOfView", "viewportWidth", "viewportHeight" })
-    public final PerspectiveCamera perspectiveCamera = new PerspectiveCamera();
+    float getStartY();
 
-    public Camera(float startX, float startY, float endX, float endY, int layer) {
-        this.startX = startX;
-        this.startY = startY;
-        this.endX = endX;
-        this.endY = endY;
-        this.layer = layer;
-        this.perspectiveCamera.far = 2000;
-        this.perspectiveCamera.near = 0.1f;
-        this.perspectiveCamera.position.set(0, 0, 0);
-        this.perspectiveCamera.fieldOfView = 67;
-        this.perspectiveCamera.viewportWidth = Gdx.graphics.getWidth();
-        this.perspectiveCamera.viewportHeight = Gdx.graphics.getHeight();
+    float getEndX();
+
+    float getEndY();
+
+    int getLayer();
+
+    com.badlogic.gdx.graphics.Camera getCamera();
+
+    default int compareTo(Camera other) {
+        return this.getLayer() - other.getLayer();
     }
+
 }

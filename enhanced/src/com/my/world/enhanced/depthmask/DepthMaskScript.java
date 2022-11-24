@@ -3,7 +3,6 @@ package com.my.world.enhanced.depthmask;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
@@ -93,7 +92,7 @@ public class DepthMaskScript extends Render implements ScriptSystem.OnStart, Cam
     }
 
     @Override
-    public void beforeRender(PerspectiveCamera cam) {
+    public void beforeRender(Camera cam) {
         updateVisibleEntities(cam);
         if (visibleHiddenEntities.size() == 0) return;
 
@@ -137,7 +136,7 @@ public class DepthMaskScript extends Render implements ScriptSystem.OnStart, Cam
         fbo.end();
     }
 
-    private void updateVisibleEntities(PerspectiveCamera cam) {
+    private void updateVisibleEntities(Camera cam) {
         visibleMaskEntities.clear();
         for (Map.Entry<Render, Position> entry : maskEntities.entrySet()) {
             Position position = entry.getValue();

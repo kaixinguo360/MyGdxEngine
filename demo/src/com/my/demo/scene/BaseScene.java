@@ -91,6 +91,10 @@ public class BaseScene<T extends BaseScene<T>> extends BaseBuilder<T> {
                 .velocity(4f)
                 .build());
         character.position.setLocalTransform(m -> m.setToTranslation(0, 2, 0));
+        character.controller.maxVelocity = 100;
+        character.controller.minVelocity = 1;
+        character.controller.acceleration = 25;
+        character.controller.damping = 100;
         character.controller.jumpCD = 0;
         character.addToScene(scene);
 

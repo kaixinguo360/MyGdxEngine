@@ -1,6 +1,6 @@
 package com.my.world.enhanced.script;
 
-import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.Camera;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
 import com.my.world.module.camera.CameraSystem;
@@ -17,7 +17,7 @@ public class PhysicsDebugScript implements ScriptSystem.OnStart, CameraSystem.Af
     }
 
     @Override
-    public void afterRender(PerspectiveCamera cam) {
+    public void afterRender(Camera cam) {
         physicsSystem.renderDebug(cam);
     }
 }

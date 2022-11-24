@@ -12,7 +12,7 @@ import java.lang.System;
 import java.lang.reflect.Field;
 import java.util.List;
 
-public class AnimationChannel implements Configurable {
+public class AnimationChannel implements Configurable, Playable {
 
     @Config public String entity;
     @Config public Class<? extends Component> component;

@@ -9,7 +9,7 @@ import com.my.world.core.Entity;
 import com.my.world.core.Scene;
 import com.my.world.enhanced.builder.EntityBuilder;
 import com.my.world.enhanced.physics.HingeConstraintController;
-import com.my.world.module.camera.Camera;
+import com.my.world.module.camera.PerspectiveCamera;
 import com.my.world.module.camera.script.EnhancedThirdPersonCameraController;
 import com.my.world.module.input.InputSystem;
 import com.my.world.module.script.ScriptSystem;
@@ -41,7 +41,7 @@ public class GunScript extends EmitterScript implements ScriptSystem.OnStart, Sc
         if (rotate_X.contains(HingeConstraintController.class)) controllerX = rotate_X.getComponent(HingeConstraintController.class);
         Entity cameraEntity = entity.findChildByName("camera");
         if (cameraEntity != null) {
-            camera = cameraEntity.getComponent(Camera.class);
+            camera = cameraEntity.getComponent(PerspectiveCamera.class);
             cameraController = cameraEntity.getComponent(EnhancedThirdPersonCameraController.class);
         }
     }

@@ -1,6 +1,6 @@
 package com.my.world.module.camera.script;
 
-import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.Camera;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
 import com.my.world.module.camera.CameraSystem;
@@ -17,7 +17,7 @@ public class SkyBoxScript implements ScriptSystem.OnStart, CameraSystem.BeforeRe
     }
 
     @Override
-    public void beforeRender(PerspectiveCamera cam) {
+    public void beforeRender(Camera cam) {
         position.getLocalTransform().setToTranslation(cam.position);
     }
 }
