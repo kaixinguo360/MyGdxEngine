@@ -1,5 +1,6 @@
 package com.my.demo.scene;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
@@ -16,6 +17,7 @@ import com.my.demo.entity.common.WeaponSwitcher;
 import com.my.demo.entity.gun.GunEntity;
 import com.my.demo.entity.object.CameraEntity;
 import com.my.demo.entity.object.CharacterEntity;
+import com.my.demo.entity.weapon.RocketEntity;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
 import com.my.world.enhanced.bool.entity.ChoppingEntity;
@@ -30,9 +32,11 @@ import com.my.world.module.animation.AnimationChannel;
 import com.my.world.module.common.EnhancedPosition;
 import com.my.world.module.common.Position;
 import com.my.world.module.input.InputSystem;
+import com.my.world.module.physics.PhysicsSystem;
 import com.my.world.module.physics.rigidbody.BoxBody;
 import com.my.world.module.render.model.Box;
 import com.my.world.module.render.model.GLTFModel;
+import com.my.world.module.script.ScriptSystem;
 import net.mgsx.gltf.scene3d.attributes.PBRColorAttribute;
 
 import java.util.ArrayList;
@@ -129,6 +133,7 @@ public class BaseScene<T extends BaseScene<T>> extends BaseBuilder<T> {
         switcher.setActive(false);
         switcher.add(buildChoppingEntity(scene));
         switcher.add(buildRigidBodyCutterEntity(scene));
+        switcher.add(buildRocketLauncher(scene));
 
         return ground;
     }
@@ -194,6 +199,31 @@ public class BaseScene<T extends BaseScene<T>> extends BaseBuilder<T> {
                 animation.setActive(false);
                 entity.render.setActive(false);
                 entity.cutterScript.doCut(entity.detectorScript.getEntities(new ArrayList<>()));
+            }
+        });
+        entity.setParent(character.camera);
+        entity.addToScene(scene);
+        return entity.getName();
+    }
+
+    private String buildRocketLauncher(Scene scene) {
+        EnhancedEntity entity = new EnhancedEntity();
+        entity.setName("RocketLauncher");
+        Vector3 impulse = new Vector3(0, 1500, 0);
+        PhysicsSystem physicsSystem = scene.getSystemManager().getSystem(PhysicsSystem.class);
+        entity.addComponent((ScriptSystem.OnUpdate) (s, e) -> {
+            if (s.getTimeManager().getFrameCount() % 10 != 0) return;
+            if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
+                Entity target = physicsSystem.pick(character.camera.camera.getCamera(), Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() / 2f, 5000);
+                if (target == null) return;
+                RocketEntity.createRocket(m -> {
+                    m.set(entity.position.getGlobalTransform());
+                    m.translate(0, 0, -0.25f);
+                    m.rotate(Vector3.Z, MathUtils.random(-60, 60));
+                    m.translate(0, 1.5f, 0);
+                    m.rotate(Vector3.X, -90);
+                    m.rotate(Vector3.X, 40);
+                }, target.getId(), 100, 180, impulse).addToScene(scene);
             }
         });
         entity.setParent(character.camera);
