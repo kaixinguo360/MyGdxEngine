@@ -1,12 +1,16 @@
 package com.my.world.enhanced.util;
 
 import com.my.world.core.Config;
+import com.my.world.module.common.ActivatableComponent;
 import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class Switcher<E> {
+public abstract class Switcher<E> extends ActivatableComponent {
+
+    @Config
+    public boolean syncActive = true;
 
     @Getter
     @Config
@@ -19,6 +23,22 @@ public abstract class Switcher<E> {
     protected final List<String> names = new ArrayList<>();
 
     protected final List<E> items = new ArrayList<>();
+
+    // ----- Activatable ----- //
+
+    @Override
+    public void setActive(boolean active) {
+        super.setActive(active);
+        if (syncActive && activeItem != null) {
+            if (active) {
+                enableItem(activeItem);
+            } else {
+                disableItem(activeItem);
+            }
+        }
+    }
+
+    // ----- Switcher ----- //
 
     public void add(String name) {
         names.add(name);
@@ -44,10 +64,11 @@ public abstract class Switcher<E> {
         activeItem = items.get(activeIndex);
         if (activeItem == null) throw new RuntimeException("No such item: index=" + activeIndex);
         items.forEach(this::disableItem);
-        enableItem(this.activeItem);
+        if (!(syncActive && !active)) enableItem(this.activeItem);
     }
 
     public void switchTo(int index) {
+        if (syncActive && !active) return;
         if (index < 0 || index >= items.size()) throw new RuntimeException("No such item: index=" + index);
         E muxE = items.get(index);
         if (muxE == null) throw new RuntimeException("No such item: index=" + index);
@@ -73,6 +94,8 @@ public abstract class Switcher<E> {
         int size = names.size();
         switchTo((activeIndex + 1 + size) % size);
     }
+
+    // ----- Abstract ----- //
 
     protected abstract E getItem(String name);
 
