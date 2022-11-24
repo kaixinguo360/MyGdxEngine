@@ -11,6 +11,7 @@ import com.my.demo.entity.common.CharacterSwitcherAgent;
 import com.my.demo.entity.gun.GunEntity;
 import com.my.demo.entity.object.CameraEntity;
 import com.my.demo.entity.object.CharacterEntity;
+import com.my.demo.entity.tool.ToolSwitcher;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
 import com.my.world.enhanced.builder.BaseBuilder;
@@ -37,6 +38,8 @@ public class BaseScene<T extends BaseScene<T>> extends BaseBuilder<T> {
 
     public Entity characterSelectorEntity;
     public CharacterSwitcher characterSwitcher;
+
+    public ToolSwitcher switcher;
 
     @Override
     public Entity build(Scene scene, Map<String, Object> params) {
@@ -107,10 +110,15 @@ public class BaseScene<T extends BaseScene<T>> extends BaseBuilder<T> {
         characterSwitcher.characterNames.add("character");
         scene.addEntity(characterSelectorEntity);
 
+        // Create ToolSwitcher
+        switcher = character.addComponent(new ToolSwitcher());
+        switcher.setActive(false);
+
         return ground;
     }
 
-    public void registerCharacter(String name) {
-        characterSwitcher.characterNames.add(name);
+    private void addWeapon(Scene scene, EnhancedEntity entity) {
+        entity.addToScene(scene);
+        switcher.add(entity.getName());
     }
 }
