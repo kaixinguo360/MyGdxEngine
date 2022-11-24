@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.my.demo.entity.aircraft.AircraftEntity;
 import com.my.demo.entity.common.CharacterSwitcher;
 import com.my.demo.entity.common.CharacterSwitcherAgent;
+import com.my.demo.entity.common.WeaponSwitcher;
 import com.my.demo.entity.gun.GunEntity;
 import com.my.demo.entity.object.CameraEntity;
 import com.my.demo.entity.object.CharacterEntity;
@@ -37,6 +38,8 @@ public class BaseScene<T extends BaseScene<T>> extends BaseBuilder<T> {
 
     public Entity characterSelectorEntity;
     public CharacterSwitcher characterSwitcher;
+
+    public WeaponSwitcher switcher;
 
     @Override
     public Entity build(Scene scene, Map<String, Object> params) {
@@ -107,10 +110,10 @@ public class BaseScene<T extends BaseScene<T>> extends BaseBuilder<T> {
         characterSwitcher.characterNames.add("character");
         scene.addEntity(characterSelectorEntity);
 
-        return ground;
-    }
+        // Create WeaponSwitcher
+        switcher = character.addComponent(new WeaponSwitcher());
+        switcher.setActive(false);
 
-    public void registerCharacter(String name) {
-        characterSwitcher.characterNames.add(name);
+        return ground;
     }
 }
