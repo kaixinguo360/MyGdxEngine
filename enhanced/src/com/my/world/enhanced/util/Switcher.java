@@ -19,6 +19,10 @@ public abstract class Switcher<E> extends ActivatableComponent {
     @Getter
     protected E activeItem;
 
+    @Getter
+    @Config
+    protected int lastIndex = 0;
+
     @Config
     protected final List<String> names = new ArrayList<>();
 
@@ -55,12 +59,13 @@ public abstract class Switcher<E> extends ActivatableComponent {
     }
 
     public void init() {
-        if (names.isEmpty()) throw new RuntimeException("Name list is empty");
+        if (names.isEmpty()) return;
         for (String name : names) {
             E item = getItem(name);
             if (item == null) throw new RuntimeException("No such item: name=" + name);
             items.add(item);
         }
+        lastIndex = activeIndex;
         activeItem = items.get(activeIndex);
         if (activeItem == null) throw new RuntimeException("No such item: index=" + activeIndex);
         items.forEach(this::disableItem);
@@ -73,6 +78,7 @@ public abstract class Switcher<E> extends ActivatableComponent {
         E muxE = items.get(index);
         if (muxE == null) throw new RuntimeException("No such item: index=" + index);
         if (activeItem == null) throw new RuntimeException("Active item is null, start() must be called before this method");
+        this.lastIndex = activeIndex;
         this.activeIndex = index;
         disableItem(this.activeItem);
         this.activeItem = muxE;
@@ -86,13 +92,20 @@ public abstract class Switcher<E> extends ActivatableComponent {
     }
 
     public void prev() {
+        if (names.isEmpty()) return;
         int size = names.size();
         switchTo((activeIndex - 1 + size) % size);
     }
 
     public void next() {
+        if (names.isEmpty()) return;
         int size = names.size();
         switchTo((activeIndex + 1 + size) % size);
+    }
+
+    public void last() {
+        if (names.isEmpty()) return;
+        switchTo(lastIndex);
     }
 
     // ----- Abstract ----- //
