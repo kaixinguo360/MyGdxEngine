@@ -3,7 +3,7 @@ package com.my.demo.scene;
 import com.badlogic.gdx.math.Matrix4;
 import com.my.demo.entity.aircraft.AircraftEntity;
 import com.my.demo.entity.aircraft.AircraftScript;
-import com.my.demo.entity.common.GUIScript;
+import com.my.demo.entity.common.SightScript;
 import com.my.demo.entity.object.RunwayEntity;
 import com.my.demo.entity.object.TowerEntity;
 import com.my.world.core.Entity;
@@ -47,7 +47,7 @@ public class AirportScene extends BaseScene<AirportScene> {
 
         Entity guiEntity = new Entity();
         guiEntity.setName("guiEntity");
-        guiEntity.addComponent(new GUIScript()).targetEntity = scene.getEntityManager().findEntityByName("Aircraft-6");
+        guiEntity.addComponent(new SightScript());
         scene.addEntity(guiEntity);
 
         return ground;

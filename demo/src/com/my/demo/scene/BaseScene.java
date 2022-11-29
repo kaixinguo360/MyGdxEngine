@@ -1,5 +1,7 @@
 package com.my.demo.scene;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Material;
@@ -18,8 +20,10 @@ import com.my.world.enhanced.builder.BaseBuilder;
 import com.my.world.enhanced.entity.EnhancedEntity;
 import com.my.world.enhanced.entity.RigidBodyEntity;
 import com.my.world.module.common.Position;
+import com.my.world.module.physics.PhysicsSystem;
 import com.my.world.module.physics.rigidbody.BoxBody;
 import com.my.world.module.render.model.Box;
+import com.my.world.module.script.ScriptSystem;
 import net.mgsx.gltf.scene3d.attributes.PBRColorAttribute;
 
 import java.util.Map;
@@ -72,20 +76,12 @@ public class BaseScene<T extends BaseScene<T>> extends BaseBuilder<T> {
         gun.setName("Gun-0");
         gun.transform.setToTranslation(0, 0.01f / 2, -20);
         gun.decompose();
-        gun.gunScript.setActive(false);
-        gun.addComponent(new CharacterSwitcherAgent()).characterName = "gun";
         Matrix4 rotateYTransform = new Matrix4().translate(0, 0, -20).translate(0, 0.5f + 0.01f / 2, 0);
         Matrix4 groundTransform = ground.getComponent(Position.class).getGlobalTransform(new Matrix4());
         gun.rotateY.constraint.frameInA.set(groundTransform.inv().mul(rotateYTransform).rotate(Vector3.X, 90));
         gun.rotateY.constraint.frameInB.setToRotation(Vector3.X, 90);
         gun.rotateY.constraint.useLinearReferenceFrameA = false;
         gun.addToScene(scene);
-        gunCamera = new CameraEntity();
-        gunCamera.setName("camera");
-        gunCamera.setParent(gun.barrel);
-        gunCamera.controller.translateTarget.set(0, 0.8f, -1.5f);
-        gunCamera.camera.setActive(false);
-        gunCamera.addToScene(scene);
 
         // Create Character
         character = new CharacterEntity(CharacterEntity.Param.builder()
@@ -101,13 +97,13 @@ public class BaseScene<T extends BaseScene<T>> extends BaseBuilder<T> {
         character.controller.damping = 100;
         character.controller.jumpCD = 0;
         character.addToScene(scene);
+        gun.gunScript.targetEntity = character.getId();
 
         // Create CharacterSwitcher
         characterSelectorEntity = new Entity();
         characterSelectorEntity.setName("characterSelectorEntity");
         characterSwitcher = characterSelectorEntity.addComponent(new CharacterSwitcher());
         characterSwitcher.characterNames.add("aircraft");
-        characterSwitcher.characterNames.add("gun");
         characterSwitcher.characterNames.add("character");
         scene.addEntity(characterSelectorEntity);
 
@@ -118,6 +114,20 @@ public class BaseScene<T extends BaseScene<T>> extends BaseBuilder<T> {
         addWeapon(scene, new MissileTool(character.camera));
         addWeapon(scene, new BombTool(character.camera));
         addWeapon(scene, new BulletTool(character.camera));
+        addWeapon(scene, new EnhancedEntity() {{
+            setName("TmpTool");
+            int interval = 5;
+            Vector3 impulse = new Vector3(0, 1500, 0);
+            PhysicsSystem physicsSystem = scene.getSystemManager().getSystem(PhysicsSystem.class);
+            addComponent((ScriptSystem.OnUpdate) (s, e) -> {
+                if (s.getTimeManager().getFrameCount() % interval != 0) return;
+                if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
+                    Entity target = physicsSystem.pick(character.camera.camera.getCamera(), Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() / 2f, 5000);
+                    if (target == null) return;
+                    gun.gunScript.targetEntity = target.getId();
+                }
+            });
+        }});
 
         return ground;
     }

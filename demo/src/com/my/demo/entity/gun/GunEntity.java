@@ -3,7 +3,6 @@ package com.my.demo.entity.gun;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.my.demo.entity.object.RotateEntity;
-import com.my.demo.entity.weapon.BombEntity;
 import com.my.demo.entity.weapon.BulletEntity;
 import com.my.world.core.Entity;
 import com.my.world.enhanced.entity.EnhancedEntity;
@@ -12,7 +11,7 @@ import com.my.world.module.common.Position;
 
 public class GunEntity extends EnhancedEntity {
 
-    public final GunScript gunScript;
+    public final AutoGunScript gunScript;
     public final RotateEntity<HingeConstraintController> rotateY;
     public final RotateEntity<HingeConstraintController> rotateX;
     public final BarrelEntity barrel;
@@ -23,9 +22,8 @@ public class GunEntity extends EnhancedEntity {
 
     public GunEntity(Entity baseEntity) {
         setName("Gun");
-        gunScript = addComponent(new GunScript());
+        gunScript = addComponent(new AutoGunScript());
         gunScript.bulletBuilder = BulletEntity.builder;
-        gunScript.bombBuilder = BombEntity.builder;
 
         Matrix4 transform = new Matrix4().translate(0, 1.5f, 0).rotate(Vector3.Z, 90);
 
