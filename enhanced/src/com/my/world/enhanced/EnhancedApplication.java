@@ -55,6 +55,8 @@ public class EnhancedApplication extends GdxApplication {
         serializers.add(new TypeSerializer());
         serializers.add(new EnhancedEntitySerializer());
         serializers.add(new ConfigurableSerializer());
+        serializers.add(new GdxNativeSerializer());
+        serializers.add(new JavaNativeSerializer());
         return engine;
     }
 }
