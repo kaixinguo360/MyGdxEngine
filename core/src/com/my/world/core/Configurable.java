@@ -3,6 +3,7 @@ package com.my.world.core;
 import com.my.world.core.util.Disposable;
 import com.my.world.core.util.Pool;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -29,7 +30,7 @@ import java.util.function.Function;
  *          config: ...
  * </pre>
  */
-public interface Configurable extends Disposable {
+public interface Configurable extends Disposable, Serializable {
 
     String CONTEXT_LAZY_LIST = "LAZY_LIST";
 
@@ -51,58 +52,24 @@ public interface Configurable extends Disposable {
 
         try {
             for (Field field : getFields(configurable)) {
-                field.setAccessible(true);
-                Config annotation = field.getAnnotation(Config.class);
-                String name = annotation.name();
-                if ("".equals(name)) name = field.getName();
-                Class<?> fieldType = field.getType();
+                try {
+                    field.setAccessible(true);
+                    Config annotation = field.getAnnotation(Config.class);
+                    String name = annotation.name();
+                    if ("".equals(name)) name = field.getName();
+                    Class<?> fieldType = field.getType();
 
-                if (annotation.fields().length == 0) {
-                    if (!config.containsKey(name)) continue;
+                    if (annotation.fields().length == 0) {
+                        if (!config.containsKey(name)) continue;
 
-                    Object fieldConfig = config.get(name);
-
-                    Object obj;
-                    if (!List.class.isAssignableFrom(fieldType) && fieldType.isInstance(fieldConfig)) {
-                        obj = fieldConfig;
-                    } else {
-                        try {
-                            obj = getObject(context, fieldType, annotation, fieldConfig);
-                        } catch (EntityManager.EntityManagerException e) {
-                            if (lazyList == null) throw e;
-                            if (lazyContext == null) {
-                                lazyContext = LazyContext.obtain(configurable, context);
-                                lazyList.add(lazyContext);
-                            }
-                            lazyContext.add(c -> {
-                                Object finalObj = getObject(c, fieldType, annotation, fieldConfig);
-                                setField(field, configurable, finalObj, c);
-                            });
-                            continue;
-                        }
-                    }
-
-                    setField(field, configurable, obj, context);
-                } else {
-                    Object fieldObject = field.get(configurable);
-
-                    if (fieldObject == null) {
-                        throw new RuntimeException("Can not set a null field: " + field);
-                    }
-
-                    for (String subFieldName : annotation.fields()) {
-                        Field subField = fieldType.getField(subFieldName);
-                        Class<?> subFieldType = subField.getType();
-                        String subName = name + "." + subFieldName;
-                        if (!config.containsKey(subName)) continue;
-                        Object subFieldConfig = config.get(subName);
+                        Object fieldConfig = config.get(name);
 
                         Object obj;
-                        if (!List.class.isAssignableFrom(subFieldType) && subFieldType.isInstance(subFieldConfig)) {
-                            obj = subFieldConfig;
+                        if (!List.class.isAssignableFrom(fieldType) && fieldType.isInstance(fieldConfig)) {
+                            obj = fieldConfig;
                         } else {
                             try {
-                                obj = getObject(context, subFieldType, annotation, subFieldConfig);
+                                obj = getObject(context, fieldType, annotation, fieldConfig);
                             } catch (EntityManager.EntityManagerException e) {
                                 if (lazyList == null) throw e;
                                 if (lazyContext == null) {
@@ -110,18 +77,56 @@ public interface Configurable extends Disposable {
                                     lazyList.add(lazyContext);
                                 }
                                 lazyContext.add(c -> {
-                                    Object finalObj = getObject(c, subFieldType, annotation, subFieldConfig);
-                                    setField(subField, fieldObject, finalObj, c);
+                                    Object finalObj = getObject(c, fieldType, annotation, fieldConfig);
+                                    setField(field, configurable, finalObj, c);
                                 });
                                 continue;
                             }
                         }
 
-                        setField(subField, fieldObject, obj, context);
+                        setField(field, configurable, obj, context);
+                    } else {
+                        Object fieldObject = field.get(configurable);
+
+                        if (fieldObject == null) {
+                            throw new RuntimeException("Can not set a null field: " + field);
+                        }
+
+                        for (String subFieldName : annotation.fields()) {
+                            Field subField = fieldType.getField(subFieldName);
+                            Class<?> subFieldType = subField.getType();
+                            String subName = name + "." + subFieldName;
+                            if (!config.containsKey(subName)) continue;
+                            Object subFieldConfig = config.get(subName);
+
+                            Object obj;
+                            if (!List.class.isAssignableFrom(subFieldType) && subFieldType.isInstance(subFieldConfig)) {
+                                obj = subFieldConfig;
+                            } else {
+                                try {
+                                    obj = getObject(context, subFieldType, annotation, subFieldConfig);
+                                } catch (EntityManager.EntityManagerException e) {
+                                    if (lazyList == null) throw e;
+                                    if (lazyContext == null) {
+                                        lazyContext = LazyContext.obtain(configurable, context);
+                                        lazyList.add(lazyContext);
+                                    }
+                                    lazyContext.add(c -> {
+                                        Object finalObj = getObject(c, subFieldType, annotation, subFieldConfig);
+                                        setField(subField, fieldObject, finalObj, c);
+                                    });
+                                    continue;
+                                }
+                            }
+
+                            setField(subField, fieldObject, obj, context);
+                        }
                     }
+                } catch (Exception e) {
+                    throw new RuntimeException("Load Field '" + field.getName() + "' (" + field.getType() + ") error: " + e.getMessage(), e);
                 }
             }
-        } catch (IllegalAccessException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException | NoSuchFieldException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Load Loadable Resource(" + configurable.getClass() + ") error: " + e.getMessage(), e);
         }
 
@@ -142,31 +147,35 @@ public interface Configurable extends Disposable {
         Map<String, Object> map = new LinkedHashMap<>();
         try {
             for (Field field : getFields(configurable)) {
-                field.setAccessible(true);
-                Config annotation = field.getAnnotation(Config.class);
-                String name = annotation.name();
-                if ("".equals(name)) name = field.getName();
+                try {
+                    field.setAccessible(true);
+                    Config annotation = field.getAnnotation(Config.class);
+                    String name = annotation.name();
+                    if ("".equals(name)) name = field.getName();
 
-                if (annotation.fields().length == 0) {
-                    Object obj = getConfig(context, field.getType(), annotation, field.get(configurable));
-                    map.put(name, obj);
-                } else {
-                    Object fieldObject = field.get(configurable);
+                    if (annotation.fields().length == 0) {
+                        Object obj = getConfig(context, field.getType(), annotation, field.get(configurable));
+                        map.put(name, obj);
+                    } else {
+                        Object fieldObject = field.get(configurable);
 
-                    if (fieldObject == null) {
-                        throw new RuntimeException("Can not dump a null field: " + field);
+                        if (fieldObject == null) {
+                            throw new RuntimeException("Can not dump a null field: " + field);
+                        }
+
+                        Class<?> fieldType = field.getType();
+                        for (String subFieldName : annotation.fields()) {
+                            Field subField = fieldType.getField(subFieldName);
+
+                            Object obj = getConfig(context, subField.getType(), annotation, subField.get(fieldObject));
+                            map.put(name + "." + subFieldName, obj);
+                        }
                     }
-
-                    Class<?> fieldType = field.getType();
-                    for (String subFieldName : annotation.fields()) {
-                        Field subField = fieldType.getField(subFieldName);
-
-                        Object obj = getConfig(context, subField.getType(), annotation, subField.get(fieldObject));
-                        map.put(name + "." + subFieldName, obj);
-                    }
+                } catch (Exception e) {
+                    throw new RuntimeException("Get config from Field '" + field.getName() + "' (" + field.getType() + ") error: " + e.getMessage(), e);
                 }
             }
-        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException | NoSuchFieldException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Get config from Loadable Resource(" + configurable.getClass() + ") error: " + e.getMessage(), e);
         }
         return map;
@@ -186,8 +195,8 @@ public interface Configurable extends Disposable {
                 }
             }
             return objList;
-        } else if (annotation.type() == Config.Type.Primitive || elementType.isPrimitive() || Number.class.isAssignableFrom(elementType) || elementType == String.class) {
-            if ((elementType == float.class || elementType == Float.class) && Number.class.isAssignableFrom(value.getClass())) {
+        } else if (annotation.type() == Config.Type.Primitive || elementType.isPrimitive() || Number.class.isAssignableFrom(elementType) || elementType == String.class || value.getClass().isPrimitive() || Number.class.isAssignableFrom(value.getClass())) {
+            if ((elementType == float.class || elementType == Float.class || elementType == Object.class) && Number.class.isAssignableFrom(value.getClass())) {
                 value = ((Number) value).floatValue();
             }
             return value;
@@ -218,7 +227,7 @@ public interface Configurable extends Disposable {
     static Object getConfig(Context context, Class<?> elementType, Config annotation, Object value) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         if (value == null) {
             return null;
-        } else if (annotation.type() == Config.Type.Primitive || elementType.isPrimitive() || Number.class.isAssignableFrom(elementType) || elementType == String.class) {
+        } else if (annotation.type() == Config.Type.Primitive || elementType.isPrimitive() || Number.class.isAssignableFrom(elementType) || elementType == String.class || value.getClass().isPrimitive() || Number.class.isAssignableFrom(value.getClass())) {
             return value;
         } else if (List.class.isAssignableFrom(elementType)) {
             List<Object> configList = new ArrayList<>();
@@ -243,10 +252,14 @@ public interface Configurable extends Disposable {
                     throw e;
                 // Use SerializerManager <configType> to get config
                 Class<?> type = value.getClass();
-                return new LinkedHashMap<String, Object>() {{
-                    put("type", type.getName());
-                    put("config", context.get(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).dump(type.cast(value), Map.class, context));
-                }};
+                try {
+                    return new LinkedHashMap<String, Object>() {{
+                        put("type", type.getName());
+                        put("config", context.get(SerializerManager.CONTEXT_FIELD_NAME, SerializerManager.class).dump(type.cast(value), Map.class, context));
+                    }};
+                } catch (RuntimeException exception) {
+                    throw new RuntimeException("Error occurred while serialize this value: " + value + "(" + type.getName() + ")", exception);
+                }
             }
         }
     }
