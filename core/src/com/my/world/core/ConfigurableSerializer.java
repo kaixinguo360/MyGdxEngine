@@ -1,5 +1,7 @@
 package com.my.world.core;
 
+import com.my.world.core.util.Lambdas;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +20,7 @@ public class ConfigurableSerializer implements Serializer, Serializer.Setter {
 
     @Override
     public <E, T> T load(E configObj, Class<T> type, Context context) {
+        if (Lambdas.isSerializedLambdaConfig(configObj)) return (T) Lambdas.load(configObj);
         Map<String, Object> config = (Map<String, Object>) configObj;
 
         Configurable configurable;
@@ -56,6 +59,7 @@ public class ConfigurableSerializer implements Serializer, Serializer.Setter {
 
     @Override
     public <E, T> E dump(T loadable, Class<E> configType, Context context) {
+        if (Lambdas.isSerializableLambda(loadable)) return (E) Lambdas.dump(loadable);
         if (loadable instanceof Configurable.OnDump) {
             return (E) ((Configurable.OnDump) loadable).dump(context);
         } else {

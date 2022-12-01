@@ -1,6 +1,7 @@
 package com.my.world.core;
 
 import com.my.world.core.util.Disposable;
+import com.my.world.core.util.Lambdas;
 import com.my.world.core.util.Pool;
 
 import java.io.Serializable;
@@ -251,7 +252,7 @@ public interface Configurable extends Disposable, Serializable {
                 if (!(e.getMessage().startsWith("No such serializer") || e.getMessage().startsWith("Can not get config")))
                     throw e;
                 // Use SerializerManager <configType> to get config
-                Class<?> type = value.getClass();
+                Class<?> type = Lambdas.getType(value);
                 try {
                     return new LinkedHashMap<String, Object>() {{
                         put("type", type.getName());

@@ -1,6 +1,7 @@
 package com.my.world.core;
 
 import com.my.world.core.util.Disposable;
+import com.my.world.core.util.Lambdas;
 import lombok.Getter;
 import org.yaml.snakeyaml.Yaml;
 
@@ -108,7 +109,7 @@ public class AssetsManager implements Disposable {
                 Map<String, Object> assetConfig = dumpAsset(asset);
                 Map<String, Object> config = new LinkedHashMap<>();
                 config.put("type", type.getName());
-                if (asset.getClass() != type) config.put("instanceType", asset.getClass().getName());
+                if (asset.getClass() != type) config.put("instanceType", Lambdas.getType(asset).getName());
                 config.put("id", assetEntry.getKey());
                 config.put("config", assetConfig);
                 configList.add(config);
