@@ -51,8 +51,8 @@ public class AssetsManager implements Disposable {
         if (cache.containsKey(hash)) {
             return cache.get(hash);
         } else {
-            if (!allAssets.containsKey(type)) throw new RuntimeException("No Such Assets: " + hash);
-            if (!allAssets.get(type).containsValue(asset)) throw new RuntimeException("No Such Assets: " + hash);
+            if (!allAssets.containsKey(type)) allAssets.put(type, new LinkedHashMap<>());
+            if (!allAssets.get(type).containsValue(asset)) allAssets.get(type).put("TmpAsset." + asset, asset);
             for (Map.Entry<String, Object> entry : allAssets.get(type).entrySet()) {
                 if (entry.getValue() == asset) {
                     cache.put(hash, entry.getKey());
