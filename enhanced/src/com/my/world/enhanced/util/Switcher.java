@@ -23,7 +23,7 @@ public abstract class Switcher<E> extends ActivatableComponent {
     @Config
     protected int lastIndex = 0;
 
-    @Config
+    @Config(elementType = String.class)
     protected final List<String> names = new ArrayList<>();
 
     protected final List<E> items = new ArrayList<>();

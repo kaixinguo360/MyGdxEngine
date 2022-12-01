@@ -12,7 +12,7 @@ import com.my.world.module.script.ScriptSystem;
 
 public class ParticlesEffect extends ActivatableComponent implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
 
-    @Config
+    @Config(type = Config.Type.Asset)
     public ParticleEffect particleEffect;
 
     @Config
