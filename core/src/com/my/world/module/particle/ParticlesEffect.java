@@ -1,38 +1,41 @@
 package com.my.world.module.particle;
 
-import com.badlogic.gdx.graphics.g3d.particles.ParticleEffect;
-import com.badlogic.gdx.math.Matrix4;
-import com.my.world.core.Config;
-import com.my.world.core.Entity;
-import com.my.world.core.Scene;
-import com.my.world.gdx.Matrix4Pool;
-import com.my.world.module.common.ActivatableComponent;
-import com.my.world.module.common.Position;
-import com.my.world.module.script.ScriptSystem;
+import com.badlogic.gdx.graphics.g3d.particles.ParticleController;
+import com.badlogic.gdx.graphics.g3d.particles.emitters.RegularEmitter;
+import com.badlogic.gdx.math.collision.BoundingBox;
 
-public class ParticlesEffect extends ActivatableComponent implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
+public class ParticlesEffect extends BaseParticlesEffect {
 
-    @Config(type = Config.Type.Asset)
-    public ParticleEffect particleEffect;
-
-    @Config
-    public Matrix4 transform;
-
-    protected Position position;
-
-    @Override
-    public void start(Scene scene, Entity entity) {
-        position = entity.getComponent(Position.class);
+    public void start() {
+        getParticleEffect().start();
     }
 
-    @Override
-    public void update(Scene scene, Entity entity) {
-        if (transform == null) {
-            particleEffect.setTransform(position.getGlobalTransform());
-        } else {
-            Matrix4 tmpM = Matrix4Pool.obtain();
-            particleEffect.setTransform(position.getGlobalTransform(tmpM).mul(transform));
-            Matrix4Pool.free(tmpM);
+    public void end() {
+        getParticleEffect().end();
+    }
+
+    public void stop() {
+        setEmissionMode(RegularEmitter.EmissionMode.Disabled);
+    }
+
+    public void reset() {
+        getParticleEffect().reset();
+    }
+
+    public boolean isComplete() {
+        return getParticleEffect().isComplete();
+    }
+
+    public BoundingBox getBoundingBox() {
+        return getParticleEffect().getBoundingBox();
+    }
+
+    public void setEmissionMode(RegularEmitter.EmissionMode emissionMode) {
+        for (ParticleController controller : getParticleEffect().getControllers()) {
+            if (controller.emitter instanceof RegularEmitter) {
+                RegularEmitter reg = (RegularEmitter) controller.emitter;
+                reg.setEmissionMode(emissionMode);
+            }
         }
     }
 }

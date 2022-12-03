@@ -38,9 +38,7 @@ public class ParticlesSystem extends BaseParticlesSystem implements EntityListen
     public void afterEntityAdded(Entity entity) {
         List<ParticlesEffect> particlesEffects = entity.getComponents(ParticlesEffect.class);
         for (ParticlesEffect particlesEffect : particlesEffects) {
-            particlesEffect.particleEffect.init();
-            particlesEffect.particleEffect.start();
-            particleSystem.add(particlesEffect.particleEffect);
+            particlesEffect.registerToSystem(scene, entity, this);
         }
     }
 
@@ -48,7 +46,7 @@ public class ParticlesSystem extends BaseParticlesSystem implements EntityListen
     public void afterEntityRemoved(Entity entity) {
         List<ParticlesEffect> particlesEffects = entity.getComponents(ParticlesEffect.class);
         for (ParticlesEffect particlesEffect : particlesEffects) {
-            particleSystem.remove(particlesEffect.particleEffect);
+            particlesEffect.unregisterFromSystem(scene, entity, this);
         }
     }
 

@@ -18,6 +18,7 @@ public abstract class BaseParticlesSystem extends Render implements System.OnUpd
 
     @Getter
     protected ParticleSystem particleSystem = new ParticleSystem();
+    protected Scene scene;
 
     // ----- System ----- //
 
@@ -28,6 +29,7 @@ public abstract class BaseParticlesSystem extends Render implements System.OnUpd
 
     @Override
     public void afterAdded(Scene scene) {
+        this.scene = scene;
         EntityFilter entityFilter = this::canHandle;
         scene.getEntityManager().addFilter(entityFilter);
         if (this instanceof EntityListener) {

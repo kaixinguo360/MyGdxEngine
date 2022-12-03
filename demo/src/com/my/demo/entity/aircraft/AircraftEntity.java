@@ -84,7 +84,7 @@ public class AircraftEntity extends EnhancedEntity {
         wing_L2.setParent(this);
         wing_L2.transform.idt().translate(-4.5f, 0.5f, -5).rotate(Vector3.X, 14);
         smoke_L = wing_L2.addComponent(new ParticlesEffect());
-        smoke_L.particleEffect = particleEffect.copy();
+        smoke_L.effect = particleEffect;
         smoke_L.transform = new Matrix4().translate(-0.5f, 0, 0).rotate(Vector3.X, 90);
         addEntity(wing_L2);
 
@@ -108,7 +108,7 @@ public class AircraftEntity extends EnhancedEntity {
         wing_R2.setParent(this);
         wing_R2.transform.idt().translate(4.5f, 0.5f, -5).rotate(Vector3.X, 14);
         smoke_R = wing_R2.addComponent(new ParticlesEffect());
-        smoke_R.particleEffect = particleEffect.copy();
+        smoke_R.effect = particleEffect;
         smoke_R.transform = new Matrix4().translate(0.5f, 0, 0).rotate(Vector3.X, 90);
         addEntity(wing_R2);
 

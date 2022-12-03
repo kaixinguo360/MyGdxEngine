@@ -62,7 +62,7 @@ public class ExplosionEntity extends EnhancedEntity {
         fireworksEffectsEntity.addComponent(new GLTFPointLight(Color.ORANGE.cpy(), 40f, 60f));
         fireworksEffectsAnimation = fireworksEffectsEntity.addComponent(new Animation());
         fireworksEffectsAnimation.addPlayable("default", playable);
-        fireworksEffectsEntity.addComponent(new ParticlesEffect()).particleEffect = particleEffect.copy();
+        fireworksEffectsEntity.addComponent(new ParticlesEffect()).effect = particleEffect;
         addEntity(fireworksEffectsEntity);
     }
 
