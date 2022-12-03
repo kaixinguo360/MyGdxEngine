@@ -11,6 +11,8 @@ public class AssetsManager implements Disposable {
 
     public static final String CONTEXT_FIELD_NAME = "ASSETS_MANAGER";
 
+    public boolean skipRepeat = false;
+
     private final Engine engine;
 
     @Getter
@@ -26,9 +28,13 @@ public class AssetsManager implements Disposable {
         if (!type.isInstance(asset)) throw new RuntimeException("Asset type not equal: " + type + " != " + asset.getClass());
         if (!allAssets.containsKey(type)) allAssets.put(type, new LinkedHashMap<>());
         Map<String, Object> assets = allAssets.get(type);
-        if (assets.containsKey(id)) throw new RuntimeException("Duplicate Assets: " + id + " (" + type + ")");
-        assets.put(id, asset);
-        cache.remove(type + "#" + asset.hashCode());
+        if (assets.containsKey(id)) {
+            java.lang.System.out.println("Duplicate Assets: " + id + " (" + type + ")");
+            if (!skipRepeat) throw new RuntimeException("Duplicate Assets: " + id + " (" + type + ")");
+        } else {
+            assets.put(id, asset);
+            cache.remove(type + "#" + asset.hashCode());
+        }
         return (T) asset;
     }
     public <T> T removeAsset(String id, Class<T> type) {

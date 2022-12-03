@@ -1,22 +1,28 @@
 package com.my.demo;
 
-import com.my.world.core.*;
+import com.my.world.core.Scene;
 import com.my.world.enhanced.EnhancedApplication;
 
 public class DemoApplication extends EnhancedApplication {
+
+    private Scene scene;
 
     @Override
     public void create() {
         super.create();
 
-        // ----- Create & Save & Load Scene Assets ----- //
+        // Create
         createAssets();
-//        saveAssets();
-//        loadAssets();
+        scene = createScene();
 
-        // ----- Create & Save & Load Scene ----- //
-        Scene scene = createScene();
+//        // Save
 //        saveScene(scene);
+//        saveAssets();
+
+//        // Load
+//        if (scene != null) engine.getSceneManager().removeScene(scene.getId());
+//        engine.getAssetsManager().skipRepeat = true;
+//        loadAssets();
 //        loadScene();
     }
 
