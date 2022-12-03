@@ -2,7 +2,6 @@ package com.my.world.module.particle;
 
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.particles.ParticleEffect;
 import com.badlogic.gdx.graphics.g3d.particles.ParticleEffectLoader;
@@ -15,15 +14,10 @@ import com.badlogic.gdx.utils.Pool;
 import com.my.world.core.Entity;
 import com.my.world.core.EntityListener;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.List;
 
 public class ParticlesSystem extends BaseParticlesSystem implements EntityListener {
-
-    @Setter
-    @Getter
-    protected Texture defaultParticleTexture;
 
     public ParticlesSystem() {
         batches.forEach(particleSystem::add);
@@ -56,13 +50,13 @@ public class ParticlesSystem extends BaseParticlesSystem implements EntityListen
         super.getRenderables(renderables, pool);
     }
 
-    @Getter protected static BillboardParticleBatch billboardParticleBatch = new BillboardParticleBatch();
-    @Getter protected static PointSpriteParticleBatch pointSpriteParticleBatch = new PointSpriteParticleBatch();
-    @Getter protected static ModelInstanceParticleBatch modelInstanceParticleBatch = new ModelInstanceParticleBatch();
+    @Getter protected static final BillboardParticleBatch billboardParticleBatch = new BillboardParticleBatch();
+    @Getter protected static final PointSpriteParticleBatch pointSpriteParticleBatch = new PointSpriteParticleBatch();
+    @Getter protected static final ModelInstanceParticleBatch modelInstanceParticleBatch = new ModelInstanceParticleBatch();
 
-    @Getter protected static Array<ParticleBatch<?>> batches = new Array<>();
-    @Getter protected static ParticleEffectLoader.ParticleEffectLoadParameter loadParam = new ParticleEffectLoader.ParticleEffectLoadParameter(batches);
-    @Getter protected static AssetManager assetManager = new AssetManager();
+    @Getter protected static final Array<ParticleBatch<?>> batches = new Array<>();
+    @Getter protected static final ParticleEffectLoader.ParticleEffectLoadParameter loadParam = new ParticleEffectLoader.ParticleEffectLoadParameter(batches);
+    @Getter protected static final AssetManager assetManager = new AssetManager();
 
     static {
         batches.add(billboardParticleBatch);

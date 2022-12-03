@@ -32,6 +32,8 @@ public class RenderSystem extends BaseSystem implements System.OnStart, Disposab
     @Config(type = Config.Type.Asset)
     public RenderableSorter renderableSorter;
 
+    public final List<Render> extraRenders = new ArrayList<>();
+
     protected Camera currentCamera;
     protected EnvironmentSystem environmentSystem;
     protected ModelBatch batch = new ModelBatch(new ShaderProvider() {
@@ -105,6 +107,7 @@ public class RenderSystem extends BaseSystem implements System.OnStart, Disposab
                 }
             }
         }
+        extraRenders.forEach(this::addToBatch);
         endBatch();
     }
 

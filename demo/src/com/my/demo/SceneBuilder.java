@@ -14,7 +14,6 @@ import com.my.world.enhanced.script.ExitScript;
 import com.my.world.enhanced.script.PauseScript;
 import com.my.world.enhanced.script.ReloadScript;
 import com.my.world.module.common.Position;
-import com.my.world.module.particle.ParticlesSystem;
 import com.my.world.module.render.light.GLTFDirectionalLight;
 
 public class SceneBuilder {
@@ -39,7 +38,6 @@ public class SceneBuilder {
         environmentsEntity.setName("environmentsEntity");
         environmentsEntity.addComponent(new Position(new Matrix4()));
         environmentsEntity.addComponent(new EnvironmentSetupScript());
-        environmentsEntity.addComponent(scene.getSystemManager().getSystem(ParticlesSystem.class));
         environmentsEntity.addComponent(new GLTFDirectionalLight(new Color(0.8f, 0.8f, 0.8f, 1f), 1f, new Vector3(-0.2f, -0.8f, 1f)));
         environmentsEntity.addComponent(new GLTFDirectionalLight(new Color(0.8f, 0.8f, 0.8f, 1f), 1f, new Vector3(0.2f, 0.8f, -1f)));
         scene.addEntity(environmentsEntity);

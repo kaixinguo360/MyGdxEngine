@@ -12,20 +12,16 @@ import com.my.world.core.System;
 import com.my.world.core.*;
 import com.my.world.module.common.Position;
 import com.my.world.module.render.Render;
+import com.my.world.module.render.RenderSystem;
 import lombok.Getter;
 
-public abstract class BaseParticlesSystem extends Render implements System.OnUpdate, System.AfterAdded {
+public abstract class BaseParticlesSystem extends Render implements System.OnStart, System.OnUpdate, System.AfterAdded {
 
     @Getter
-    protected ParticleSystem particleSystem = new ParticleSystem();
+    protected final ParticleSystem particleSystem = new ParticleSystem();
     protected Scene scene;
 
     // ----- System ----- //
-
-    @Override
-    public void update(float deltaTime) {
-        particleSystem.update(deltaTime);
-    }
 
     @Override
     public void afterAdded(Scene scene) {
@@ -37,6 +33,18 @@ public abstract class BaseParticlesSystem extends Render implements System.OnUpd
         }
     }
     protected abstract boolean canHandle(Entity entity);
+
+    @Override
+    public void start(Scene scene) {
+        RenderSystem renderSystem = scene.getSystemManager().getSystem(RenderSystem.class);
+        if (renderSystem == null) throw new RuntimeException("Required System not found: RenderSystem");
+        renderSystem.extraRenders.add(this);
+    }
+
+    @Override
+    public void update(float deltaTime) {
+        particleSystem.update(deltaTime);
+    }
 
     // ----- Render ----- //
 
