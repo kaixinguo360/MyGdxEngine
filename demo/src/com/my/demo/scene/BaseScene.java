@@ -11,6 +11,8 @@ import com.my.demo.entity.common.CharacterSwitcherAgent;
 import com.my.demo.entity.gun.GunEntity;
 import com.my.demo.entity.object.CameraEntity;
 import com.my.demo.entity.object.CharacterEntity;
+import com.my.demo.entity.tool.BombTool;
+import com.my.demo.entity.tool.BulletTool;
 import com.my.demo.entity.tool.MissileTool;
 import com.my.demo.entity.tool.ToolSwitcher;
 import com.my.world.core.Entity;
@@ -115,6 +117,8 @@ public class BaseScene<T extends BaseScene<T>> extends BaseBuilder<T> {
         switcher = character.addComponent(new ToolSwitcher());
         switcher.setActive(false);
         addWeapon(scene, new MissileTool(character.camera));
+        addWeapon(scene, new BombTool(character.camera));
+        addWeapon(scene, new BulletTool(character.camera));
 
         return ground;
     }
