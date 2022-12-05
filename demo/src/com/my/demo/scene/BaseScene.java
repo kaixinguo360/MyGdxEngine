@@ -11,10 +11,7 @@ import com.my.demo.entity.common.CharacterSwitcherAgent;
 import com.my.demo.entity.gun.GunEntity;
 import com.my.demo.entity.object.CameraEntity;
 import com.my.demo.entity.object.CharacterEntity;
-import com.my.demo.entity.tool.BombTool;
-import com.my.demo.entity.tool.BulletTool;
-import com.my.demo.entity.tool.MissileTool;
-import com.my.demo.entity.tool.ToolSwitcher;
+import com.my.demo.entity.tool.*;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
 import com.my.world.enhanced.builder.BaseBuilder;
@@ -55,6 +52,7 @@ public class BaseScene<T extends BaseScene<T>> extends BaseBuilder<T> {
                 new BoxBody(new Vector3(5000,50,10000), 0f)
         );
         ground.position.setLocalTransform(m -> m.translate(0, -50, 0));
+        ground.setName("ground");
         ground.addToScene(scene);
 
         // Create Aircraft
@@ -116,6 +114,7 @@ public class BaseScene<T extends BaseScene<T>> extends BaseBuilder<T> {
         // Create ToolSwitcher
         switcher = character.addComponent(new ToolSwitcher());
         switcher.setActive(false);
+        addWeapon(scene, new PickTool(character.camera));
         addWeapon(scene, new MissileTool(character.camera));
         addWeapon(scene, new BombTool(character.camera));
         addWeapon(scene, new BulletTool(character.camera));
