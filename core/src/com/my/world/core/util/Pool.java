@@ -13,7 +13,7 @@ public class Pool<T> {
         this.supplier = supplier;
     }
 
-    public T obtain() {
+    public synchronized T obtain() {
         if (!objects.isEmpty()) {
             return objects.remove(0);
         } else {
@@ -21,12 +21,12 @@ public class Pool<T> {
         }
     }
 
-    public void free(T obj) {
+    public synchronized void free(T obj) {
         if (obj == null) throw new RuntimeException("object cannot be null");
         objects.add(obj);
     }
 
-    public void clear() {
+    public synchronized void clear() {
         objects.clear();
     }
 }
