@@ -15,6 +15,7 @@ import com.my.world.core.Scene;
 import com.my.world.enhanced.render.EnhancedFrameBuffer;
 import com.my.world.module.camera.CameraSystem;
 import com.my.world.module.common.Position;
+import com.my.world.module.render.BaseRender;
 import com.my.world.module.render.Render;
 import com.my.world.module.render.RenderSystem;
 import com.my.world.module.script.ScriptSystem;
@@ -26,7 +27,7 @@ import java.util.Map;
 
 import static com.badlogic.gdx.graphics.GL20.*;
 
-public class DepthMaskScript extends Render implements ScriptSystem.OnStart, CameraSystem.BeforeRender {
+public class DepthMaskScript extends BaseRender implements ScriptSystem.OnStart, CameraSystem.BeforeRender {
 
     protected static final ModelBatch batch = new ModelBatch();
     protected static final ClearScreenShader clearScreenShader = new ClearScreenShader();
@@ -103,7 +104,7 @@ public class DepthMaskScript extends Render implements ScriptSystem.OnStart, Cam
         Gdx.gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         batch.begin(cam);
         for (Render render : visibleMaskEntities) {
-            batch.render(render, render.shader);
+            batch.render(render, render.getShader());
         }
         batch.end();
 

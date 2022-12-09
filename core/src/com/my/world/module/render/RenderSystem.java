@@ -134,15 +134,16 @@ public class RenderSystem extends BaseSystem implements System.OnStart, Disposab
         if (!render.isVisible(currentCamera)) {
             return;
         }
-        if (currentEnvironment != null && render.includeEnv) {
-            if (render.shader != null) {
-                batch.render(render, currentEnvironment, render.shader);
+        Shader shader = render.getShader();
+        if (currentEnvironment != null && render.isIncludeEnv()) {
+            if (shader != null) {
+                batch.render(render, currentEnvironment, shader);
             } else {
                 batch.render(render, currentEnvironment);
             }
         } else {
-            if (render.shader != null) {
-                batch.render(render, render.shader);
+            if (shader != null) {
+                batch.render(render, shader);
             } else {
                 batch.render(render);
             }

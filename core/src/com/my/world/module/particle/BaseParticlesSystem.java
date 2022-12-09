@@ -11,11 +11,11 @@ import com.badlogic.gdx.utils.Pool;
 import com.my.world.core.System;
 import com.my.world.core.*;
 import com.my.world.module.common.Position;
-import com.my.world.module.render.Render;
+import com.my.world.module.render.BaseRender;
 import com.my.world.module.render.RenderSystem;
 import lombok.Getter;
 
-public abstract class BaseParticlesSystem extends Render implements System.OnStart, System.OnUpdate, System.AfterAdded {
+public abstract class BaseParticlesSystem extends BaseRender implements System.OnStart, System.OnUpdate, System.AfterAdded {
 
     @Getter
     protected final ParticleSystem particleSystem = new ParticleSystem();

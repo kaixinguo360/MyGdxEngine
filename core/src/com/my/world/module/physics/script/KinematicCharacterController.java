@@ -10,10 +10,16 @@ import com.badlogic.gdx.physics.bullet.dynamics.btKinematicCharacterController;
 import com.my.world.core.Config;
 import com.my.world.core.util.Disposable;
 import com.my.world.gdx.Matrix4Pool;
-import com.my.world.module.physics.PhysicsBody;
+import com.my.world.module.physics.BasePhysicsBody;
 import com.my.world.module.physics.TemplateRigidBody;
 
-public class KinematicCharacterController extends PhysicsBody implements Disposable {
+public class KinematicCharacterController extends BasePhysicsBody implements Disposable {
+
+    @Config
+    public int group = NORMAL_FLAG;
+
+    @Config
+    public int mask = ALL_FLAG;
 
     @Config(type = Config.Type.Asset)
     public TemplateRigidBody shape;

@@ -3,17 +3,28 @@ package com.my.world.module.render;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.Renderable;
+import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.my.world.core.Config;
 import com.my.world.gdx.Vector3Pool;
+import com.my.world.module.common.ActivatableComponent;
 import com.my.world.module.common.Position;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class BaseRender extends Render {
+public class BaseRender extends ActivatableComponent implements Render {
+
+    @Config
+    @Getter
+    public boolean includeEnv = true;
+
+    @Config(type = Config.Type.Asset)
+    @Getter
+    public Shader shader;
 
     @Config
     public boolean isAlwaysVisible = false;

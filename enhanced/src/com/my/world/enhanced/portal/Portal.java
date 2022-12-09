@@ -8,6 +8,7 @@ import com.my.world.core.Scene;
 import com.my.world.enhanced.portal.render.PortalRenderScript;
 import com.my.world.gdx.Matrix4Pool;
 import com.my.world.module.common.Position;
+import com.my.world.module.physics.BasePhysicsBody;
 import com.my.world.module.physics.PhysicsBody;
 import com.my.world.module.physics.RigidBody;
 import com.my.world.module.script.ScriptSystem;
@@ -65,7 +66,9 @@ public class Portal implements ScriptSystem.OnStart {
 
         PhysicsBody body = entity.getComponent(PhysicsBody.class);
         if (body != null) {
-            body.syncTransformFromEntity();
+            if (body instanceof BasePhysicsBody) {
+                ((BasePhysicsBody) body).syncTransformFromEntity();
+            }
             if (body instanceof RigidBody) {
                 btRigidBody btRigidBody = ((RigidBody) body).body;
                 btRigidBody.setLinearVelocity(btRigidBody.getLinearVelocity().rot(offsetTransform));

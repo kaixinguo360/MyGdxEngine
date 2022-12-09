@@ -13,8 +13,8 @@ import com.badlogic.gdx.utils.Pool;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
 import com.my.world.module.common.Position;
+import com.my.world.module.render.BaseRender;
 import com.my.world.module.render.EnvironmentSystem;
-import com.my.world.module.render.Render;
 import com.my.world.module.script.ScriptSystem;
 import net.mgsx.gltf.scene3d.attributes.PBRCubemapAttribute;
 import net.mgsx.gltf.scene3d.attributes.PBRTextureAttribute;
@@ -22,7 +22,7 @@ import net.mgsx.gltf.scene3d.lights.DirectionalLightEx;
 import net.mgsx.gltf.scene3d.scene.SceneSkybox;
 import net.mgsx.gltf.scene3d.utils.IBLBuilder;
 
-public class EnvironmentSetupScript extends Render implements ScriptSystem.OnStart {
+public class EnvironmentSetupScript extends BaseRender implements ScriptSystem.OnStart {
 
     private Cubemap environmentCubemap;
     private Cubemap diffuseCubemap;

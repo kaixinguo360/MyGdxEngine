@@ -6,12 +6,16 @@ import com.badlogic.gdx.physics.bullet.collision.CollisionConstants;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
 import com.my.world.core.Config;
+import com.my.world.core.util.Disposable;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.badlogic.gdx.physics.bullet.collision.btCollisionObject.CollisionFlags.*;
 
 @NoArgsConstructor
-public class RigidBody extends BasePhysicsBody {
+public class CompoundRigidBody extends BasePhysicsBody {
 
     @Config
     public int group = NORMAL_FLAG;
@@ -35,7 +39,7 @@ public class RigidBody extends BasePhysicsBody {
     public Integer activationState;
 
     @Config
-    public boolean isStatic;
+    public boolean isStatic = true;
 
     @Config
     public boolean isKinematic;
@@ -46,20 +50,31 @@ public class RigidBody extends BasePhysicsBody {
     @Config
     public boolean autoConvertToLocalTransform = false;
 
-    public btRigidBody body;
-
-    protected RigidBody(boolean isTrigger) {
-        this.isTrigger = isTrigger;
-    }
-
-    public RigidBody(btRigidBody body, boolean isTrigger) {
-        this(isTrigger);
-        this.body = body;
-    }
+    public final List<btRigidBody> bodies = new ArrayList<>();
 
     @Override
     public void enterWorld() {
         super.enterWorld();
+        bodies.forEach(this::enterWorld);
+    }
+
+    @Override
+    public void leaveWorld() {
+        bodies.forEach(this::leaveWorld);
+        super.leaveWorld();
+    }
+
+    public void addBody(btRigidBody body) {
+        bodies.add(body);
+        if (this.enteredWorld) enterWorld(body);
+    }
+
+    public void removeBody(btRigidBody body) {
+        if (this.enteredWorld) leaveWorld(body);
+        bodies.remove(body);
+    }
+
+    protected void enterWorld(btRigidBody body) {
 
         // Set userData
         body.userData = this;
@@ -118,8 +133,7 @@ public class RigidBody extends BasePhysicsBody {
         }
     }
 
-    @Override
-    public void leaveWorld() {
+    protected void leaveWorld(btRigidBody body) {
         if (isTrigger) {
             dynamicsWorld.removeCollisionObject(body);
         } else {
@@ -131,22 +145,21 @@ public class RigidBody extends BasePhysicsBody {
                 position.enableInherit();
             }
         }
-        super.leaveWorld();
     }
 
     @Override
     public void syncTransformFromEntity() {
-        body.setWorldTransform(position.getGlobalTransform());
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void syncTransformFromWorld() {
-        position.setGlobalTransform(body.getWorldTransform());
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void dispose() {
-        if (body != null) body.dispose();
+        Disposable.disposeAll(bodies);
     }
 
     private class MotionState extends btMotionState {

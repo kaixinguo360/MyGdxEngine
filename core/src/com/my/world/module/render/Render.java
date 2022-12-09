@@ -3,21 +3,23 @@ package com.my.world.module.render;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
 import com.badlogic.gdx.graphics.g3d.Shader;
-import com.my.world.core.Config;
-import com.my.world.module.common.ActivatableComponent;
+import com.my.world.core.Component;
 import com.my.world.module.common.Position;
-import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
-public abstract class Render extends ActivatableComponent implements RenderableProvider {
+public interface Render extends Component, Component.Activatable, RenderableProvider {
 
-    @Config
-    public boolean includeEnv = true;
+    default boolean isIncludeEnv() {
+        return true;
+    }
 
-    @Config(type = Config.Type.Asset)
-    public Shader shader;
+    default Shader getShader() {
+        return null;
+    }
 
-    public abstract void setTransform(Position position);
+    default void setTransform(Position position) {
+    }
 
-    public abstract boolean isVisible(Camera cam);
+    default boolean isVisible(Camera cam) {
+        return true;
+    }
 }

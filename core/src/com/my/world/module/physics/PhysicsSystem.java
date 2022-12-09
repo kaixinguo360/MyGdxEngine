@@ -172,8 +172,9 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
             final btCollisionObject obj = rayTestCB.getCollisionObject();
             assert obj.userData instanceof PhysicsBody;
             PhysicsBody physicsBody = (PhysicsBody) obj.userData;
-            assert physicsBody.entity != null;
-            return physicsBody.entity;
+            Entity entity = physicsBody.getEntity();
+            assert entity != null;
+            return entity;
         } else {
             return null;
         }
@@ -185,7 +186,7 @@ public class PhysicsSystem extends BaseSystem implements System.OnUpdate, Dispos
         Vector3 tmpV1 = Vector3Pool.obtain();
         for (Map.Entry<Entity, PhysicsBody> entry : physicsBodies.entrySet()) {
             PhysicsBody physicsBody = entry.getValue();
-            if (!physicsBody.isTrigger && physicsBody instanceof RigidBody) {
+            if (physicsBody instanceof RigidBody && !((RigidBody) physicsBody).isTrigger) {
                 Entity entity = entry.getKey();
                 entity.getComponent(Position.class).getGlobalTransform().getTranslation(tmpV1);
                 tmpV1.sub(position);
