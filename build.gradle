@@ -4,6 +4,7 @@ buildscript {
         mavenCentral()
         maven { url "https://plugins.gradle.org/m2/" }
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven { url 'https://jitpack.io' }
         gradlePluginPortal()
         google()
     }
@@ -16,8 +17,9 @@ allprojects {
     version = '1.0'
     ext {
         appName = "MyGame"
-        gdxVersion = '1.10.0'
-        gltfVersion = '2.0.0-rc.1'
+        gdxVersion = '1.11.0'
+        gltfVersion = '2.1.0'
+        lombokVersion = '1.18.24'
 
         mavenUrl = has('mavenUrl') ? mavenUrl : ''
         mavenUsername = has('mavenUsername') ? mavenUsername : ''

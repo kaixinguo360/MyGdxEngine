@@ -4,8 +4,9 @@ dependencies {
     compile "com.badlogicgames.gdx:gdx:$gdxVersion"
     compile "com.badlogicgames.gdx:gdx-bullet:$gdxVersion"
     compile "com.github.mgsx-dev.gdx-gltf:gltf:$gltfVersion"
-    compile "org.projectlombok:lombok:1.18.8"
-    compile "org.yaml:snakeyaml:1.29"
+    compile 'org.yaml:snakeyaml:1.33'
+    compileOnly "org.projectlombok:lombok:$lombokVersion"
+    annotationProcessor "org.projectlombok:lombok:$lombokVersion"
 }
 
 sourceCompatibility = 1.8

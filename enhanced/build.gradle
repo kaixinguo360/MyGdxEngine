@@ -3,6 +3,8 @@ apply plugin: "java"
 dependencies {
     compile project(":core")
     compile 'org.reflections:reflections:0.10.2'
+    compileOnly "org.projectlombok:lombok:$lombokVersion"
+    annotationProcessor "org.projectlombok:lombok:$lombokVersion"
 }
 
 sourceCompatibility = 1.8

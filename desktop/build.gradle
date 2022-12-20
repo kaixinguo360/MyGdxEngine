@@ -16,7 +16,7 @@ eclipse.project {
 }
 
 project.ext {
-    mainClassName = "com.my.game.desktop.DesktopLauncher"
+    mainClassName = "com.my.demo.desktop.DesktopLauncher"
     assetsDir = new File("../core/assets")
 }
 
@@ -38,14 +38,14 @@ task debug(dependsOn: classes, type: JavaExec) {
 }
 
 task dist(dependsOn: classes, type: Jar) {
-    from files(sourceSets.main.output.classesDir)
-    from files(sourceSets.main.output.resourcesDir)
-    from {configurations.compile.collect {zipTree(it)}}
-    from files(project.assetsDir)
- 
     manifest {
         attributes 'Main-Class': project.mainClassName
     }
+    dependsOn configurations.runtimeClasspath
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    with jar
 }
 
 task afterEclipseImport(description: "Post processing after project generation", group: "IDE") {
