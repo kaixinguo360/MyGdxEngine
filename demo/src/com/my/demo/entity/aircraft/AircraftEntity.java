@@ -16,6 +16,8 @@ import com.my.world.module.particle.ParticlesEffect;
 import com.my.world.module.particle.ParticlesSystem;
 import com.my.world.module.physics.constraint.HingeConstraint;
 
+import static com.my.world.enhanced.physics.ConstraintUtil.connect;
+
 public class AircraftEntity extends EnhancedEntity {
 
     public static String effectPath = "effect/smoke.pfx";
@@ -58,10 +60,11 @@ public class AircraftEntity extends EnhancedEntity {
         body.transform.idt().translate(0, 0.5f, -3);
         addEntity(body);
 
-        engine = new EngineEntity(body);
+        engine = new EngineEntity();
         engine.setName("engine");
         engine.setParent(this);
         engine.transform.idt().translate(0, 0.6f, -6).rotate(Vector3.X, -90);
+        connect(engine, body, 2000);
         addEntity(engine);
 
         // Left
@@ -73,16 +76,18 @@ public class AircraftEntity extends EnhancedEntity {
         rotate_L.constraint.frameInA.set(body.getComponent(Position.class).getGlobalTransform(new Matrix4()).inv().mul(transform_L).rotate(Vector3.X, 90));
         addEntity(rotate_L);
 
-        wing_L1 = new WingEntity(rotate_L);
+        wing_L1 = new WingEntity();
         wing_L1.setName("wing_L1");
         wing_L1.setParent(this);
         wing_L1.transform.idt().translate(-2.5f, 0.5f, -5).rotate(Vector3.X, 14);
+        connect(wing_L1, rotate_L, 2000, new Matrix4().setToTranslation(1, 0, 0));
         addEntity(wing_L1);
 
-        wing_L2 = new WingEntity(wing_L1);
+        wing_L2 = new WingEntity();
         wing_L2.setName("wing_L2");
         wing_L2.setParent(this);
         wing_L2.transform.idt().translate(-4.5f, 0.5f, -5).rotate(Vector3.X, 14);
+        connect(wing_L2, wing_L1, 2000, new Matrix4().setToTranslation(1, 0, 0));
         smoke_L = wing_L2.addComponent(new ParticlesEffect());
         smoke_L.effect = particleEffect;
         smoke_L.transform = new Matrix4().translate(-0.5f, 0, 0).rotate(Vector3.X, 90);
@@ -97,16 +102,18 @@ public class AircraftEntity extends EnhancedEntity {
         rotate_R.constraint.frameInA.set(body.getComponent(Position.class).getGlobalTransform(new Matrix4()).inv().mul(transform_R).rotate(Vector3.X, 90));
         addEntity(rotate_R);
 
-        wing_R1 = new WingEntity(rotate_R);
+        wing_R1 = new WingEntity();
         wing_R1.setName("wing_R1");
         wing_R1.setParent(this);
         wing_R1.transform.idt().translate(2.5f, 0.5f, -5).rotate(Vector3.X, 14);
+        connect(wing_R1, rotate_R, 2000, new Matrix4().setToTranslation(-1, 0, 0));
         addEntity(wing_R1);
 
-        wing_R2 = new WingEntity(wing_R1);
+        wing_R2 = new WingEntity();
         wing_R2.setName("wing_R2");
         wing_R2.setParent(this);
         wing_R2.transform.idt().translate(4.5f, 0.5f, -5).rotate(Vector3.X, 14);
+        connect(wing_R2, wing_R1, 2000, new Matrix4().setToTranslation(-1, 0, 0));
         smoke_R = wing_R2.addComponent(new ParticlesEffect());
         smoke_R.effect = particleEffect;
         smoke_R.transform = new Matrix4().translate(0.5f, 0, 0).rotate(Vector3.X, 90);
@@ -121,16 +128,18 @@ public class AircraftEntity extends EnhancedEntity {
         rotate_T.constraint.frameInA.set(body.getComponent(Position.class).getGlobalTransform(new Matrix4()).inv().mul(transform_T).rotate(Vector3.X, 90));
         addEntity(rotate_T);
 
-        wing_TL = new WingEntity(rotate_T);
+        wing_TL = new WingEntity();
         wing_TL.setName("wing_TL");
         wing_TL.setParent(this);
         wing_TL.transform.idt().translate(-1.5f, 0.5f, 0.1f).rotate(Vector3.X, 13f);
+        connect(wing_TL, rotate_T, 2000, new Matrix4().setToTranslation(1, 0, 0));
         addEntity(wing_TL);
 
-        wing_TR = new WingEntity(rotate_T);
+        wing_TR = new WingEntity();
         wing_TR.setName("wing_TR");
         wing_TR.setParent(this);
         wing_TR.transform.idt().translate(1.5f, 0.5f, 0.1f).rotate(Vector3.X, 13f);
+        connect(wing_TR, rotate_T, 2000, new Matrix4().setToTranslation(-1, 0, 0));
         addEntity(wing_TR);
 
         // Vertical Tail
