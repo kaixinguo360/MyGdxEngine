@@ -9,7 +9,7 @@ import com.my.world.module.script.ScriptSystem;
 
 public abstract class ConstraintController extends ActivatableComponent implements ScriptSystem.OnStart, ScriptSystem.OnUpdate {
 
-    private Constraint constraint;
+    protected Constraint constraint;
 
     @Override
     public void start(Scene scene, Entity entity) {
@@ -21,6 +21,11 @@ public abstract class ConstraintController extends ActivatableComponent implemen
         if (constraint.btConstraint != null) {
             this.update(constraint.btConstraint);
         }
+    }
+
+    public void activate() {
+        constraint.btConstraint.getRigidBodyA().activate();
+        constraint.btConstraint.getRigidBodyB().activate();
     }
 
     public abstract void update(btTypedConstraint constraint);

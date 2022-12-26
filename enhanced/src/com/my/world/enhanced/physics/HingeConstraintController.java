@@ -42,6 +42,7 @@ public class HingeConstraintController extends ConstraintController {
                 current += current > 0 ? -resilience : (current < 0 ? resilience : 0);
             }
         }
+        if (isChanged) activate();
         isChanged = false;
         if (limit) {
             current = Math.min(high, current);
