@@ -67,10 +67,9 @@ public abstract class Relation<T extends Relation> {
     }
 
     public Collection<T> findAllChildrenByName(String name, Collection<T> list) {
-        T child = findChildByName(name);
-        if (child != null) {
-            list.add(child);
-            child.findAllChildren(list);
+        for (T child : this.children) {
+            if (name.equals(child.getName())) list.add(child);
+            child.findAllChildrenByName(name, list);
         }
         return list;
     }
