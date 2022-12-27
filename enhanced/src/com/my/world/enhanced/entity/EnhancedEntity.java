@@ -2,18 +2,16 @@ package com.my.world.enhanced.entity;
 
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
+import com.my.world.core.Config;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
+import com.my.world.enhanced.builder.EntityGenerator;
 import com.my.world.module.common.EnhancedPosition;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class EnhancedEntity extends Entity {
-
-    public static class Param {
-        public String name;
-    }
 
     public final EnhancedPosition position;
     public final Matrix4 transform;
@@ -54,6 +52,18 @@ public class EnhancedEntity extends Entity {
         for (EnhancedEntity child : children) {
             child.addToScene(scene);
         }
+    }
+
+    public abstract static class Param implements EntityGenerator {
+
+        @Config public String name;
+
+        @Override
+        public EnhancedEntity generate() {
+            return build();
+        }
+
+        public abstract EnhancedEntity build();
     }
 
 }

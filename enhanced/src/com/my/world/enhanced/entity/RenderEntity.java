@@ -2,20 +2,28 @@ package com.my.world.enhanced.entity;
 
 import com.my.world.module.render.Render;
 
-public class RenderEntity extends EnhancedEntity {
+import java.util.function.Supplier;
 
-    public static class Param extends EnhancedEntity.Param {
-        public Render render;
-    }
+public class RenderEntity extends EnhancedEntity {
 
     public final Render render;
 
-    public RenderEntity(Param p) {
+    public RenderEntity(Builder p) {
         super(p);
-        this.render = addComponent(p.render);
+        this.render = addComponent(p.renderProvider.get());
     }
 
     public RenderEntity(Render render) {
         this.render = addComponent(render);
+    }
+
+    public static class Builder extends Param {
+
+        public Supplier<Render> renderProvider;
+
+        @Override
+        public RenderEntity build() {
+            return new RenderEntity(this);
+        }
     }
 }
