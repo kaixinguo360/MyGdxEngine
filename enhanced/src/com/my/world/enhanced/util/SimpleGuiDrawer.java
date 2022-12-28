@@ -1,7 +1,8 @@
 package com.my.world.enhanced.util;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.g3d.utils.DefaultTextureBinder;
+import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
@@ -18,12 +19,21 @@ public class SimpleGuiDrawer extends ShapeRenderer {
      * Normalized origin coordinates, (0, 0) is bottom left, (0.5, 0.5) is center
      */
     public final Vector2 origin = new Vector2();
+    public RenderContext context;
 
     protected float screenWidth = 0;
     protected float screenHeight = 0;
 
     @Getter
     public final Matrix4 projectionMatrix = new Matrix4();
+
+    public SimpleGuiDrawer() {
+        this(null);
+    }
+
+    public SimpleGuiDrawer(RenderContext context) {
+        this.context = (context == null) ? new RenderContext(new DefaultTextureBinder(DefaultTextureBinder.LRU, 1)) : context;
+    }
 
     // ----- Override ----- //
 
@@ -35,11 +45,17 @@ public class SimpleGuiDrawer extends ShapeRenderer {
     @Override
     public void begin(ShapeRenderer.ShapeType type) {
         syncScreenSize();
-        Gdx.gl.glEnable(GL20.GL_BLEND);
-        Gdx.gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        context.begin();
+        context.setBlending(true, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         setProjectionMatrix(projectionMatrix);
         setTransformMatrix(tmpM.idt());
         super.begin(type);
+    }
+
+    @Override
+    public void end() {
+        super.end();
+        context.end();
     }
 
     // ----- Utils ----- //
