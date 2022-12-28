@@ -1,4 +1,4 @@
-package com.my.world.enhanced.depthmask;
+package com.my.world.enhanced.shader;
 
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;

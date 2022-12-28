@@ -1,9 +1,9 @@
-package com.my.world.enhanced.depthmask.entity;
+package com.my.world.enhanced.shader.depthmask.entity;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Material;
-import com.my.world.enhanced.depthmask.DepthMaskEntity;
+import com.my.world.enhanced.shader.depthmask.DepthMaskEntity;
 import com.my.world.module.render.Render;
 import com.my.world.module.render.model.Cylinder;
 import net.mgsx.gltf.scene3d.attributes.PBRColorAttribute;

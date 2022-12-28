@@ -1,4 +1,4 @@
-package com.my.world.enhanced.depthmask;
+package com.my.world.enhanced.shader;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -41,8 +41,8 @@ public class ShaderUtil {
 
         // 初始化渲染器
         clearScreenShader = new ShaderProgram(
-                Gdx.files.classpath("com/my/world/enhanced/portal/clear-screen.vertex.glsl").readString(),
-                Gdx.files.classpath("com/my/world/enhanced/portal/clear-screen.fragment.glsl").readString()
+                Gdx.files.classpath("com/my/world/enhanced/shader/clear-screen.vs.glsl").readString(),
+                Gdx.files.classpath("com/my/world/enhanced/shader/clear-screen.fs.glsl").readString()
         );
         if (!clearScreenShader.isCompiled()) {
             throw new GdxRuntimeException(clearScreenShader.getLog());

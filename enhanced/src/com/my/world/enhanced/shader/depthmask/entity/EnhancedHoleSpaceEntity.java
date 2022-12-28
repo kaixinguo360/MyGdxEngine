@@ -1,12 +1,12 @@
-package com.my.world.enhanced.depthmask.entity;
+package com.my.world.enhanced.shader.depthmask.entity;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.CylinderShapeBuilder;
-import com.my.world.enhanced.depthmask.DepthMaskAttribute;
 import com.my.world.enhanced.render.RenderOrderAttribute;
+import com.my.world.enhanced.shader.depthmask.DepthMaskAttribute;
 import com.my.world.module.render.Render;
 import com.my.world.module.render.model.ProceduralModelRender;
 

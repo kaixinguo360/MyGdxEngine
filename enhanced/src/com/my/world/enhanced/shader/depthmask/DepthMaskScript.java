@@ -1,4 +1,4 @@
-package com.my.world.enhanced.depthmask;
+package com.my.world.enhanced.shader.depthmask;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
@@ -13,6 +13,8 @@ import com.badlogic.gdx.utils.Pool;
 import com.my.world.core.Entity;
 import com.my.world.core.Scene;
 import com.my.world.enhanced.render.EnhancedFrameBuffer;
+import com.my.world.enhanced.shader.ClearScreenShader;
+import com.my.world.enhanced.shader.ShaderUtil;
 import com.my.world.module.camera.CameraSystem;
 import com.my.world.module.common.Position;
 import com.my.world.module.render.BaseRender;

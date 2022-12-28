@@ -1,4 +1,4 @@
-package com.my.world.enhanced.depthmask;
+package com.my.world.enhanced.shader.depthmask;
 
 import com.my.world.core.Entity;
 import com.my.world.enhanced.entity.EnhancedEntity;

@@ -1,4 +1,4 @@
-package com.my.world.enhanced.depthmask;
+package com.my.world.enhanced.shader.depthmask;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g3d.Attribute;
